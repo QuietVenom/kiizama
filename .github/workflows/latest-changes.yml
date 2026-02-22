@@ -34,6 +34,7 @@ jobs:
       - uses: tiangolo/latest-changes@0.4.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          number: ${{ github.event.inputs.number }}
           latest_changes_file: ./release-notes.md
           latest_changes_header: "## Latest Changes"
           end_regex: "^## "
