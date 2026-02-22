@@ -1,0 +1,57 @@
+version: 2
+updates:
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: main
+    schedule:
+      interval: daily
+    labels:
+      - upgrade
+    commit-message:
+      prefix: ⬆
+  # Python uv
+  - package-ecosystem: uv
+    directory: /backend
+    target-branch: main
+    schedule:
+      interval: weekly
+    labels:
+      - upgrade
+    commit-message:
+      prefix: ⬆
+  # npm
+  - package-ecosystem: npm
+    directory: /frontend
+    target-branch: main
+    schedule:
+      interval: weekly
+    labels:
+      - upgrade
+    commit-message:
+      prefix: ⬆
+    ignore:
+      - dependency-name: "@hey-api/openapi-ts"
+  # Docker
+  - package-ecosystem: docker
+    directories:
+      - /
+      - /backend
+      - /frontend
+    target-branch: main
+    schedule:
+      interval: weekly
+    labels:
+      - upgrade
+    commit-message:
+      prefix: ⬆
+  # Docker Compose
+  - package-ecosystem: docker-compose
+    directory: /
+    target-branch: main
+    schedule:
+      interval: weekly
+    labels:
+      - upgrade
+    commit-message:
+      prefix: ⬆

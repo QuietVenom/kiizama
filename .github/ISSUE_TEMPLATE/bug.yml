@@ -1,0 +1,48 @@
+name: Bug Report
+description: Report a reproducible defect.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-checks
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: I can reproduce this on the latest main branch.
+          required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the bug in one short paragraph.
+      placeholder: What happened, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide exact steps and input data.
+      placeholder: |
+        1. Go to...
+        2. Run...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include OS, browser/version, Python/Node versions, and deployment target if relevant.
+      placeholder: macOS 14, Python 3.10, Node 20, Chrome 123, Render
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Paste relevant logs, stack traces, or screenshots.
+      render: shell

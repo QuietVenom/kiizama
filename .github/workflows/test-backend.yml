@@ -1,0 +1,48 @@
+name: Test Backend
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:55432/app_test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.4.15"
+          enable-cache: true
+      - run: docker compose down -v --remove-orphans
+      - run: docker compose up -d postgres_test mailcatcher
+      - name: Migrate DB
+        run: uv run bash scripts/prestart.sh
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+      - name: Run tests
+        run: uv run bash scripts/tests-start.sh "Coverage for ${{ github.sha }}"
+        working-directory: backend
+        env:
+          TEST_DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+      - run: docker compose down -v --remove-orphans
+      - name: Store coverage files
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: backend/htmlcov
+          include-hidden-files: true
