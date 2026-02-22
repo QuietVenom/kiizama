@@ -1,0 +1,36 @@
+name: Feature Request
+description: Propose a new capability or significant enhancement.
+title: "[Feature] "
+labels:
+  - feature
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Explain the user or business problem this feature addresses.
+      placeholder: What pain point exists today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the expected behavior and API/UI impact.
+      placeholder: What should we build?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Mention other options and why they are not preferred.
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and acceptance criteria
+      description: Define boundaries and how we will know this is done.
+      placeholder: |
+        - In scope:
+        - Out of scope:
+        - Done when:

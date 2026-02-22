@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Reputation Campaign Strategy – {{ brand_name or 'Brand' }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --page:#fffdf8;
+      --page-soft:#fff9ed;
+      --surface:#ffffff;
+      --surface-soft:#f8fafc;
+      --border:#f3e8d6;
+      --text:#0f172a;
+      --text-secondary:#64748b;
+      --text-muted:#94a3b8;
+      --accent:#f5c58e;
+      --accent-strong:#e6a964;
+      --accent-ink:#b45309;
+      --navy:#18183b;
+    }
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      color:var(--text);
+      background:var(--page);
+      font-family:"Plus Jakarta Sans","Avenir Next","Segoe UI",-apple-system,BlinkMacSystemFont,sans-serif;
+      -webkit-print-color-adjust:exact;
+              print-color-adjust:exact;
+    }
+    a{color:var(--accent-ink);text-decoration:none}
+    a:hover{text-decoration:underline}
+    a{overflow-wrap:anywhere;word-break:break-word}
+
+    .page-bg{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      background:var(--page);
+    }
+    .page-padding{padding:0.5in}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 18px}
+
+    header.profile{
+      display:flex;
+      align-items:flex-start;
+      gap:16px;
+      margin:0 0 14px;
+      padding:18px 20px;
+      border:1px solid var(--border);
+      border-radius:28px;
+      background:var(--surface);
+    }
+    .brand-logo-placeholder{
+      width:108px;
+      height:108px;
+      padding:10px;
+      border-radius:18px;
+      border:1px solid #f9d7ae;
+      display:grid;
+      place-items:center;
+      flex-shrink:0;
+      text-align:center;
+      line-height:1.3;
+      font-size:13px;
+      font-weight:900;
+      color:#92400e;
+      background:#fff5e8;
+    }
+    .h1{
+      margin:0;
+      color:var(--navy);
+      font-size:30px;
+      font-weight:900;
+      letter-spacing:-0.03em;
+      line-height:1.06;
+    }
+    .sub{
+      margin-top:4px;
+      color:var(--text-secondary);
+      font-size:13px;
+      font-weight:700;
+    }
+    .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .tag{
+      display:inline-block;
+      padding:0.34rem 0.72rem;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff5e8;
+      color:#92400e;
+      font-size:12px;
+      font-weight:800;
+    }
+    .url-tag{
+      max-width:100%;
+      white-space:normal;
+      line-height:1.35;
+      text-decoration:none;
+    }
+
+    .top-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .chip{
+      min-height:96px;
+      padding:14px;
+      border:1px solid var(--border);
+      border-radius:24px;
+      background:var(--surface);
+      display:grid;
+      grid-template-rows:auto 1fr;
+      align-items:stretch;
+    }
+    .chip .k{
+      color:var(--navy);
+      font-size:16px;
+      font-weight:800;
+      line-height:1.35;
+      text-align:center;
+      overflow-wrap:anywhere;
+      word-break:break-word;
+    }
+    .chip small{
+      margin:0;
+      color:var(--text-secondary);
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      display:block;
+    }
+    .chip > div{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+    }
+
+    .section{
+      margin-top:16px;
+      padding:18px;
+      border:1px solid var(--border);
+      border-radius:28px;
+      background:var(--surface);
+    }
+    .title{
+      margin:0 0 14px;
+      color:var(--navy);
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-0.01em;
+      line-height:1.2;
+    }
+
+    .report-space{
+      min-height:420px;
+      padding:14px;
+      border:1px dashed #f9d7ae;
+      border-radius:18px;
+      background:#fff9ed;
+    }
+    .report-space a{overflow-wrap:anywhere;word-break:break-word}
+
+    table{width:100%;border-collapse:collapse}
+    th,td{
+      padding:11px 9px;
+      text-align:left;
+      vertical-align:top;
+      border-top:1px solid var(--border);
+    }
+    th{
+      color:var(--text-secondary);
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+    }
+    td{
+      color:var(--text);
+      font-size:13px;
+      font-weight:600;
+      line-height:1.4;
+    }
+
+    .profiles-table{
+      border-collapse:separate;
+      border-spacing:0 8px;
+      table-layout:fixed;
+    }
+    .profiles-table col.col-profile{width:20%}
+    .profiles-table col.col-biography{width:36%}
+    .profiles-table col.col-ai{width:20%}
+    .profiles-table col.col-followers{width:12%}
+    .profiles-table col.col-verified{width:12%}
+    .profiles-table th,
+    .profiles-table td{
+      overflow-wrap:normal;
+      word-break:normal;
+      border-top:none;
+    }
+    .profile-main-row td{
+      background:var(--surface);
+      border-top:1px solid var(--border);
+      border-bottom:1px solid var(--border);
+      vertical-align:top;
+    }
+    .profile-main-row td:first-child{
+      border-left:1px solid var(--border);
+      border-radius:14px 0 0 14px;
+      padding-left:12px;
+    }
+    .profile-main-row td:last-child{
+      border-right:1px solid var(--border);
+      border-radius:0 14px 14px 0;
+      padding-right:12px;
+    }
+    .profile-cell{display:flex;gap:10px;align-items:flex-start}
+    .profile-cell img{
+      width:42px;
+      height:42px;
+      border-radius:50%;
+      object-fit:cover;
+      border:1px solid var(--border);
+      background:#fdecd7;
+      flex-shrink:0;
+    }
+    .profile-name{
+      font-weight:800;
+      line-height:1.3;
+      overflow-wrap:normal;
+      word-break:normal;
+    }
+    .profile-cell .meta a{
+      white-space:nowrap;
+      color:var(--accent-ink);
+    }
+    .profiles-table th:nth-child(4),
+    .profiles-table th:nth-child(5),
+    .profiles-table td:nth-child(4),
+    .profiles-table td:nth-child(5){white-space:nowrap}
+
+    .metrics-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 10px}
+    .metrics-grid-wide{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px 12px}
+    .metric-item b{
+      display:block;
+      color:var(--navy);
+      font-size:12px;
+      font-weight:900;
+    }
+    .metric-item span{
+      color:var(--text-secondary);
+      font-size:11px;
+      font-weight:700;
+    }
+    .metrics-row td{
+      padding-top:6px;
+      padding-bottom:12px;
+      background:var(--surface);
+    }
+    .metrics-block{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px 12px;
+      background:var(--surface-soft);
+    }
+    .metrics-title{
+      display:block;
+      margin-bottom:8px;
+      color:var(--text-secondary);
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+    }
+    .mini-pills{display:flex;flex-wrap:wrap;gap:6px}
+    .mini-tag{
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:2px 8px;
+      background:#fff5e8;
+      color:#92400e;
+      font-size:11px;
+      font-weight:800;
+    }
+    .cost-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0 14px}
+    .cost-kpi{
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:10px 12px;
+      background:#fff9ed;
+    }
+    .cost-kpi b{
+      display:block;
+      color:var(--navy);
+      font-size:20px;
+      font-weight:900;
+      line-height:1.1;
+    }
+    .cost-kpi span{
+      display:block;
+      margin-top:4px;
+      color:var(--text-secondary);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .meta{
+      color:var(--text-secondary);
+      font-size:12px;
+      font-weight:600;
+    }
+    .reputation-strategy-ai section{margin-bottom:14px}
+    .reputation-strategy-ai section:last-child{margin-bottom:0}
+    .reputation-strategy-ai h2{
+      margin:0 0 8px;
+      color:var(--navy);
+      font-size:17px;
+      line-height:1.3;
+      letter-spacing:-0.01em;
+    }
+    .reputation-strategy-ai p{
+      margin:0 0 10px;
+      color:var(--text);
+      line-height:1.6;
+    }
+    .reputation-strategy-ai ul,
+    .reputation-strategy-ai ol{margin:6px 0 12px 20px;padding:0}
+    .reputation-strategy-ai li{margin:0 0 6px;line-height:1.5}
+    .reputation-strategy-ai li:last-child{margin-bottom:0}
+
+    @media (max-width:900px){
+      .wrap{padding:0 12px}
+      header.profile{padding:16px}
+      .top-strip{grid-template-columns:1fr}
+      .metrics-grid{grid-template-columns:1fr 1fr}
+      .metrics-grid-wide{grid-template-columns:1fr 1fr 1fr}
+      .cost-grid{grid-template-columns:1fr}
+    }
+    @media (max-width:640px){
+      .metrics-grid-wide{grid-template-columns:1fr 1fr}
+    }
+
+    @page { margin: 0; }
+    @media print{
+      html,body{background:var(--page) !important}
+      .wrap{max-width:100%;padding:0}
+      header.profile,.chip,.section{
+        break-inside:avoid;
+      }
+      .cost-kpi,.report-space,.metrics-block{
+        background:var(--surface);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-bg"></div>
+  <div class="page-padding">
+    <div class="wrap">
+      {% set audience_value = Audience if Audience is defined else audience %}
+      {% set campaign_value = campaign_type if campaign_type is defined else none %}
+
+      <header class="profile">
+        <div class="brand-logo-placeholder">Brand Placeholder.</div>
+        <div>
+          <h1 class="h1">{{ brand_name or 'Brand Name' }}</h1>
+          <div class="sub">Reputation Campaign Strategy</div>
+
+          {% if brand_urls %}
+          <div class="pills">
+            {% if brand_urls is string %}
+              {% set href = brand_urls|string %}
+              {% set domain = href.replace('https://', '').replace('http://', '').replace('www.', '').split('/')[0] %}
+              <a class="tag url-tag" href="{{ href }}" target="_blank" rel="noopener" title="{{ href }}">{{ domain or href }}</a>
+            {% else %}
+              {% for item in brand_urls %}
+                {% set href = item.url if item.url is defined else (item.href if item.href is defined else item) %}
+                {% if href %}
+                  {% set href_text = href|string %}
+                  {% set domain = href_text.replace('https://', '').replace('http://', '').replace('www.', '').split('/')[0] %}
+                  <a class="tag url-tag" href="{{ href_text }}" target="_blank" rel="noopener" title="{{ href_text }}">{{ domain or href_text }}</a>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </header>
+
+      <section class="top-strip">
+        <div class="chip">
+          <small>Brand Goal</small>
+          <div>
+            <div class="k">
+              {% if brand_goals_type is iterable and brand_goals_type is not string %}
+                {{ brand_goals_type|join(', ') }}
+              {% else %}
+                {{ brand_goals_type or 'N/A' }}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="chip">
+          <small>Audience</small>
+          <div>
+            <div class="k">
+              {% if audience_value is iterable and audience_value is not string %}
+                {{ audience_value|join(', ') }}
+              {% else %}
+                {{ audience_value or 'N/A' }}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="chip">
+          <small>Timeframe</small>
+          <div>
+            <div class="k">{{ timeframe or 'N/A' }}</div>
+          </div>
+        </div>
+
+        <div class="chip">
+          <small>Campaign Type</small>
+          <div>
+            <div class="k">
+              {% if selected_campaign_types is defined and selected_campaign_types %}
+                {{ selected_campaign_types|map(attribute='title')|join(', ') }}
+              {% elif campaign_value is iterable and campaign_value is not string %}
+                {{ campaign_value|join(', ') }}
+              {% else %}
+                {{ campaign_value or 'N/A' }}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="title">Reputation Strategy</h2>
+        <div class="report-space">
+          {% if report_main_body %}
+            {{ report_main_body | safe }}
+          {% else %}
+            <div class="meta">Espacio reservado para el cuerpo principal del reporte.</div>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="title">List of Campaign Profiles</h2>
+        {% set influencers = influencer_profiles_directory if influencer_profiles_directory is defined else influencer_profiles %}
+        {% if influencers %}
+        <table class="profiles-table">
+          <colgroup>
+            <col class="col-profile" />
+            <col class="col-biography" />
+            <col class="col-ai" />
+            <col class="col-followers" />
+            <col class="col-verified" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Profile</th>
+              <th>Biography</th>
+              <th>AI Analysis</th>
+              <th>Followers</th>
+              <th>Verified</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for influencer in influencers %}
+              <tr class="profile-main-row">
+                <td>
+                  <div class="profile-cell">
+                    <img src="{{ influencer.profile_pic_src or influencer.profile_pic_url or '' }}" alt="Avatar @{{ influencer.username }}">
+                    <div>
+                      <div class="profile-name">{{ influencer.full_name or 'N/A' }}</div>
+                      <div class="meta">
+                        <a href="https://www.instagram.com/{{ influencer.username }}/" target="_blank" rel="noopener">
+                          @{{ influencer.username }}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ influencer.biography or '-' }}</td>
+                <td>
+                  <div class="mini-pills" style="margin-bottom:6px">
+                    {% if influencer.ai_categories %}
+                      {% for category in influencer.ai_categories %}
+                        <span class="mini-tag">{{ category }}</span>
+                      {% endfor %}
+                    {% else %}
+                      <span class="meta">No categories</span>
+                    {% endif %}
+                  </div>
+                  <div class="mini-pills">
+                    {% if influencer.ai_roles %}
+                      {% for role in influencer.ai_roles %}
+                        <span class="mini-tag">{{ role }}</span>
+                      {% endfor %}
+                    {% else %}
+                      <span class="meta">No roles</span>
+                    {% endif %}
+                  </div>
+                </td>
+                <td>{{ '{:,}'.format(influencer.follower_count or 0) }}</td>
+                <td>{{ 'Yes' if influencer.is_verified else 'No' }}</td>
+              </tr>
+              <tr class="metrics-row">
+                <td colspan="5">
+                  <div class="metrics-block">
+                    <span class="metrics-title">Metrics</span>
+                    <div class="metrics-grid metrics-grid-wide">
+                    <div class="metric-item"><b>{{ '{:,}'.format(influencer.metrics.total_posts or 0) }}</b><span>Total posts</span></div>
+                    <div class="metric-item"><b>{{ '{:,}'.format(influencer.metrics.total_comments or 0) }}</b><span>Total comments</span></div>
+                    <div class="metric-item"><b>{{ '{:,}'.format(influencer.metrics.total_likes or 0) }}</b><span>Total likes</span></div>
+                    <div class="metric-item"><b>{{ '%.4f' % (influencer.metrics.avg_engagement_rate or 0) }}</b><span>Avg engagement rate</span></div>
+                    <div class="metric-item"><b>{{ '%.2f' % (influencer.metrics.hashtags_per_post or 0) }}</b><span>Hashtags per post</span></div>
+                    <div class="metric-item"><b>{{ '%.2f' % (influencer.metrics.mentions_per_post or 0) }}</b><span>Mentions per post</span></div>
+                    <div class="metric-item"><b>{{ '{:,}'.format(influencer.metrics.total_reels or 0) }}</b><span>Total reels</span></div>
+                    <div class="metric-item"><b>{{ '{:,}'.format(influencer.metrics.total_plays or 0) }}</b><span>Total plays</span></div>
+                    <div class="metric-item"><b>{{ '%.4f' % (influencer.metrics.overall_engagement_rate or 0) }}</b><span>Overall engagement rate</span></div>
+                  </div>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+          <div class="meta">No influencer data found for the selected profiles.</div>
+        {% endif %}
+      </section>
+
+      <section class="section">
+        <h2 class="title">Total Cost Analysis</h2>
+        {% if cost_analysis and cost_analysis.summary is defined %}
+        <div class="cost-grid">
+          <div class="cost-kpi">
+            <b>${{ '{:,.0f}'.format(cost_analysis.summary.total_min_mxn or 0) }}</b>
+            <span>Total Min ({{ cost_analysis.summary.currency or 'MXN' }})</span>
+          </div>
+          <div class="cost-kpi">
+            <b>${{ '{:,.0f}'.format(cost_analysis.summary.total_max_mxn or 0) }}</b>
+            <span>Total Max ({{ cost_analysis.summary.currency or 'MXN' }})</span>
+          </div>
+          <div class="cost-kpi">
+            <b>${{ '{:,.0f}'.format(cost_analysis.summary.total_average_mxn or 0) }}</b>
+            <span>Total Average ({{ cost_analysis.summary.currency or 'MXN' }})</span>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Segment</th>
+              <th>Profiles</th>
+              <th>Tier</th>
+              <th>Deliverable</th>
+              <th>Min (MXN)</th>
+              <th>Max (MXN)</th>
+              <th>Average (MXN)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in cost_analysis.summary_by_segment %}
+              <tr>
+                <td>{{ item.tier_key }}</td>
+                <td>{{ '{:,}'.format(item.profiles_count or 0) }}</td>
+                <td>{{ item.tier_label or '-' }}</td>
+                <td>{{ item.typical_deliverable or '-' }}</td>
+                <td>${{ '{:,.0f}'.format(item.segment_min_mxn or 0) }}</td>
+                <td>${{ '{:,.0f}'.format(item.segment_max_mxn or 0) }}</td>
+                <td>${{ '{:,.0f}'.format(item.segment_average_mxn or 0) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+</body>
+</html>

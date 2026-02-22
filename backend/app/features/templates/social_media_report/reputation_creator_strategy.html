@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Reputation Creator Strategy – @{{ creator_username or 'creator' }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --page:#fffdf8;
+      --page-soft:#fff9ed;
+      --surface:#ffffff;
+      --surface-soft:#f8fafc;
+      --border:#f3e8d6;
+      --text:#0f172a;
+      --text-secondary:#64748b;
+      --text-muted:#94a3b8;
+      --accent:#f5c58e;
+      --accent-strong:#e6a964;
+      --accent-ink:#b45309;
+      --navy:#18183b;
+    }
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      color:var(--text);
+      background:var(--page);
+      font-family:"Plus Jakarta Sans","Avenir Next","Segoe UI",-apple-system,BlinkMacSystemFont,sans-serif;
+      -webkit-print-color-adjust:exact;
+              print-color-adjust:exact;
+    }
+    a{color:var(--accent-ink);text-decoration:none}
+    a:hover{text-decoration:underline}
+    a,td,th{overflow-wrap:anywhere;word-break:break-word}
+
+    .page-bg{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      background:var(--page);
+    }
+    .page-padding{padding:0.5in}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 18px}
+
+    header.profile{
+      display:flex;
+      align-items:flex-start;
+      gap:16px;
+      margin:0 0 14px;
+      padding:18px 20px;
+      border:1px solid var(--border);
+      border-radius:28px;
+      background:var(--surface);
+    }
+    .creator-photo,
+    .creator-logo-placeholder{
+      width:108px;
+      height:108px;
+      border-radius:18px;
+      flex-shrink:0;
+    }
+    .creator-photo{
+      object-fit:cover;
+      border:1px solid var(--border);
+      background:#fdecd7;
+    }
+    .creator-logo-placeholder{
+      display:grid;
+      place-items:center;
+      padding:10px;
+      text-align:center;
+      line-height:1.3;
+      font-size:13px;
+      font-weight:900;
+      color:#92400e;
+      border:1px solid #f9d7ae;
+      background:#fff5e8;
+    }
+    .h1{
+      margin:0;
+      color:var(--navy);
+      font-size:30px;
+      font-weight:900;
+      letter-spacing:-0.03em;
+      line-height:1.06;
+    }
+    .sub{
+      margin-top:4px;
+      color:var(--text-secondary);
+      font-size:13px;
+      font-weight:700;
+    }
+    .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .tag{
+      display:inline-block;
+      padding:0.34rem 0.72rem;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff5e8;
+      color:#92400e;
+      font-size:12px;
+      font-weight:800;
+    }
+    .url-tag{
+      max-width:100%;
+      white-space:normal;
+      line-height:1.35;
+      text-decoration:none;
+    }
+
+    .top-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .chip{
+      min-height:96px;
+      padding:14px;
+      border:1px solid var(--border);
+      border-radius:24px;
+      background:var(--surface);
+      display:grid;
+      grid-template-rows:auto 1fr;
+      align-items:stretch;
+    }
+    .chip .k{
+      color:var(--navy);
+      font-size:16px;
+      font-weight:800;
+      line-height:1.35;
+      text-align:center;
+      overflow-wrap:anywhere;
+      word-break:break-word;
+    }
+    .chip small{
+      margin:0;
+      color:var(--text-secondary);
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      display:block;
+    }
+    .chip > div{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+    }
+
+    .section{
+      margin-top:16px;
+      padding:18px;
+      border:1px solid var(--border);
+      border-radius:28px;
+      background:var(--surface);
+    }
+    .title{
+      margin:0 0 14px;
+      color:var(--navy);
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-0.01em;
+      line-height:1.2;
+    }
+
+    .report-space{
+      min-height:420px;
+      padding:14px;
+      border:1px dashed #f9d7ae;
+      border-radius:18px;
+      background:#fff9ed;
+    }
+    .report-space a{overflow-wrap:anywhere;word-break:break-word}
+
+    .meta{
+      color:var(--text-secondary);
+      font-size:12px;
+      font-weight:600;
+    }
+    .reputation-strategy-ai section{margin-bottom:14px}
+    .reputation-strategy-ai section:last-child{margin-bottom:0}
+    .reputation-strategy-ai h2{
+      margin:0 0 8px;
+      color:var(--navy);
+      font-size:17px;
+      line-height:1.3;
+      letter-spacing:-0.01em;
+    }
+    .reputation-strategy-ai p{
+      margin:0 0 10px;
+      color:var(--text);
+      line-height:1.6;
+    }
+    .reputation-strategy-ai ul,
+    .reputation-strategy-ai ol{margin:6px 0 12px 20px;padding:0}
+    .reputation-strategy-ai li{margin:0 0 6px;line-height:1.5}
+    .reputation-strategy-ai li:last-child{margin-bottom:0}
+
+    .mini-pills{display:flex;flex-wrap:wrap;gap:6px}
+    .mini-tag{
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:2px 8px;
+      background:#fff5e8;
+      color:#92400e;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    table{width:100%;border-collapse:collapse}
+    th,td{
+      padding:11px 9px;
+      text-align:left;
+      vertical-align:top;
+      border-top:1px solid var(--border);
+    }
+    th{
+      color:var(--text-secondary);
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+    }
+    td{
+      color:var(--text);
+      font-size:13px;
+      font-weight:600;
+      line-height:1.4;
+    }
+    tbody tr:nth-child(even) td{background:rgba(248, 250, 252, 0.6)}
+
+    @media (max-width:900px){
+      .wrap{padding:0 12px}
+      header.profile{padding:16px}
+      .top-strip{grid-template-columns:1fr}
+    }
+
+    @page { margin: 0; }
+    @media print{
+      html,body{background:var(--page) !important}
+      .wrap{max-width:100%;padding:0}
+      header.profile,.chip,.section{
+        break-inside:avoid;
+      }
+      .report-space{background:var(--surface)}
+      tbody tr:nth-child(even) td{background:transparent}
+    }
+  </style>
+</head>
+<body>
+  <div class="page-bg"></div>
+  <div class="page-padding">
+    <div class="wrap">
+      {% set audience_value = Audience if Audience is defined else audience %}
+      {% set platforms_value = primary_platforms if primary_platforms is defined else none %}
+      {% set creator_links = creator_urls if creator_urls is defined and creator_urls else (creator_url if creator_url is defined else none) %}
+      {% set creator_handle = creator_username if creator_username is defined else none %}
+      {% set creator_display = creator_full_name if creator_full_name is defined else (creator_name if creator_name is defined else none) %}
+      {% set creator_photo = creator_profile_pic_url if creator_profile_pic_url is defined else (creator_photo_url if creator_photo_url is defined else none) %}
+
+      <header class="profile">
+        {% if creator_photo %}
+          <img class="creator-photo" src="{{ creator_photo }}" alt="Creator photo" />
+        {% else %}
+          <div class="creator-logo-placeholder">Creator Placeholder.</div>
+        {% endif %}
+        <div>
+          <h1 class="h1">
+            {% if creator_display %}
+              {{ creator_display }}
+            {% elif creator_handle %}
+              @{{ creator_handle }}
+            {% else %}
+              Creator
+            {% endif %}
+          </h1>
+          <div class="sub">Reputation Creator Strategy{% if creator_handle %} · @{{ creator_handle }}{% endif %}</div>
+
+          {% if creator_links %}
+          <div class="pills">
+            {% if creator_links is string %}
+              {% set href = creator_links|string %}
+              {% set domain = href.replace('https://', '').replace('http://', '').replace('www.', '').split('/')[0] %}
+              <a class="tag url-tag" href="{{ href }}" target="_blank" rel="noopener" title="{{ href }}">{{ domain or href }}</a>
+            {% else %}
+              {% for item in creator_links %}
+                {% set href = item.url if item.url is defined else (item.href if item.href is defined else item) %}
+                {% if href %}
+                  {% set href_text = href|string %}
+                  {% set domain = href_text.replace('https://', '').replace('http://', '').replace('www.', '').split('/')[0] %}
+                  <a class="tag url-tag" href="{{ href_text }}" target="_blank" rel="noopener" title="{{ href_text }}">{{ domain or href_text }}</a>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </header>
+
+      <section class="top-strip">
+        <div class="chip">
+          <small>Goal Type</small>
+          <div>
+            <div class="k">
+              {% if goal_type is iterable and goal_type is not string %}
+                {{ goal_type|join(', ') }}
+              {% else %}
+                {{ goal_type or 'N/A' }}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="chip">
+          <small>Audience</small>
+          <div>
+            <div class="k">
+              {% if audience_value is iterable and audience_value is not string %}
+                {{ audience_value|join(', ') }}
+              {% else %}
+                {{ audience_value or 'N/A' }}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="chip">
+          <small>Timeframe</small>
+          <div>
+            <div class="k">{{ timeframe or 'N/A' }}</div>
+          </div>
+        </div>
+
+        <div class="chip">
+          <small>Primary Platforms</small>
+          <div>
+            <div class="k">
+              {% if platforms_value is iterable and platforms_value is not string %}
+                {{ platforms_value|join(', ') }}
+              {% else %}
+                {{ platforms_value or 'N/A' }}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="title">Reputation Strategy</h2>
+        <div class="report-space">
+          {% if report_main_body %}
+            {{ report_main_body | safe }}
+          {% else %}
+            <div class="meta">Espacio reservado para el cuerpo principal del reporte.</div>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="title">Creator Data Snapshot</h2>
+
+        {% set metrics = current_metrics if current_metrics is defined else none %}
+        {% if metrics and metrics.items is defined %}
+          <h3 class="meta" style="font-size:13px;margin:0 0 6px">Current Metrics</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for key, value in metrics.items() %}
+                {% if key != 'creator_profile_pic_url' %}
+                <tr>
+                  <td>{{ key }}</td>
+                  <td>
+                    {% if value is sameas true %}
+                      Yes
+                    {% elif value is sameas false %}
+                      No
+                    {% elif value is integer %}
+                      {{ "{:,}".format(value) }}
+                    {% elif value is number %}
+                      {{ "{:,.4f}".format(value|float).rstrip('0').rstrip('.') }}
+                    {% elif value is iterable and value is not string %}
+                      {{ value|join(', ') }}
+                    {% else %}
+                      {{ value }}
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="meta" style="margin-bottom:12px">No current metrics were provided.</div>
+        {% endif %}
+
+        {% set signals = reputation_signals if reputation_signals is defined else none %}
+        {% if signals and signals.items is defined %}
+          <h3 class="meta" style="font-size:13px;margin:14px 0 6px">Reputation Signals</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Signal</th>
+                <th>Detail</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for key, value in signals.items() %}
+                <tr>
+                  <td>{{ key }}</td>
+                  <td>
+                    {% if value is iterable and value is not string %}
+                      {{ value|join(', ') }}
+                    {% else %}
+                      {{ value }}
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="meta" style="margin-top:8px">No explicit reputation signals were provided.</div>
+        {% endif %}
+
+        {% set collaborators = collaborators_list if collaborators_list is defined else none %}
+        <h3 class="meta" style="font-size:13px;margin:14px 0 6px">Collaborators</h3>
+        {% if collaborators %}
+          <div class="mini-pills">
+            {% for collaborator in collaborators %}
+              {% if collaborator is string %}
+                <span class="mini-tag">{{ collaborator }}</span>
+              {% else %}
+                {% set collab_name = collaborator.name if collaborator.name is defined else (collaborator.username if collaborator.username is defined else collaborator) %}
+                {% if collaborator.role is defined and collaborator.role %}
+                  <span class="mini-tag">{{ collab_name }} · {{ collaborator.role }}</span>
+                {% else %}
+                  <span class="mini-tag">{{ collab_name }}</span>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="meta">No collaborators were provided.</div>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+</body>
+</html>

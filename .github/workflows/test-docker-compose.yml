@@ -1,0 +1,42 @@
+name: Test Docker Compose
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+
+  test-docker-compose:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres_test:5432/app_test
+      POSTGRES_TEST_DB: app_test
+      POSTGRES_TEST_USER: postgres
+      POSTGRES_TEST_PASSWORD: postgres
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Prepare .env for CI
+        run: |
+          cp .env.example .env
+          printf "\nDATABASE_URL=%s\n" "${DATABASE_URL}" >> .env
+      - run: docker compose --env-file .env.example build
+      - run: docker compose --env-file .env.example down -v --remove-orphans
+      - name: Start stack
+        run: |
+          DATABASE_URL="${DATABASE_URL}" docker compose --env-file .env.example up -d --wait postgres_test backend frontend adminer || {
+            echo "Stack failed to start. Dumping service logs..."
+            DATABASE_URL="${DATABASE_URL}" docker compose --env-file .env.example logs prestart postgres_test backend --no-color
+            exit 1
+          }
+      - name: Test backend is up
+        run: curl http://localhost:8000/api/v1/health-check/
+      - name: Test frontend is up
+        run: curl http://localhost:5173
+      - run: docker compose --env-file .env.example down -v --remove-orphans

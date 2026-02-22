@@ -1,0 +1,39 @@
+name: Task
+description: Create a scoped engineering task or maintenance item.
+title: "[Task] "
+labels:
+  - internal
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: State the concrete goal of this task.
+      placeholder: What needs to be done?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Link related PRs/issues/docs and explain why this task matters now.
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: Deliverables
+      description: List expected outputs.
+      placeholder: |
+        - Code changes
+        - Tests
+        - Documentation updates
+    validations:
+      required: true
+  - type: checkboxes
+    id: completion
+    attributes:
+      label: Completion checklist
+      options:
+        - label: Tests added or updated where applicable.
+          required: false
+        - label: Documentation updated where applicable.
+          required: false
