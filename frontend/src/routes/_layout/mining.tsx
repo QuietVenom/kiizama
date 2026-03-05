@@ -1,0 +1,31 @@
+import { Box, Heading, Text } from "@chakra-ui/react"
+import { createFileRoute } from "@tanstack/react-router"
+
+import DashboardTopbar from "@/components/Dashboard/DashboardTopbar"
+
+export const Route = createFileRoute("/_layout/mining")({
+  component: MiningPage,
+})
+
+function MiningPage() {
+  return (
+    <Box minH="100vh" bg="ui.page">
+      <DashboardTopbar />
+
+      <Box px={{ base: 4, md: 7, lg: 10 }} py={{ base: 7, lg: 9 }}>
+        <Box
+          rounded="2xl"
+          borderWidth="1px"
+          borderColor="ui.sidebarBorder"
+          bg="white"
+          p={{ base: 6, md: 8 }}
+        >
+          <Heading size="lg">Mining</Heading>
+          <Text mt={3} color="ui.secondaryText">
+            This section is now available. Content will be added here soon.
+          </Text>
+        </Box>
+      </Box>
+    </Box>
+  )
+}

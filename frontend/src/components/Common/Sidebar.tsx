@@ -1,17 +1,10 @@
-import { Box, Flex, Icon, IconButton, Text } from "@chakra-ui/react"
+import { Box, Flex, Icon, IconButton, Image, Text } from "@chakra-ui/react"
 import { Link as RouterLink, useLocation } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import { FaBars } from "react-icons/fa"
-import {
-  FiBarChart2,
-  FiFileText,
-  FiHome,
-  FiLogOut,
-  FiSettings,
-  FiShield,
-  FiUsers,
-} from "react-icons/fi"
+import { FiHome, FiLogOut, FiSearch, FiSettings, FiUsers } from "react-icons/fi"
 import type { IconType } from "react-icons/lib"
+import { LuPickaxe } from "react-icons/lu"
 
 import useAuth from "@/hooks/useAuth"
 import {
@@ -23,7 +16,13 @@ import {
   DrawerTrigger,
 } from "../ui/drawer"
 
-type SidebarRoute = "/app" | "/settings" | "/admin"
+type SidebarRoute =
+  | "/app"
+  | "/mining"
+  | "/creators-search"
+  | "/brand-intelligence"
+  | "/settings"
+  | "/admin"
 
 type SidebarItem = {
   icon: IconType
@@ -35,10 +34,9 @@ type SidebarItem = {
 
 const topItems: SidebarItem[] = [
   { icon: FiHome, title: "Overview", path: "/app" },
-  { icon: FiBarChart2, title: "Analytics", placeholder: true },
-  { icon: FiUsers, title: "Creators", placeholder: true },
-  { icon: FiFileText, title: "Reports", placeholder: true },
-  { icon: FiShield, title: "Reputation", placeholder: true },
+  { icon: LuPickaxe, title: "Mining", path: "/mining" },
+  { icon: FiSearch, title: "Creators Search", path: "/creators-search" },
+  { icon: FiUsers, title: "Brand Intelligence", path: "/brand-intelligence" },
 ]
 
 const isActiveRoute = (pathname: string, route: SidebarRoute) => {
@@ -196,24 +194,14 @@ const SidebarBody = ({
       borderRightColor="ui.sidebarBorder"
     >
       <Flex px={6} py={7} alignItems="center" gap={3}>
-        <Box
-          boxSize="60px"
-          rounded="2xl"
-          bg="linear-gradient(135deg, #FB923C, #F59E0B)"
-          color="white"
-          boxShadow="0 14px 28px rgba(245, 158, 11, 0.24)"
-          display="inline-flex"
-          alignItems="center"
-          justifyContent="center"
-          fontSize="3xl"
-          fontWeight="bold"
-          fontFamily="'Merriweather', 'Times New Roman', serif"
-        >
-          K
-        </Box>
-        <Text fontSize="2xl" fontWeight="black" letterSpacing="-0.02em">
-          Kiizama
-        </Text>
+        <Image
+          src="/assets/images/noBgColor.svg"
+          alt="Kiizama logo"
+          h="14"
+          w="auto"
+          display="block"
+          transform={{ base: "translateY(-5px)", sm: "translateY(-6px)" }}
+        />
       </Flex>
 
       <Flex direction="column" gap={1} px={4} pb={4}>

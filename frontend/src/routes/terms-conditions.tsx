@@ -181,7 +181,7 @@ export const Route = createFileRoute("/terms-conditions")({
 
 function TermsConditionsPage() {
   return (
-    <InfoPageShell>
+    <InfoPageShell useSymbolHomeButton>
       <Box
         bg="white"
         borderWidth="1px"

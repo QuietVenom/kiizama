@@ -1,13 +1,19 @@
-import { Box, Container, IconButton, Stack } from "@chakra-ui/react"
+import { Box, Container, IconButton, Image, Stack } from "@chakra-ui/react"
 import { Link as RouterLink } from "@tanstack/react-router"
 import type { ReactNode } from "react"
+import SymbolLogo from "/assets/images/symbol.svg"
 
 type InfoPageShellProps = {
   children: ReactNode
   maxW?: string
+  useSymbolHomeButton?: boolean
 }
 
-const InfoPageShell = ({ children, maxW = "4xl" }: InfoPageShellProps) => {
+const InfoPageShell = ({
+  children,
+  maxW = "4xl",
+  useSymbolHomeButton = false,
+}: InfoPageShellProps) => {
   return (
     <Box
       minH="100vh"
@@ -60,7 +66,11 @@ const InfoPageShell = ({ children, maxW = "4xl" }: InfoPageShellProps) => {
               boxShadow="sm"
               _hover={{ bg: "orange.50" }}
             >
-              K
+              {useSymbolHomeButton ? (
+                <Image src={SymbolLogo} alt="Kiizama symbol" boxSize="5" />
+              ) : (
+                "K"
+              )}
             </IconButton>
           </RouterLink>
 

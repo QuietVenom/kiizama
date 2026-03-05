@@ -1,5 +1,5 @@
-import { Box, Flex, Icon, IconButton, Input, Text } from "@chakra-ui/react"
-import { FiBell, FiCalendar, FiSearch } from "react-icons/fi"
+import { Box, Flex, Icon, IconButton, Text } from "@chakra-ui/react"
+import { FiBell, FiCalendar } from "react-icons/fi"
 
 const formatToday = () =>
   new Intl.DateTimeFormat("es-MX", {
@@ -14,7 +14,7 @@ const DashboardTopbar = () => {
     <Flex
       as="header"
       alignItems="center"
-      justifyContent="space-between"
+      justifyContent="flex-end"
       gap={4}
       borderBottomWidth="1px"
       borderBottomColor="ui.sidebarBorder"
@@ -26,45 +26,7 @@ const DashboardTopbar = () => {
       top={0}
       zIndex={5}
     >
-      <Box
-        position="relative"
-        flex={1}
-        maxW={{ base: "full", lg: "560px" }}
-        ms={{ base: 0, md: 4, lg: 6 }}
-      >
-        <Icon
-          as={FiSearch}
-          color="ui.secondaryText"
-          boxSize={4}
-          position="absolute"
-          left={3.5}
-          top="50%"
-          transform="translateY(-50%)"
-          zIndex={1}
-          pointerEvents="none"
-        />
-        <Input
-          placeholder="Search creators, reports..."
-          bg="ui.surfaceSoft"
-          borderWidth="1px"
-          borderColor="ui.sidebarBorder"
-          rounded="full"
-          h="50px"
-          ps={11}
-          pe={5}
-          fontSize={{ base: "sm", lg: "md" }}
-          fontWeight="medium"
-          color="ui.secondaryText"
-          _placeholder={{ color: "ui.mutedText" }}
-          _focusVisible={{
-            borderColor: "orange.300",
-            boxShadow: "0 0 0 3px rgba(251, 146, 60, 0.14)",
-            bg: "white",
-          }}
-        />
-      </Box>
-
-      <Flex alignItems="center" display={{ base: "none", md: "flex" }} gap={3}>
+      <Flex alignItems="center" gap={3}>
         <IconButton
           aria-label="Notifications"
           variant="ghost"
@@ -94,7 +56,7 @@ const DashboardTopbar = () => {
         <Box h={8} w="1px" bg="ui.sidebarBorder" />
 
         <Flex alignItems="center" gap={3}>
-          <Box textAlign="right">
+          <Box textAlign="right" display={{ base: "none", sm: "block" }}>
             <Text
               fontSize="xs"
               color="ui.mutedText"

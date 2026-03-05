@@ -13,7 +13,7 @@ function CookieNoticePage() {
   }, [])
 
   return (
-    <InfoPageShell maxW="7xl">
+    <InfoPageShell maxW="7xl" useSymbolHomeButton>
       <Box
         bg="white"
         borderWidth="1px"

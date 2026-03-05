@@ -29,7 +29,8 @@ import {
   getWwwUrl,
   passwordRules,
 } from "@/utils"
-import Logo from "/assets/images/temp-kiizama-logo.png"
+import Logo from "/assets/images/noBgColor.svg"
+import SymbolLogo from "/assets/images/symbol.svg"
 
 const FORM_CONTAINER_MAX_W = { base: "md", md: "3xl" } as const
 const FORM_CARD_MIN_H = { base: "auto", md: "560px" } as const
@@ -133,7 +134,7 @@ function SignUp() {
           boxShadow="sm"
           _hover={{ bg: "orange.50" }}
         >
-          K
+          <Image src={SymbolLogo} alt="Kiizama symbol" boxSize="5" />
         </IconButton>
       </ChakraLink>
       <Container
@@ -164,7 +165,7 @@ function SignUp() {
             src={Logo}
             alt="Kiizama logo"
             height="auto"
-            w={{ base: "92px", md: "104px" }}
+            w={{ base: "368px", md: "416px" }}
             objectFit="contain"
             alignSelf="center"
             mb={4}

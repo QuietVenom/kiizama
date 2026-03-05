@@ -1,10 +1,10 @@
 import { Box, Grid, Text } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
-import { FiFileText, FiShield, FiTrendingUp, FiUserCheck } from "react-icons/fi"
+import { FiFileText, FiShield, FiUserCheck } from "react-icons/fi"
 
 import DashboardTopbar from "@/components/Dashboard/DashboardTopbar"
 import MetricCard from "@/components/Dashboard/MetricCard"
-import RecentProfileAnalysisCard from "@/components/Dashboard/RecentProfileAnalysisCard"
+import RecentReportsCard from "@/components/Dashboard/RecentReportsCard"
 import StrategicInsightCard from "@/components/Dashboard/StrategicInsightCard"
 import useAuth from "@/hooks/useAuth"
 
@@ -54,40 +54,36 @@ function Home() {
         >
           <MetricCard
             icon={FiUserCheck}
-            label="Total Creators"
-            value="1,284"
-            trend="+12%"
+            label="Profile Mining: Total Credits"
+            value="50 / 50"
             iconBg="#DBEAFE"
             iconColor="#2563EB"
           />
           <MetricCard
             icon={FiFileText}
-            label="Active Reports"
-            value="42"
-            trend="+5"
+            label="Creator Report: Social Media Reports"
+            value="20 / 20"
             iconBg="#F3E8FF"
             iconColor="#9333EA"
           />
           <MetricCard
             icon={FiShield}
-            label="Avg. Reputation"
-            value="84/100"
-            trend="+2%"
+            label="Reputation Campaign Strategy: Created Reports"
+            value="3 / 3"
             iconBg="#D1FAE5"
             iconColor="#059669"
           />
           <MetricCard
-            icon={FiTrendingUp}
-            label="Trend Index"
-            value="9.2"
-            trend="Rising"
-            iconBg="#FEF3C7"
-            iconColor="#EA580C"
+            icon={FiShield}
+            label="Reputation Creator Strategy: Created Reports"
+            value="3 / 3"
+            iconBg="#F3E8FF"
+            iconColor="#9333EA"
           />
         </Grid>
 
         <Grid templateColumns={{ base: "1fr", xl: "1.6fr 1fr" }} gap={6}>
-          <RecentProfileAnalysisCard />
+          <RecentReportsCard />
           <StrategicInsightCard />
         </Grid>
       </Box>

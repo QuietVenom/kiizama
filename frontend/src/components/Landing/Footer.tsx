@@ -86,28 +86,17 @@ const Footer = (_props: FooterProps) => {
           >
             <Stack gap={7} align="flex-start">
               <HStack gap={3}>
-                <Box
-                  boxSize="10"
-                  rounded="full"
-                  bg="linear-gradient(135deg, #FB923C, #F59E0B)"
-                  color="white"
-                  fontWeight="bold"
-                  fontSize="lg"
-                  display="inline-flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  boxShadow="0 10px 24px rgba(245, 158, 11, 0.28)"
-                >
-                  K
-                </Box>
-                <Text
-                  fontSize={{ base: "2xl", md: "3xl" }}
-                  fontWeight="bold"
-                  letterSpacing="-0.02em"
-                  fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
-                >
-                  Kiizama
-                </Text>
+                <chakra.img
+                  src="/assets/images/noBgWhite.svg"
+                  alt="Kiizama logo"
+                  h={{ base: "10", md: "20" }}
+                  w="auto"
+                  display="block"
+                  transform={{
+                    base: "translateY(-5px)",
+                    md: "translateY(-10px)",
+                  }}
+                />
               </HStack>
 
               <Text color="whiteAlpha.700" maxW="xs" lineHeight="1.8">

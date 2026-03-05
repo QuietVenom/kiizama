@@ -4,8 +4,8 @@ import {
   Container,
   HStack,
   IconButton,
+  Image,
   Stack,
-  Text,
 } from "@chakra-ui/react"
 import { Link } from "@tanstack/react-router"
 import type { RefObject } from "react"
@@ -91,34 +91,19 @@ const LandingNavbar = ({
             href="/"
             aria-label="Refresh landing page"
             _hover={{ textDecoration: "none" }}
+            display="inline-flex"
+            alignItems="center"
             justifySelf="start"
           >
-            <HStack gap={3}>
-              <Box
-                boxSize="10"
-                rounded="full"
-                bg="white"
-                color="orange.500"
-                borderWidth="1px"
-                borderColor="orange.100"
-                display="inline-flex"
-                alignItems="center"
-                justifyContent="center"
-                boxShadow="sm"
-                fontWeight="bold"
-                fontSize="lg"
-              >
-                K
-              </Box>
-              <Text
-                display={{ base: "none", sm: "block" }}
-                fontWeight="bold"
-                fontSize="lg"
-                color="gray.800"
-                letterSpacing="-0.02em"
-              >
-                Kiizama
-              </Text>
+            <HStack gap={3} align="center">
+              <Image
+                src="/assets/images/noBgColor.svg"
+                alt="Kiizama logo"
+                h={{ base: "10", sm: "12" }}
+                w="auto"
+                display="block"
+                transform={{ base: "translateY(-5px)", sm: "translateY(-6px)" }}
+              />
             </HStack>
           </ChakraLink>
 

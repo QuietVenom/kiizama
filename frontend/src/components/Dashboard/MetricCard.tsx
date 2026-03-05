@@ -5,7 +5,6 @@ type MetricCardProps = {
   icon: IconType
   label: string
   value: string
-  trend: string
   iconBg: string
   iconColor: string
 }
@@ -14,10 +13,13 @@ const MetricCard = ({
   icon,
   label,
   value,
-  trend,
   iconBg,
   iconColor,
 }: MetricCardProps) => {
+  const [titlePart, ...labelParts] = label.split(":")
+  const title = titlePart.trim()
+  const displayLabel = labelParts.join(":").trim() || label
+
   return (
     <Box
       bg="white"
@@ -34,7 +36,17 @@ const MetricCard = ({
         boxShadow: "0 14px 30px rgba(15, 23, 42, 0.08)",
       }}
     >
-      <Flex alignItems="center" justifyContent="space-between" mb={5}>
+      <Text
+        fontSize="sm"
+        color="ui.mutedText"
+        fontWeight="bold"
+        letterSpacing="0.04em"
+        mb={3}
+      >
+        {title}
+      </Text>
+
+      <Flex alignItems="center" gap={3} mb={5}>
         <Flex
           boxSize="14"
           rounded="2xl"
@@ -46,30 +58,19 @@ const MetricCard = ({
           <Icon as={icon} boxSize={7} />
         </Flex>
         <Text
-          px={4}
-          py={1.5}
-          rounded="full"
-          bg="ui.surfaceSoft"
+          fontSize={{ base: "md", lg: "lg" }}
           color="ui.secondaryText"
-          fontSize="sm"
-          lineHeight="1"
           fontWeight="bold"
+          maxW="30ch"
         >
-          {trend}
+          {displayLabel}
         </Text>
       </Flex>
-
       <Text
-        fontSize={{ base: "md", lg: "lg" }}
-        color="ui.secondaryText"
-        textTransform="uppercase"
-        letterSpacing="0.06em"
-        fontWeight="bold"
-        maxW="20ch"
+        fontSize={{ base: "2xl", lg: "3xl" }}
+        fontWeight="black"
+        textAlign="center"
       >
-        {label}
-      </Text>
-      <Text mt={2} fontSize={{ base: "2xl", lg: "3xl" }} fontWeight="black">
         {value}
       </Text>
     </Box>

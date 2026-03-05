@@ -22,7 +22,8 @@ import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
 import { PasswordInput } from "@/components/ui/password-input"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
-import Logo from "/assets/images/temp-kiizama-logo.png"
+import Logo from "/assets/images/noBgColor.svg"
+import SymbolLogo from "/assets/images/symbol.svg"
 import { emailPattern, getWwwUrl, passwordRules } from "../utils"
 
 const FORM_CONTAINER_MAX_W = { base: "md", md: "3xl" } as const
@@ -116,7 +117,7 @@ function Login() {
           boxShadow="sm"
           _hover={{ bg: "orange.50" }}
         >
-          K
+          <Image src={SymbolLogo} alt="Kiizama symbol" boxSize="5" />
         </IconButton>
       </ChakraLink>
 
@@ -148,7 +149,7 @@ function Login() {
             src={Logo}
             alt="Kiizama logo"
             height="auto"
-            w={{ base: "92px", md: "104px" }}
+            w={{ base: "368px", md: "416px" }}
             objectFit="contain"
             alignSelf="center"
             mb={4}

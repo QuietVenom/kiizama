@@ -128,7 +128,7 @@ export const Route = createFileRoute("/privacy")({
 
 function PrivacyPage() {
   return (
-    <InfoPageShell>
+    <InfoPageShell useSymbolHomeButton>
       <Box
         bg="white"
         borderWidth="1px"

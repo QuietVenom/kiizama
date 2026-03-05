@@ -8,7 +8,7 @@ export const Route = createFileRoute("/security")({
 
 function SecurityPage() {
   return (
-    <InfoPageShell>
+    <InfoPageShell useSymbolHomeButton>
       <Box
         bg="white"
         borderWidth="1px"
