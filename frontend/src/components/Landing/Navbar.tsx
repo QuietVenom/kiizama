@@ -1,17 +1,21 @@
 import {
   Box,
   Link as ChakraLink,
+  ClientOnly,
   Container,
   HStack,
   IconButton,
+  Skeleton,
   Stack,
-  Text,
 } from "@chakra-ui/react"
 import { Link } from "@tanstack/react-router"
 import type { RefObject } from "react"
 import { useState } from "react"
+import { CiDark, CiLight } from "react-icons/ci"
 import { FiMenu, FiX } from "react-icons/fi"
+import ThemeLogo from "@/components/Common/ThemeLogo"
 import { Button } from "@/components/ui/button"
+import { useColorMode } from "@/components/ui/color-mode"
 import { getAppUrl } from "@/utils"
 
 type SectionKey = "home" | "features" | "pricing" | "faq"
@@ -40,6 +44,32 @@ const scrollToSection = (
   const sectionTop = section.getBoundingClientRect().top + window.scrollY
   const top = Math.max(0, sectionTop - headerOffset - 4)
   window.scrollTo({ top, behavior: "smooth" })
+}
+
+const LandingThemeToggleButton = () => {
+  const { colorMode, toggleColorMode } = useColorMode()
+  const isDarkMode = colorMode === "dark"
+
+  return (
+    <ClientOnly fallback={<Skeleton boxSize="10" rounded="full" />}>
+      <IconButton
+        aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+        onClick={toggleColorMode}
+        variant="ghost"
+        rounded="full"
+        boxSize="10"
+        bg="ui.panel"
+        color="ui.text"
+        borderWidth="1px"
+        borderColor="ui.border"
+        _hover={{ bg: "ui.panelAlt", color: "ui.link" }}
+      >
+        <Box as="span" display="inline-flex" fontSize="1.35rem">
+          {isDarkMode ? <CiLight /> : <CiDark />}
+        </Box>
+      </IconButton>
+    </ClientOnly>
+  )
 }
 
 type LandingNavbarProps = {
@@ -74,10 +104,7 @@ const LandingNavbar = ({
       position="sticky"
       top={0}
       zIndex="docked"
-      bg="rgba(255, 255, 255, 0.84)"
-      borderBottomWidth="1px"
-      borderBottomColor="orange.100"
-      backdropFilter="blur(12px)"
+      layerStyle="navbarGlass"
     >
       <Container maxW="full" py={4} px={{ base: 4, md: 8, lg: 12 }}>
         <Box
@@ -91,34 +118,17 @@ const LandingNavbar = ({
             href="/"
             aria-label="Refresh landing page"
             _hover={{ textDecoration: "none" }}
+            display="inline-flex"
+            alignItems="center"
             justifySelf="start"
           >
-            <HStack gap={3}>
-              <Box
-                boxSize="10"
-                rounded="full"
-                bg="white"
-                color="orange.500"
-                borderWidth="1px"
-                borderColor="orange.100"
-                display="inline-flex"
-                alignItems="center"
-                justifyContent="center"
-                boxShadow="sm"
-                fontWeight="bold"
-                fontSize="lg"
-              >
-                K
-              </Box>
-              <Text
-                display={{ base: "none", sm: "block" }}
-                fontWeight="bold"
-                fontSize="lg"
-                color="gray.800"
-                letterSpacing="-0.02em"
-              >
-                Kiizama
-              </Text>
+            <HStack gap={3} align="center">
+              <ThemeLogo
+                h={{ base: "10", sm: "12" }}
+                w="auto"
+                display="block"
+                transform={{ base: "translateY(-5px)", sm: "translateY(-6px)" }}
+              />
             </HStack>
           </ChakraLink>
 
@@ -131,12 +141,12 @@ const LandingNavbar = ({
               <Button
                 key={link.key}
                 variant="ghost"
-                color={link.key === "home" ? "gray.900" : "gray.600"}
+                color={link.key === "home" ? "ui.text" : "ui.secondaryText"}
                 fontWeight={link.key === "home" ? "semibold" : "medium"}
                 fontSize="sm"
                 px={3}
                 h={10}
-                _hover={{ color: "orange.500", bg: "transparent" }}
+                _hover={{ color: "ui.link", bg: "transparent" }}
                 onClick={() =>
                   scrollToSection(sectionRefs[link.key], navbarRef)
                 }
@@ -151,12 +161,13 @@ const LandingNavbar = ({
             justifySelf={{ base: "auto", md: "end" }}
             display={{ base: "none", md: "flex" }}
           >
+            <LandingThemeToggleButton />
             <ChakraLink href={loginUrl} _hover={{ textDecoration: "none" }}>
               <Button
                 variant="ghost"
-                color="gray.600"
+                color="ui.secondaryText"
                 fontWeight="semibold"
-                _hover={{ bg: "transparent", color: "gray.900" }}
+                _hover={{ bg: "transparent", color: "ui.text" }}
               >
                 Log In
               </Button>
@@ -167,9 +178,9 @@ const LandingNavbar = ({
                   rounded="full"
                   px={6}
                   h={11}
-                  bg="gray.900"
-                  color="white"
-                  _hover={{ bg: "gray.800" }}
+                  bg="ui.text"
+                  color="ui.panel"
+                  _hover={{ bg: "ui.panelInverse" }}
                 >
                   Waiting List
                 </Button>
@@ -180,9 +191,9 @@ const LandingNavbar = ({
                   rounded="full"
                   px={6}
                   h={11}
-                  bg="gray.900"
-                  color="white"
-                  _hover={{ bg: "gray.800" }}
+                  bg="ui.text"
+                  color="ui.panel"
+                  _hover={{ bg: "ui.panelInverse" }}
                 >
                   Sign Up
                 </Button>
@@ -194,7 +205,7 @@ const LandingNavbar = ({
             display={{ base: "inline-flex", md: "none" }}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             variant="ghost"
-            color="gray.800"
+            color="ui.text"
             onClick={() => setMobileMenuOpen((open) => !open)}
           >
             <Box position="relative" boxSize="5">
@@ -238,10 +249,10 @@ const LandingNavbar = ({
           display={{ base: "block", md: "none" }}
           mt={mobileMenuOpen ? 3 : 0}
           borderWidth={mobileMenuOpen ? "1px" : "0"}
-          borderColor="orange.100"
+          borderColor={mobileMenuOpen ? "ui.border" : "transparent"}
           rounded="2xl"
-          bg="white"
-          boxShadow={mobileMenuOpen ? "lg" : "none"}
+          bg="ui.panel"
+          boxShadow={mobileMenuOpen ? "ui.panelSm" : "none"}
           overflow="hidden"
           maxH={mobileMenuOpen ? "420px" : "0px"}
           opacity={mobileMenuOpen ? 1 : 0}
@@ -258,14 +269,22 @@ const LandingNavbar = ({
                 borderRadius={0}
                 h="12"
                 borderBottomWidth="1px"
-                borderBottomColor="orange.100"
-                color={link.key === "home" ? "gray.900" : "gray.600"}
+                borderBottomColor="ui.border"
+                color={link.key === "home" ? "ui.text" : "ui.secondaryText"}
                 fontWeight={link.key === "home" ? "semibold" : "medium"}
                 onClick={() => handleSectionClick(link.key)}
               >
                 {link.label}
               </Button>
             ))}
+            <Box
+              px={3}
+              py={3}
+              borderBottomWidth="1px"
+              borderBottomColor="ui.border"
+            >
+              <LandingThemeToggleButton />
+            </Box>
             <ChakraLink
               href={loginUrl}
               onClick={() => setMobileMenuOpen(false)}
@@ -277,9 +296,9 @@ const LandingNavbar = ({
                 borderRadius={0}
                 h="12"
                 w="full"
-                color="gray.600"
+                color="ui.secondaryText"
                 borderBottomWidth="1px"
-                borderBottomColor="orange.100"
+                borderBottomColor="ui.border"
               >
                 Log In
               </Button>
@@ -294,9 +313,9 @@ const LandingNavbar = ({
                     w="full"
                     h={11}
                     rounded="xl"
-                    bg="gray.900"
-                    color="white"
-                    _hover={{ bg: "gray.800" }}
+                    bg="ui.text"
+                    color="ui.panel"
+                    _hover={{ bg: "ui.panelInverse" }}
                   >
                     Waiting List
                   </Button>
@@ -307,9 +326,9 @@ const LandingNavbar = ({
                     w="full"
                     h={11}
                     rounded="xl"
-                    bg="gray.900"
-                    color="white"
-                    _hover={{ bg: "gray.800" }}
+                    bg="ui.text"
+                    color="ui.panel"
+                    _hover={{ bg: "ui.panelInverse" }}
                   >
                     Sign Up
                   </Button>

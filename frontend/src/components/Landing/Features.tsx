@@ -31,9 +31,17 @@ type Feature = {
   icon: IconType
   title: string
   description: string
-  iconBg: string
-  iconColor: string
+  tone: "info" | "accent" | "brand" | "rose" | "success" | "neutral"
 }
+
+const featureToneStyles = {
+  info: { bg: "ui.infoSoft", color: "ui.infoText" },
+  accent: { bg: "ui.accentSoft", color: "ui.accentText" },
+  brand: { bg: "ui.brandSoft", color: "ui.brandText" },
+  rose: { bg: "ui.roseSoft", color: "ui.roseText" },
+  success: { bg: "ui.successSoft", color: "ui.successText" },
+  neutral: { bg: "ui.panelAlt", color: "ui.neutralText" },
+} as const
 
 const features: Feature[] = [
   {
@@ -41,48 +49,42 @@ const features: Feature[] = [
     title: "Instagram Data Capture",
     description:
       "Collect profile snapshots, posts, reels, and key engagement fields seamlessly in one automated workflow.",
-    iconBg: "blue.50",
-    iconColor: "blue.500",
+    tone: "info",
   },
   {
     icon: FiClipboard,
     title: "AI Profile Classification",
     description:
       "Classify creators by nuanced categories and roles to accelerate shortlist quality and targeting precision.",
-    iconBg: "purple.50",
-    iconColor: "purple.500",
+    tone: "accent",
   },
   {
     icon: FiBarChart2,
     title: "Performance Reports",
     description:
       "Generate downloadable HTML and PDF outputs from stored Instagram snapshots and historical metrics.",
-    iconBg: "orange.50",
-    iconColor: "orange.500",
+    tone: "brand",
   },
   {
     icon: MdCampaign,
     title: "Campaign Strategy",
     description:
       "Build brand-level strategy inputs leveraging audience demographics, goals, and custom creator sets.",
-    iconBg: "pink.50",
-    iconColor: "pink.500",
+    tone: "rose",
   },
   {
     icon: GiGrowth,
     title: "Creator Strategy",
     description:
       "Generate creator-specific strategy outputs grounded on profile context, performance, and reputation signals.",
-    iconBg: "green.50",
-    iconColor: "green.500",
+    tone: "success",
   },
   {
     icon: HiMiniQueueList,
     title: "Async Jobs & Persistence",
     description:
       "Run heavy scrape jobs with status tracking, retries, and durable storage across profile collections.",
-    iconBg: "gray.100",
-    iconColor: "gray.700",
+    tone: "neutral",
   },
 ]
 
@@ -102,19 +104,12 @@ const Features = ({ sectionRef }: FeaturesProps) => {
       py={{ base: 20, md: 24, lg: 28 }}
       overflow="hidden"
     >
-      <Box
-        position="absolute"
-        inset={0}
-        bgImage="radial-gradient(circle, rgba(148, 163, 184, 0.22) 1px, transparent 1px)"
-        bgSize="24px 24px"
-        opacity={0.5}
-        pointerEvents="none"
-      />
+      <Box position="absolute" inset={0} layerStyle="sectionPattern" />
 
       <Container maxW="7xl" position="relative">
         <Stack textAlign="center" gap={4} mb={16} maxW="3xl" mx="auto">
           <Text
-            color="orange.500"
+            color="ui.link"
             textTransform="uppercase"
             fontWeight="bold"
             letterSpacing="0.12em"
@@ -124,78 +119,78 @@ const Features = ({ sectionRef }: FeaturesProps) => {
             justifyContent="center"
             gap={3}
           >
-            <Box as="span" h="1px" w="8" bg="orange.300" />
+            <Box as="span" h="1px" w="8" bg="ui.mainHover" />
             Core Capabilities
-            <Box as="span" h="1px" w="8" bg="orange.300" />
+            <Box as="span" h="1px" w="8" bg="ui.mainHover" />
           </Text>
           <Heading
             size={{ base: "2xl", md: "3xl", lg: "4xl" }}
-            color="gray.900"
+            color="ui.text"
             letterSpacing="-0.02em"
             lineHeight={1.15}
             fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
           >
             Workflows designed for intelligence at scale
           </Heading>
-          <Text color="gray.500" fontSize={{ base: "md", md: "lg" }}>
+          <Text color="ui.secondaryText" fontSize={{ base: "md", md: "lg" }}>
             Designed for teams that need operational social data, AI enrichment,
             and strategy-ready outputs in one unified platform.
           </Text>
         </Stack>
 
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={7}>
-          {features.map((feature, index) => (
-            <Box
-              key={feature.title}
-              bg="white"
-              borderWidth="1px"
-              borderColor="gray.100"
-              rounded="3xl"
-              p={{ base: 6, md: 7 }}
-              boxShadow="sm"
-              transition="transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease"
-              _hover={{
-                transform: "translateY(-4px)",
-                boxShadow: "lg",
-                borderColor: "orange.100",
-                "& [data-feature-icon]": {
-                  transform: "scale(1.08) rotate(-4deg)",
-                },
-              }}
-              animation={`${fadeInUp} 560ms ease`}
-              animationDelay={`${index * 90}ms`}
-              animationFillMode="both"
-            >
-              <Box
-                data-feature-icon="true"
-                h={14}
-                w={14}
-                rounded="2xl"
-                bg={feature.iconBg}
-                color={feature.iconColor}
-                display="inline-flex"
-                alignItems="center"
-                justifyContent="center"
-                mb={6}
-                transition="transform 220ms ease"
-                transformOrigin="center"
-              >
-                <Icon as={feature.icon} boxSize={6} />
-              </Box>
+          {features.map((feature, index) => {
+            const toneStyle = featureToneStyles[feature.tone]
 
-              <Heading
-                size="md"
-                mb={3}
-                color="gray.900"
-                fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
+            return (
+              <Box
+                key={feature.title}
+                layerStyle="landingCard"
+                p={{ base: 6, md: 7 }}
+                transition="transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease"
+                _hover={{
+                  transform: "translateY(-4px)",
+                  boxShadow: "ui.cardHover",
+                  borderColor: "ui.brandBorderSoft",
+                  "& [data-feature-icon]": {
+                    transform: "scale(1.08) rotate(-4deg)",
+                  },
+                }}
+                animation={`${fadeInUp} 560ms ease`}
+                animationDelay={`${index * 90}ms`}
+                animationFillMode="both"
               >
-                {feature.title}
-              </Heading>
-              <Text color="gray.500" lineHeight="1.75">
-                {feature.description}
-              </Text>
-            </Box>
-          ))}
+                <Box
+                  data-feature-icon="true"
+                  h={14}
+                  w={14}
+                  rounded="2xl"
+                  bg={toneStyle.bg}
+                  color={toneStyle.color}
+                  display="inline-flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  mb={6}
+                  transition="transform 220ms ease"
+                  transformOrigin="center"
+                >
+                  <Icon as={feature.icon} boxSize={6} />
+                </Box>
+
+                <Heading
+                  size="md"
+                  mb={3}
+                  color="ui.text"
+                  fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
+                >
+                  {feature.title}
+                </Heading>
+                <Text color="ui.secondaryText" lineHeight="1.75">
+                  {feature.description}
+                </Text>
+              </Box>
+            )
+          })}
         </SimpleGrid>
       </Container>
     </Box>

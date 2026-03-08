@@ -13,17 +13,24 @@ import {
 import { ensureCookieConsentSaved } from "@/hooks/useCookieConsent"
 import { handleError } from "@/utils"
 
+const CURRENT_USER_STALE_TIME_MS = 5 * 60 * 1000
+
 const isLoggedIn = () => {
   return localStorage.getItem("access_token") !== null
+}
+
+const currentUserQueryOptions = {
+  queryKey: ["currentUser"] as const,
+  queryFn: UsersService.readUserMe,
+  staleTime: CURRENT_USER_STALE_TIME_MS,
 }
 
 const useAuth = () => {
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data: user } = useQuery<UserPublic | null, Error>({
-    queryKey: ["currentUser"],
-    queryFn: UsersService.readUserMe,
+  const { data: user } = useQuery<UserPublic, Error>({
+    ...currentUserQueryOptions,
     enabled: isLoggedIn(),
   })
 
@@ -77,4 +84,5 @@ const useAuth = () => {
 }
 
 export { isLoggedIn }
+export { currentUserQueryOptions }
 export default useAuth

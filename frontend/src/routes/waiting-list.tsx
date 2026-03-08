@@ -18,13 +18,14 @@ import { FiMail } from "react-icons/fi"
 
 import { OpenAPI } from "@/client"
 import InsightCard from "@/components/Common/InsightCard"
+import ThemeLogo from "@/components/Common/ThemeLogo"
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
 import { isLoggedIn } from "@/hooks/useAuth"
 import useCustomToast from "@/hooks/useCustomToast"
 import { emailPattern } from "@/utils"
-import Logo from "/assets/images/temp-kiizama-logo.png"
+import SymbolLogo from "/assets/images/symbol.svg"
 
 const FORM_CONTAINER_MAX_W = { base: "md", md: "3xl" } as const
 const FORM_CARD_MIN_H = { base: "auto", md: "560px" } as const
@@ -137,7 +138,7 @@ function WaitingList() {
       minH="100vh"
       position="relative"
       overflow="hidden"
-      bgGradient="linear(to-b, #FFFDF8, #FFF9ED 48%, white)"
+      layerStyle="publicPage"
     >
       <Box
         position="absolute"
@@ -145,10 +146,7 @@ function WaitingList() {
         right="-20"
         w={{ base: "64", md: "88" }}
         h={{ base: "64", md: "88" }}
-        rounded="full"
-        bg="orange.100"
-        opacity={0.5}
-        filter="blur(100px)"
+        layerStyle="publicGlowPrimary"
       />
       <Box
         position="absolute"
@@ -156,29 +154,25 @@ function WaitingList() {
         left="-20"
         w={{ base: "52", md: "68" }}
         h={{ base: "52", md: "68" }}
-        rounded="full"
-        bg="orange.50"
-        opacity={0.8}
-        filter="blur(90px)"
+        layerStyle="publicGlowSecondary"
       />
 
-      <RouterLink
-        to="/"
-        style={{ position: "fixed", top: "1rem", right: "1rem", zIndex: 20 }}
-      >
-        <IconButton
-          aria-label="Go to landing page"
-          bg="white"
-          color="orange.500"
-          borderWidth="1px"
-          borderColor="orange.100"
-          rounded="full"
-          boxShadow="sm"
-          _hover={{ bg: "orange.50" }}
-        >
-          K
-        </IconButton>
-      </RouterLink>
+      <Box position="fixed" top="1rem" right="1rem" zIndex={20}>
+        <RouterLink to="/">
+          <IconButton
+            aria-label="Go to landing page"
+            bg="ui.panel"
+            color="ui.brandText"
+            borderWidth="1px"
+            borderColor="ui.brandBorderSoft"
+            rounded="full"
+            boxShadow="ui.panelSm"
+            _hover={{ bg: "ui.brandSoft" }}
+          >
+            <Image src={SymbolLogo} alt="Kiizama symbol" boxSize="5" />
+          </IconButton>
+        </RouterLink>
+      </Box>
       <Container
         minH="100vh"
         maxW={FORM_CONTAINER_MAX_W}
@@ -201,14 +195,10 @@ function WaitingList() {
           overflow="hidden"
           gap={4}
           rounded="3xl"
-          borderColor="gray.100"
-          boxShadow="0 16px 34px rgba(15, 23, 42, 0.06)"
         >
-          <Image
-            src={Logo}
-            alt="Kiizama logo"
+          <ThemeLogo
             height="auto"
-            w={{ base: "92px", md: "104px" }}
+            w={{ base: "368px", md: "416px" }}
             objectFit="contain"
             alignSelf="center"
             mb={4}
@@ -234,13 +224,13 @@ function WaitingList() {
               minW={0}
               maxW="100%"
               borderWidth="1px"
-              borderColor={errors.interest ? "red.500" : "blackAlpha.200"}
+              borderColor={errors.interest ? "ui.danger" : "ui.borderSoft"}
               borderRadius="md"
               h="10"
               px={3}
               pr={10}
-              bg="white"
-              color="gray.800"
+              bg="ui.panel"
+              color="ui.text"
               fontSize={{ base: "sm", md: "md" }}
               overflow="hidden"
               textOverflow="ellipsis"
@@ -280,7 +270,7 @@ function WaitingList() {
           <Button
             w={WAITING_LIST_CONTROL_W}
             maxW="100%"
-            variant="solid"
+            layerStyle="brandGradientButton"
             type="submit"
             loading={isSubmitting || waitingListMutation.isPending}
           >

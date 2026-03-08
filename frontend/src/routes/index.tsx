@@ -43,7 +43,7 @@ function LandingPage() {
   }
 
   return (
-    <Box bg="white" minH="100vh">
+    <Box bg="ui.page" minH="100vh">
       <LandingNavbar
         isWaitingListEnabled={isWaitingListEnabled}
         navbarRef={navbarRef}

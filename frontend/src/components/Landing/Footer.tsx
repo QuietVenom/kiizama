@@ -31,11 +31,11 @@ type FooterProps = {
 }
 
 const footerLinkStyles = {
-  color: "whiteAlpha.700",
+  color: "ui.inverseMutedText",
   fontWeight: "medium",
   transition: "color 180ms ease",
   _hover: {
-    color: "orange.300",
+    color: "ui.main",
     textDecoration: "none",
   },
 }
@@ -57,7 +57,7 @@ const Footer = (_props: FooterProps) => {
       <Box
         as="footer"
         bg="ui.footer"
-        color="white"
+        color="ui.textInverse"
         pt={{ base: 16, md: 20 }}
         pb={{ base: 10, md: 12 }}
         position="relative"
@@ -70,7 +70,7 @@ const Footer = (_props: FooterProps) => {
           transform="translateX(-50%)"
           w={{ base: "85%", md: "760px" }}
           h="1px"
-          bgGradient="linear(to-r, transparent, orange.400, transparent)"
+          bgGradient="linear(to-r, transparent, ui.brandGradientStart, transparent)"
           opacity={0.7}
         />
 
@@ -86,31 +86,20 @@ const Footer = (_props: FooterProps) => {
           >
             <Stack gap={7} align="flex-start">
               <HStack gap={3}>
-                <Box
-                  boxSize="10"
-                  rounded="full"
-                  bg="linear-gradient(135deg, #FB923C, #F59E0B)"
-                  color="white"
-                  fontWeight="bold"
-                  fontSize="lg"
-                  display="inline-flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  boxShadow="0 10px 24px rgba(245, 158, 11, 0.28)"
-                >
-                  K
-                </Box>
-                <Text
-                  fontSize={{ base: "2xl", md: "3xl" }}
-                  fontWeight="bold"
-                  letterSpacing="-0.02em"
-                  fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
-                >
-                  Kiizama
-                </Text>
+                <chakra.img
+                  src="/assets/images/noBgWhite.svg"
+                  alt="Kiizama logo"
+                  h={{ base: "10", md: "20" }}
+                  w="auto"
+                  display="block"
+                  transform={{
+                    base: "translateY(-5px)",
+                    md: "translateY(-10px)",
+                  }}
+                />
               </HStack>
 
-              <Text color="whiteAlpha.700" maxW="xs" lineHeight="1.8">
+              <Text color="ui.inverseMutedText" maxW="xs" lineHeight="1.8">
                 Advanced reputation intelligence and strategic workflows for
                 modern brand and creator teams.
               </Text>
@@ -125,10 +114,10 @@ const Footer = (_props: FooterProps) => {
                   justifyContent="center"
                   boxSize="10"
                   rounded="full"
-                  bg="whiteAlpha.100"
-                  color="whiteAlpha.800"
+                  bg="ui.inverseSoft"
+                  color="ui.inverseMutedText"
                   transition="all 180ms ease"
-                  _hover={{ bg: "orange.500", color: "white" }}
+                  _hover={{ bg: "ui.link", color: "ui.textInverse" }}
                 >
                   <Icon as={FaLinkedin} boxSize={5} />
                 </chakra.a>
@@ -139,12 +128,12 @@ const Footer = (_props: FooterProps) => {
                   justifyContent="center"
                   boxSize="10"
                   rounded="full"
-                  bg="whiteAlpha.100"
-                  color="whiteAlpha.800"
+                  bg="ui.inverseSoft"
+                  color="ui.inverseMutedText"
                   fontWeight="bold"
                   fontSize="sm"
                   transition="all 180ms ease"
-                  _hover={{ bg: "orange.500", color: "white" }}
+                  _hover={{ bg: "ui.link", color: "ui.textInverse" }}
                 >
                   X
                 </chakra.a>
@@ -183,11 +172,11 @@ const Footer = (_props: FooterProps) => {
               >
                 Company
               </Text>
-              <Link to="/about-us" style={{ color: "inherit" }}>
+              <Link to="/about-us">
                 <Text
-                  color="whiteAlpha.700"
+                  color="ui.inverseMutedText"
                   fontWeight="medium"
-                  _hover={{ color: "orange.300" }}
+                  _hover={{ color: "ui.main" }}
                 >
                   About Us
                 </Text>
@@ -212,29 +201,29 @@ const Footer = (_props: FooterProps) => {
               >
                 Legal
               </Text>
-              <Link to="/security" style={{ color: "inherit" }}>
+              <Link to="/security">
                 <Text
-                  color="whiteAlpha.700"
+                  color="ui.inverseMutedText"
                   fontWeight="medium"
-                  _hover={{ color: "orange.300" }}
+                  _hover={{ color: "ui.main" }}
                 >
                   Security
                 </Text>
               </Link>
-              <Link to="/privacy" style={{ color: "inherit" }}>
+              <Link to="/privacy">
                 <Text
-                  color="whiteAlpha.700"
+                  color="ui.inverseMutedText"
                   fontWeight="medium"
-                  _hover={{ color: "orange.300" }}
+                  _hover={{ color: "ui.main" }}
                 >
                   Privacy Policy
                 </Text>
               </Link>
-              <Link to="/terms-conditions" style={{ color: "inherit" }}>
+              <Link to="/terms-conditions">
                 <Text
-                  color="whiteAlpha.700"
+                  color="ui.inverseMutedText"
                   fontWeight="medium"
-                  _hover={{ color: "orange.300" }}
+                  _hover={{ color: "ui.main" }}
                 >
                   Terms of Service
                 </Text>
@@ -243,21 +232,21 @@ const Footer = (_props: FooterProps) => {
               <HStack
                 mt={2}
                 borderWidth="1px"
-                borderColor="whiteAlpha.200"
+                borderColor="ui.inverseBorderSoft"
                 rounded="xl"
                 h="9"
                 px={3}
-                bg="whiteAlpha.100"
-                color="white"
+                bg="ui.inverseSoft"
+                color="ui.textInverse"
                 gap={2}
               >
-                <Icon as={FaLanguage} color="whiteAlpha.800" boxSize={4} />
+                <Icon as={FaLanguage} color="ui.inverseMutedText" boxSize={4} />
                 <chakra.select
                   defaultValue="english"
                   bg="transparent"
                   border="none"
                   outline="none"
-                  color="white"
+                  color="ui.textInverse"
                   _focus={{ outline: "none", boxShadow: "none" }}
                   fontSize="sm"
                   pr={6}
@@ -274,21 +263,21 @@ const Footer = (_props: FooterProps) => {
           <Flex
             pt={8}
             borderTopWidth="1px"
-            borderTopColor="whiteAlpha.200"
+            borderTopColor="ui.inverseBorderSoft"
             direction={{ base: "column", md: "row" }}
             justify="space-between"
             align={{ base: "flex-start", md: "center" }}
             gap={4}
           >
-            <Text color="whiteAlpha.600" fontSize="sm">
+            <Text color="ui.inverseMutedText" fontSize="sm">
               © {new Date().getFullYear()} Kiizama Inc. All rights reserved.
             </Text>
             <Button
               variant="ghost"
               px={0}
               h="auto"
-              color="whiteAlpha.800"
-              _hover={{ bg: "transparent", color: "white" }}
+              color="ui.inverseMutedText"
+              _hover={{ bg: "transparent", color: "ui.textInverse" }}
               onClick={openCookiePanel}
             >
               Cookie Settings
@@ -307,17 +296,14 @@ const Footer = (_props: FooterProps) => {
           <Box
             position="absolute"
             inset={0}
-            bg="blackAlpha.300"
+            bg="ui.overlayBackdrop"
             animation={`${isCookiePanelVisible ? cookieBackdropFadeIn : cookieBackdropFadeOut} ${cookiePanelAnimationMs}ms ease forwards`}
           />
           <Box
             position="absolute"
             bottom={0}
             insetX={0}
-            bg="white"
-            borderTopWidth="1px"
-            borderColor="gray.200"
-            boxShadow="0 -12px 30px rgba(0, 0, 0, 0.16)"
+            layerStyle="cookiePanel"
             px={{ base: 4, md: 6 }}
             py={{ base: 4, md: 5 }}
             transformOrigin="bottom center"
@@ -336,7 +322,7 @@ const Footer = (_props: FooterProps) => {
                 </Text>
                 <Text
                   textAlign="center"
-                  color="gray.600"
+                  color="ui.secondaryText"
                   fontSize={{ base: "sm", md: "md" }}
                   maxW="4xl"
                 >
@@ -352,12 +338,12 @@ const Footer = (_props: FooterProps) => {
                     key={option.key}
                     justify="space-between"
                     borderWidth="1px"
-                    borderColor="gray.200"
+                    borderColor="ui.borderSoft"
                     rounded="xl"
                     px={4}
                     py={3}
                   >
-                    <Text color="gray.800" fontWeight="medium">
+                    <Text color="ui.text" fontWeight="medium">
                       {option.label}
                     </Text>
                     <Checkbox
@@ -379,10 +365,7 @@ const Footer = (_props: FooterProps) => {
                 <Button variant="outline" onClick={acceptAllCookies}>
                   Accept All
                 </Button>
-                <Link
-                  to="/cookie-notice"
-                  style={{ color: "#4A5568", textDecoration: "underline" }}
-                >
+                <Link to="/cookie-notice" className="legal-link">
                   See Cookie Notice for details.
                 </Link>
               </Stack>

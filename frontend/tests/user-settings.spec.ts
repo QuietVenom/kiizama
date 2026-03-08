@@ -1,10 +1,36 @@
-import { expect, test } from "@playwright/test"
+import { expect, type Page, test } from "@playwright/test"
 import { firstSuperuser, firstSuperuserPassword } from "./config.ts"
 import { createUser } from "./utils/privateApi.ts"
 import { randomEmail, randomPassword } from "./utils/random"
 import { logInUser, logOutUser } from "./utils/user"
 
 const tabs = ["My profile", "Password", "Appearance"]
+const themeStorageKey = "theme"
+
+const openAppearanceTab = async (page: Page) => {
+  await page.goto("/settings")
+  await page.getByRole("tab", { name: "Appearance" }).click()
+}
+
+const clickAppearanceMode = async (
+  page: Page,
+  label: "System" | "Light Mode" | "Dark Mode",
+) => {
+  await page
+    .locator("label")
+    .filter({ hasText: label })
+    .locator("span")
+    .first()
+    .click()
+}
+
+const getDocumentThemeClass = async (page: Page) => {
+  return page.evaluate(() => {
+    if (document.documentElement.classList.contains("dark")) return "dark"
+    if (document.documentElement.classList.contains("light")) return "light"
+    return "unknown"
+  })
+}
 
 // User Information
 
@@ -233,98 +259,93 @@ test.describe("Change password with invalid data", () => {
 // Appearance
 
 test("Appearance tab is visible", async ({ page }) => {
-  await page.goto("/settings")
-  await page.getByRole("tab", { name: "Appearance" }).click()
+  await openAppearanceTab(page)
   await expect(page.getByLabel("Appearance")).toBeVisible()
 })
 
 test("User can switch from light mode to dark mode and vice versa", async ({
   page,
 }) => {
-  await page.goto("/settings")
-  await page.getByRole("tab", { name: "Appearance" }).click()
+  await openAppearanceTab(page)
 
   // Ensure the initial state is light mode
-  if (
-    await page.evaluate(() =>
-      document.documentElement.classList.contains("dark"),
-    )
-  ) {
-    await page
-      .locator("label")
-      .filter({ hasText: "Light Mode" })
-      .locator("span")
-      .first()
-      .click()
+  if ((await getDocumentThemeClass(page)) === "dark") {
+    await clickAppearanceMode(page, "Light Mode")
   }
 
-  let isLightMode = await page.evaluate(() =>
-    document.documentElement.classList.contains("light"),
-  )
-  expect(isLightMode).toBe(true)
+  let activeTheme = await getDocumentThemeClass(page)
+  expect(activeTheme).toBe("light")
 
-  await page
-    .locator("label")
-    .filter({ hasText: "Dark Mode" })
-    .locator("span")
-    .first()
-    .click()
-  const isDarkMode = await page.evaluate(() =>
-    document.documentElement.classList.contains("dark"),
-  )
-  expect(isDarkMode).toBe(true)
+  await clickAppearanceMode(page, "Dark Mode")
+  activeTheme = await getDocumentThemeClass(page)
+  expect(activeTheme).toBe("dark")
 
-  await page
-    .locator("label")
-    .filter({ hasText: "Light Mode" })
-    .locator("span")
-    .first()
-    .click()
-  isLightMode = await page.evaluate(() =>
-    document.documentElement.classList.contains("light"),
-  )
-  expect(isLightMode).toBe(true)
+  await clickAppearanceMode(page, "Light Mode")
+  activeTheme = await getDocumentThemeClass(page)
+  expect(activeTheme).toBe("light")
 })
 
 test("Selected mode is preserved across sessions", async ({ page }) => {
-  await page.goto("/settings")
-  await page.getByRole("tab", { name: "Appearance" }).click()
+  await openAppearanceTab(page)
 
   // Ensure the initial state is light mode
-  if (
-    await page.evaluate(() =>
-      document.documentElement.classList.contains("dark"),
-    )
-  ) {
-    await page
-      .locator("label")
-      .filter({ hasText: "Light Mode" })
-      .locator("span")
-      .first()
-      .click()
+  if ((await getDocumentThemeClass(page)) === "dark") {
+    await clickAppearanceMode(page, "Light Mode")
   }
 
-  const isLightMode = await page.evaluate(() =>
-    document.documentElement.classList.contains("light"),
-  )
-  expect(isLightMode).toBe(true)
+  let activeTheme = await getDocumentThemeClass(page)
+  expect(activeTheme).toBe("light")
 
-  await page
-    .locator("label")
-    .filter({ hasText: "Dark Mode" })
-    .locator("span")
-    .first()
-    .click()
-  let isDarkMode = await page.evaluate(() =>
-    document.documentElement.classList.contains("dark"),
-  )
-  expect(isDarkMode).toBe(true)
+  await clickAppearanceMode(page, "Dark Mode")
+  activeTheme = await getDocumentThemeClass(page)
+  expect(activeTheme).toBe("dark")
 
   await logOutUser(page)
   await logInUser(page, firstSuperuser, firstSuperuserPassword)
 
-  isDarkMode = await page.evaluate(() =>
-    document.documentElement.classList.contains("dark"),
-  )
-  expect(isDarkMode).toBe(true)
+  activeTheme = await getDocumentThemeClass(page)
+  expect(activeTheme).toBe("dark")
+})
+
+test("System mode follows the operating system preference", async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: "dark" })
+  await openAppearanceTab(page)
+
+  await clickAppearanceMode(page, "System")
+  await expect.poll(async () => getDocumentThemeClass(page)).toBe("dark")
+
+  await expect
+    .poll(async () => {
+      return page.evaluate(
+        (storageKey) => localStorage.getItem(storageKey),
+        themeStorageKey,
+      )
+    })
+    .toBe("system")
+
+  await page.emulateMedia({ colorScheme: "light" })
+  await expect.poll(async () => getDocumentThemeClass(page)).toBe("light")
+
+  await page.emulateMedia({ colorScheme: "dark" })
+  await expect.poll(async () => getDocumentThemeClass(page)).toBe("dark")
+})
+
+test("System mode is preserved across sessions and responds to emulateMedia", async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: "dark" })
+  await openAppearanceTab(page)
+
+  await clickAppearanceMode(page, "System")
+  await expect.poll(async () => getDocumentThemeClass(page)).toBe("dark")
+
+  await logOutUser(page)
+  await logInUser(page, firstSuperuser, firstSuperuserPassword)
+
+  await expect.poll(async () => getDocumentThemeClass(page)).toBe("dark")
+
+  await page.emulateMedia({ colorScheme: "light" })
+  await expect.poll(async () => getDocumentThemeClass(page)).toBe("light")
 })

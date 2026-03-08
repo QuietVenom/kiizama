@@ -2,16 +2,9 @@ import { Box, Flex, Icon, IconButton, Text } from "@chakra-ui/react"
 import { Link as RouterLink, useLocation } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import { FaBars } from "react-icons/fa"
-import {
-  FiBarChart2,
-  FiFileText,
-  FiHome,
-  FiLogOut,
-  FiSettings,
-  FiShield,
-  FiUsers,
-} from "react-icons/fi"
+import { FiHome, FiLogOut, FiSearch, FiSettings, FiUsers } from "react-icons/fi"
 import type { IconType } from "react-icons/lib"
+import { LuPickaxe } from "react-icons/lu"
 
 import useAuth from "@/hooks/useAuth"
 import {
@@ -22,8 +15,15 @@ import {
   DrawerRoot,
   DrawerTrigger,
 } from "../ui/drawer"
+import ThemeLogo from "./ThemeLogo"
 
-type SidebarRoute = "/app" | "/settings" | "/admin"
+type SidebarRoute =
+  | "/app"
+  | "/mining"
+  | "/creators-search"
+  | "/brand-intelligence"
+  | "/settings"
+  | "/admin"
 
 type SidebarItem = {
   icon: IconType
@@ -35,10 +35,9 @@ type SidebarItem = {
 
 const topItems: SidebarItem[] = [
   { icon: FiHome, title: "Overview", path: "/app" },
-  { icon: FiBarChart2, title: "Analytics", placeholder: true },
-  { icon: FiUsers, title: "Creators", placeholder: true },
-  { icon: FiFileText, title: "Reports", placeholder: true },
-  { icon: FiShield, title: "Reputation", placeholder: true },
+  { icon: LuPickaxe, title: "Mining", path: "/mining" },
+  { icon: FiSearch, title: "Creators Search", path: "/creators-search" },
+  { icon: FiUsers, title: "Brand Intelligence", path: "/brand-intelligence" },
 ]
 
 const isActiveRoute = (pathname: string, route: SidebarRoute) => {
@@ -75,7 +74,11 @@ const SidebarNavItem = ({
     borderColor: "transparent",
     position: "relative",
     bg: isActive ? "ui.activeSoft" : "transparent",
-    color: item.danger ? "#EF4444" : isActive ? "#F97316" : "ui.secondaryText",
+    color: item.danger
+      ? "ui.danger"
+      : isActive
+        ? "ui.link"
+        : "ui.secondaryText",
     _hover: item.placeholder
       ? undefined
       : {
@@ -92,7 +95,7 @@ const SidebarNavItem = ({
           h: "26px",
           w: "4px",
           roundedRight: "full",
-          bg: "#F97316",
+          bg: "ui.link",
         }
       : undefined,
     opacity: item.placeholder ? 0.85 : 1,
@@ -191,29 +194,17 @@ const SidebarBody = ({
       direction="column"
       h="full"
       w="full"
-      bg="white"
+      bg="ui.panel"
       borderRightWidth="1px"
       borderRightColor="ui.sidebarBorder"
     >
       <Flex px={6} py={7} alignItems="center" gap={3}>
-        <Box
-          boxSize="60px"
-          rounded="2xl"
-          bg="linear-gradient(135deg, #FB923C, #F59E0B)"
-          color="white"
-          boxShadow="0 14px 28px rgba(245, 158, 11, 0.24)"
-          display="inline-flex"
-          alignItems="center"
-          justifyContent="center"
-          fontSize="3xl"
-          fontWeight="bold"
-          fontFamily="'Merriweather', 'Times New Roman', serif"
-        >
-          K
-        </Box>
-        <Text fontSize="2xl" fontWeight="black" letterSpacing="-0.02em">
-          Kiizama
-        </Text>
+        <ThemeLogo
+          h="14"
+          w="auto"
+          display="block"
+          transform={{ base: "translateY(-5px)", sm: "translateY(-6px)" }}
+        />
       </Flex>
 
       <Flex direction="column" gap={1} px={4} pb={4}>
@@ -256,8 +247,8 @@ const SidebarBody = ({
             <Flex
               boxSize="12"
               rounded="full"
-              bg="#FDECD7"
-              color="#D97706"
+              bg="ui.brandGlow"
+              color="ui.brandText"
               fontSize="xl"
               fontWeight="bold"
               alignItems="center"
@@ -322,11 +313,11 @@ const Sidebar = () => {
             top={3}
             left={3}
             zIndex={100}
-            bg="white"
+            bg="ui.panel"
             borderWidth="1px"
             borderColor="ui.sidebarBorder"
             rounded="xl"
-            boxShadow="sm"
+            boxShadow="ui.panelSm"
           >
             <FaBars />
           </IconButton>

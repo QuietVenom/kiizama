@@ -7,22 +7,44 @@ import {
 } from "@tanstack/react-router"
 
 import Sidebar from "@/components/Common/Sidebar"
-import { isLoggedIn } from "@/hooks/useAuth"
+import { currentUserQueryOptions, isLoggedIn } from "@/hooks/useAuth"
+
+const dashboardShellRoutes = [
+  "/app",
+  "/mining",
+  "/creators-search",
+  "/brand-intelligence",
+] as const
+
+const usesDashboardShell = (pathname: string) =>
+  dashboardShellRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  )
 
 export const Route = createFileRoute("/_layout")({
   component: Layout,
-  beforeLoad: async () => {
+  beforeLoad: async ({ context }) => {
     if (!isLoggedIn()) {
       throw redirect({
         to: "/login",
       })
+    }
+
+    try {
+      await context.queryClient.ensureQueryData(currentUserQueryOptions)
+    } catch {
+      if (!isLoggedIn()) {
+        throw redirect({
+          to: "/login",
+        })
+      }
     }
   },
 })
 
 function Layout() {
   const { pathname } = useLocation()
-  const isDashboardRoute = pathname === "/app" || pathname.startsWith("/app/")
+  const isDashboardRoute = usesDashboardShell(pathname)
 
   return (
     <Flex h="100vh" overflow="hidden" bg="ui.page">

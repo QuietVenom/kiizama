@@ -70,7 +70,12 @@ const ChangePassword = () => {
             errors={errors}
           />
         </VStack>
-        <Button variant="solid" mt={4} type="submit" loading={isSubmitting}>
+        <Button
+          layerStyle="brandGradientButton"
+          mt={4}
+          type="submit"
+          loading={isSubmitting}
+        >
           Save
         </Button>
       </Box>

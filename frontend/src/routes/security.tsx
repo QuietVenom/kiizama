@@ -8,34 +8,14 @@ export const Route = createFileRoute("/security")({
 
 function SecurityPage() {
   return (
-    <InfoPageShell>
-      <Box
-        bg="white"
-        borderWidth="1px"
-        borderColor="gray.100"
-        rounded="3xl"
-        p={{ base: 6, md: 10 }}
-        boxShadow="0 16px 34px rgba(15, 23, 42, 0.06)"
-      >
+    <InfoPageShell useSymbolHomeButton>
+      <Box layerStyle="infoCard" p={{ base: 6, md: 10 }}>
         <Stack gap={4}>
-          <Text
-            color="orange.500"
-            textTransform="uppercase"
-            fontWeight="bold"
-            letterSpacing="0.12em"
-            fontSize="xs"
-          >
-            Company
-          </Text>
-          <Heading
-            size={{ base: "2xl", md: "3xl" }}
-            color="gray.900"
-            letterSpacing="-0.02em"
-            fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
-          >
+          <Text textStyle="eyebrow">Company</Text>
+          <Heading size={{ base: "2xl", md: "3xl" }} textStyle="pageTitle">
             Security
           </Heading>
-          <Text color="gray.700" lineHeight="1.8">
+          <Text textStyle="pageBody">
             Placeholder content for the Security page.
           </Text>
         </Stack>
