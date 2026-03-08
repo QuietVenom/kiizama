@@ -61,7 +61,7 @@ const FAQ = ({ sectionRef }: FAQProps) => {
       <Container maxW="4xl">
         <Stack textAlign="center" gap={4} mb={12}>
           <Text
-            color="orange.500"
+            color="ui.link"
             textTransform="uppercase"
             fontWeight="bold"
             letterSpacing="0.12em"
@@ -71,13 +71,13 @@ const FAQ = ({ sectionRef }: FAQProps) => {
             justifyContent="center"
             gap={3}
           >
-            <Box as="span" h="1px" w="8" bg="orange.300" />
+            <Box as="span" h="1px" w="8" bg="ui.mainHover" />
             FAQ
-            <Box as="span" h="1px" w="8" bg="orange.300" />
+            <Box as="span" h="1px" w="8" bg="ui.mainHover" />
           </Text>
           <Heading
             size={{ base: "2xl", md: "3xl" }}
-            color="gray.900"
+            color="ui.text"
             letterSpacing="-0.02em"
             fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
           >
@@ -91,13 +91,9 @@ const FAQ = ({ sectionRef }: FAQProps) => {
             return (
               <Box
                 key={item.id}
-                borderWidth="1px"
-                borderColor={isOpen ? "orange.200" : "gray.200"}
-                rounded="2xl"
-                bg={isOpen ? "orange.50" : "white"}
+                layerStyle={isOpen ? "faqCardActive" : "faqCard"}
                 overflow="hidden"
                 transition="border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease"
-                boxShadow={isOpen ? "md" : "none"}
               >
                 <Button
                   variant="ghost"
@@ -106,13 +102,13 @@ const FAQ = ({ sectionRef }: FAQProps) => {
                   px={{ base: 5, md: 6 }}
                   py={6}
                   h="auto"
-                  _hover={{ bg: "transparent", color: "orange.500" }}
+                  _hover={{ bg: "transparent", color: "ui.link" }}
                   onClick={() => handleToggle(item.id)}
                 >
                   <Text
                     textAlign="left"
                     fontWeight="bold"
-                    color="gray.800"
+                    color="ui.text"
                     fontSize={{ base: "md", md: "lg" }}
                   >
                     {item.question}
@@ -120,7 +116,7 @@ const FAQ = ({ sectionRef }: FAQProps) => {
                   <Icon
                     as={isOpen ? FiMinus : FiPlus}
                     boxSize={5}
-                    color={isOpen ? "orange.500" : "gray.500"}
+                    color={isOpen ? "ui.link" : "ui.secondaryText"}
                   />
                 </Button>
 
@@ -134,7 +130,7 @@ const FAQ = ({ sectionRef }: FAQProps) => {
                 >
                   <Box overflow="hidden">
                     <Text
-                      color="gray.600"
+                      color="ui.secondaryText"
                       fontSize={{ base: "sm", md: "md" }}
                       fontWeight="bold"
                       lineHeight="1.8"

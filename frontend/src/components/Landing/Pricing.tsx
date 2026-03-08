@@ -83,14 +83,12 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
       as="section"
       scrollMarginTop="88px"
       py={{ base: 20, md: 24, lg: 28 }}
-      bg="gray.50"
-      borderY="1px solid"
-      borderColor="gray.200"
+      layerStyle="sectionMuted"
     >
       <Container maxW="7xl">
         <Stack textAlign="center" gap={4} mb={16} maxW="3xl" mx="auto">
           <Text
-            color="orange.500"
+            color="ui.link"
             textTransform="uppercase"
             fontWeight="bold"
             letterSpacing="0.12em"
@@ -100,20 +98,20 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
             justifyContent="center"
             gap={3}
           >
-            <Box as="span" h="1px" w="8" bg="orange.300" />
+            <Box as="span" h="1px" w="8" bg="ui.mainHover" />
             Flexible Plans
-            <Box as="span" h="1px" w="8" bg="orange.300" />
+            <Box as="span" h="1px" w="8" bg="ui.mainHover" />
           </Text>
           <Heading
             size={{ base: "2xl", md: "3xl", lg: "4xl" }}
-            color="gray.900"
+            color="ui.text"
             letterSpacing="-0.02em"
             lineHeight={1.15}
             fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
           >
             Placeholder pricing while we finalize packaging
           </Heading>
-          <Text color="gray.500" fontSize={{ base: "md", md: "lg" }}>
+          <Text color="ui.secondaryText" fontSize={{ base: "md", md: "lg" }}>
             Final plan structure and billing details will be published after
             pilot validation.
           </Text>
@@ -124,17 +122,10 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
             <Box
               key={plan.name}
               position="relative"
-              bg={plan.highlighted ? "#18183B" : "white"}
-              color={plan.highlighted ? "white" : "gray.900"}
-              rounded="3xl"
-              p={{ base: 7, md: 8 }}
-              borderWidth="1px"
-              borderColor={plan.highlighted ? "whiteAlpha.200" : "gray.200"}
-              boxShadow={
-                plan.highlighted
-                  ? "0 28px 56px rgba(24, 24, 59, 0.30)"
-                  : "0 12px 28px rgba(15, 23, 42, 0.06)"
+              layerStyle={
+                plan.highlighted ? "pricingCardHighlight" : "pricingCard"
               }
+              p={{ base: 7, md: 8 }}
               transform={plan.highlighted ? { lg: "scale(1.04)" } : undefined}
               animation={`${fadeInUp} 560ms ease`}
               animationDelay={`${index * 120}ms`}
@@ -145,16 +136,14 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
                   position="absolute"
                   top="-4"
                   right={{ base: 8, md: 10 }}
+                  layerStyle="brandGradientBadge"
                   rounded="full"
                   px={4}
                   py={1.5}
-                  bg="linear-gradient(90deg, #FB923C, #F59E0B)"
-                  color="white"
                   fontSize="xs"
                   fontWeight="bold"
                   letterSpacing="0.08em"
                   textTransform="uppercase"
-                  boxShadow="0 10px 18px rgba(245, 158, 11, 0.28)"
                 >
                   Recommended
                 </Box>
@@ -169,7 +158,9 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
               </Heading>
 
               <Text
-                color={plan.highlighted ? "whiteAlpha.700" : "gray.500"}
+                color={
+                  plan.highlighted ? "ui.inverseMutedText" : "ui.secondaryText"
+                }
                 mb={8}
               >
                 {plan.description}
@@ -181,13 +172,19 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
                 mb={8}
                 pb={8}
                 borderBottomWidth="1px"
-                borderColor={plan.highlighted ? "whiteAlpha.200" : "gray.100"}
+                borderColor={
+                  plan.highlighted ? "ui.borderInverse" : "ui.borderSoft"
+                }
               >
                 <Text fontSize="5xl" fontWeight="extrabold" lineHeight={1}>
                   {plan.price}
                 </Text>
                 <Text
-                  color={plan.highlighted ? "whiteAlpha.600" : "gray.500"}
+                  color={
+                    plan.highlighted
+                      ? "ui.inverseMutedText"
+                      : "ui.secondaryText"
+                  }
                   fontWeight="medium"
                 >
                   / placeholder
@@ -196,22 +193,25 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
 
               <Stack gap={4} mb={10}>
                 {plan.features.map((feature) => (
-                  <HStack key={feature} align="flex-start" gap={3}>
+                  <HStack key={feature} align="center" gap={3}>
                     <Box
                       boxSize="6"
                       rounded="full"
-                      bg={plan.highlighted ? "whiteAlpha.200" : "gray.100"}
-                      color={plan.highlighted ? "orange.300" : "gray.600"}
+                      bg={plan.highlighted ? "ui.inverseSoft" : "ui.panelAlt"}
+                      color={plan.highlighted ? "ui.main" : "ui.neutralText"}
                       display="inline-flex"
                       alignItems="center"
                       justifyContent="center"
-                      mt="1"
                       flexShrink={0}
                     >
                       <Icon as={FiCheck} boxSize="3.5" />
                     </Box>
                     <Text
-                      color={plan.highlighted ? "whiteAlpha.900" : "gray.700"}
+                      color={
+                        plan.highlighted ? "ui.textInverse" : "ui.secondaryText"
+                      }
+                      fontWeight="bold"
+                      lineHeight="1.35"
                     >
                       {feature}
                     </Text>
@@ -224,23 +224,22 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
                   w="full"
                   h={14}
                   rounded="2xl"
-                  bg={
-                    plan.highlighted
-                      ? "linear-gradient(90deg, #FB923C, #F59E0B)"
-                      : "gray.900"
+                  layerStyle={
+                    plan.highlighted ? "brandGradientButton" : undefined
                   }
-                  color="white"
+                  bg={plan.highlighted ? undefined : "ui.text"}
+                  color="ui.panel"
                   fontWeight="bold"
-                  _hover={{
-                    bg: plan.highlighted
-                      ? "linear-gradient(90deg, #F97316, #D97706)"
-                      : "gray.800",
-                    transform: "translateY(-4px) scale(1.02)",
-                    boxShadow: plan.highlighted
-                      ? "0 18px 32px rgba(245, 158, 11, 0.35)"
-                      : "0 16px 28px rgba(15, 23, 42, 0.22)",
-                  }}
-                  transition="all 220ms ease"
+                  _hover={
+                    plan.highlighted
+                      ? undefined
+                      : {
+                          bg: "ui.panelInverse",
+                          transform: "translateY(-4px) scale(1.02)",
+                          boxShadow: "ui.subtleButton",
+                        }
+                  }
+                  transition={plan.highlighted ? undefined : "all 220ms ease"}
                 >
                   {getPrimaryLabel(plan.highlighted)}
                 </Button>
@@ -251,17 +250,13 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
 
         <Box
           mt={14}
-          rounded="3xl"
-          borderWidth="1px"
-          borderColor="gray.200"
-          bg="white"
+          layerStyle="landingCard"
           p={{ base: 6, md: 8 }}
           textAlign="center"
-          boxShadow="sm"
         >
           <Text
             fontSize={{ base: "md", md: "lg" }}
-            color="gray.800"
+            color="ui.text"
             fontWeight="semibold"
             mb={6}
           >
@@ -273,14 +268,7 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
                 h={12}
                 px={7}
                 rounded="xl"
-                bg="#F5C58E"
-                color="gray.900"
-                _hover={{
-                  bg: "#EEB576",
-                  transform: "translateY(-3px) scale(1.02)",
-                  boxShadow: "0 14px 24px rgba(245, 158, 11, 0.24)",
-                }}
-                transition="all 220ms ease"
+                layerStyle="brandGradientButton"
               >
                 {isWaitingListEnabled ? "Join waiting list" : "Create account"}
               </Button>
@@ -291,12 +279,12 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
                 px={7}
                 rounded="xl"
                 variant="ghost"
-                color="gray.600"
+                color="ui.secondaryText"
                 _hover={{
-                  bg: "gray.100",
-                  color: "gray.900",
+                  bg: "ui.panelAlt",
+                  color: "ui.text",
                   transform: "translateY(-2px) scale(1.015)",
-                  boxShadow: "0 10px 20px rgba(15, 23, 42, 0.10)",
+                  boxShadow: "ui.subtleButton",
                 }}
                 transition="all 220ms ease"
               >

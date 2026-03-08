@@ -4,15 +4,7 @@ const InsightCard = (props: BoxProps) => {
   const { children, ...rest } = props
 
   return (
-    <Box
-      rounded="2xl"
-      borderWidth="1px"
-      borderColor="design.100"
-      bg="white"
-      p={{ base: 6, md: 8 }}
-      boxShadow="lg"
-      {...rest}
-    >
+    <Box layerStyle="infoCard" rounded="2xl" p={{ base: 6, md: 8 }} {...rest}>
       {children}
     </Box>
   )

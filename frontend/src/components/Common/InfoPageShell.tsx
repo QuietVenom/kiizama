@@ -19,7 +19,7 @@ const InfoPageShell = ({
       minH="100vh"
       position="relative"
       overflow="hidden"
-      bgGradient="linear(to-b, #FFFDF8, #FFF9ED 48%, white)"
+      layerStyle="publicPage"
       py={{ base: 12, md: 16 }}
     >
       <Box
@@ -28,10 +28,7 @@ const InfoPageShell = ({
         right="-20"
         w={{ base: "64", md: "88" }}
         h={{ base: "64", md: "88" }}
-        rounded="full"
-        bg="orange.100"
-        opacity={0.5}
-        filter="blur(100px)"
+        layerStyle="publicGlowPrimary"
       />
       <Box
         position="absolute"
@@ -39,40 +36,31 @@ const InfoPageShell = ({
         left="-20"
         w={{ base: "52", md: "68" }}
         h={{ base: "52", md: "68" }}
-        rounded="full"
-        bg="orange.50"
-        opacity={0.8}
-        filter="blur(90px)"
+        layerStyle="publicGlowSecondary"
       />
 
       <Container maxW={maxW} position="relative">
         <Stack gap={6}>
-          <RouterLink
-            to="/"
-            style={{
-              position: "fixed",
-              top: "1rem",
-              right: "1rem",
-              zIndex: 20,
-            }}
-          >
-            <IconButton
-              aria-label="Go to landing page"
-              bg="white"
-              color="orange.500"
-              borderWidth="1px"
-              borderColor="orange.100"
-              rounded="full"
-              boxShadow="sm"
-              _hover={{ bg: "orange.50" }}
-            >
-              {useSymbolHomeButton ? (
-                <Image src={SymbolLogo} alt="Kiizama symbol" boxSize="5" />
-              ) : (
-                "K"
-              )}
-            </IconButton>
-          </RouterLink>
+          <Box position="fixed" top="1rem" right="1rem" zIndex={20}>
+            <RouterLink to="/">
+              <IconButton
+                aria-label="Go to landing page"
+                bg="ui.panel"
+                color="ui.brandText"
+                borderWidth="1px"
+                borderColor="ui.brandBorderSoft"
+                rounded="full"
+                boxShadow="ui.panelSm"
+                _hover={{ bg: "ui.brandSoft" }}
+              >
+                {useSymbolHomeButton ? (
+                  <Image src={SymbolLogo} alt="Kiizama symbol" boxSize="5" />
+                ) : (
+                  "K"
+                )}
+              </IconButton>
+            </RouterLink>
+          </Box>
 
           {children}
         </Stack>

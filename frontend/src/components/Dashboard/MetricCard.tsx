@@ -5,37 +5,24 @@ type MetricCardProps = {
   icon: IconType
   label: string
   value: string
-  iconBg: string
-  iconColor: string
+  tone: "info" | "accent" | "positive" | "success"
 }
 
-const MetricCard = ({
-  icon,
-  label,
-  value,
-  iconBg,
-  iconColor,
-}: MetricCardProps) => {
+const toneStyles = {
+  info: { bg: "ui.infoSoft", color: "ui.infoText" },
+  accent: { bg: "ui.accentSoft", color: "ui.accentText" },
+  positive: { bg: "ui.positiveSoft", color: "ui.positiveText" },
+  success: { bg: "ui.successSoft", color: "ui.successText" },
+} as const
+
+const MetricCard = ({ icon, label, value, tone }: MetricCardProps) => {
   const [titlePart, ...labelParts] = label.split(":")
   const title = titlePart.trim()
   const displayLabel = labelParts.join(":").trim() || label
+  const toneStyle = toneStyles[tone]
 
   return (
-    <Box
-      bg="white"
-      borderWidth="1px"
-      borderColor="ui.sidebarBorder"
-      rounded="3xl"
-      px={6}
-      py={6}
-      boxShadow="0 4px 20px rgba(15, 23, 42, 0.04)"
-      minH="200px"
-      transition="transform 220ms ease, box-shadow 220ms ease"
-      _hover={{
-        transform: "translateY(-4px)",
-        boxShadow: "0 14px 30px rgba(15, 23, 42, 0.08)",
-      }}
-    >
+    <Box layerStyle="dashboardCardInteractive" px={6} py={6} minH="200px">
       <Text
         fontSize="sm"
         color="ui.mutedText"
@@ -50,10 +37,10 @@ const MetricCard = ({
         <Flex
           boxSize="14"
           rounded="2xl"
-          bg={iconBg}
+          bg={toneStyle.bg}
           alignItems="center"
           justifyContent="center"
-          color={iconColor}
+          color={toneStyle.color}
         >
           <Icon as={icon} boxSize={7} />
         </Flex>

@@ -20,13 +20,10 @@ const StrategicInsightCard = () => {
     <Flex direction="column" gap={6} h="full" minH="full">
       <Box
         flex={1}
-        bg="ui.footer"
-        color="white"
-        rounded="4xl"
+        layerStyle="inverseCard"
         p={{ base: 5, lg: 7 }}
         position="relative"
         overflow="hidden"
-        boxShadow="0 14px 34px rgba(24, 24, 59, 0.18)"
         transformOrigin="center"
         willChange="transform"
         animation={`${newsCardAttention} 3.2s ease-in-out infinite`}
@@ -37,7 +34,8 @@ const StrategicInsightCard = () => {
           right="-60px"
           boxSize="180px"
           rounded="full"
-          bg="rgba(249, 115, 22, 0.22)"
+          bg="ui.brandText"
+          opacity={0.22}
           filter="blur(30px)"
         />
 
@@ -45,16 +43,16 @@ const StrategicInsightCard = () => {
           <Box
             rounded="2xl"
             borderWidth="1px"
-            borderColor="rgba(255,255,255,0.1)"
-            bg="rgba(255,255,255,0.06)"
+            borderColor="ui.inverseBorderSoft"
+            bg="ui.inverseSoft"
             h="full"
             p={4}
           >
             <Flex alignItems="center" gap={2} mb={3}>
-              <Icon as={IoNewspaperOutline} color="orange.300" boxSize={4} />
+              <Icon as={IoNewspaperOutline} color="ui.main" boxSize={4} />
               <Text
                 fontSize={{ base: "xs", lg: "sm" }}
-                color="orange.300"
+                color="ui.main"
                 letterSpacing="0.14em"
                 textTransform="uppercase"
                 fontWeight="bold"
@@ -75,12 +73,8 @@ const StrategicInsightCard = () => {
         display="flex"
         flexDirection="column"
         justifyContent="center"
-        bg="white"
-        borderWidth="1px"
-        borderColor="ui.sidebarBorder"
-        rounded="4xl"
+        layerStyle="dashboardCard"
         p={{ base: 5, lg: 7 }}
-        boxShadow="0 4px 20px rgba(15, 23, 42, 0.04)"
       >
         <Flex alignItems="center" gap={2} mb={4}>
           <Icon as={FiUser} boxSize={{ base: 5, lg: 6 }} />

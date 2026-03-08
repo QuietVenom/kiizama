@@ -71,7 +71,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
       as="section"
       position="relative"
       overflow="hidden"
-      bgGradient="linear(to-b, #FFFDF8, #FFF9ED 48%, white)"
+      layerStyle="publicPage"
       minH="100dvh"
       display="flex"
       alignItems="center"
@@ -83,8 +83,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
         right="-24"
         w={{ base: "72", md: "96" }}
         h={{ base: "72", md: "96" }}
-        rounded="full"
-        bg="orange.100"
+        layerStyle="publicGlowPrimary"
         opacity={0.7}
         filter="blur(110px)"
       />
@@ -94,10 +93,8 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
         left="-24"
         w={{ base: "52", md: "72" }}
         h={{ base: "52", md: "72" }}
-        rounded="full"
-        bg="orange.50"
+        layerStyle="publicGlowSecondary"
         opacity={0.85}
-        filter="blur(90px)"
       />
 
       <Container maxW="7xl" position="relative">
@@ -117,9 +114,9 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
               px={4}
               py={1.5}
               borderWidth="1px"
-              borderColor="orange.200"
-              bg="orange.100"
-              color="orange.800"
+              borderColor="ui.brandBorderSoft"
+              bg="ui.brandGlow"
+              color="ui.brandText"
               letterSpacing="0.08em"
               fontSize="2xs"
               fontWeight="bold"
@@ -133,14 +130,14 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                   position="absolute"
                   inset={0}
                   rounded="full"
-                  bg="orange.300"
+                  bg="ui.mainHover"
                   animation={`${pulse} 1.5s ease-out infinite`}
                 />
                 <Box
                   position="absolute"
                   inset={0}
                   rounded="full"
-                  bg="orange.500"
+                  bg="ui.link"
                 />
               </Box>
               Instagram Reputation Intelligence
@@ -150,29 +147,18 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
               fontSize={{ base: "6xl", md: "6xl", lg: "7xl" }}
               lineHeight={1.05}
               letterSpacing="-0.03em"
-              color="gray.900"
+              color="ui.text"
               fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
             >
               Turn Instagram data into{" "}
-              <Box
-                as="span"
-                display="inline"
-                style={{
-                  color: "transparent",
-                  backgroundImage:
-                    "linear-gradient(to right, #f97316, #f59e0b)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
+              <Box as="span" display="inline" layerStyle="brandGradientText">
                 reputation strategy
               </Box>
             </Heading>
 
             <Text
               fontSize={{ base: "md", md: "xl" }}
-              color="gray.600"
+              color="ui.secondaryText"
               maxW="2xl"
               lineHeight="1.8"
             >
@@ -188,12 +174,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                     h={14}
                     px={8}
                     rounded="xl"
-                    bg="#F5C58E"
-                    color="gray.900"
-                    fontWeight="bold"
-                    boxShadow="0 16px 34px rgba(245, 197, 142, 0.28)"
-                    _hover={{ bg: "#EEB576", transform: "translateY(-2px)" }}
-                    transition="all 200ms ease"
+                    layerStyle="brandGradientButton"
                   >
                     Join waiting list
                     <FiArrowRight />
@@ -205,12 +186,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                     h={14}
                     px={8}
                     rounded="xl"
-                    bg="#F5C58E"
-                    color="gray.900"
-                    fontWeight="bold"
-                    boxShadow="0 16px 34px rgba(245, 197, 142, 0.28)"
-                    _hover={{ bg: "#EEB576", transform: "translateY(-2px)" }}
-                    transition="all 200ms ease"
+                    layerStyle="brandGradientButton"
                   >
                     Sign Up
                     <FiArrowRight />
@@ -220,9 +196,9 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
               <ChakraLink href={loginUrl} _hover={{ textDecoration: "none" }}>
                 <Button
                   variant="ghost"
-                  color="gray.600"
+                  color="ui.secondaryText"
                   fontWeight="semibold"
-                  _hover={{ bg: "transparent", color: "gray.900" }}
+                  _hover={{ bg: "transparent", color: "ui.text" }}
                 >
                   I already have an account
                   <FiChevronRight />
@@ -236,8 +212,8 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                   <Box
                     boxSize="5"
                     rounded="full"
-                    bg="green.100"
-                    color="green.600"
+                    bg="ui.successSoft"
+                    color="ui.successText"
                     display="inline-flex"
                     alignItems="center"
                     justifyContent="center"
@@ -245,7 +221,11 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                   >
                     <Icon as={FiCheck} boxSize="3.5" />
                   </Box>
-                  <Text color="gray.600" fontSize="sm" fontWeight="medium">
+                  <Text
+                    color="ui.secondaryText"
+                    fontSize="sm"
+                    fontWeight="medium"
+                  >
                     {signal}
                   </Text>
                 </HStack>
@@ -262,21 +242,13 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
             <Box
               position="absolute"
               inset={{ base: 1, md: 6 }}
-              rounded="4xl"
-              bg="rgba(255, 255, 255, 0.62)"
-              borderWidth="1px"
-              borderColor="rgba(255, 255, 255, 0.9)"
-              boxShadow="0 26px 62px rgba(15, 23, 42, 0.06)"
+              layerStyle="heroGlass"
               transform="rotate(3deg)"
             />
             <Box
               position="absolute"
               inset={{ base: 4, md: 12 }}
-              rounded="4xl"
-              bg="rgba(245, 197, 142, 0.16)"
-              borderWidth="1px"
-              borderColor="rgba(245, 197, 142, 0.38)"
-              boxShadow="inset 0 0 0 1px rgba(255, 255, 255, 0.5)"
+              layerStyle="heroAccentGlass"
               transform="rotate(-3deg)"
             />
 
@@ -285,11 +257,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
               top={{ base: "4%", md: "8%" }}
               left={{ base: "0%", md: "-4%" }}
               w={{ base: "86%", md: "66%" }}
-              rounded="3xl"
-              bg="white"
-              borderWidth="1px"
-              borderColor="#E8EDF5"
-              boxShadow="0 20px 52px rgba(15, 23, 42, 0.10)"
+              layerStyle="heroMockCard"
               px={{ base: 5, md: 6 }}
               py={{ base: 5, md: 6 }}
               zIndex={2}
@@ -298,8 +266,8 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                 <Box
                   boxSize={{ base: "14", md: "16" }}
                   rounded="2xl"
-                  bg="#FFF7EB"
-                  color="#F97316"
+                  bg="ui.brandSoft"
+                  color="ui.brandText"
                   display="inline-flex"
                   alignItems="center"
                   justifyContent="center"
@@ -309,7 +277,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                 </Box>
                 <Text
                   fontWeight="bold"
-                  color="#243047"
+                  color="ui.text"
                   fontSize={{ base: "lg", md: "xl" }}
                   lineHeight={1.2}
                   letterSpacing="-0.02em"
@@ -319,14 +287,14 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                   Report
                 </Text>
               </HStack>
-              <Box h="1px" w="full" bg="#EAEFF5" mb={6} />
+              <Box h="1px" w="full" bg="ui.borderSoft" mb={6} />
               <HStack mb={5} gap={4}>
-                <Box boxSize="16" rounded="full" bg="#EDF1F7" />
-                <Box h="4" w="44%" rounded="full" bg="#E8EDF5" />
+                <Box boxSize="16" rounded="full" bg="ui.panelAlt" />
+                <Box h="4" w="44%" rounded="full" bg="ui.borderSoft" />
               </HStack>
               <Stack gap={4}>
-                <Box h="3.5" rounded="full" bg="#E8EDF5" />
-                <Box h="3.5" rounded="full" bg="#E8EDF5" w="84%" />
+                <Box h="3.5" rounded="full" bg="ui.borderSoft" />
+                <Box h="3.5" rounded="full" bg="ui.borderSoft" w="84%" />
               </Stack>
             </Box>
 
@@ -335,11 +303,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
               top={{ base: "30%", md: "27%" }}
               right={{ base: "0%", md: "-8%" }}
               w={{ base: "80%", md: "63%" }}
-              rounded="3xl"
-              bg="white"
-              borderWidth="1px"
-              borderColor="#E8EDF5"
-              boxShadow="0 20px 52px rgba(15, 23, 42, 0.10)"
+              layerStyle="heroMockCard"
               px={{ base: 5, md: 6 }}
               py={{ base: 5, md: 6 }}
               zIndex={3}
@@ -348,8 +312,8 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                 <Box
                   boxSize={{ base: "12", md: "14" }}
                   rounded="2xl"
-                  bg="#EBF3FF"
-                  color="#3B82F6"
+                  bg="ui.infoSoft"
+                  color="ui.infoText"
                   display="inline-flex"
                   alignItems="center"
                   justifyContent="center"
@@ -359,7 +323,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                 </Box>
                 <Text
                   fontWeight="bold"
-                  color="#243047"
+                  color="ui.text"
                   fontSize={{ base: "lg", md: "xl" }}
                   lineHeight={1.2}
                   letterSpacing="-0.02em"
@@ -367,26 +331,26 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                   Brand Reputation
                 </Text>
               </HStack>
-              <Box h="1px" w="full" bg="#EAEFF5" mb={6} />
+              <Box h="1px" w="full" bg="ui.borderSoft" mb={6} />
               <HStack mb={5} gap={4}>
                 <Box
                   h={{ base: "24", md: "28" }}
                   w="56%"
                   rounded="2xl"
-                  bg="#F4F7FB"
+                  bg="ui.panelAlt"
                   borderWidth="1px"
-                  borderColor="#E8EDF5"
+                  borderColor="ui.borderSoft"
                 />
                 <Box
                   h={{ base: "24", md: "28" }}
                   w="44%"
                   rounded="2xl"
-                  bg="#F4F7FB"
+                  bg="ui.panelAlt"
                   borderWidth="1px"
-                  borderColor="#E8EDF5"
+                  borderColor="ui.borderSoft"
                 />
               </HStack>
-              <Box h="3.5" rounded="full" bg="#E8EDF5" w="64%" />
+              <Box h="3.5" rounded="full" bg="ui.borderSoft" w="64%" />
             </Box>
 
             <Box
@@ -394,11 +358,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
               bottom={{ base: "-10%", md: "-3%" }}
               left={{ base: "2%", md: "10%" }}
               w={{ base: "82%", md: "68%" }}
-              rounded="3xl"
-              bg="white"
-              borderWidth="1px"
-              borderColor="#E8EDF5"
-              boxShadow="0 26px 58px rgba(15, 23, 42, 0.14)"
+              layerStyle="heroMockCardRaised"
               px={{ base: 5, md: 6 }}
               py={{ base: 5, md: 6 }}
               zIndex={4}
@@ -408,8 +368,8 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                   <Box
                     boxSize={{ base: "12", md: "14" }}
                     rounded="2xl"
-                    bg="#E8F8EC"
-                    color="#22C55E"
+                    bg="ui.successSoft"
+                    color="ui.successText"
                     display="inline-flex"
                     alignItems="center"
                     justifyContent="center"
@@ -419,7 +379,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                   </Box>
                   <Text
                     fontWeight="bold"
-                    color="#243047"
+                    color="ui.text"
                     fontSize={{ base: "lg", md: "xl" }}
                     lineHeight={1.2}
                     letterSpacing="-0.02em"
@@ -431,40 +391,40 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                   rounded="full"
                   px={4}
                   py={2}
-                  bg="#D7F3E1"
-                  color="#15803D"
+                  bg="ui.successStrongSoft"
+                  color="ui.successStrongText"
                   fontWeight="bold"
                   fontSize={{ base: "2xs", md: "sm" }}
                 >
                   High
                 </Box>
               </HStack>
-              <Box h="1px" w="full" bg="#EAEFF5" mb={6} />
+              <Box h="1px" w="full" bg="ui.borderSoft" mb={6} />
               <Stack gap={4} mb={6}>
-                <Box h="3.5" rounded="full" bg="#E8EDF5" />
-                <Box h="3.5" rounded="full" bg="#E8EDF5" w="83%" />
-                <Box h="3.5" rounded="full" bg="#E8EDF5" w="74%" />
+                <Box h="3.5" rounded="full" bg="ui.borderSoft" />
+                <Box h="3.5" rounded="full" bg="ui.borderSoft" w="83%" />
+                <Box h="3.5" rounded="full" bg="ui.borderSoft" w="74%" />
               </Stack>
               <HStack gap={3}>
                 <Box
                   h={{ base: "12", md: "14" }}
                   flex={1}
                   rounded="2xl"
-                  bg="#FFF7EB"
+                  bg="ui.brandSoft"
                   borderWidth="1px"
-                  borderColor="#FAD7AE"
+                  borderColor="ui.brandBorderSoft"
                 />
                 <Box
                   h={{ base: "12", md: "14" }}
                   flex={1}
                   rounded="2xl"
-                  bg="#ECEFF5"
+                  bg="ui.neutralSoft"
                 />
                 <Box
                   h={{ base: "12", md: "14" }}
                   flex={1}
                   rounded="2xl"
-                  bg="#ECEFF5"
+                  bg="ui.neutralSoft"
                 />
               </HStack>
             </Box>

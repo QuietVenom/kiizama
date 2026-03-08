@@ -9,6 +9,7 @@ import {
 } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 import { AiFillDelete } from "react-icons/ai"
+import { FaDownload } from "react-icons/fa"
 import { FiDelete, FiHardDrive } from "react-icons/fi"
 
 import {
@@ -78,6 +79,24 @@ const defaultItems: LocalReportItem[] = [
 
 const STORAGE_KEY = "kiizama-overview-local-reports"
 
+const deleteButtonStyles = {
+  bg: "ui.panelAlt",
+  color: "ui.neutralText",
+  _hover: {
+    bg: "ui.danger",
+    color: "ui.textInverse",
+  },
+} as const
+
+const downloadButtonStyles = {
+  bg: "ui.brandSoft",
+  color: "ui.brandText",
+  _hover: {
+    bg: "ui.main",
+    color: "ui.panel",
+  },
+} as const
+
 const isLocalReportItem = (value: unknown): value is LocalReportItem => {
   if (!value || typeof value !== "object") return false
   const report = value as Record<string, unknown>
@@ -106,6 +125,39 @@ const readStoredReports = (): LocalReportItem[] => {
   }
 }
 
+const buildDownloadFile = (item: LocalReportItem) => {
+  const reportSummary = {
+    id: item.id,
+    name: item.name,
+    createdAt: item.createdAt,
+    source: "Kiizama local storage",
+  }
+  const isJsonReport = item.name.toLowerCase().endsWith(".json")
+
+  if (isJsonReport) {
+    return {
+      blob: new Blob([JSON.stringify(reportSummary, null, 2)], {
+        type: "application/json;charset=utf-8",
+      }),
+      filename: item.name,
+    }
+  }
+
+  const baseName = item.name.replace(/\.[^.]+$/, "")
+  const textContent = [
+    "Kiizama Local Report",
+    `Report: ${item.name}`,
+    `Saved on: ${item.createdAt}`,
+    "",
+    "This download contains the local report reference currently available in the dashboard.",
+  ].join("\n")
+
+  return {
+    blob: new Blob([textContent], { type: "text/plain;charset=utf-8" }),
+    filename: `${baseName}.txt`,
+  }
+}
+
 const RecentReportsCard = () => {
   const [items, setItems] = useState<LocalReportItem[]>(() =>
     readStoredReports(),
@@ -131,15 +183,21 @@ const RecentReportsCard = () => {
     setItemToDelete(null)
   }
 
+  const onDownloadItem = (item: LocalReportItem) => {
+    const { blob, filename } = buildDownloadFile(item)
+    const objectUrl = window.URL.createObjectURL(blob)
+    const link = document.createElement("a")
+
+    link.href = objectUrl
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(objectUrl)
+  }
+
   return (
-    <Box
-      bg="white"
-      borderWidth="1px"
-      borderColor="ui.sidebarBorder"
-      rounded="4xl"
-      p={{ base: 5, lg: 7 }}
-      boxShadow="0 4px 20px rgba(15, 23, 42, 0.04)"
-    >
+    <Box layerStyle="dashboardCard" p={{ base: 5, lg: 7 }}>
       <Flex
         alignItems={{ base: "flex-start", md: "center" }}
         justifyContent="space-between"
@@ -149,7 +207,7 @@ const RecentReportsCard = () => {
       >
         <HStack gap={3} alignItems="flex-start">
           <Flex direction="column" alignItems="center" minW="72px">
-            <Icon as={FiHardDrive} color="#EA580C" boxSize={7} />
+            <Icon as={FiHardDrive} color="ui.brandText" boxSize={7} />
             <Text
               mt={1}
               fontSize={{ base: "sm", lg: "md" }}
@@ -177,16 +235,11 @@ const RecentReportsCard = () => {
             <Button
               aria-label="Delete all reports"
               variant="solid"
-              bg="gray.200"
-              color="gray.600"
               boxSize="40px"
               minW="40px"
               p={0}
               disabled={items.length === 0}
-              _hover={{
-                bg: "red.500",
-                color: "white",
-              }}
+              {...deleteButtonStyles}
             >
               <Icon as={AiFillDelete} boxSize={4} />
             </Button>
@@ -236,7 +289,7 @@ const RecentReportsCard = () => {
             ? {
                 "&::-webkit-scrollbar": { width: "8px" },
                 "&::-webkit-scrollbar-thumb": {
-                  background: "#CBD5E1",
+                  background: "ui.scrollbarThumb",
                   borderRadius: "8px",
                 },
                 "&::-webkit-scrollbar-track": { background: "transparent" },
@@ -297,20 +350,26 @@ const RecentReportsCard = () => {
                   </Box>
                 </HStack>
 
-                <Button
-                  aria-label={`Delete report ${item.name}`}
-                  variant="solid"
-                  bg="gray.200"
-                  color="gray.600"
-                  size="sm"
-                  onClick={() => setItemToDelete(item)}
-                  _hover={{
-                    bg: "red.500",
-                    color: "white",
-                  }}
-                >
-                  <Icon as={FiDelete} boxSize={4} />
-                </Button>
+                <HStack gap={2}>
+                  <Button
+                    aria-label={`Download report ${item.name}`}
+                    variant="solid"
+                    size="sm"
+                    onClick={() => onDownloadItem(item)}
+                    {...downloadButtonStyles}
+                  >
+                    <Icon as={FaDownload} boxSize={3.5} />
+                  </Button>
+                  <Button
+                    aria-label={`Delete report ${item.name}`}
+                    variant="solid"
+                    size="sm"
+                    onClick={() => setItemToDelete(item)}
+                    {...deleteButtonStyles}
+                  >
+                    <Icon as={FiDelete} boxSize={4} />
+                  </Button>
+                </HStack>
               </Flex>
             ))
           )}
