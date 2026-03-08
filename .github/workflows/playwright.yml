@@ -37,12 +37,13 @@ jobs:
             - docker-compose*.yml
             - .github/workflows/playwright.yml
 
-  test-playwright:
+  playwright-shards:
     needs:
       - changes
     if: ${{ needs.changes.outputs.changed == 'true' }}
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    name: playwright-shards (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     env:
       DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres_test:5432/app_test
       POSTGRES_TEST_DB: app_test
@@ -99,7 +100,7 @@ jobs:
 
   merge-playwright-reports:
     needs:
-      - test-playwright
+      - playwright-shards
       - changes
     # Merge reports after playwright-tests, even if some shards have failed
     if: ${{ !cancelled() && needs.changes.outputs.changed == 'true' }}
@@ -144,14 +145,14 @@ jobs:
         include-hidden-files: true
 
   # https://github.com/marketplace/actions/alls-green#why
-  alls-green-playwright:  # This job does nothing and is only used for the branch protection
+  test-playwright:  # Stable check name for branch protection
     if: always()
     needs:
-      - test-playwright
+      - playwright-shards
     runs-on: ubuntu-latest
     steps:
       - name: Decide whether the needed jobs succeeded or failed
         uses: re-actors/alls-green@release/v1
         with:
           jobs: ${{ toJSON(needs) }}
-          allowed-skips: test-playwright
+          allowed-skips: playwright-shards

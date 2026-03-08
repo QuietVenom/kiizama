@@ -18,7 +18,7 @@ const DashboardTopbar = () => {
       gap={4}
       borderBottomWidth="1px"
       borderBottomColor="ui.sidebarBorder"
-      bg="white"
+      bg="ui.panel"
       ps={{ base: 16, md: 0 }}
       pe={{ base: 4, md: 7, lg: 10 }}
       py={3}
@@ -49,7 +49,7 @@ const DashboardTopbar = () => {
             right="10px"
             boxSize="7px"
             rounded="full"
-            bg="orange.400"
+            bg="ui.brandText"
           />
         </IconButton>
 

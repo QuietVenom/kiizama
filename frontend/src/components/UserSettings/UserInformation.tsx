@@ -121,7 +121,7 @@ const UserInformation = () => {
         </Field>
         <Flex mt={4} gap={3}>
           <Button
-            variant="solid"
+            layerStyle="brandGradientButton"
             onClick={toggleEditMode}
             type={editMode ? "button" : "submit"}
             loading={editMode ? isSubmitting : false}

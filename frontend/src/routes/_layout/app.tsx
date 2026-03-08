@@ -56,29 +56,25 @@ function Home() {
             icon={FiUserCheck}
             label="Profile Mining: Total Credits"
             value="50 / 50"
-            iconBg="#DBEAFE"
-            iconColor="#2563EB"
+            tone="info"
           />
           <MetricCard
             icon={FiFileText}
             label="Creator Report: Social Media Reports"
             value="20 / 20"
-            iconBg="#F3E8FF"
-            iconColor="#9333EA"
+            tone="accent"
           />
           <MetricCard
             icon={FiShield}
             label="Reputation Campaign Strategy: Created Reports"
             value="3 / 3"
-            iconBg="#D1FAE5"
-            iconColor="#059669"
+            tone="positive"
           />
           <MetricCard
             icon={FiShield}
             label="Reputation Creator Strategy: Created Reports"
             value="3 / 3"
-            iconBg="#F3E8FF"
-            iconColor="#9333EA"
+            tone="accent"
           />
         </Grid>
 

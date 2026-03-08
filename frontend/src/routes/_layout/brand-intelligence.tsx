@@ -13,13 +13,7 @@ function BrandIntelligencePage() {
       <DashboardTopbar />
 
       <Box px={{ base: 4, md: 7, lg: 10 }} py={{ base: 7, lg: 9 }}>
-        <Box
-          rounded="2xl"
-          borderWidth="1px"
-          borderColor="ui.sidebarBorder"
-          bg="white"
-          p={{ base: 6, md: 8 }}
-        >
+        <Box layerStyle="landingCard" p={{ base: 6, md: 8 }}>
           <Heading size="lg">Brand Intelligence</Heading>
           <Text mt={3} color="ui.secondaryText">
             This section is now available. Content will be added here soon.

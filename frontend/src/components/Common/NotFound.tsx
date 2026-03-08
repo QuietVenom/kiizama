@@ -27,7 +27,13 @@ const NotFound = () => {
         </Flex>
       </Flex>
 
-      <Text fontSize="lg" color="gray.600" mb={4} textAlign="center" zIndex={1}>
+      <Text
+        fontSize="lg"
+        color="ui.secondaryText"
+        mb={4}
+        textAlign="center"
+        zIndex={1}
+      >
         The page you are looking for was not found.
       </Text>
       <Center zIndex={1}>

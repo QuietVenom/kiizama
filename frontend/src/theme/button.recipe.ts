@@ -12,8 +12,10 @@ export const buttonRecipe = defineRecipe({
     variant: {
       ghost: {
         bg: "transparent",
+        color: "ui.secondaryText",
         _hover: {
-          bg: "ui.contrast",
+          bg: "ui.activeSoft",
+          color: "ui.text",
         },
       },
     },

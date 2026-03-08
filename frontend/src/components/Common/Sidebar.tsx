@@ -1,4 +1,4 @@
-import { Box, Flex, Icon, IconButton, Image, Text } from "@chakra-ui/react"
+import { Box, Flex, Icon, IconButton, Text } from "@chakra-ui/react"
 import { Link as RouterLink, useLocation } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import { FaBars } from "react-icons/fa"
@@ -15,6 +15,7 @@ import {
   DrawerRoot,
   DrawerTrigger,
 } from "../ui/drawer"
+import ThemeLogo from "./ThemeLogo"
 
 type SidebarRoute =
   | "/app"
@@ -73,7 +74,11 @@ const SidebarNavItem = ({
     borderColor: "transparent",
     position: "relative",
     bg: isActive ? "ui.activeSoft" : "transparent",
-    color: item.danger ? "#EF4444" : isActive ? "#F97316" : "ui.secondaryText",
+    color: item.danger
+      ? "ui.danger"
+      : isActive
+        ? "ui.link"
+        : "ui.secondaryText",
     _hover: item.placeholder
       ? undefined
       : {
@@ -90,7 +95,7 @@ const SidebarNavItem = ({
           h: "26px",
           w: "4px",
           roundedRight: "full",
-          bg: "#F97316",
+          bg: "ui.link",
         }
       : undefined,
     opacity: item.placeholder ? 0.85 : 1,
@@ -189,14 +194,12 @@ const SidebarBody = ({
       direction="column"
       h="full"
       w="full"
-      bg="white"
+      bg="ui.panel"
       borderRightWidth="1px"
       borderRightColor="ui.sidebarBorder"
     >
       <Flex px={6} py={7} alignItems="center" gap={3}>
-        <Image
-          src="/assets/images/noBgColor.svg"
-          alt="Kiizama logo"
+        <ThemeLogo
           h="14"
           w="auto"
           display="block"
@@ -244,8 +247,8 @@ const SidebarBody = ({
             <Flex
               boxSize="12"
               rounded="full"
-              bg="#FDECD7"
-              color="#D97706"
+              bg="ui.brandGlow"
+              color="ui.brandText"
               fontSize="xl"
               fontWeight="bold"
               alignItems="center"
@@ -310,11 +313,11 @@ const Sidebar = () => {
             top={3}
             left={3}
             zIndex={100}
-            bg="white"
+            bg="ui.panel"
             borderWidth="1px"
             borderColor="ui.sidebarBorder"
             rounded="xl"
-            boxShadow="sm"
+            boxShadow="ui.panelSm"
           >
             <FaBars />
           </IconButton>
