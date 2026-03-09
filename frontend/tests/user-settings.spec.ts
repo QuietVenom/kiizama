@@ -2,6 +2,7 @@ import { expect, type Page, test } from "@playwright/test"
 import { firstSuperuser, firstSuperuserPassword } from "./config.ts"
 import { createUser } from "./utils/privateApi.ts"
 import { randomEmail, randomPassword } from "./utils/random"
+import { anonymousStorageState } from "./utils/storageState.ts"
 import { logInUser, logOutUser } from "./utils/user"
 
 const tabs = ["My profile", "Password", "Appearance"]
@@ -50,7 +51,7 @@ test("All tabs are visible", async ({ page }) => {
 })
 
 test.describe("Edit user full name and email successfully", () => {
-  test.use({ storageState: { cookies: [], origins: [] } })
+  test.use({ storageState: anonymousStorageState })
 
   test("Edit user name with a valid name", async ({ page }) => {
     const email = randomEmail()
@@ -97,7 +98,7 @@ test.describe("Edit user full name and email successfully", () => {
 })
 
 test.describe("Edit user with invalid data", () => {
-  test.use({ storageState: { cookies: [], origins: [] } })
+  test.use({ storageState: anonymousStorageState })
 
   test("Edit user email with an invalid email", async ({ page }) => {
     const email = randomEmail()
@@ -163,7 +164,7 @@ test.describe("Edit user with invalid data", () => {
 // Change Password
 
 test.describe("Change password successfully", () => {
-  test.use({ storageState: { cookies: [], origins: [] } })
+  test.use({ storageState: anonymousStorageState })
 
   test("Update password successfully", async ({ page }) => {
     const email = randomEmail()
@@ -191,7 +192,7 @@ test.describe("Change password successfully", () => {
 })
 
 test.describe("Change password with invalid data", () => {
-  test.use({ storageState: { cookies: [], origins: [] } })
+  test.use({ storageState: anonymousStorageState })
 
   test("Update password with weak passwords", async ({ page }) => {
     const email = randomEmail()

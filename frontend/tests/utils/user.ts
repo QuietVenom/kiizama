@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test"
+import { ensureCookieConsent } from "./storageState.ts"
 
 export async function signUpNewUser(
   page: Page,
@@ -6,6 +7,7 @@ export async function signUpNewUser(
   email: string,
   password: string,
 ) {
+  await ensureCookieConsent(page)
   await page.goto("/signup")
 
   await page.getByPlaceholder("Full Name").fill(name)
@@ -17,12 +19,13 @@ export async function signUpNewUser(
 }
 
 export async function logInUser(page: Page, email: string, password: string) {
+  await ensureCookieConsent(page)
   await page.goto("/login")
 
   await page.getByPlaceholder("Email").fill(email)
   await page.getByPlaceholder("Password", { exact: true }).fill(password)
   await page.getByRole("button", { name: "Log In" }).click()
-  await page.waitForURL("/app")
+  await expect(page).toHaveURL(/\/app$/)
   await expect(
     page.getByText("Welcome back, nice to see you again!"),
   ).toBeVisible()
@@ -33,7 +36,7 @@ export async function logOutUser(page: Page) {
   if ((await legacyUserMenu.count()) > 0) {
     await legacyUserMenu.click()
     await page.getByRole("menuitem", { name: /^log out$/i }).click()
-    await page.waitForURL("/login")
+    await expect(page).toHaveURL(/\/login$/)
     return
   }
 
@@ -47,7 +50,7 @@ export async function logOutUser(page: Page) {
 
   if (hasVisibleSidebarLogout) {
     await sidebarLogoutButton.click()
-    await page.waitForURL("/login")
+    await expect(page).toHaveURL(/\/login$/)
     return
   }
 
@@ -56,5 +59,5 @@ export async function logOutUser(page: Page) {
     .getByRole("button", { name: /^log out$/i })
     .first()
     .click()
-  await page.waitForURL("/login")
+  await expect(page).toHaveURL(/\/login$/)
 }

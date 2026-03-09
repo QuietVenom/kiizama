@@ -1,9 +1,10 @@
 import { expect, type Page, test } from "@playwright/test"
 import { firstSuperuser, firstSuperuserPassword } from "./config.ts"
 import { randomPassword } from "./utils/random.ts"
+import { anonymousStorageState } from "./utils/storageState.ts"
 import { logOutUser } from "./utils/user.ts"
 
-test.use({ storageState: { cookies: [], origins: [] } })
+test.use({ storageState: anonymousStorageState })
 
 type OptionsType = {
   exact?: boolean
@@ -52,7 +53,7 @@ test("Log in with valid email and password ", async ({ page }) => {
   await fillForm(page, firstSuperuser, firstSuperuserPassword)
   await page.getByRole("button", { name: "Log In" }).click()
 
-  await page.waitForURL("/app")
+  await expect(page).toHaveURL(/\/app$/)
 
   await expect(
     page.getByText("Welcome back, nice to see you again!"),
@@ -86,7 +87,7 @@ test("Successful log out", async ({ page }) => {
   await fillForm(page, firstSuperuser, firstSuperuserPassword)
   await page.getByRole("button", { name: "Log In" }).click()
 
-  await page.waitForURL("/app")
+  await expect(page).toHaveURL(/\/app$/)
 
   await expect(
     page.getByText("Welcome back, nice to see you again!"),
@@ -101,7 +102,7 @@ test("Logged-out user cannot access protected routes", async ({ page }) => {
   await fillForm(page, firstSuperuser, firstSuperuserPassword)
   await page.getByRole("button", { name: "Log In" }).click()
 
-  await page.waitForURL("/app")
+  await expect(page).toHaveURL(/\/app$/)
 
   await expect(
     page.getByText("Welcome back, nice to see you again!"),
@@ -110,7 +111,7 @@ test("Logged-out user cannot access protected routes", async ({ page }) => {
   await logOutUser(page)
 
   await page.goto("/settings")
-  await page.waitForURL("/login")
+  await expect(page).toHaveURL(/\/login$/)
 })
 
 test("Redirects to /login when token is wrong", async ({ page }) => {
@@ -119,6 +120,5 @@ test("Redirects to /login when token is wrong", async ({ page }) => {
     localStorage.setItem("access_token", "invalid_token")
   })
   await page.goto("/settings")
-  await page.waitForURL("/login")
-  await expect(page).toHaveURL("/login")
+  await expect(page).toHaveURL(/\/login$/)
 })

@@ -1,8 +1,9 @@
 import { expect, type Page, test } from "@playwright/test"
 
 import { randomEmail, randomPassword } from "./utils/random"
+import { anonymousStorageState } from "./utils/storageState"
 
-test.use({ storageState: { cookies: [], origins: [] } })
+test.use({ storageState: anonymousStorageState })
 
 type OptionsType = {
   exact?: boolean

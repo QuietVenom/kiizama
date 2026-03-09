@@ -1,9 +1,10 @@
 import { expect, test } from "@playwright/test"
 import { findLastEmail } from "./utils/mailcatcher"
 import { randomEmail, randomPassword } from "./utils/random"
+import { anonymousStorageState } from "./utils/storageState"
 import { logInUser, signUpNewUser } from "./utils/user"
 
-test.use({ storageState: { cookies: [], origins: [] } })
+test.use({ storageState: anonymousStorageState })
 
 test("Password Recovery title is visible", async ({ page }) => {
   await page.goto("/recover-password")
