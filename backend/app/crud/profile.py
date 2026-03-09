@@ -45,6 +45,21 @@ async def get_profiles_by_usernames(
     return [cast(Document, doc) async for doc in cursor]
 
 
+async def get_existing_profile_usernames(
+    collection: Any, usernames: list[str]
+) -> list[str]:
+    cursor = collection.find(
+        {"username": {"$in": usernames}},
+        {"_id": 0, "username": 1},
+    )
+    existing_usernames: list[str] = []
+    async for doc in cursor:
+        username = doc.get("username")
+        if isinstance(username, str):
+            existing_usernames.append(username)
+    return existing_usernames
+
+
 async def update_profile(
     collection: Any, profile_id: str, patch: UpdateProfile
 ) -> Document | None:

@@ -93,6 +93,16 @@ class InfluencerProfileDirectoryItem(BaseModel):
     metrics: InfluencerMetricsSummary = Field(default_factory=InfluencerMetricsSummary)
 
 
+class ProfileExistenceItem(BaseModel):
+    username: str
+    exists: bool
+    expired: bool
+
+
+class ProfileExistenceCollection(BaseModel):
+    profiles: list[ProfileExistenceItem] = Field(default_factory=list)
+
+
 class ReputationSignalsInput(BaseModel):
     strengths: list[str] = Field(default_factory=list)
     weaknesses: list[str] = Field(default_factory=list)
@@ -589,6 +599,25 @@ class CampaignTypeCatalogResponse(BaseModel):
     items: list[CampaignTypeCatalogItem] = Field(default_factory=list)
 
 
+def normalize_lookup_usernames(usernames: list[str] | None) -> list[str]:
+    if not usernames:
+        raise ValueError("usernames cannot be empty")
+
+    normalized_usernames: list[str] = []
+    for username in usernames:
+        cleaned = username.strip()
+        if not cleaned:
+            raise ValueError("usernames cannot contain empty values")
+        if not PROFILE_PATTERN.fullmatch(cleaned):
+            raise ValueError(
+                "Cada username debe cumplir: "
+                "1-30 caracteres, letras, numeros, punto o guion bajo, sin espacios."
+            )
+        normalized_usernames.append(cleaned.lower())
+
+    return normalized_usernames
+
+
 def build_campaign_type_catalog() -> list[CampaignTypeCatalogItem]:
     return [
         CampaignTypeCatalogItem(
@@ -609,6 +638,8 @@ __all__ = [
     "CostAnalysis",
     "InfluencerMetricsSummary",
     "InfluencerProfileDirectoryItem",
+    "ProfileExistenceCollection",
+    "ProfileExistenceItem",
     "ReputationSignalsInput",
     "ReputationCampaignStrategyRequest",
     "ReputationCampaignStrategyConfirmResponse",

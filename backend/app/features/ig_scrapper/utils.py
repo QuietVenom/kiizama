@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import parse_qs, urlsplit
@@ -29,7 +30,7 @@ def instagram_cdn_expiry(
     return expires_utc, seconds_left
 
 
-def should_refresh_profile(existing_profile: dict[str, Any] | None) -> bool:
+def should_refresh_profile(existing_profile: Mapping[str, Any] | None) -> bool:
     if not existing_profile:
         return True
 

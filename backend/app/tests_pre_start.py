@@ -4,7 +4,9 @@ from sqlalchemy import Engine
 from sqlmodel import Session, select
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_fixed
 
+from app.core.config import settings
 from app.core.db import engine
+from app.core.testing_safety import assert_safe_test_database_url
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -31,6 +33,7 @@ def init(db_engine: Engine) -> None:
 
 def main() -> None:
     logger.info("Initializing service")
+    assert_safe_test_database_url(str(settings.SQLALCHEMY_DATABASE_URI))
     init(engine)
     logger.info("Service finished initializing")
 

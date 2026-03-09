@@ -10,7 +10,6 @@ import {
   type UserRegister,
   UsersService,
 } from "@/client"
-import { ensureCookieConsentSaved } from "@/hooks/useCookieConsent"
 import { handleError } from "@/utils"
 
 const CURRENT_USER_STALE_TIME_MS = 5 * 60 * 1000
@@ -39,7 +38,6 @@ const useAuth = () => {
       UsersService.registerUser({ requestBody: data }),
 
     onSuccess: () => {
-      ensureCookieConsentSaved()
       navigate({ to: "/login" })
     },
     onError: (err: ApiError) => {
@@ -60,7 +58,6 @@ const useAuth = () => {
   const loginMutation = useMutation({
     mutationFn: login,
     onSuccess: () => {
-      ensureCookieConsentSaved()
       navigate({ to: "/app" })
     },
     onError: (err: ApiError) => {

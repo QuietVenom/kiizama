@@ -2,6 +2,7 @@ import type { QueryClient } from "@tanstack/react-query"
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router"
 import React, { Suspense } from "react"
 
+import CookieConsentPrompt from "@/components/Common/CookieConsentPrompt"
 import NotFound from "@/components/Common/NotFound"
 
 export interface RouterAppContext {
@@ -30,6 +31,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
   component: () => (
     <>
       <Outlet />
+      <CookieConsentPrompt />
       <Suspense>
         <TanStackDevtools />
       </Suspense>

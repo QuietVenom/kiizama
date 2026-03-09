@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.features.ig_scrapper.utils import should_refresh_profile
 from app.features.openai.classes import (
     render_creator_strategy_sections_html,
     render_reputation_strategy_sections_html,
@@ -11,11 +12,14 @@ from .classes import CAMPAIGN_TYPE_OPTIONS_BY_NAME
 from .repository import BrandIntelligenceRepository
 from .schemas import (
     CampaignTypeCatalogItem,
+    ProfileExistenceCollection,
+    ProfileExistenceItem,
     ReputationCampaignStrategyConfirmResponse,
     ReputationCampaignStrategyRequest,
     ReputationCreatorStrategyConfirmResponse,
     ReputationCreatorStrategyRequest,
     build_campaign_type_catalog,
+    normalize_lookup_usernames,
 )
 from .services.service_config import CAMPAIGN_TEMPLATE_PATH, CREATOR_TEMPLATE_PATH
 from .services.service_costs import build_cost_analysis, build_cost_tier_directory
@@ -176,6 +180,37 @@ async def confirm_reputation_campaign_strategy(
     )
 
 
+async def check_profile_usernames_existence(
+    usernames: list[str] | None,
+    profiles_collection: Any,
+    repository: BrandIntelligenceRepository | None = None,
+) -> ProfileExistenceCollection:
+    normalized_usernames = normalize_lookup_usernames(usernames)
+    repo = repository or BrandIntelligenceRepository()
+
+    unique_usernames = list(dict.fromkeys(normalized_usernames))
+    profiles = await repo.fetch_profiles_by_usernames(
+        profiles_collection,
+        unique_usernames,
+    )
+    profiles_by_username = {
+        str(profile.get("username")).lower(): profile
+        for profile in profiles
+        if isinstance(profile.get("username"), str)
+    }
+
+    return ProfileExistenceCollection(
+        profiles=[
+            ProfileExistenceItem(
+                username=username,
+                exists=username in profiles_by_username,
+                expired=should_refresh_profile(profiles_by_username.get(username)),
+            )
+            for username in normalized_usernames
+        ]
+    )
+
+
 async def confirm_reputation_creator_strategy(
     payload: ReputationCreatorStrategyRequest | dict[str, Any],
     profiles_collection: Any,
@@ -226,6 +261,7 @@ async def confirm_reputation_creator_strategy(
 
 
 __all__ = [
+    "check_profile_usernames_existence",
     "confirm_reputation_campaign_strategy",
     "confirm_reputation_creator_strategy",
     "generate_reputation_campaign_strategy_report",
