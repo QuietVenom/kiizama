@@ -6,6 +6,16 @@ import { logInUser, signUpNewUser } from "./utils/user"
 
 test.use({ storageState: anonymousStorageState })
 
+const normalizeAppUrl = (rawUrl: string, appOrigin: string) => {
+  const targetUrl = new URL(rawUrl)
+  const currentAppUrl = new URL(appOrigin)
+
+  targetUrl.protocol = currentAppUrl.protocol
+  targetUrl.host = currentAppUrl.host
+
+  return targetUrl.toString()
+}
+
 test("Password Recovery title is visible", async ({ page }) => {
   await page.goto("/recover-password")
 
@@ -41,6 +51,7 @@ test("User can reset password successfully using the link", async ({
   await signUpNewUser(page, fullName, email, password)
 
   await page.goto("/recover-password")
+  const appOrigin = new URL(page.url()).origin
   await page.getByPlaceholder("Email").fill(email)
 
   await page.getByRole("button", { name: "Continue" }).click()
@@ -57,10 +68,10 @@ test("User can reset password successfully using the link", async ({
 
   const selector = 'a[href*="/reset-password?token="]'
 
-  let url = await page.getAttribute(selector, "href")
-
-  // TODO: update var instead of doing a replace
-  url = url!.replace("http://localhost/", "http://localhost:5173/")
+  const url = normalizeAppUrl(
+    (await page.getAttribute(selector, "href"))!,
+    appOrigin,
+  )
 
   // Set the new password and confirm it
   await page.goto(url)
@@ -97,6 +108,7 @@ test("Weak new password validation", async ({ page, request }) => {
   await signUpNewUser(page, fullName, email, password)
 
   await page.goto("/recover-password")
+  const appOrigin = new URL(page.url()).origin
   await page.getByPlaceholder("Email").fill(email)
   await page.getByRole("button", { name: "Continue" }).click()
 
@@ -111,8 +123,10 @@ test("Weak new password validation", async ({ page, request }) => {
   )
 
   const selector = 'a[href*="/reset-password?token="]'
-  let url = await page.getAttribute(selector, "href")
-  url = url!.replace("http://localhost/", "http://localhost:5173/")
+  const url = normalizeAppUrl(
+    (await page.getAttribute(selector, "href"))!,
+    appOrigin,
+  )
 
   // Set a weak new password
   await page.goto(url)
