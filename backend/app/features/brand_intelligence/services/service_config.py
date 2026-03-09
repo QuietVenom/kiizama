@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 TEMPLATES_DIR = (
-    Path(__file__).resolve().parent.parent.parent / "templates" / "social_media_report"
+    Path(__file__).resolve().parent.parent.parent / "templates" / "reputation_strategy"
 )
 CAMPAIGN_TEMPLATE_PATH = TEMPLATES_DIR / "reputation_campaign_strategy.html"
 CREATOR_TEMPLATE_PATH = TEMPLATES_DIR / "reputation_creator_strategy.html"

@@ -30,7 +30,7 @@ jobs:
       - run: docker compose --env-file .env.example down -v --remove-orphans
       - name: Start stack
         run: |
-          DATABASE_URL="${DATABASE_URL}" docker compose --env-file .env.example up -d --wait postgres_test backend frontend adminer || {
+          DATABASE_URL="${DATABASE_URL}" docker compose --env-file .env.example up -d --wait postgres_test backend frontend || {
             echo "Stack failed to start. Dumping service logs..."
             DATABASE_URL="${DATABASE_URL}" docker compose --env-file .env.example logs prestart postgres_test backend --no-color
             exit 1

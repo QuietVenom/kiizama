@@ -210,7 +210,7 @@ test.describe("Change password with invalid data", () => {
     await page.getByPlaceholder("New Password").fill(weakPassword)
     await page.getByPlaceholder("Confirm Password").fill(weakPassword)
     await expect(
-      page.getByText("Password must be at least 8 characters"),
+      page.getByText("Password must be between 8 and 25 characters"),
     ).toBeVisible()
   })
 

@@ -16,7 +16,12 @@ import { FaExchangeAlt } from "react-icons/fa"
 import { type UserPublic, UsersService, type UserUpdate } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import useCustomToast from "@/hooks/useCustomToast"
-import { emailPattern, handleError } from "@/utils"
+import {
+  confirmPasswordRules,
+  emailPattern,
+  handleError,
+  newPasswordRules,
+} from "@/utils"
 import { Checkbox } from "../ui/checkbox"
 import {
   DialogBody,
@@ -131,12 +136,7 @@ const EditUser = ({ user }: EditUserProps) => {
                 label="Set Password"
               >
                 <Input
-                  {...register("password", {
-                    minLength: {
-                      value: 8,
-                      message: "Password must be at least 8 characters",
-                    },
-                  })}
+                  {...register("password", newPasswordRules(false))}
                   placeholder="Password"
                   type="password"
                 />
@@ -148,11 +148,10 @@ const EditUser = ({ user }: EditUserProps) => {
                 label="Confirm Password"
               >
                 <Input
-                  {...register("confirm_password", {
-                    validate: (value) =>
-                      value === getValues().password ||
-                      "The passwords do not match",
-                  })}
+                  {...register(
+                    "confirm_password",
+                    confirmPasswordRules(getValues, false),
+                  )}
                   placeholder="Password"
                   type="password"
                 />

@@ -72,8 +72,7 @@ def snapshot_is_more_recent(
 
 
 def build_campaign_template_name(brand_name: str) -> str:
-    normalized = re.sub(r"[^a-z0-9]+", "_", brand_name.strip().lower())
-    normalized = normalized.strip("_") or "brand"
+    normalized = safe_slug(brand_name) or "brand"
     return f"reputation_campaign_strategy_{normalized}.html"
 
 
@@ -81,6 +80,13 @@ def build_creator_template_name(creator_username: str) -> str:
     normalized = re.sub(r"[^a-z0-9._]+", "_", creator_username.strip().lower())
     normalized = normalized.strip("_") or "creator"
     return f"reputation_creator_strategy_{normalized}.html"
+
+
+def safe_slug(value: str | None) -> str:
+    if not value:
+        return ""
+    slug = re.sub(r"[^a-zA-Z0-9_-]+", "_", value).strip("_")
+    return slug.lower()
 
 
 __all__ = [

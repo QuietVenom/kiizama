@@ -32,7 +32,7 @@ Source repository: https://github.com/QuietVenom/kiizama
 - [Docker Compose](https://www.docker.com) for local and server orchestration.
 - [Traefik](https://traefik.io) for routing and TLS termination.
 - [uv](https://docs.astral.sh/uv/) for Python dependency and environment management.
-- Adminer and MailCatcher for local development support.
+- MailCatcher for local development support.
 - Optional `scrape_worker` process/service for asynchronous jobs.
 - [Pytest](https://pytest.org) and Playwright for automated testing.
 - CI/CD support with GitHub Actions and Render (`render.yaml`).
@@ -72,7 +72,6 @@ docker compose watch
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:8000
 - Swagger UI: http://localhost:8000/docs
-- Adminer: http://localhost:8080
 - Traefik UI: http://localhost:8090
 - MailCatcher: http://localhost:1080
 
@@ -100,7 +99,7 @@ Configuration lives in `.env` and is consumed by Docker Compose, backend and wor
 - `STACK_NAME`
 - `ENVIRONMENT` (`local`, `staging`, `production`)
 - `DOMAIN`
-- `FRONTEND_HOST`
+- `FRONTEND_HOST` (authenticated app origin used by backend-generated links)
 - `BACKEND_CORS_ORIGINS`
 
 ### Security and auth
@@ -202,10 +201,6 @@ Deployment docs: [deployment.md](./deployment.md).
 ## Development
 
 General development docs: [development.md](./development.md).
-
-## Release Notes
-
-Check [release-notes.md](./release-notes.md).
 
 ## License
 

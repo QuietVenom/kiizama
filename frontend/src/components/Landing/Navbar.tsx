@@ -16,7 +16,6 @@ import { FiMenu, FiX } from "react-icons/fi"
 import ThemeLogo from "@/components/Common/ThemeLogo"
 import { Button } from "@/components/ui/button"
 import { useColorMode } from "@/components/ui/color-mode"
-import { getAppUrl } from "@/utils"
 
 type SectionKey = "home" | "features" | "pricing" | "faq"
 
@@ -84,7 +83,7 @@ const LandingNavbar = ({
   sectionRefs,
 }: LandingNavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const loginUrl = getAppUrl("/login")
+  const loginUrl = "/login"
 
   const handleSectionClick = (key: SectionKey) => {
     if (mobileMenuOpen) {

@@ -9,7 +9,7 @@ from app.crud_users import create_user
 from app.models import UserCreate
 from app.utils import generate_password_reset_token
 from tests.utils.user import user_authentication_headers
-from tests.utils.utils import random_email, random_lower_string
+from tests.utils.utils import random_email, random_password
 
 
 def test_get_access_token(client: TestClient) -> None:
@@ -74,8 +74,8 @@ def test_recovery_password_user_not_exits(
 
 def test_reset_password(client: TestClient, db: Session) -> None:
     email = random_email()
-    password = random_lower_string()
-    new_password = random_lower_string()
+    password = random_password()
+    new_password = random_password()
 
     user_create = UserCreate(
         email=email,
@@ -102,10 +102,41 @@ def test_reset_password(client: TestClient, db: Session) -> None:
     assert verify_password(new_password, user.hashed_password)
 
 
+def test_reset_password_rejects_password_without_special_character(
+    client: TestClient, db: Session
+) -> None:
+    email = random_email()
+    password = random_password()
+
+    user_create = UserCreate(
+        email=email,
+        full_name="Test User",
+        password=password,
+        is_active=True,
+        is_superuser=False,
+    )
+    create_user(session=db, user_create=user_create)
+    token = generate_password_reset_token(email=email)
+    headers = user_authentication_headers(client=client, email=email, password=password)
+    data = {"new_password": "Valid1234", "token": token}
+
+    r = client.post(
+        f"{settings.API_V1_STR}/reset-password/",
+        headers=headers,
+        json=data,
+    )
+
+    assert r.status_code == 422
+    assert (
+        r.json()["detail"][0]["msg"]
+        == "Password must include at least 1 special character (!, @, #, $, %)"
+    )
+
+
 def test_reset_password_invalid_token(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    data = {"new_password": "changethis", "token": "invalid"}
+    data = {"new_password": "Valid1!Pass", "token": "invalid"}
     r = client.post(
         f"{settings.API_V1_STR}/reset-password/",
         headers=superuser_token_headers,

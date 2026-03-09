@@ -25,7 +25,6 @@ import {
 } from "react-icons/fi"
 
 import {
-  ApiError,
   IgProfileSnapshotsService,
   OpenAPI,
   type ProfileSnapshotExpanded,
@@ -50,13 +49,22 @@ import {
   SkeletonCircle,
   SkeletonText,
 } from "@/components/ui/skeleton"
+import { extractApiErrorMessage } from "@/lib/api-errors"
+import {
+  areStringArraysEqual,
+  isValidInstagramUsername,
+  sanitizeInstagramUsernames,
+} from "@/lib/instagram-usernames"
+import {
+  downloadBlob,
+  extractFilenameFromContentDisposition,
+} from "@/lib/report-files"
 
 export const Route = createFileRoute("/_layout/creators-search")({
   component: CreatorsSearchPage,
 })
 
 const MAX_USERNAMES = 50
-const USERNAME_PATTERN = /^(?!.*\.\.)(?!\.)(?!.*\.$)[a-z0-9._]{1,30}$/
 
 type OverviewCardTone = "brand" | "success" | "warning" | "danger"
 
@@ -86,52 +94,7 @@ const overviewToneStyles: Record<
   },
 }
 
-const normalizeUsername = (value: string) =>
-  value.trim().replace(/^@+/, "").toLowerCase()
-
-const sanitizeUsernames = (value: string[]) =>
-  Array.from(
-    new Set(value.map((item) => normalizeUsername(item)).filter(Boolean)),
-  )
-
-const isValidUsername = (value: string) => USERNAME_PATTERN.test(value)
-
-const arraysEqual = (left: string[], right: string[]) =>
-  left.length === right.length &&
-  left.every((value, index) => value === right[index])
-
 const REPORT_ENDPOINT_PATH = "/api/v1/social-media-report/instagram"
-
-const extractFilename = (
-  contentDisposition: string | null,
-  username: string,
-) => {
-  if (contentDisposition) {
-    const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i)
-    if (utf8Match?.[1]) {
-      return decodeURIComponent(utf8Match[1])
-    }
-
-    const basicMatch = contentDisposition.match(/filename="?([^"]+)"?/i)
-    if (basicMatch?.[1]) {
-      return basicMatch[1]
-    }
-  }
-
-  return `${username}_report.pdf`
-}
-
-const downloadBlob = (blob: Blob, filename: string) => {
-  const objectUrl = window.URL.createObjectURL(blob)
-  const link = document.createElement("a")
-
-  link.href = objectUrl
-  link.download = filename
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  window.URL.revokeObjectURL(objectUrl)
-}
 
 const generateInstagramReportPdf = async (username: string) => {
   const token = localStorage.getItem("access_token") || ""
@@ -178,9 +141,9 @@ const generateInstagramReportPdf = async (username: string) => {
   }
 
   const blob = await response.blob()
-  const filename = extractFilename(
+  const filename = extractFilenameFromContentDisposition(
     response.headers.get("Content-Disposition"),
-    username,
+    `${username}_report.pdf`,
   )
 
   downloadBlob(blob, filename)
@@ -203,29 +166,6 @@ const sortSnapshotsByUsernames = (
 
     return leftOrder - rightOrder
   })
-}
-
-const extractApiErrorMessage = (error: unknown) => {
-  if (error instanceof ApiError) {
-    const detail = (error.body as { detail?: Array<{ msg?: string }> | string })
-      ?.detail
-
-    if (Array.isArray(detail) && detail.length > 0) {
-      return detail[0]?.msg || "Unable to complete the search."
-    }
-
-    if (typeof detail === "string") {
-      return detail
-    }
-
-    return error.message || "Unable to complete the search."
-  }
-
-  if (error instanceof Error) {
-    return error.message
-  }
-
-  return "Unable to complete the search."
 }
 
 const getValidationMessage = (
@@ -441,7 +381,7 @@ function CreatorsSearchPage() {
     useState<ProfileSnapshotExpanded | null>(null)
 
   const invalidUsernames = useMemo(
-    () => usernames.filter((username) => !isValidUsername(username)),
+    () => usernames.filter((username) => !isValidInstagramUsername(username)),
     [usernames],
   )
   const invalidSet = useMemo(
@@ -451,7 +391,7 @@ function CreatorsSearchPage() {
   const isSearchStale = useMemo(
     () =>
       submittedUsernames.length > 0 &&
-      !arraysEqual(usernames, submittedUsernames),
+      !areStringArraysEqual(usernames, submittedUsernames),
     [submittedUsernames, usernames],
   )
   const missingUsernames = useMemo(
@@ -506,7 +446,9 @@ function CreatorsSearchPage() {
       setSearchResult(data)
     },
     onError: (error) => {
-      setSearchError(extractApiErrorMessage(error))
+      setSearchError(
+        extractApiErrorMessage(error, "Unable to complete the search."),
+      )
     },
   })
 
@@ -516,12 +458,14 @@ function CreatorsSearchPage() {
       setReportError(null)
     },
     onError: (error) => {
-      setReportError(extractApiErrorMessage(error))
+      setReportError(
+        extractApiErrorMessage(error, "Unable to generate the report."),
+      )
     },
   })
 
   const handleUsernamesChange = (nextValue: string[]) => {
-    const sanitizedValue = sanitizeUsernames(nextValue)
+    const sanitizedValue = sanitizeInstagramUsernames(nextValue)
     setUsernames(sanitizedValue)
 
     if (sanitizedValue.length < MAX_USERNAMES) {
@@ -530,9 +474,9 @@ function CreatorsSearchPage() {
   }
 
   const handleSearch = () => {
-    const nextUsernames = sanitizeUsernames(usernames)
+    const nextUsernames = sanitizeInstagramUsernames(usernames)
     const nextInvalidUsernames = nextUsernames.filter(
-      (username) => !isValidUsername(username),
+      (username) => !isValidInstagramUsername(username),
     )
 
     setUsernames(nextUsernames)
@@ -802,7 +746,7 @@ function CreatorsSearchPage() {
               value={String(sortedSnapshots.length)}
             />
             <SearchOverviewCard
-              label="Expired profiles"
+              label="Update Needed"
               tone="warning"
               value={String(expiredUsernames.length)}
             />
@@ -825,12 +769,13 @@ function CreatorsSearchPage() {
             py={{ base: 5, md: 6 }}
           >
             <Text color="ui.warningText" fontSize="lg" fontWeight="black">
-              Expired profiles detected
+              Profiles need updates
             </Text>
-            <Text mt={2} color="ui.secondaryText" maxW="56ch">
-              These creators exist in saved data, but their profile image URL
-              has already expired. They are highlighted in yellow above and in
-              the results list.
+            <Text mt={2} color="ui.secondaryText">
+              These creators exist in saved data, but their stored profile data
+              needs to be updated. They are highlighted in yellow above and in
+              the results list so you can identify which saved profiles need to
+              be refreshed.
             </Text>
 
             <Flex mt={4} gap={2} wrap="wrap">

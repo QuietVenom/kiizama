@@ -22,14 +22,10 @@ import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
 import { PasswordInput } from "@/components/ui/password-input"
+import { PasswordRequirements } from "@/components/ui/password-requirements"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
 import { isPublicFeatureFlagEnabled } from "@/hooks/useFeatureFlags"
-import {
-  confirmPasswordRules,
-  emailPattern,
-  getWwwUrl,
-  passwordRules,
-} from "@/utils"
+import { confirmPasswordRules, emailPattern, newPasswordRules } from "@/utils"
 import SymbolLogo from "/assets/images/symbol.svg"
 
 const FORM_CONTAINER_MAX_W = { base: "md", md: "3xl" } as const
@@ -69,11 +65,12 @@ interface UserRegisterForm extends UserRegister {
 
 function SignUp() {
   const { signUpMutation } = useAuth()
-  const landingUrl = getWwwUrl("/")
+  const landingUrl = "/"
   const {
     register,
     handleSubmit,
     getValues,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<UserRegisterForm>({
     mode: "onBlur",
@@ -89,6 +86,7 @@ function SignUp() {
   const onSubmit: SubmitHandler<UserRegisterForm> = (data) => {
     signUpMutation.mutate(data)
   }
+  const passwordValue = watch("password")
 
   return (
     <Box
@@ -196,9 +194,10 @@ function SignUp() {
             <PasswordInput
               type="password"
               startElement={<FiLock />}
-              {...register("password", passwordRules())}
+              {...register("password", newPasswordRules())}
               placeholder="Password"
               errors={errors}
+              helperText={<PasswordRequirements password={passwordValue} />}
             />
           </Box>
           <Box w={FORM_CONTROL_MAX_W}>

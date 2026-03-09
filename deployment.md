@@ -14,7 +14,7 @@ But you have to configure a couple things first. 🤓
 
 * Have a remote server ready and available.
 * Configure the DNS records of your domain to point to the IP of the server you just created.
-* Configure a wildcard subdomain for your domain, so that you can have multiple subdomains for different services, e.g. `*.kiizama.example.com`. This will be useful for accessing different components, like `app.kiizama.example.com`, `api.kiizama.example.com`, `traefik.kiizama.example.com`, `adminer.kiizama.example.com`, etc. And also for `staging`, like `app.staging.kiizama.example.com`, `adminer.staging.kiizama.example.com`, etc.
+* Configure a wildcard subdomain for your domain, so that you can have multiple subdomains for different services, e.g. `*.kiizama.example.com`. This will be useful for accessing different components, like `app.kiizama.example.com`, `api.kiizama.example.com`, `traefik.kiizama.example.com`, etc. And also for `staging`, like `app.staging.kiizama.example.com`, etc.
 * Install and configure [Docker](https://docs.docker.com/engine/install/) on the remote server (Docker Engine, not Docker Desktop).
 
 ## Public Traefik
@@ -131,7 +131,7 @@ You can set several variables, like:
 
 * `PROJECT_NAME`: The name of the project, used in the API for the docs and emails.
 * `STACK_NAME`: The name of the stack used for Docker Compose labels and project name, this should be different for `staging`, `production`, etc. You could use the same domain replacing dots with dashes, e.g. `kiizama-example-com` and `staging-kiizama-example-com`.
-* `FRONTEND_HOST`: Base frontend URL used by backend-generated links in emails.
+* `FRONTEND_HOST`: Canonical authenticated app URL used by backend-generated links in emails.
 * `BACKEND_CORS_ORIGINS`: A list of allowed CORS origins separated by commas.
 * `SECRET_KEY`: The secret key for Kiizama, used to sign tokens.
 * `SECRET_KEY_IG_CREDENTIALS`: Secret used for Instagram credentials encryption/decryption.
@@ -260,7 +260,7 @@ The services in `render.yaml` are configured with `autoDeploy: true`, so Render 
 
 There are no GitHub Actions deployment workflows in this repository right now.
 
-GitHub Actions are currently used for CI, testing, labeling, conflict detection, release notes, and coverage reporting.
+GitHub Actions are currently used for CI, testing, labeling, conflict detection, and coverage reporting.
 
 ## URLs
 
@@ -278,8 +278,6 @@ Backend API docs: `https://api.kiizama.example.com/docs`
 
 Backend API base URL: `https://api.kiizama.example.com`
 
-Adminer: `https://adminer.kiizama.example.com`
-
 ### Staging
 
 Frontend: `https://app.staging.kiizama.example.com`
@@ -287,5 +285,3 @@ Frontend: `https://app.staging.kiizama.example.com`
 Backend API docs: `https://api.staging.kiizama.example.com/docs`
 
 Backend API base URL: `https://api.staging.kiizama.example.com`
-
-Adminer: `https://adminer.staging.kiizama.example.com`

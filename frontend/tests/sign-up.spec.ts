@@ -71,8 +71,8 @@ test("Sign up with invalid email", async ({ page }) => {
     page,
     "Playwright Test",
     "invalid-email",
-    "changethis",
-    "changethis",
+    "Valid1!Pass",
+    "Valid1!Pass",
   )
   await page.getByRole("button", { name: "Sign Up" }).click()
 
@@ -112,8 +112,36 @@ test("Sign up with weak password", async ({ page }) => {
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(
-    page.getByText("Password must be at least 8 characters"),
+    page.getByText("Password must be between 8 and 25 characters"),
   ).toBeVisible()
+})
+
+test("Password requirements checklist updates on sign up", async ({ page }) => {
+  await page.goto("/signup")
+
+  const passwordInput = page.getByPlaceholder("Password", { exact: true })
+
+  await expect(page.getByTestId("password-requirement-length")).toHaveAttribute(
+    "data-satisfied",
+    "false",
+  )
+
+  await passwordInput.fill("Abcdef1!")
+
+  await expect(page.getByTestId("password-requirement-length")).toHaveAttribute(
+    "data-satisfied",
+    "true",
+  )
+  await expect(
+    page.getByTestId("password-requirement-uppercase"),
+  ).toHaveAttribute("data-satisfied", "true")
+  await expect(page.getByTestId("password-requirement-number")).toHaveAttribute(
+    "data-satisfied",
+    "true",
+  )
+  await expect(
+    page.getByTestId("password-requirement-special"),
+  ).toHaveAttribute("data-satisfied", "true")
 })
 
 test("Sign up with mismatched passwords", async ({ page }) => {
