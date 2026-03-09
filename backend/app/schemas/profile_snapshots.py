@@ -98,3 +98,5 @@ class ProfileSnapshotExpandedCollection(BaseModel):
     """
 
     snapshots: list[ProfileSnapshotExpanded]
+    missing_usernames: list[str] = Field(default_factory=list)
+    expired_usernames: list[str] = Field(default_factory=list)

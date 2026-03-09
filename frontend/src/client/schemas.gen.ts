@@ -1650,6 +1650,17 @@ export const ProfileSchema = {
             format: 'uri',
             title: 'Profile Pic Url'
         },
+        profile_pic_src: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Profile Pic Src'
+        },
         external_url: {
             anyOf: [
                 {
@@ -1770,6 +1781,40 @@ export const ProfileCollectionSchema = {
     required: ['profiles'],
     title: 'ProfileCollection',
     description: 'A container holding a list of `Profile` instances'
+} as const;
+
+export const ProfileExistenceCollectionSchema = {
+    properties: {
+        profiles: {
+            items: {
+                '$ref': '#/components/schemas/ProfileExistenceItem'
+            },
+            type: 'array',
+            title: 'Profiles'
+        }
+    },
+    type: 'object',
+    title: 'ProfileExistenceCollection'
+} as const;
+
+export const ProfileExistenceItemSchema = {
+    properties: {
+        username: {
+            type: 'string',
+            title: 'Username'
+        },
+        exists: {
+            type: 'boolean',
+            title: 'Exists'
+        },
+        expired: {
+            type: 'boolean',
+            title: 'Expired'
+        }
+    },
+    type: 'object',
+    required: ['username', 'exists', 'expired'],
+    title: 'ProfileExistenceItem'
 } as const;
 
 export const ProfileSnapshotSchema = {
@@ -1954,6 +1999,20 @@ export const ProfileSnapshotExpandedCollectionSchema = {
             },
             type: 'array',
             title: 'Snapshots'
+        },
+        missing_usernames: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Missing Usernames'
+        },
+        expired_usernames: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Expired Usernames'
         }
     },
     type: 'object',

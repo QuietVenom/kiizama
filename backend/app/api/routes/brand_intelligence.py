@@ -3,9 +3,9 @@ from __future__ import annotations
 import io
 import zipfile
 from collections.abc import Awaitable, Callable
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from app.api.deps import (
     CurrentUser,
@@ -13,11 +13,13 @@ from app.api.deps import (
     get_profiles_collection,
 )
 from app.features.brand_intelligence.schemas import (
+    ProfileExistenceCollection,
     ReputationCampaignStrategyRequest,
     ReputationCreatorStrategyRequest,
 )
 from app.features.brand_intelligence.service import (
     ReportFile,
+    check_profile_usernames_existence,
     generate_reputation_campaign_strategy_report,
     generate_reputation_creator_strategy_report,
 )
@@ -34,6 +36,21 @@ REPORT_FILE_RESPONSES: dict[int | str, dict[str, Any]] = {
         },
     }
 }
+
+
+@router.get("/profiles-existence", response_model=ProfileExistenceCollection)
+async def read_profiles_existence(
+    _current_user: CurrentUser,
+    usernames: Annotated[list[str] | None, Query()] = None,
+    profiles_collection: Any = Depends(get_profiles_collection),
+) -> ProfileExistenceCollection:
+    try:
+        return await check_profile_usernames_existence(
+            usernames,
+            profiles_collection=profiles_collection,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @router.post(

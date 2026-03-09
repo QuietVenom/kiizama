@@ -363,6 +363,7 @@ export type Profile = {
     is_private: boolean;
     is_verified: boolean;
     profile_pic_url: string;
+    profile_pic_src?: (string | null);
     external_url?: (string | null);
     updated_date: string;
     follower_count: number;
@@ -378,6 +379,16 @@ export type Profile = {
  */
 export type ProfileCollection = {
     profiles: Array<Profile>;
+};
+
+export type ProfileExistenceCollection = {
+    profiles?: Array<ProfileExistenceItem>;
+};
+
+export type ProfileExistenceItem = {
+    username: string;
+    exists: boolean;
+    expired: boolean;
 };
 
 /**
@@ -420,6 +431,8 @@ export type ProfileSnapshotExpanded = {
  */
 export type ProfileSnapshotExpandedCollection = {
     snapshots: Array<ProfileSnapshotExpanded>;
+    missing_usernames?: Array<(string)>;
+    expired_usernames?: Array<(string)>;
 };
 
 export type ProfileUsernames = {
@@ -710,6 +723,12 @@ export type WaitingListCreate = {
 };
 
 export type interest = 'public_relations' | 'marketing' | 'creator' | 'creator_talent_management' | 'publicity' | 'other';
+
+export type BrandIntelligenceReadProfilesExistenceData = {
+    usernames?: (Array<(string)> | null);
+};
+
+export type BrandIntelligenceReadProfilesExistenceResponse = (ProfileExistenceCollection);
 
 export type BrandIntelligenceGenerateReputationCampaignStrategyEndpointData = {
     requestBody: ReputationCampaignStrategyRequest;

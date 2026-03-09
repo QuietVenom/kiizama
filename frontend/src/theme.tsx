@@ -342,6 +342,9 @@ export const system = createSystem(defaultConfig, {
           successStrongText: {
             value: { _light: "#15803D", _dark: "#86EFAC" },
           },
+          warning: { value: { _light: "#D97706", _dark: "#FBBF24" } },
+          warningSoft: { value: { _light: "#FEF3C7", _dark: "#3B2A0E" } },
+          warningText: { value: { _light: "#B45309", _dark: "#FCD34D" } },
           roseSoft: { value: { _light: "#FCE7F3", _dark: "#47162E" } },
           roseText: { value: { _light: "#EC4899", _dark: "#F9A8D4" } },
           neutralSoft: { value: { _light: "#ECEFF5", _dark: "#1E293B" } },

@@ -1,11 +1,10 @@
 import { expect, type Page, type TestInfo, test } from "@playwright/test"
+import { anonymousStorageState } from "./utils/storageState"
 
 type VisualRoute = {
   path: string
   slug: string
 }
-
-const emptyStorageState = { cookies: [], origins: [] }
 
 const publicRoutes: VisualRoute[] = [
   { path: "/", slug: "landing" },
@@ -59,7 +58,7 @@ const captureVisualState = async (
 
 test.describe("Public theme visuals", () => {
   test.use({
-    storageState: emptyStorageState,
+    storageState: anonymousStorageState,
     viewport: { width: 1440, height: 1100 },
   })
 

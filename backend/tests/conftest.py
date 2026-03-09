@@ -6,10 +6,13 @@ from sqlmodel import Session, delete
 
 from app.core.config import settings
 from app.core.db import engine, init_db
+from app.core.testing_safety import assert_safe_test_database_url
 from app.main import app
 from app.models import User
 from tests.utils.user import authentication_token_from_email
 from tests.utils.utils import get_superuser_token_headers
+
+assert_safe_test_database_url(str(settings.SQLALCHEMY_DATABASE_URI))
 
 
 @pytest.fixture(scope="session", autouse=True)

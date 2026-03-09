@@ -36,6 +36,7 @@ class Profile(BaseModel):
     is_private: bool = Field(...)
     is_verified: bool = Field(...)
     profile_pic_url: AnyUrl = Field(...)
+    profile_pic_src: str | None = None
     external_url: AnyUrl | None = None
     updated_date: AwareDatetime = Field(...)
 
