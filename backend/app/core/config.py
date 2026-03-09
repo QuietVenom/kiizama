@@ -14,6 +14,8 @@ from pydantic import (
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Self
 
+INSECURE_PLACEHOLDER_VALUES = {"changethis", "ChangeThis1!"}
+
 
 def parse_cors(v: Any) -> list[str] | str:
     if isinstance(v, str) and not v.startswith("["):
@@ -143,9 +145,9 @@ class Settings(BaseSettings):
     MONGODB_KIIZAMA_IG: str = "kiizama_ig"
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
-        if value == "changethis":
+        if value in INSECURE_PLACEHOLDER_VALUES:
             message = (
-                f'The value of {var_name} is "changethis", '
+                f"The value of {var_name} uses the insecure placeholder {value!r}, "
                 "for security, please change it, at least for deployments."
             )
             if self.ENVIRONMENT == "local":

@@ -11,6 +11,7 @@ jobs:
   generate-client:
     permissions:
       contents: write
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
     # For PRs from forks (no push permissions to contributor branches)
@@ -51,12 +52,47 @@ jobs:
         git config --local user.email "github-actions@github.com"
         git config --local user.name "github-actions"
         git add frontend/src/client
+    - name: Detect generated changes
+      id: generated_changes
+      run: |
+        if git diff --staged --quiet; then
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+        fi
+    - name: Check whether head branch is protected
+      id: head_branch
+      if: ${{ github.event.pull_request.head.repo.full_name == github.repository && steps.generated_changes.outputs.changed == 'true' }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const branch = context.payload.pull_request.head.ref;
+          const response = await github.rest.repos.getBranch({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            branch,
+          });
+          core.setOutput("protected", response.data.protected ? "true" : "false");
     # Same repo PRs
     - name: Push changes
-      if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+      if: ${{ github.event.pull_request.head.repo.full_name == github.repository && steps.generated_changes.outputs.changed == 'true' && steps.head_branch.outputs.protected != 'true' }}
       run: |
-        git diff --staged --quiet || git commit -m "✨ Autogenerate frontend client"
+        git commit -m "✨ Autogenerate frontend client"
         git push
+    - name: Create PR for generated changes
+      if: ${{ github.event.pull_request.head.repo.full_name == github.repository && steps.generated_changes.outputs.changed == 'true' && steps.head_branch.outputs.protected == 'true' }}
+      uses: peter-evans/create-pull-request@v7
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ci/generate-client/pr-${{ github.event.pull_request.number }}
+        base: ${{ github.event.pull_request.head.ref }}
+        delete-branch: true
+        commit-message: "✨ Autogenerate frontend client"
+        title: "✨ Autogenerate frontend client"
+        body: |
+          This automated PR updates the generated frontend client for #${{ github.event.pull_request.number }}.
+
+          The source branch `${{ github.event.pull_request.head.ref }}` is protected, so the workflow cannot push directly to it.
     # Fork PRs
     - name: Check changes
       if: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
