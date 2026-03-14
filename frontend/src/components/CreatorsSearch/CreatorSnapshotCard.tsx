@@ -141,7 +141,7 @@ const CreatorSnapshotCard = ({
                   px={2.5}
                   py={1}
                 >
-                  Expired
+                  Update Needed
                 </Badge>
               ) : null}
               {profile?.is_verified ? (

@@ -135,6 +135,36 @@ test("Weak new password validation", async ({ page, request }) => {
   await page.getByRole("button", { name: "Reset Password" }).click()
 
   await expect(
-    page.getByText("Password must be at least 8 characters"),
+    page.getByText("Password must be between 8 and 25 characters"),
   ).toBeVisible()
+})
+
+test("Password requirements checklist updates on reset password", async ({
+  page,
+}) => {
+  await page.goto("/reset-password?token=invalidtoken")
+
+  const passwordInput = page.getByPlaceholder("New Password")
+
+  await expect(page.getByTestId("password-requirement-length")).toHaveAttribute(
+    "data-satisfied",
+    "false",
+  )
+
+  await passwordInput.fill("Abcdef1!")
+
+  await expect(page.getByTestId("password-requirement-length")).toHaveAttribute(
+    "data-satisfied",
+    "true",
+  )
+  await expect(
+    page.getByTestId("password-requirement-uppercase"),
+  ).toHaveAttribute("data-satisfied", "true")
+  await expect(page.getByTestId("password-requirement-number")).toHaveAttribute(
+    "data-satisfied",
+    "true",
+  )
+  await expect(
+    page.getByTestId("password-requirement-special"),
+  ).toHaveAttribute("data-satisfied", "true")
 })

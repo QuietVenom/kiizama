@@ -14,7 +14,6 @@ import { keyframes } from "@emotion/react"
 import { Link } from "@tanstack/react-router"
 import type { RefObject } from "react"
 import { FiCheck } from "react-icons/fi"
-import { getAppUrl } from "@/utils"
 
 type PricingPlan = {
   name: string
@@ -68,7 +67,7 @@ type PricingProps = {
 }
 
 const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
-  const loginUrl = getAppUrl("/login")
+  const loginUrl = "/login"
 
   const getPrimaryLabel = (highlighted?: boolean) => {
     if (isWaitingListEnabled) return "Join waiting list"

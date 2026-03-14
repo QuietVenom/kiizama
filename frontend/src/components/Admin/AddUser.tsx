@@ -14,7 +14,12 @@ import { FaPlus } from "react-icons/fa"
 import { type UserCreate, UsersService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import useCustomToast from "@/hooks/useCustomToast"
-import { emailPattern, handleError } from "@/utils"
+import {
+  confirmPasswordRules,
+  emailPattern,
+  handleError,
+  newPasswordRules,
+} from "@/utils"
 import { Checkbox } from "../ui/checkbox"
 import {
   DialogBody,
@@ -133,13 +138,7 @@ const AddUser = () => {
                 label="Set Password"
               >
                 <Input
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: {
-                      value: 8,
-                      message: "Password must be at least 8 characters",
-                    },
-                  })}
+                  {...register("password", newPasswordRules())}
                   placeholder="Password"
                   type="password"
                 />
@@ -152,12 +151,10 @@ const AddUser = () => {
                 label="Confirm Password"
               >
                 <Input
-                  {...register("confirm_password", {
-                    required: "Please confirm your password",
-                    validate: (value) =>
-                      value === getValues().password ||
-                      "The passwords do not match",
-                  })}
+                  {...register(
+                    "confirm_password",
+                    confirmPasswordRules(getValues),
+                  )}
                   placeholder="Password"
                   type="password"
                 />

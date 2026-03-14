@@ -34,6 +34,7 @@ export interface PasswordInputProps
   startElement?: React.ReactNode
   type: string
   errors: any
+  helperText?: React.ReactNode
   showError?: boolean
 }
 
@@ -48,6 +49,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
       startElement,
       type,
       errors,
+      helperText,
       showError = true,
       ...rest
     } = props
@@ -64,6 +66,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
       <Field
         invalid={showError && !!errors[type]}
         errorText={showError ? errors[type]?.message : undefined}
+        helperText={helperText}
         alignSelf="start"
       >
         <InputGroup

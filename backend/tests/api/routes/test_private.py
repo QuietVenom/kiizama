@@ -10,7 +10,7 @@ def test_create_user(client: TestClient, db: Session) -> None:
         f"{settings.API_V1_STR}/private/users/",
         json={
             "email": "pollo@listo.com",
-            "password": "password123",
+            "password": "Valid1!Pass",
             "full_name": "Pollo Listo",
         },
     )

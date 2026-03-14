@@ -204,6 +204,26 @@
       font-size:11px;
       font-weight:800;
     }
+    .powered-by{
+      margin-top:18px;
+      display:flex;
+      justify-content:flex-end;
+      break-inside:avoid;
+    }
+    .powered-by a{
+      display:inline-flex;
+      align-items:center;
+      padding:6px 10px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background:#fff5e8;
+      color:var(--accent-ink);
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:0.02em;
+      text-decoration:none;
+    }
+    .powered-by a:hover{text-decoration:none}
 
     table{width:100%;border-collapse:collapse}
     th,td{
@@ -446,6 +466,9 @@
           <div class="meta">No collaborators were provided.</div>
         {% endif %}
       </section>
+    </div>
+    <div class="powered-by">
+      <a href="https://kiizama.com/" target="_blank" rel="noopener">Powered by kiizama.com</a>
     </div>
   </div>
 </body>

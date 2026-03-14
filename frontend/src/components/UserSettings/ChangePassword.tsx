@@ -5,8 +5,14 @@ import { FiLock } from "react-icons/fi"
 
 import { type ApiError, type UpdatePassword, UsersService } from "@/client"
 import useCustomToast from "@/hooks/useCustomToast"
-import { confirmPasswordRules, handleError, passwordRules } from "@/utils"
+import {
+  confirmPasswordRules,
+  handleError,
+  newPasswordRules,
+  passwordRules,
+} from "@/utils"
 import { PasswordInput } from "../ui/password-input"
+import { PasswordRequirements } from "../ui/password-requirements"
 
 interface UpdatePasswordForm extends UpdatePassword {
   confirm_password: string
@@ -19,6 +25,7 @@ const ChangePassword = () => {
     handleSubmit,
     reset,
     getValues,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<UpdatePasswordForm>({
     mode: "onBlur",
@@ -36,6 +43,7 @@ const ChangePassword = () => {
       handleError(err)
     },
   })
+  const newPasswordValue = watch("new_password")
 
   const onSubmit: SubmitHandler<UpdatePasswordForm> = async (data) => {
     mutation.mutate(data)
@@ -58,9 +66,10 @@ const ChangePassword = () => {
           <PasswordInput
             type="new_password"
             startElement={<FiLock />}
-            {...register("new_password", passwordRules())}
+            {...register("new_password", newPasswordRules())}
             placeholder="New Password"
             errors={errors}
+            helperText={<PasswordRequirements password={newPasswordValue} />}
           />
           <PasswordInput
             type="confirm_password"

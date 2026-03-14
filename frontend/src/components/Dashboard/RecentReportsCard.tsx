@@ -22,62 +22,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-
-type LocalReportItem = {
-  id: string
-  name: string
-  createdAt: string
-}
-
-const defaultItems: LocalReportItem[] = [
-  {
-    id: "report-1",
-    name: "profile_mining_q1_2026.json",
-    createdAt: "02 Apr 2026",
-  },
-  {
-    id: "report-2",
-    name: "creator_report_fashion_team.pdf",
-    createdAt: "01 Apr 2026",
-  },
-  {
-    id: "report-3",
-    name: "reputation_campaign_strategy_v2.pdf",
-    createdAt: "30 Mar 2026",
-  },
-  {
-    id: "report-4",
-    name: "reputation_creator_strategy_batch_03.pdf",
-    createdAt: "28 Mar 2026",
-  },
-  {
-    id: "report-5",
-    name: "5reputation_creator_strategy_batch_03.pdf",
-    createdAt: "28 Mar 2026",
-  },
-  {
-    id: "report-6",
-    name: "6reputation_creator_strategy_batch_03.pdf",
-    createdAt: "28 Mar 2026",
-  },
-  {
-    id: "report-7",
-    name: "7reputation_creator_strategy_batch_03.pdf",
-    createdAt: "28 Mar 2026",
-  },
-  {
-    id: "report-8",
-    name: "8reputation_creator_strategy_batch_03.pdf",
-    createdAt: "28 Mar 2026",
-  },
-  {
-    id: "report-9",
-    name: "9reputation_creator_strategy_batch_03.pdf",
-    createdAt: "28 Mar 2026",
-  },
-]
-
-const STORAGE_KEY = "kiizama-overview-local-reports"
+import {
+  clearLocalReports,
+  deleteLocalReport,
+  downloadLocalReport,
+  formatLocalReportDate,
+  type LocalReportItem,
+  MAX_LOCAL_REPORTS,
+  readLocalReports,
+  subscribeToLocalReports,
+} from "@/lib/local-reports"
 
 const deleteButtonStyles = {
   bg: "ui.panelAlt",
@@ -97,103 +51,28 @@ const downloadButtonStyles = {
   },
 } as const
 
-const isLocalReportItem = (value: unknown): value is LocalReportItem => {
-  if (!value || typeof value !== "object") return false
-  const report = value as Record<string, unknown>
-  return (
-    typeof report.id === "string" &&
-    typeof report.name === "string" &&
-    typeof report.createdAt === "string"
-  )
-}
-
-const readStoredReports = (): LocalReportItem[] => {
-  if (typeof window === "undefined") return defaultItems
-
-  try {
-    const rawValue = localStorage.getItem(STORAGE_KEY)
-    if (!rawValue) return defaultItems
-
-    const parsedValue: unknown = JSON.parse(rawValue)
-    if (!Array.isArray(parsedValue)) return defaultItems
-    if (parsedValue.length === 0) return []
-
-    const reports = parsedValue.filter(isLocalReportItem)
-    return reports.length > 0 ? reports : defaultItems
-  } catch {
-    return defaultItems
-  }
-}
-
-const buildDownloadFile = (item: LocalReportItem) => {
-  const reportSummary = {
-    id: item.id,
-    name: item.name,
-    createdAt: item.createdAt,
-    source: "Kiizama local storage",
-  }
-  const isJsonReport = item.name.toLowerCase().endsWith(".json")
-
-  if (isJsonReport) {
-    return {
-      blob: new Blob([JSON.stringify(reportSummary, null, 2)], {
-        type: "application/json;charset=utf-8",
-      }),
-      filename: item.name,
-    }
-  }
-
-  const baseName = item.name.replace(/\.[^.]+$/, "")
-  const textContent = [
-    "Kiizama Local Report",
-    `Report: ${item.name}`,
-    `Saved on: ${item.createdAt}`,
-    "",
-    "This download contains the local report reference currently available in the dashboard.",
-  ].join("\n")
-
-  return {
-    blob: new Blob([textContent], { type: "text/plain;charset=utf-8" }),
-    filename: `${baseName}.txt`,
-  }
-}
-
 const RecentReportsCard = () => {
   const [items, setItems] = useState<LocalReportItem[]>(() =>
-    readStoredReports(),
+    readLocalReports(),
   )
   const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false)
   const [itemToDelete, setItemToDelete] = useState<LocalReportItem | null>(null)
   const shouldEnableListScroll = items.length >= 5
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
-  }, [items])
+    return subscribeToLocalReports(setItems)
+  }, [])
 
   const onDeleteAll = () => {
-    setItems([])
+    clearLocalReports()
     setIsDeleteAllOpen(false)
   }
 
   const onDeleteItem = () => {
     if (!itemToDelete) return
-    setItems((prevItems) =>
-      prevItems.filter((item) => item.id !== itemToDelete.id),
-    )
+
+    deleteLocalReport(itemToDelete.id)
     setItemToDelete(null)
-  }
-
-  const onDownloadItem = (item: LocalReportItem) => {
-    const { blob, filename } = buildDownloadFile(item)
-    const objectUrl = window.URL.createObjectURL(blob)
-    const link = document.createElement("a")
-
-    link.href = objectUrl
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(objectUrl)
   }
 
   return (
@@ -214,7 +93,7 @@ const RecentReportsCard = () => {
               color="ui.secondaryText"
               fontWeight="bold"
             >
-              10 / 10
+              {items.length} / {MAX_LOCAL_REPORTS}
             </Text>
           </Flex>
           <Text
@@ -345,7 +224,7 @@ const RecentReportsCard = () => {
                       fontWeight="medium"
                       truncate
                     >
-                      Saved on {item.createdAt}
+                      Saved on {formatLocalReportDate(item.createdAt)}
                     </Text>
                   </Box>
                 </HStack>
@@ -355,7 +234,7 @@ const RecentReportsCard = () => {
                     aria-label={`Download report ${item.name}`}
                     variant="solid"
                     size="sm"
-                    onClick={() => onDownloadItem(item)}
+                    onClick={() => downloadLocalReport(item)}
                     {...downloadButtonStyles}
                   >
                     <Icon as={FaDownload} boxSize={3.5} />

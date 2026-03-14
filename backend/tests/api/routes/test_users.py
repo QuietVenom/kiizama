@@ -8,7 +8,7 @@ from app import crud_users as crud
 from app.core.config import settings
 from app.core.security import verify_password
 from app.models import User, UserCreate
-from tests.utils.utils import random_email, random_lower_string
+from tests.utils.utils import random_email, random_lower_string, random_password
 
 
 def test_get_users_superuser_me(
@@ -42,7 +42,7 @@ def test_create_user_new_email(
         patch("app.core.config.settings.SMTP_USER", "admin@example.com"),
     ):
         username = random_email()
-        password = random_lower_string()
+        password = random_password()
         data = {"email": username, "password": password}
         r = client.post(
             f"{settings.API_V1_STR}/users/",
@@ -60,7 +60,7 @@ def test_get_existing_user(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
     username = random_email()
-    password = random_lower_string()
+    password = random_password()
     user_in = UserCreate(email=username, password=password)
     user = crud.create_user(session=db, user_create=user_in)
     user_id = user.id
@@ -77,7 +77,7 @@ def test_get_existing_user(
 
 def test_get_existing_user_current_user(client: TestClient, db: Session) -> None:
     username = random_email()
-    password = random_lower_string()
+    password = random_password()
     user_in = UserCreate(email=username, password=password)
     user = crud.create_user(session=db, user_create=user_in)
     user_id = user.id
@@ -118,7 +118,7 @@ def test_create_user_existing_username(
 ) -> None:
     username = random_email()
     # username = email
-    password = random_lower_string()
+    password = random_password()
     user_in = UserCreate(email=username, password=password)
     crud.create_user(session=db, user_create=user_in)
     data = {"email": username, "password": password}
@@ -136,7 +136,7 @@ def test_create_user_by_normal_user(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
     username = random_email()
-    password = random_lower_string()
+    password = random_password()
     data = {"email": username, "password": password}
     r = client.post(
         f"{settings.API_V1_STR}/users/",
@@ -150,12 +150,12 @@ def test_retrieve_users(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
     username = random_email()
-    password = random_lower_string()
+    password = random_password()
     user_in = UserCreate(email=username, password=password)
     crud.create_user(session=db, user_create=user_in)
 
     username2 = random_email()
-    password2 = random_lower_string()
+    password2 = random_password()
     user_in2 = UserCreate(email=username2, password=password2)
     crud.create_user(session=db, user_create=user_in2)
 
@@ -194,7 +194,7 @@ def test_update_user_me(
 def test_update_password_me(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
-    new_password = random_lower_string()
+    new_password = random_password()
     data = {
         "current_password": settings.FIRST_SUPERUSER_PASSWORD,
         "new_password": new_password,
@@ -233,7 +233,7 @@ def test_update_password_me(
 def test_update_password_me_incorrect_password(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    new_password = random_lower_string()
+    new_password = random_password()
     data = {"current_password": new_password, "new_password": new_password}
     r = client.patch(
         f"{settings.API_V1_STR}/users/me/password",
@@ -249,7 +249,7 @@ def test_update_user_me_email_exists(
     client: TestClient, normal_user_token_headers: dict[str, str], db: Session
 ) -> None:
     username = random_email()
-    password = random_lower_string()
+    password = random_password()
     user_in = UserCreate(email=username, password=password)
     user = crud.create_user(session=db, user_create=user_in)
 
@@ -284,7 +284,7 @@ def test_update_password_me_same_password_error(
 
 def test_register_user(client: TestClient, db: Session) -> None:
     username = random_email()
-    password = random_lower_string()
+    password = random_password()
     full_name = random_lower_string()
     data = {"email": username, "password": password, "full_name": full_name}
     r = client.post(
@@ -304,8 +304,41 @@ def test_register_user(client: TestClient, db: Session) -> None:
     assert verify_password(password, user_db.hashed_password)
 
 
+def test_register_user_rejects_password_without_uppercase(client: TestClient) -> None:
+    data = {
+        "email": random_email(),
+        "password": "lowercase1!",
+        "full_name": "Test User",
+    }
+    r = client.post(
+        f"{settings.API_V1_STR}/users/signup",
+        json=data,
+    )
+
+    assert r.status_code == 422
+    assert (
+        r.json()["detail"][0]["msg"]
+        == "Password must include at least 1 uppercase letter"
+    )
+
+
+def test_register_user_rejects_password_over_max_length(client: TestClient) -> None:
+    data = {
+        "email": random_email(),
+        "password": f"Aa1!{'a' * 22}",
+        "full_name": "Test User",
+    }
+    r = client.post(
+        f"{settings.API_V1_STR}/users/signup",
+        json=data,
+    )
+
+    assert r.status_code == 422
+    assert "at most 25 characters" in r.json()["detail"][0]["msg"]
+
+
 def test_register_user_already_exists_error(client: TestClient) -> None:
-    password = random_lower_string()
+    password = random_password()
     full_name = random_lower_string()
     data = {
         "email": settings.FIRST_SUPERUSER,
@@ -324,7 +357,7 @@ def test_update_user(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
     username = random_email()
-    password = random_lower_string()
+    password = random_password()
     user_in = UserCreate(email=username, password=password)
     user = crud.create_user(session=db, user_create=user_in)
 
@@ -363,12 +396,12 @@ def test_update_user_email_exists(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
     username = random_email()
-    password = random_lower_string()
+    password = random_password()
     user_in = UserCreate(email=username, password=password)
     user = crud.create_user(session=db, user_create=user_in)
 
     username2 = random_email()
-    password2 = random_lower_string()
+    password2 = random_password()
     user_in2 = UserCreate(email=username2, password=password2)
     user2 = crud.create_user(session=db, user_create=user_in2)
 
@@ -384,7 +417,7 @@ def test_update_user_email_exists(
 
 def test_delete_user_me(client: TestClient, db: Session) -> None:
     username = random_email()
-    password = random_lower_string()
+    password = random_password()
     user_in = UserCreate(email=username, password=password)
     user = crud.create_user(session=db, user_create=user_in)
     user_id = user.id
@@ -429,7 +462,7 @@ def test_delete_user_super_user(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
     username = random_email()
-    password = random_lower_string()
+    password = random_password()
     user_in = UserCreate(email=username, password=password)
     user = crud.create_user(session=db, user_create=user_in)
     user_id = user.id
@@ -474,7 +507,7 @@ def test_delete_user_without_privileges(
     client: TestClient, normal_user_token_headers: dict[str, str], db: Session
 ) -> None:
     username = random_email()
-    password = random_lower_string()
+    password = random_password()
     user_in = UserCreate(email=username, password=password)
     user = crud.create_user(session=db, user_create=user_in)
 

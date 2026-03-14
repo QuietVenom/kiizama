@@ -1,9 +1,14 @@
 from typing import Any
 
 from fastapi import APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.api.deps import SessionDep
+from app.core.password_policy import (
+    PASSWORD_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH,
+    NewPasswordStr,
+)
 from app.core.security import get_password_hash
 from app.models import (
     User,
@@ -15,7 +20,9 @@ router = APIRouter(tags=["private"], prefix="/private")
 
 class PrivateUserCreate(BaseModel):
     email: str
-    password: str
+    password: NewPasswordStr = Field(
+        min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH
+    )
     full_name: str
     is_verified: bool = False
 

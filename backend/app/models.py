@@ -5,6 +5,12 @@ from typing import Literal
 from pydantic import EmailStr
 from sqlmodel import Field, SQLModel
 
+from app.core.password_policy import (
+    PASSWORD_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH,
+    NewPasswordStr,
+)
+
 
 # Shared properties
 class UserBase(SQLModel):
@@ -16,19 +22,27 @@ class UserBase(SQLModel):
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
-    password: str = Field(min_length=8, max_length=40)
+    password: NewPasswordStr = Field(
+        min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH
+    )
 
 
 class UserRegister(SQLModel):
     email: EmailStr = Field(max_length=255)
-    password: str = Field(min_length=8, max_length=40)
+    password: NewPasswordStr = Field(
+        min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH
+    )
     full_name: str | None = Field(default=None, max_length=255)
 
 
 # Properties to receive via API on update, all are optional
 class UserUpdate(UserBase):
     email: EmailStr | None = Field(default=None, max_length=255)  # type: ignore
-    password: str | None = Field(default=None, min_length=8, max_length=40)
+    password: NewPasswordStr | None = Field(
+        default=None,
+        min_length=PASSWORD_MIN_LENGTH,
+        max_length=PASSWORD_MAX_LENGTH,
+    )
 
 
 class UserUpdateMe(SQLModel):
@@ -38,7 +52,9 @@ class UserUpdateMe(SQLModel):
 
 class UpdatePassword(SQLModel):
     current_password: str = Field(min_length=8, max_length=40)
-    new_password: str = Field(min_length=8, max_length=40)
+    new_password: NewPasswordStr = Field(
+        min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH
+    )
 
 
 # Database model, database table inferred from class name
@@ -77,7 +93,9 @@ class TokenPayload(SQLModel):
 
 class NewPassword(SQLModel):
     token: str
-    new_password: str = Field(min_length=8, max_length=40)
+    new_password: NewPasswordStr = Field(
+        min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH
+    )
 
 
 class LuAdminRole(SQLModel, table=True):

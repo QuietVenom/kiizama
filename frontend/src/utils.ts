@@ -11,11 +11,20 @@ export const namePattern = {
   message: "Invalid name",
 }
 
+export const PASSWORD_MIN_LENGTH = 8
+export const PASSWORD_MAX_LENGTH = 25
+export const PASSWORD_SPECIAL_CHARACTERS = ["!", "@", "#", "$", "%"] as const
+
+const passwordHasUppercase = (value: string) => /[A-Z]/.test(value)
+const passwordHasNumber = (value: string) => /\d/.test(value)
+const passwordHasAllowedSpecialCharacter = (value: string) =>
+  PASSWORD_SPECIAL_CHARACTERS.some((character) => value.includes(character))
+
 export const passwordRules = (isRequired = true) => {
   const rules: any = {
     minLength: {
-      value: 8,
-      message: "Password must be at least 8 characters",
+      value: PASSWORD_MIN_LENGTH,
+      message: `Password must be at least ${PASSWORD_MIN_LENGTH} characters`,
     },
   }
 
@@ -24,6 +33,85 @@ export const passwordRules = (isRequired = true) => {
   }
 
   return rules
+}
+
+const getNewPasswordError = (value: string) => {
+  if (
+    value.length < PASSWORD_MIN_LENGTH ||
+    value.length > PASSWORD_MAX_LENGTH
+  ) {
+    return `Password must be between ${PASSWORD_MIN_LENGTH} and ${PASSWORD_MAX_LENGTH} characters`
+  }
+  if (!passwordHasUppercase(value)) {
+    return "Password must include at least 1 uppercase letter"
+  }
+  if (!passwordHasNumber(value)) {
+    return "Password must include at least 1 number"
+  }
+  if (!passwordHasAllowedSpecialCharacter(value)) {
+    return `Password must include at least 1 special character (${PASSWORD_SPECIAL_CHARACTERS.join(", ")})`
+  }
+  return true
+}
+
+export const newPasswordRules = (isRequired = true) => {
+  const rules: any = {
+    validate: (value: string) => {
+      if (!value && !isRequired) {
+        return true
+      }
+      return getNewPasswordError(value)
+    },
+  }
+
+  if (isRequired) {
+    rules.required = "Password is required"
+  }
+
+  return rules
+}
+
+export type PasswordRequirementKey =
+  | "length"
+  | "uppercase"
+  | "number"
+  | "special"
+
+export interface PasswordRequirementState {
+  key: PasswordRequirementKey
+  label: string
+  satisfied: boolean
+}
+
+export const getPasswordRequirementStates = (
+  password: string,
+): PasswordRequirementState[] => {
+  const value = password ?? ""
+
+  return [
+    {
+      key: "length",
+      label: `${PASSWORD_MIN_LENGTH}-${PASSWORD_MAX_LENGTH} characters`,
+      satisfied:
+        value.length >= PASSWORD_MIN_LENGTH &&
+        value.length <= PASSWORD_MAX_LENGTH,
+    },
+    {
+      key: "uppercase",
+      label: "At least 1 uppercase letter",
+      satisfied: passwordHasUppercase(value),
+    },
+    {
+      key: "number",
+      label: "At least 1 number",
+      satisfied: passwordHasNumber(value),
+    },
+    {
+      key: "special",
+      label: `At least 1 special character (${PASSWORD_SPECIAL_CHARACTERS.join(" ")})`,
+      satisfied: passwordHasAllowedSpecialCharacter(value),
+    },
+  ]
 }
 
 export const confirmPasswordRules = (
@@ -52,70 +140,4 @@ export const handleError = (err: ApiError) => {
     errorMessage = errDetail[0].msg
   }
   showErrorToast(errorMessage)
-}
-
-export const getAppOrigin = (): string => {
-  if (typeof window === "undefined") return ""
-
-  const { protocol, hostname, port, origin } = window.location
-
-  if (hostname.startsWith("app.")) {
-    return origin
-  }
-
-  if (hostname.endsWith(".onrender.com")) {
-    return origin
-  }
-
-  let targetHost = hostname
-  if (hostname.startsWith("www.")) {
-    targetHost = `app.${hostname.slice(4)}`
-  } else if (hostname === "localhost" || hostname === "127.0.0.1") {
-    targetHost = "app.localhost"
-  } else {
-    targetHost = `app.${hostname}`
-  }
-
-  const includePort = Boolean(port && port !== "80" && port !== "443")
-  const portSegment = includePort ? `:${port}` : ""
-  return `${protocol}//${targetHost}${portSegment}`
-}
-
-export const getAppUrl = (path: string): string => {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`
-  const origin = getAppOrigin()
-  return origin ? `${origin}${normalizedPath}` : normalizedPath
-}
-
-export const getWwwOrigin = (): string => {
-  if (typeof window === "undefined") return ""
-
-  const { protocol, hostname, port, origin } = window.location
-
-  if (hostname.startsWith("www.")) {
-    return origin
-  }
-
-  if (hostname.endsWith(".onrender.com")) {
-    return origin
-  }
-
-  let targetHost = hostname
-  if (hostname.startsWith("app.")) {
-    targetHost = `www.${hostname.slice(4)}`
-  } else if (hostname === "localhost" || hostname === "127.0.0.1") {
-    targetHost = "www.localhost"
-  } else {
-    targetHost = `www.${hostname}`
-  }
-
-  const includePort = Boolean(port && port !== "80" && port !== "443")
-  const portSegment = includePort ? `:${port}` : ""
-  return `${protocol}//${targetHost}${portSegment}`
-}
-
-export const getWwwUrl = (path: string): string => {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`
-  const origin = getWwwOrigin()
-  return origin ? `${origin}${normalizedPath}` : normalizedPath
 }

@@ -22,7 +22,6 @@ import {
   FiChevronRight,
 } from "react-icons/fi"
 import { TbLayoutList } from "react-icons/tb"
-import { getAppUrl } from "@/utils"
 
 const fadeInUp = keyframes`
   from {
@@ -63,7 +62,7 @@ type HeroProps = {
 }
 
 const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
-  const loginUrl = getAppUrl("/login")
+  const loginUrl = "/login"
 
   return (
     <Box

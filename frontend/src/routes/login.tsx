@@ -24,7 +24,7 @@ import { InputGroup } from "@/components/ui/input-group"
 import { PasswordInput } from "@/components/ui/password-input"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
 import SymbolLogo from "/assets/images/symbol.svg"
-import { emailPattern, getWwwUrl, passwordRules } from "../utils"
+import { emailPattern, passwordRules } from "../utils"
 
 const FORM_CONTAINER_MAX_W = { base: "md", md: "3xl" } as const
 const FORM_CARD_MIN_H = { base: "auto", md: "560px" } as const
@@ -43,7 +43,7 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
   const { loginMutation, error, resetError } = useAuth()
-  const landingUrl = getWwwUrl("/")
+  const landingUrl = "/"
   const {
     register,
     handleSubmit,
