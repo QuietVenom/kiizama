@@ -35,10 +35,10 @@ Traefik UI, to see how the routes are being handled by the proxy: http://localho
 
 **Note**: The first time you start your stack, it might take a minute for it to be ready. While the backend waits for the database to be ready and configures everything. You can check the logs to monitor it.
 
-By default, backend Postgres uses `DATABASE_URL`/`POSTGRES_URI` (typically a managed database URL). For isolated local tests, use the local `postgres_test` service:
+By default, backend Postgres uses `DATABASE_URL` (typically a managed database URL). For isolated local tests, use the dedicated test compose file:
 
 ```bash
-docker compose up -d postgres_test
+docker compose -f docker-compose.yml -f docker-compose.test.yml up -d postgres_test
 ```
 
 To check the logs, run (in another terminal):
@@ -204,7 +204,13 @@ When deploying, for example in production, the main Traefik is configured outsid
 
 There is a main `docker-compose.yml` file with all the configurations that apply to the whole stack, it is used automatically by `docker compose`.
 
-And there's also a `docker-compose.override.yml` with overrides for development, for example to mount the source code as a volume. It is used automatically by `docker compose` to apply overrides on top of `docker-compose.yml`.
+There's also a `docker-compose.override.yml` with overrides for local development, for example to mount the source code as a volume, expose local ports, and run the development proxy. It is used automatically by `docker compose` to apply overrides on top of `docker-compose.yml`.
+
+For tests, use `docker-compose.test.yml`. The test scripts in `scripts/test.sh` and `scripts/test-local.sh` call Docker Compose explicitly with:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.test.yml ...
+```
 
 These Docker Compose files use the `.env` file containing configurations to be injected as environment variables in the containers.
 

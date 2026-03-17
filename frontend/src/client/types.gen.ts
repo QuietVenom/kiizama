@@ -742,6 +742,12 @@ export type BrandIntelligenceGenerateReputationCreatorStrategyEndpointData = {
 
 export type BrandIntelligenceGenerateReputationCreatorStrategyEndpointResponse = (unknown);
 
+export type EventsStreamUserEventsData = {
+    lastEventId?: (string | null);
+};
+
+export type EventsStreamUserEventsResponse = (unknown);
+
 export type FeatureFlagsListFeatureFlagsResponse = (FeatureFlagsPublic);
 
 export type FeatureFlagsCreateFeatureFlagData = {

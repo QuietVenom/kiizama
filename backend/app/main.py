@@ -12,6 +12,7 @@ from app.api.main import api_router
 from app.core.config import settings
 from app.core.db import ping_postgres
 from app.core.mongodb import close_mongo_client, ensure_indexes, get_mongo_client
+from app.core.redis import close_redis_client, get_redis_client
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,6 @@ def ensure_postgres_connection() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    # STARTUP (si luego necesitas inicializar algo, va aquí)
     ensure_postgres_connection()
     logger.info("Connected to Postgres database.")
     if settings.MONGODB_URL:
@@ -44,8 +44,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         logger.warning(
             "MONGODB_URL is not configured. Skipping MongoDB startup checks."
         )
+
+    if settings._resolved_redis_url():
+        redis = get_redis_client()
+        await redis.ping()
+        logger.info("Connected to Redis.")
+        app.state.redis_client = redis
+    else:
+        logger.warning(
+            "REDIS_URL is not configured. SSE/user events will be unavailable."
+        )
+
     yield
-    # SHUTDOWN
+
+    await close_redis_client()
     await close_mongo_client()
 
 

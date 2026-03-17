@@ -10,28 +10,6 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: (id) => {
-          if (!id.includes("node_modules")) return
-          if (id.includes("react-icons")) return "vendor-icons"
-          if (
-            id.includes("/react/") ||
-            id.includes("/react-dom/") ||
-            id.includes("/scheduler/")
-          ) {
-            return "vendor-react"
-          }
-          if (id.includes("@tanstack")) return "vendor-tanstack"
-          if (id.includes("@chakra-ui") || id.includes("@emotion")) {
-            return "vendor-chakra"
-          }
-          return "vendor"
-        },
-      },
-    },
-  },
   plugins: [
     tanstackRouter({
       target: "react",

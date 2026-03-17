@@ -77,10 +77,15 @@ docker compose exec backend bash scripts/tests-start.sh -x
 ### Isolated local Postgres for tests
 
 ```bash
-docker compose up -d postgres_test
+docker compose up -d postgres_test redis
 cd backend
-TEST_DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:55432/app_test bash scripts/tests-start.sh
+TEST_DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:55432/app_test \
+REDIS_URL=redis://localhost:6379/0 \
+bash scripts/tests-start.sh
 ```
+
+For local backend tests, Redis should come from the Docker `redis` service exposed on `localhost:6379`.
+Do not use `fly redis proxy kiizama-redis` for this flow.
 
 ## Migrations
 

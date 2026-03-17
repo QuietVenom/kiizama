@@ -1,5 +1,6 @@
 import { Box, Heading, Stack, Text } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
+import { useEffect } from "react"
 import InfoPageShell from "@/components/Common/InfoPageShell"
 
 const PRIVACY_TEMPLATE = `AVISO DE PRIVACIDAD INTEGRAL (LFPDPPP) — SaaS B2C
@@ -127,6 +128,10 @@ export const Route = createFileRoute("/privacy")({
 })
 
 function PrivacyPage() {
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+  }, [])
+
   return (
     <InfoPageShell useSymbolHomeButton>
       <Box layerStyle="infoCard" p={{ base: 6, md: 10 }}>

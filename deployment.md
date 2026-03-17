@@ -142,9 +142,8 @@ You can set several variables, like:
 * `SMTP_USER`: The SMTP server user to send emails.
 * `SMTP_PASSWORD`: The SMTP server password to send emails.
 * `EMAILS_FROM_EMAIL`: The email account to send emails from.
-* `DATABASE_URL_SHARED_EXTERNAL`: Database URL used for `local`/`staging`.
 * `DATABASE_URL_PRODUCTION_INTERNAL`: Database URL used for `production`.
-* `DATABASE_URL` or `POSTGRES_URI`: Optional generic fallback database URL.
+* `DATABASE_URL`: Generic database URL used outside production unless a production-specific one is set.
 * `POSTGRES_SERVER` / `POSTGRES_PORT` / `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB`: Legacy fallback if URL vars are not set.
 * `MONGODB_URL`: MongoDB connection URL used by API services.
 * `MONGODB_KIIZAMA_IG`: MongoDB database name (default `kiizama_ig`).

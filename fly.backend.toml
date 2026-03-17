@@ -1,0 +1,53 @@
+app = "kiizama-backend"
+primary_region = "dfw"
+
+# Deploy from the repository root so backend/Dockerfile can keep copying
+# packages/ and backend/... paths with the root directory as build context:
+# fly deploy . --config fly.backend.toml
+
+[build]
+  dockerfile = "backend/Dockerfile"
+
+[deploy]
+  release_command = "bash scripts/prestart.sh"
+
+[env]
+  ENVIRONMENT = "production"
+  PROJECT_NAME = "Kiizama API"
+  FRONTEND_HOST = "https://app.kiizama.com"
+  BACKEND_CORS_ORIGINS = "https://www.kiizama.com,https://app.kiizama.com"
+  MONGODB_KIIZAMA_IG = "kiizama_ig"
+  SMTP_HOST = "smtp.sendgrid.net"
+  SMTP_PORT = "587"
+  SMTP_TLS = "true"
+  SMTP_SSL = "false"
+  SMTP_USER = "apikey"
+
+[processes]
+  app = "fastapi run --host 0.0.0.0 --port 8000 --workers 2 app/main.py"
+
+[http_service]
+  processes = ["app"]
+  internal_port = 8000
+  force_https = true
+  auto_start_machines = true
+  auto_stop_machines = "off"
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 20
+    hard_limit = 25
+
+  [[http_service.checks]]
+    grace_period = "20s"
+    interval = "15s"
+    method = "GET"
+    timeout = "5s"
+    path = "/api/v1/health-check/"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "1024mb"
+  processes = ["app"]

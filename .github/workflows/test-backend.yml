@@ -29,8 +29,8 @@ jobs:
         with:
           version: "0.4.15"
           enable-cache: true
-      - run: docker compose --env-file .env.example down -v --remove-orphans
-      - run: docker compose --env-file .env.example up -d postgres_test mailcatcher
+      - run: docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml --env-file .env.example down -v --remove-orphans
+      - run: docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml --env-file .env.example up -d postgres_test mailcatcher
       - name: Migrate DB
         run: uv run bash scripts/prestart.sh
         working-directory: backend
@@ -41,9 +41,9 @@ jobs:
         working-directory: backend
         env:
           TEST_DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
-      - run: docker compose --env-file .env.example down -v --remove-orphans
+      - run: docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml --env-file .env.example down -v --remove-orphans
       - name: Store coverage files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-html
           path: backend/htmlcov

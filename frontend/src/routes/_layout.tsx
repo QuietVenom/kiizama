@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-router"
 
 import Sidebar from "@/components/Common/Sidebar"
+import { UserEventsBootstrap } from "@/features/user-events/UserEventsBootstrap"
 import { currentUserQueryOptions, isLoggedIn } from "@/hooks/useAuth"
 
 const dashboardShellRoutes = [
@@ -48,6 +49,7 @@ function Layout() {
 
   return (
     <Flex h="100vh" overflow="hidden" bg="ui.page">
+      <UserEventsBootstrap />
       <Sidebar />
       <Box flex={1} minW={0}>
         <Flex

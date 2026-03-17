@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 requires-python = ">=3.10,<4.0"
 dependencies = [
+    "kiizama-scrape-core",
     "fastapi[standard]>=0.114.2,<1.0.0",
     "python-multipart<1.0.0,>=0.0.7",
     "email-validator<3.0.0.0,>=2.1.0.post1",
@@ -24,6 +25,7 @@ dependencies = [
     "playwright>=1.55.0",
     "openai>=2.5.0",
     "pymongo>=4.15.5",
+    "redis>=5.2.1,<6.0.0",
     "cryptography>=46.0.4",
     "smokeshow>=0.5.0",
 ]
@@ -35,7 +37,11 @@ dev-dependencies = [
     "ruff<1.0.0,>=0.2.2",
     "pre-commit<4.0.0,>=3.6.2",
     "coverage<8.0.0,>=7.4.3",
+    "fakeredis>=2.31.1,<3.0.0",
 ]
+
+[tool.uv.sources]
+kiizama-scrape-core = { path = "../packages/kiizama_scrape_core", editable = true }
 
 [build-system]
 requires = ["hatchling"]

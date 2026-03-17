@@ -56,8 +56,6 @@ class Settings(BaseSettings):
     PROJECT_NAME: str
     SENTRY_DSN: HttpUrl | None = None
     DATABASE_URL: str | None = None
-    POSTGRES_URI: str | None = None
-    DATABASE_URL_SHARED_EXTERNAL: str | None = None
     DATABASE_URL_PRODUCTION_INTERNAL: str | None = None
     POSTGRES_SERVER: str
     POSTGRES_PORT: int = 5432
@@ -84,14 +82,9 @@ class Settings(BaseSettings):
             candidate = self._first_non_empty(
                 self.DATABASE_URL,
                 self.DATABASE_URL_PRODUCTION_INTERNAL,
-                self.POSTGRES_URI,
             )
         else:
-            candidate = self._first_non_empty(
-                self.DATABASE_URL,
-                self.POSTGRES_URI,
-                self.DATABASE_URL_SHARED_EXTERNAL,
-            )
+            candidate = self._first_non_empty(self.DATABASE_URL)
         if not candidate:
             return None
         return self._normalize_postgres_url(candidate)
@@ -143,6 +136,15 @@ class Settings(BaseSettings):
 
     MONGODB_URL: str | None = None
     MONGODB_KIIZAMA_IG: str = "kiizama_ig"
+    REDIS_URL: str | None = None
+    FLY_REDIS_URL: str | None = None
+    JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS: int = 60 * 60 * 24
+    USER_EVENTS_STREAM_MAXLEN: int = 100
+    USER_EVENTS_SSE_READ_BLOCK_MS: int = 10_000
+    JOB_CONTROL_QUEUE_MAXLEN: int = 10_000
+
+    def _resolved_redis_url(self) -> str | None:
+        return self._first_non_empty(self.REDIS_URL, self.FLY_REDIS_URL)
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value in INSECURE_PLACEHOLDER_VALUES:
@@ -175,6 +177,18 @@ class Settings(BaseSettings):
             not self.MONGODB_URL or not self.MONGODB_URL.strip()
         ):
             raise ValueError("MONGODB_URL is required outside local environment.")
+        if self.ENVIRONMENT in {"staging", "production"} and (
+            not self._resolved_redis_url()
+        ):
+            raise ValueError("REDIS_URL is required outside local environment.")
+        if self.USER_EVENTS_SSE_READ_BLOCK_MS <= 0:
+            raise ValueError("USER_EVENTS_SSE_READ_BLOCK_MS must be positive.")
+        if self.USER_EVENTS_STREAM_MAXLEN <= 0:
+            raise ValueError("USER_EVENTS_STREAM_MAXLEN must be positive.")
+        if self.JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS <= 0:
+            raise ValueError("JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS must be positive.")
+        if self.JOB_CONTROL_QUEUE_MAXLEN <= 0:
+            raise ValueError("JOB_CONTROL_QUEUE_MAXLEN must be positive.")
 
         return self
 

@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Generator
 
 import pytest
@@ -6,6 +7,7 @@ from sqlmodel import Session, delete
 
 from app.core.config import settings
 from app.core.db import engine, init_db
+from app.core.mongodb import close_mongo_client
 from app.core.testing_safety import assert_safe_test_database_url
 from app.main import app
 from app.models import User
@@ -13,6 +15,16 @@ from tests.utils.user import authentication_token_from_email
 from tests.utils.utils import get_superuser_token_headers
 
 assert_safe_test_database_url(str(settings.SQLALCHEMY_DATABASE_URI))
+
+
+@pytest.fixture(scope="session", autouse=True)
+def disable_mongodb_for_tests() -> Generator[None, None, None]:
+    original_mongodb_url = settings.MONGODB_URL
+    settings.MONGODB_URL = None
+    asyncio.run(close_mongo_client())
+    yield
+    asyncio.run(close_mongo_client())
+    settings.MONGODB_URL = original_mongodb_url
 
 
 @pytest.fixture(scope="session", autouse=True)

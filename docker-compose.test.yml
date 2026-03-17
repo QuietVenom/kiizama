@@ -1,0 +1,83 @@
+services:
+
+  prestart:
+    environment:
+      SMTP_HOST: mailcatcher
+      SMTP_PORT: "1025"
+      SMTP_TLS: "false"
+      SMTP_SSL: "false"
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
+      EMAILS_FROM_EMAIL: noreply@example.com
+      FRONTEND_HOST: http://localhost:5173
+
+  backend:
+    environment:
+      SMTP_HOST: mailcatcher
+      SMTP_PORT: "1025"
+      SMTP_TLS: "false"
+      SMTP_SSL: "false"
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
+      EMAILS_FROM_EMAIL: noreply@example.com
+      FRONTEND_HOST: http://localhost:5173
+
+  postgres_test:
+    image: postgres:18
+    restart: "no"
+    environment:
+      - POSTGRES_DB=${POSTGRES_TEST_DB-app_test}
+      - POSTGRES_USER=${POSTGRES_TEST_USER-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_TEST_PASSWORD-postgres}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_TEST_USER-postgres} -d ${POSTGRES_TEST_DB-app_test}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    ports:
+      - "${POSTGRES_TEST_PORT-55432}:5432"
+
+  redis:
+    image: redis:7.4-alpine
+    restart: "no"
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+
+  mailcatcher:
+    image: schickling/mailcatcher
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+
+  playwright:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.playwright
+      args:
+        - VITE_API_URL=http://backend:8000
+        - NODE_ENV=production
+    init: true
+    ipc: host
+    depends_on:
+      - backend
+      - mailcatcher
+    env_file:
+      - .env
+    environment:
+      - VITE_API_URL=http://backend:8000
+      - MAILCATCHER_HOST=http://mailcatcher:1080
+      - FIRST_SUPERUSER=${FIRST_SUPERUSER}
+      - FIRST_SUPERUSER_PASSWORD=${FIRST_SUPERUSER_PASSWORD}
+      - PLAYWRIGHT_HTML_HOST=0.0.0.0
+      - CI=${CI-}
+    volumes:
+      - ./frontend/blob-report:/app/blob-report
+      - ./frontend/test-results:/app/test-results
+    ports:
+      - 9323:9323
+
+networks:
+  traefik-public:
+    external: false

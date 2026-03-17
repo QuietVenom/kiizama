@@ -117,8 +117,6 @@ Configuration lives in `.env` and is consumed by Docker Compose, backend and wor
 Recommended URL variables:
 
 - `DATABASE_URL`
-- `POSTGRES_URI`
-- `DATABASE_URL_SHARED_EXTERNAL`
 - `DATABASE_URL_PRODUCTION_INTERNAL`
 
 Fallback split Postgres variables:

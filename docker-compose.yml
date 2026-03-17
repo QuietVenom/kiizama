@@ -3,7 +3,8 @@ services:
   prestart:
     image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
     build:
-      context: ./backend
+      context: .
+      dockerfile: backend/Dockerfile
     networks:
       - traefik-public
       - default
@@ -23,15 +24,20 @@ services:
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - EMAILS_FROM_EMAIL=${EMAILS_FROM_EMAIL}
       - DATABASE_URL=${DATABASE_URL}
-      - POSTGRES_URI=${POSTGRES_URI}
-      - DATABASE_URL_SHARED_EXTERNAL=${DATABASE_URL_SHARED_EXTERNAL}
       - DATABASE_URL_PRODUCTION_INTERNAL=${DATABASE_URL_PRODUCTION_INTERNAL}
       - POSTGRES_SERVER=${POSTGRES_SERVER}
       - POSTGRES_PORT=${POSTGRES_PORT}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - MONGODB_URL=${MONGODB_URL}
+      - MONGODB_KIIZAMA_IG=${MONGODB_KIIZAMA_IG}
       - SENTRY_DSN=${SENTRY_DSN}
+      - REDIS_URL=${REDIS_URL}
+      - JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS=${JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS}
+      - USER_EVENTS_STREAM_MAXLEN=${USER_EVENTS_STREAM_MAXLEN}
+      - USER_EVENTS_SSE_READ_BLOCK_MS=${USER_EVENTS_SSE_READ_BLOCK_MS}
+      - JOB_CONTROL_QUEUE_MAXLEN=${JOB_CONTROL_QUEUE_MAXLEN}
 
   backend:
     image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
@@ -57,15 +63,20 @@ services:
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - EMAILS_FROM_EMAIL=${EMAILS_FROM_EMAIL}
       - DATABASE_URL=${DATABASE_URL}
-      - POSTGRES_URI=${POSTGRES_URI}
-      - DATABASE_URL_SHARED_EXTERNAL=${DATABASE_URL_SHARED_EXTERNAL}
       - DATABASE_URL_PRODUCTION_INTERNAL=${DATABASE_URL_PRODUCTION_INTERNAL}
       - POSTGRES_SERVER=${POSTGRES_SERVER}
       - POSTGRES_PORT=${POSTGRES_PORT}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - MONGODB_URL=${MONGODB_URL}
+      - MONGODB_KIIZAMA_IG=${MONGODB_KIIZAMA_IG}
       - SENTRY_DSN=${SENTRY_DSN}
+      - REDIS_URL=${REDIS_URL}
+      - JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS=${JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS}
+      - USER_EVENTS_STREAM_MAXLEN=${USER_EVENTS_STREAM_MAXLEN}
+      - USER_EVENTS_SSE_READ_BLOCK_MS=${USER_EVENTS_SSE_READ_BLOCK_MS}
+      - JOB_CONTROL_QUEUE_MAXLEN=${JOB_CONTROL_QUEUE_MAXLEN}
 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health-check/"]
@@ -74,7 +85,8 @@ services:
       retries: 5
 
     build:
-      context: ./backend
+      context: .
+      dockerfile: backend/Dockerfile
     labels:
       - traefik.enable=true
       - traefik.docker.network=traefik-public

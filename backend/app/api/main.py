@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.routes import (
     brand_intelligence,
+    events,
     feature_flags,
     health,
     ig_credentials,
@@ -32,6 +33,7 @@ api_router.include_router(utils.router)
 api_router.include_router(feature_flags.router)
 api_router.include_router(public_feature_flags.router)
 api_router.include_router(public_waiting_list.router)
+api_router.include_router(events.router)
 api_router.include_router(ig_credentials.router)
 api_router.include_router(ig_profile.router)
 api_router.include_router(ig_posts.router)
