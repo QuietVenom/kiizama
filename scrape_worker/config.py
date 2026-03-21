@@ -4,6 +4,7 @@ import os
 import socket
 import uuid
 from dataclasses import dataclass
+from functools import lru_cache
 
 
 def _read_env(
@@ -78,8 +79,12 @@ def _read_worker_id() -> str:
 class WorkerSettings:
     mongodb_url: str
     mongodb_database: str
+    redis_url: str
+    backend_base_url: str
     secret_key_ig_credentials: str
     openai_api_key: str
+    system_admin_email: str
+    system_admin_password: str
     poll_seconds: float
     heartbeat_seconds: float
     lease_seconds: int
@@ -88,43 +93,76 @@ class WorkerSettings:
     worker_id: str
 
 
-settings = WorkerSettings(
-    mongodb_url=_read_required_env(
-        "IG_SCRAPE_WORKER_MONGODB_URL",
-        fallback_var="MONGODB_URL",
-    ),
-    mongodb_database=_read_env(
-        "IG_SCRAPE_WORKER_MONGODB_KIIZAMA_IG",
-        fallback_var="MONGODB_KIIZAMA_IG",
+def build_settings() -> WorkerSettings:
+    settings = WorkerSettings(
+        mongodb_url=_read_required_env(
+            "IG_SCRAPE_WORKER_MONGODB_URL",
+            fallback_var="MONGODB_URL",
+        ),
+        mongodb_database=_read_env(
+            "IG_SCRAPE_WORKER_MONGODB_KIIZAMA_IG",
+            fallback_var="MONGODB_KIIZAMA_IG",
+        )
+        or "kiizama_ig",
+        redis_url=_read_required_env(
+            "IG_SCRAPE_WORKER_REDIS_URL",
+            fallback_var="REDIS_URL",
+        ),
+        backend_base_url=_read_required_env("IG_SCRAPE_WORKER_BACKEND_BASE_URL"),
+        secret_key_ig_credentials=_read_required_env(
+            "IG_SCRAPE_WORKER_SECRET_KEY_IG_CREDENTIALS",
+            fallback_var="SECRET_KEY_IG_CREDENTIALS",
+        ),
+        openai_api_key=_read_required_env(
+            "IG_SCRAPE_WORKER_OPENAI_API_KEY",
+            fallback_var="OPENAI_API_KEY",
+        ),
+        system_admin_email=_read_required_env(
+            "IG_SCRAPE_WORKER_SYSTEM_ADMIN_EMAIL",
+            fallback_var="SYSTEM_ADMIN_EMAIL",
+        ),
+        system_admin_password=_read_required_env(
+            "IG_SCRAPE_WORKER_SYSTEM_ADMIN_PASSWORD",
+            fallback_var="SYSTEM_ADMIN_PASSWORD",
+        ),
+        poll_seconds=_read_float_env("IG_SCRAPE_WORKER_POLL_SECONDS", 1.0),
+        heartbeat_seconds=_read_float_env("IG_SCRAPE_WORKER_HEARTBEAT_SECONDS", 20.0),
+        lease_seconds=_read_int_env("IG_SCRAPE_WORKER_LEASE_SECONDS", 900),
+        max_attempts=_read_int_env("IG_SCRAPE_WORKER_MAX_ATTEMPTS", 3),
+        max_error_length=_read_int_env("IG_SCRAPE_WORKER_ERROR_MAX_LEN", 4000),
+        worker_id=_read_worker_id(),
     )
-    or "kiizama_ig",
-    secret_key_ig_credentials=_read_required_env(
-        "IG_SCRAPE_WORKER_SECRET_KEY_IG_CREDENTIALS",
-        fallback_var="SECRET_KEY_IG_CREDENTIALS",
-    ),
-    openai_api_key=_read_required_env(
-        "IG_SCRAPE_WORKER_OPENAI_API_KEY",
-        fallback_var="OPENAI_API_KEY",
-    ),
-    poll_seconds=_read_float_env("IG_SCRAPE_WORKER_POLL_SECONDS", 1.0),
-    heartbeat_seconds=_read_float_env("IG_SCRAPE_WORKER_HEARTBEAT_SECONDS", 20.0),
-    lease_seconds=_read_int_env("IG_SCRAPE_WORKER_LEASE_SECONDS", 900),
-    max_attempts=_read_int_env("IG_SCRAPE_WORKER_MAX_ATTEMPTS", 3),
-    max_error_length=_read_int_env("IG_SCRAPE_WORKER_ERROR_MAX_LEN", 4000),
-    worker_id=_read_worker_id(),
-)
 
-if settings.heartbeat_seconds >= settings.lease_seconds:
-    raise ValueError(
-        "IG_SCRAPE_WORKER_HEARTBEAT_SECONDS must be lower than "
-        "IG_SCRAPE_WORKER_LEASE_SECONDS."
-    )
+    if settings.heartbeat_seconds >= settings.lease_seconds:
+        raise ValueError(
+            "IG_SCRAPE_WORKER_HEARTBEAT_SECONDS must be lower than "
+            "IG_SCRAPE_WORKER_LEASE_SECONDS."
+        )
 
-# Keep backend modules compatible: they expect these generic variable names.
-os.environ["MONGODB_URL"] = settings.mongodb_url
-os.environ["MONGODB_KIIZAMA_IG"] = settings.mongodb_database
-os.environ["SECRET_KEY_IG_CREDENTIALS"] = settings.secret_key_ig_credentials
-os.environ["OPENAI_API_KEY"] = settings.openai_api_key
+    return settings
 
 
-__all__ = ["settings", "WorkerSettings"]
+@lru_cache(maxsize=1)
+def get_settings() -> WorkerSettings:
+    return build_settings()
+
+
+def reset_settings_cache() -> None:
+    get_settings.cache_clear()
+
+
+def apply_backend_compat_env(settings: WorkerSettings) -> None:
+    os.environ["MONGODB_URL"] = settings.mongodb_url
+    os.environ["MONGODB_KIIZAMA_IG"] = settings.mongodb_database
+    os.environ["REDIS_URL"] = settings.redis_url
+    os.environ["SECRET_KEY_IG_CREDENTIALS"] = settings.secret_key_ig_credentials
+    os.environ["OPENAI_API_KEY"] = settings.openai_api_key
+
+
+__all__ = [
+    "WorkerSettings",
+    "apply_backend_compat_env",
+    "build_settings",
+    "get_settings",
+    "reset_settings_cache",
+]

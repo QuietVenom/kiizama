@@ -35,6 +35,12 @@ Use interpreter `backend/.venv/bin/python` in your editor.
 
 Asynchronous scrape jobs are consumed by `scrape_worker` at repository root.
 
+Current ownership model:
+
+- Redis owns queueing, live job state, lease ownership, reclaim, and terminal dedupe.
+- MongoDB stores the persisted scrape data and the TTL-backed job projection returned by `GET /ig-scraper/jobs/{job_id}`.
+- The backend accepts the final job completion and emits the SSE notification.
+
 From repository root:
 
 ```bash
@@ -43,9 +49,9 @@ backend/.venv/bin/python -m scrape_worker.main
 
 Related endpoints:
 
-- `POST /api/v1/ig-scrapper/jobs`
-- `GET /api/v1/ig-scrapper/jobs/{job_id}`
-- `POST /api/v1/ig-scrapper/profiles/batch` (synchronous flow)
+- `POST /api/v1/ig-scraper/jobs`
+- `GET /api/v1/ig-scraper/jobs/{job_id}`
+- `POST /api/v1/ig-scraper/profiles/batch` (synchronous flow)
 
 Optional Docker profile:
 
@@ -77,15 +83,17 @@ docker compose exec backend bash scripts/tests-start.sh -x
 ### Isolated local Postgres for tests
 
 ```bash
-docker compose up -d postgres_test redis
+docker compose -f docker-compose.yml -f docker-compose.test.yml up -d postgres_test redis
 cd backend
 TEST_DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:55432/app_test \
 REDIS_URL=redis://localhost:6379/0 \
-bash scripts/tests-start.sh
+bash scripts/tests-start.sh backend/tests/api/routes/test_ig_scraper_jobs.py
 ```
 
 For local backend tests, Redis should come from the Docker `redis` service exposed on `localhost:6379`.
 Do not use `fly redis proxy kiizama-redis` for this flow.
+
+`scripts/tests-start.sh` bootstraps the test database by waiting for Postgres, running `alembic upgrade head`, and seeding initial data before pytest starts.
 
 ## Migrations
 

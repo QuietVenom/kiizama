@@ -38,7 +38,7 @@ Traefik UI, to see how the routes are being handled by the proxy: http://localho
 By default, backend Postgres uses `DATABASE_URL` (typically a managed database URL). For isolated local tests, use the dedicated test compose file:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.test.yml up -d postgres_test
+docker compose -f docker-compose.yml -f docker-compose.test.yml up -d postgres_test redis
 ```
 
 To check the logs, run (in another terminal):
@@ -87,7 +87,7 @@ cd backend
 fastapi dev app/main.py
 ```
 
-If you plan to use Instagram scraping locally (`/api/v1/ig-scrapper/profiles/batch` or worker jobs), install Playwright Chromium once:
+If you plan to use Instagram scraping locally (`/api/v1/ig-scraper/profiles/batch` or worker jobs), install Playwright Chromium once:
 
 ```bash
 backend/.venv/bin/python -m playwright install chromium
@@ -95,18 +95,21 @@ backend/.venv/bin/python -m playwright install chromium
 
 ## Async Instagram Scrape Jobs
 
-The project now supports asynchronous Instagram scraping jobs backed by MongoDB.
+The project now supports asynchronous Instagram scraping jobs with:
+
+* `Redis` for queueing, live job state, lease ownership, heartbeat, retry recovery, and terminal dedupe
+* `MongoDB` for the persisted scrape result plus a TTL-backed job projection for queries/history
 
 The existing synchronous endpoint remains available:
 
-* `POST /api/v1/ig-scrapper/profiles/batch`
+* `POST /api/v1/ig-scraper/profiles/batch`
 
-The new asynchronous job endpoints are:
+The asynchronous job endpoints are:
 
-* `POST /api/v1/ig-scrapper/jobs`
-* `GET /api/v1/ig-scrapper/jobs/{job_id}`
+* `POST /api/v1/ig-scraper/jobs`
+* `GET /api/v1/ig-scraper/jobs/{job_id}`
 
-`POST /api/v1/ig-scrapper/jobs` accepts `usernames` (maximum 10) plus the same scraping options used by the sync flow (`timeout_ms`, `max_concurrent`, etc). It returns:
+`POST /api/v1/ig-scraper/jobs` accepts `usernames` (maximum 10) plus the same scraping options used by the sync flow (`timeout_ms`, `max_concurrent`, etc). It returns:
 
 ```json
 {
@@ -115,14 +118,20 @@ The new asynchronous job endpoints are:
 }
 ```
 
-`GET /api/v1/ig-scrapper/jobs/{job_id}` returns:
+`GET /api/v1/ig-scraper/jobs/{job_id}` returns:
 
 * `status`: `queued`, `running`, `done`, or `failed`
 * `summary`: high-level scrape summary (no large raw payloads)
 * `references`: username groups (`successful`, `failed`, `skipped`, `not_found`)
 * Operational lease metadata: `attempts`, `lease_owner`, `leased_until`, `heartbeat_at`
 
-Jobs expire automatically through MongoDB TTL 24 hours after `createdAt`.
+Operational ownership rules:
+
+* Redis is the source of truth for live job lifecycle.
+* MongoDB does not decide whether a job is still running.
+* MongoDB keeps the queryable job projection and the persisted scrape result.
+* The MongoDB job projection expires through TTL after `createdAt`.
+* Redis terminal state uses its own TTL and does not live forever.
 
 ### Worker process
 
@@ -142,9 +151,12 @@ backend/.venv/bin/python -m scrape_worker.main
 
 The worker handles the full pipeline for each job:
 
+* consume queued jobs from Redis
+* maintain lease + heartbeat in Redis
 * scrape
 * AI enrichment
 * persistence to MongoDB
+* callback backend for terminalization + SSE publication
 
 ### Worker with Docker Compose (optional)
 
@@ -166,11 +178,11 @@ docker compose logs -f scrape_worker
 
 The worker uses lease + heartbeat to recover jobs if a worker process dies mid-run.
 
-* A claimed job gets `leaseOwner`, `leasedUntil`, and `heartbeatAt`.
+* A claimed job gets lease ownership metadata in Redis state.
 * While running, the worker renews heartbeat/lease.
-* If lease expires, another worker can reclaim the job.
+* If lease expires, another worker can reclaim the pending stream message.
 * `attempts` is incremented per claim.
-* Jobs that reach `IG_SCRAPE_WORKER_MAX_ATTEMPTS` are marked as `failed`.
+* The backend accepts terminalization exactly once and publishes the final user SSE event.
 
 ## Docker Compose in `*.localhost`
 
@@ -211,6 +223,18 @@ For tests, use `docker-compose.test.yml`. The test scripts in `scripts/test.sh` 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.test.yml ...
 ```
+
+To run backend tests locally against the isolated Postgres + Redis stack:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.test.yml up -d postgres_test redis
+cd backend
+TEST_DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:55432/app_test \
+REDIS_URL=redis://localhost:6379/0 \
+bash scripts/tests-start.sh backend/tests/api/routes/test_ig_scraper_jobs.py backend/tests/api/routes/test_events.py
+```
+
+`scripts/tests-start.sh` now waits for the test database, runs `alembic upgrade head`, seeds initial data, and then executes pytest against the test database URL.
 
 These Docker Compose files use the `.env` file containing configurations to be injected as environment variables in the containers.
 
