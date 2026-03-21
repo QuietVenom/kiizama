@@ -41,28 +41,70 @@ services:
       - traefik-public
       - default
 
-  postgres_test:
+  postgres:
     image: postgres:18
     restart: "no"
     environment:
-      - POSTGRES_DB=${POSTGRES_TEST_DB-app_test}
-      - POSTGRES_USER=${POSTGRES_TEST_USER-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_TEST_PASSWORD-postgres}
+      POSTGRES_DB: "app"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_TEST_USER-postgres} -d ${POSTGRES_TEST_DB-app_test}"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
-      timeout: 10s
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app"]
+      interval: 5s
+      retries: 10
+      start_period: 10s
+      timeout: 5s
+
+  redis:
+    image: redis:7.4-alpine
+    restart: "no"
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+      start_period: 5s
+      timeout: 5s
     ports:
-      - "${POSTGRES_TEST_PORT-55432}:5432"
+      - "6379:6379"
+
+  prestart:
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailcatcher:
+        condition: service_started
+    environment:
+      DATABASE_URL: "postgresql+psycopg://postgres:postgres@postgres:5432/app"
+      POSTGRES_SERVER: "postgres"
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: "app"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      SMTP_HOST: "mailcatcher"
+      SMTP_PORT: "1025"
+      SMTP_TLS: "false"
+      SMTP_SSL: "false"
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
+      EMAILS_FROM_EMAIL: "noreply@example.com"
+      FRONTEND_HOST: "http://localhost:5173"
+      REDIS_URL: "redis://redis:6379/0"
 
   backend:
     restart: "no"
     ports:
       - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     build:
-      context: ./backend
+      context: .
+      dockerfile: backend/Dockerfile
     # command: sleep infinity  # Infinite loop to keep container alive doing nothing
     command:
       - fastapi
@@ -73,20 +115,34 @@ services:
       watch:
         - path: ./backend
           action: sync
-          target: /app
+          target: /app/backend
           ignore:
             - ./backend/.venv
             - .venv
         - path: ./backend/pyproject.toml
           action: rebuild
+        - path: ./packages/kiizama_scrape_core
+          action: sync
+          target: /app/packages/kiizama_scrape_core
     # TODO: remove once coverage is done locally
     volumes:
-      - ./backend/htmlcov:/app/htmlcov
+      - ./backend/htmlcov:/app/backend/htmlcov
     environment:
+      DATABASE_URL: "postgresql+psycopg://postgres:postgres@postgres:5432/app"
+      POSTGRES_SERVER: "postgres"
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: "app"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
       SMTP_HOST: "mailcatcher"
       SMTP_PORT: "1025"
       SMTP_TLS: "false"
+      SMTP_SSL: "false"
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
       EMAILS_FROM_EMAIL: "noreply@example.com"
+      FRONTEND_HOST: "http://localhost:5173"
+      REDIS_URL: "redis://redis:6379/0"
 
   scrape_worker:
     profiles: ["worker"]
@@ -125,31 +181,6 @@ services:
       args:
         - VITE_API_URL=http://api.${DOMAIN?Variable not set}
         - NODE_ENV=development
-
-  playwright:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.playwright
-      args:
-        - VITE_API_URL=http://backend:8000
-        - NODE_ENV=production
-    ipc: host
-    depends_on:
-      - backend
-      - mailcatcher
-    env_file:
-      - .env
-    environment:
-      - VITE_API_URL=http://backend:8000
-      - MAILCATCHER_HOST=http://mailcatcher:1080
-      # For the reports when run locally
-      - PLAYWRIGHT_HTML_HOST=0.0.0.0
-      - CI=${CI}
-    volumes:
-      - ./frontend/blob-report:/app/blob-report
-      - ./frontend/test-results:/app/test-results
-    ports:
-      - 9323:9323
 
 networks:
   traefik-public:

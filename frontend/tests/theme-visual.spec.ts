@@ -31,7 +31,7 @@ const captureVisualState = async (
   }, theme)
 
   await page.goto(route.path)
-  await page.waitForLoadState("networkidle")
+  await page.waitForLoadState("domcontentloaded")
 
   await expect
     .poll(async () =>

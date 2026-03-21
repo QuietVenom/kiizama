@@ -1,0 +1,28 @@
+app = "kiizama-frontend"
+primary_region = "dfw"
+
+# Deploy from the frontend directory so this Dockerfile keeps using
+# frontend/ as the Docker build context:
+# fly deploy ./frontend --config ../fly.frontend.toml
+
+[build.args]
+  VITE_API_URL = "https://api.kiizama.com"
+
+[http_service]
+  internal_port = 80
+  force_https = true
+  auto_start_machines = true
+  auto_stop_machines = "off"
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "15s"
+    method = "GET"
+    timeout = "5s"
+    path = "/"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "256mb"

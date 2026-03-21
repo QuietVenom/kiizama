@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query"
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router"
-import React, { Suspense } from "react"
+import { lazy, Suspense } from "react"
 
 import CookieConsentPrompt from "@/components/Common/CookieConsentPrompt"
 import NotFound from "@/components/Common/NotFound"
@@ -24,8 +24,7 @@ const loadDevtools = () =>
     }
   })
 
-const TanStackDevtools =
-  process.env.NODE_ENV === "production" ? () => null : React.lazy(loadDevtools)
+const TanStackDevtools = import.meta.env.PROD ? () => null : lazy(loadDevtools)
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
   component: () => (

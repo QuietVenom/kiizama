@@ -10,6 +10,7 @@ import {
   type UserRegister,
   UsersService,
 } from "@/client"
+import { clearUserEventsCursor } from "@/features/user-events/cursor"
 import { handleError } from "@/utils"
 
 const CURRENT_USER_STALE_TIME_MS = 5 * 60 * 1000
@@ -66,6 +67,13 @@ const useAuth = () => {
   })
 
   const logout = () => {
+    const currentUserId =
+      user?.id ??
+      queryClient.getQueryData<UserPublic>(currentUserQueryOptions.queryKey)?.id
+
+    if (currentUserId) {
+      clearUserEventsCursor(currentUserId)
+    }
     localStorage.removeItem("access_token")
     navigate({ to: "/login" })
   }

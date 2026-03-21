@@ -25,7 +25,7 @@ jobs:
     steps:
     - uses: actions/checkout@v5
     # For pull requests it's not necessary to checkout the code but for the main branch it is
-    - uses: dorny/paths-filter@v3
+    - uses: dorny/paths-filter@v4
       id: filter
       with:
         filters: |
@@ -83,15 +83,15 @@ jobs:
     - run: uv run bash scripts/generate-client.sh
       env:
         VIRTUAL_ENV: backend/.venv
-    - run: docker compose --env-file .env.example build
-    - run: docker compose --env-file .env.example down -v --remove-orphans
-    - run: docker compose --env-file .env.example up -d --wait postgres_test
+    - run: docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml --env-file .env.example build
+    - run: docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml --env-file .env.example down -v --remove-orphans
+    - run: docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml --env-file .env.example up -d --wait postgres_test
     - name: Run Playwright tests
-      run: docker compose --env-file .env.example run --rm playwright npx playwright test --fail-on-flaky-tests --trace=retain-on-failure --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
-    - run: docker compose --env-file .env.example down -v --remove-orphans
+      run: docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml --env-file .env.example run --rm playwright npx playwright test --fail-on-flaky-tests --trace=retain-on-failure --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+    - run: docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml --env-file .env.example down -v --remove-orphans
     - name: Upload blob report to GitHub Actions Artifacts
       if: ${{ !cancelled() }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: blob-report-${{ matrix.shardIndex }}
         path: frontend/blob-report
@@ -137,7 +137,7 @@ jobs:
       working-directory: frontend
     - name: Upload HTML report
       if: ${{ steps.blob_reports.outputs.found == 'true' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: html-report--attempt-${{ github.run_attempt }}
         path: frontend/playwright-report
