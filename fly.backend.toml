@@ -17,6 +17,7 @@ primary_region = "dfw"
   FRONTEND_HOST = "https://app.kiizama.com"
   BACKEND_CORS_ORIGINS = "https://www.kiizama.com,https://app.kiizama.com"
   MONGODB_KIIZAMA_IG = "kiizama_ig"
+  IG_SCRAPER_MAX_CONCURRENT = "2"
   SMTP_HOST = "smtp.sendgrid.net"
   SMTP_PORT = "587"
   SMTP_TLS = "true"
@@ -48,6 +49,6 @@ primary_region = "dfw"
 
 [[vm]]
   cpu_kind = "shared"
-  cpus = 1
+  cpus = 2
   memory = "1024mb"
   processes = ["app"]

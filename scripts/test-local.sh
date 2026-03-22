@@ -128,7 +128,7 @@ PY
 }
 
 prepare_playwright_env_file() {
-  cp "$ROOT_DIR/.env.example" "$PLAYWRIGHT_TEST_ENV_FILE"
+  cp "$ROOT_DIR/.env" "$PLAYWRIGHT_TEST_ENV_FILE"
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "DATABASE_URL" "$DOCKER_TEST_DB_URL"
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "TEST_DATABASE_URL" "$DOCKER_TEST_DB_URL"
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "POSTGRES_SERVER" "postgres_test"
@@ -141,14 +141,6 @@ prepare_playwright_env_file() {
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "POSTGRES_TEST_PASSWORD" "postgres"
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "POSTGRES_TEST_PORT" "55432"
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "REDIS_URL" "redis://redis:6379/0"
-  upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "SMTP_HOST" "mailcatcher"
-  upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "SMTP_PORT" "1025"
-  upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "SMTP_TLS" "false"
-  upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "SMTP_SSL" "false"
-  upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "SMTP_USER" ""
-  upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "SMTP_PASSWORD" ""
-  upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "EMAILS_FROM_EMAIL" "noreply@example.com"
-  upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "FRONTEND_HOST" "http://localhost:5173"
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "MONGODB_URL" ""
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "IG_SCRAPE_WORKER_MONGODB_URL" ""
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "CI" ""
@@ -217,7 +209,7 @@ run_backend() {
   compose_test_stack down -v --remove-orphans
   TEST_STACK_STARTED=1
   trap cleanup_test_containers RETURN
-  compose_test_stack up -d postgres_test redis mailcatcher
+  compose_test_stack up -d postgres_test redis
   wait_for_postgres
   wait_for_redis
 
@@ -275,7 +267,7 @@ run_playwright() {
   compose_test_stack build
   compose_test_stack down -v --remove-orphans
   trap cleanup_test_containers RETURN
-  compose_test_stack up -d --wait postgres_test redis mailcatcher backend
+  compose_test_stack up -d --wait postgres_test redis backend
 
   if [[ $# -gt 0 ]]; then
     log "Running Playwright with custom args: $*"

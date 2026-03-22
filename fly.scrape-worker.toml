@@ -14,6 +14,7 @@ primary_region = "dfw"
 
 [env]
   IG_SCRAPE_WORKER_MONGODB_KIIZAMA_IG = "kiizama_ig"
+  IG_SCRAPER_MAX_CONCURRENT = "2"
   IG_SCRAPE_WORKER_POLL_SECONDS = "1"
   IG_SCRAPE_WORKER_HEARTBEAT_SECONDS = "20"
   IG_SCRAPE_WORKER_LEASE_SECONDS = "900"
@@ -25,6 +26,6 @@ primary_region = "dfw"
 
 [[vm]]
   cpu_kind = "shared"
-  cpus = 1
-  memory = "2048mb"
+  cpus = 2
+  memory = "4096mb"
   processes = ["app"]

@@ -616,10 +616,8 @@ export const InstagramBatchRecommendationsRequestSchema = {
         },
         max_concurrent: {
             type: 'integer',
-            maximum: 2,
             minimum: 1,
-            title: 'Max Concurrent',
-            default: 2
+            title: 'Max Concurrent'
         },
         measure_network_bytes: {
             type: 'boolean',
@@ -728,10 +726,8 @@ export const InstagramBatchScrapeRequestSchema = {
         },
         max_concurrent: {
             type: 'integer',
-            maximum: 2,
             minimum: 1,
-            title: 'Max Concurrent',
-            default: 2
+            title: 'Max Concurrent'
         },
         measure_network_bytes: {
             type: 'boolean',
@@ -1040,10 +1036,8 @@ export const InstagramScrapeJobCreateRequestSchema = {
         },
         max_concurrent: {
             type: 'integer',
-            maximum: 2,
             minimum: 1,
-            title: 'Max Concurrent',
-            default: 2
+            title: 'Max Concurrent'
         },
         measure_network_bytes: {
             type: 'boolean',

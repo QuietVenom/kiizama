@@ -54,7 +54,7 @@ function Home() {
         >
           <MetricCard
             icon={FiUserCheck}
-            label="Profile Mining: Total Credits"
+            label="Profiles: Total Credits"
             value="50 / 50"
             tone="info"
           />

@@ -85,7 +85,8 @@ const ProfileValidationPanel = ({
               Validating profiles
             </Text>
             <Text mt={1} color="ui.secondaryText">
-              Checking whether these usernames already exist in Mining.
+              Checking whether these usernames already exist in the saved
+              profile dataset.
             </Text>
           </Box>
         </Flex>
@@ -330,7 +331,7 @@ const ProfileValidationPanel = ({
           py={4}
         >
           <Text color="ui.dangerText" fontWeight="black">
-            consulte los perfiles en Mining y vuelva a intentar
+            consulte los perfiles validados y vuelva a intentar
           </Text>
         </Box>
       ) : null}

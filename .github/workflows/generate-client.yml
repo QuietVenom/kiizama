@@ -9,19 +9,9 @@ on:
 
 jobs:
   generate-client:
-    permissions:
-      contents: write
     runs-on: ubuntu-latest
     steps:
-    # For PRs from forks (no push permissions to contributor branches)
     - uses: actions/checkout@v5
-      if: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
-    # For PRs from the same repo (checkout head branch so we can push generated changes)
-    - uses: actions/checkout@v5
-      if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
-      with:
-        ref: ${{ github.head_ref }}
-        token: ${{ secrets.GITHUB_TOKEN }}
     - uses: actions/setup-node@v5
       with:
         node-version: lts/*
@@ -40,25 +30,10 @@ jobs:
       working-directory: frontend
     - run: uv sync
       working-directory: backend
-    - run: uv run bash scripts/generate-client.sh
+    - name: Verify generated frontend client
+      run: bash scripts/check-generated-client.sh --mode ci
       env:
         VIRTUAL_ENV: backend/.venv
         SECRET_KEY: just-for-generating-client
         POSTGRES_PASSWORD: just-for-generating-client
         FIRST_SUPERUSER_PASSWORD: just-for-generating-client
-    - name: Add changes to git
-      run: |
-        git config --local user.email "github-actions@github.com"
-        git config --local user.name "github-actions"
-        git add frontend/src/client
-    # Same repo PRs
-    - name: Push changes
-      if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
-      run: |
-        git diff --staged --quiet || git commit -m "✨ Autogenerate frontend client"
-        git push
-    # Fork PRs
-    - name: Check changes
-      if: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
-      run: |
-        git diff --staged --quiet || (echo "Changes detected in generated client, run scripts/generate-client.sh and commit the changes" && exit 1)
