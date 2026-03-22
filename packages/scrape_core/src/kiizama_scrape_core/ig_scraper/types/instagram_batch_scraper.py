@@ -5,12 +5,9 @@ from collections import deque
 from dataclasses import asdict, dataclass
 from typing import Any, Literal
 
-from app.constants import DEFAULT_USER_AGENT
-from app.features.social_media_report.types.instagram_report_generator import (
-    calculate_metrics_from_scrape,
-)
-
 from ..classes import InstagramScrapeResult, SessionValidationResult
+from ..constants import DEFAULT_USER_AGENT
+from ..metrics import calculate_metrics_from_scrape
 from ..schemas import InstagramBatchScrapeRequest
 from .base import BaseInstagramWorker
 from .scrape_collector import InstagramScrapeCollector

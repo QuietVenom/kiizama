@@ -5,7 +5,7 @@ from typing import Any
 
 from pymongo import AsyncMongoClient
 
-from scrape_worker.config import settings
+from scrape_worker.config import get_settings
 
 _client: AsyncMongoClient[dict[str, Any]] | None = None
 
@@ -13,6 +13,7 @@ _client: AsyncMongoClient[dict[str, Any]] | None = None
 def get_worker_mongo_client() -> AsyncMongoClient[dict[str, Any]]:
     global _client
     if _client is None:
+        settings = get_settings()
         _client = AsyncMongoClient(
             settings.mongodb_url,
             tz_aware=True,
@@ -22,7 +23,7 @@ def get_worker_mongo_client() -> AsyncMongoClient[dict[str, Any]]:
 
 
 def get_worker_mongo_database():
-    return get_worker_mongo_client()[settings.mongodb_database]
+    return get_worker_mongo_client()[get_settings().mongodb_database]
 
 
 async def close_worker_mongo_client() -> None:

@@ -75,7 +75,7 @@ class FakeUserEventsRepository(UserEventsRepository):
 def _envelope_json(payload: dict[str, Any] | None = None) -> str:
     return UserEventEnvelope(
         topic="jobs",
-        source="ig-scrapper",
+        source="ig-scraper",
         kind="terminal",
         notification_id="job:job-1:terminal",
         payload=payload or {"job_id": "job-1", "status": "done"},

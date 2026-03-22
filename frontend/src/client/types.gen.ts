@@ -268,6 +268,27 @@ export type InstagramScrapeJobStatusResponse = {
 
 export type status2 = 'queued' | 'running' | 'done' | 'failed';
 
+export type InstagramScrapeJobTerminalizationRequest = {
+    status: 'done' | 'failed';
+    attempt: number;
+    worker_id: string;
+    completed_at: string;
+    summary: InstagramBatchScrapeSummaryResponse;
+    error?: (string | null);
+};
+
+export type status3 = 'done' | 'failed';
+
+export type InstagramScrapeJobTerminalizationResponse = {
+    job_id: string;
+    decision: 'accepted_new' | 'accepted_pending' | 'duplicate' | 'conflict';
+    status: 'done' | 'failed';
+    notification_id: string;
+    terminal_event_id?: (string | null);
+};
+
+export type decision = 'accepted_new' | 'accepted_pending' | 'duplicate' | 'conflict';
+
 export type InstagramSuggestedUserSchema = {
     username?: (string | null);
     id?: (string | null);
@@ -1065,6 +1086,13 @@ export type InstagramInstagramProfilesRecommendationsData = {
 };
 
 export type InstagramInstagramProfilesRecommendationsResponse = (InstagramBatchRecommendationsResponse);
+
+export type InternalInstagramCompleteInstagramScrapeJobData = {
+    jobId: string;
+    requestBody: InstagramScrapeJobTerminalizationRequest;
+};
+
+export type InternalInstagramCompleteInstagramScrapeJobResponse = (InstagramScrapeJobTerminalizationResponse);
 
 export type InternalLoginLoginInternalAccessTokenData = {
     formData: Body_internal_login_login_internal_access_token;

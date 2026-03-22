@@ -3,6 +3,24 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from kiizama_scrape_core.ig_scraper.schemas import (
+    InstagramBatchRecommendationsRequest,
+    InstagramBatchRecommendationsResponse,
+    InstagramBatchScrapeRequest,
+    InstagramBatchScrapeSummaryResponse,
+    InstagramScrapeJobCreateRequest,
+    InstagramScrapeJobCreateResponse,
+    InstagramScrapeJobStatusResponse,
+)
+from kiizama_scrape_core.ig_scraper.service import (
+    build_batch_scrape_summary,
+    enrich_with_ai_analysis,
+    persist_scrape_results_to_db,
+    prepare_scrape_batch_payload,
+    scrape_profiles_batch,
+    scrape_recommendations_batch,
+)
+from kiizama_scrape_core.job_control.repository import JobControlUnavailableError
 
 from app.api.deps import (
     CurrentUser,
@@ -13,30 +31,14 @@ from app.api.deps import (
     get_profiles_collection,
     get_reels_collection,
 )
-from app.features.ig_scrapper.jobs import (
-    create_scrape_job,
-    get_scrape_job,
-    serialize_job_document,
-)
-from app.features.ig_scrapper.schemas import (
-    InstagramBatchRecommendationsRequest,
-    InstagramBatchRecommendationsResponse,
-    InstagramBatchScrapeRequest,
-    InstagramBatchScrapeSummaryResponse,
-    InstagramScrapeJobCreateRequest,
-    InstagramScrapeJobCreateResponse,
-    InstagramScrapeJobStatusResponse,
-)
-from app.features.ig_scrapper.service import (
-    build_batch_scrape_summary,
-    enrich_with_ai_analysis,
-    persist_scrape_results_to_db,
-    prepare_scrape_batch_payload,
-    scrape_profiles_batch,
-    scrape_recommendations_batch,
+from app.features.ig_scraper_jobs import InstagramJobServiceDep
+from app.features.ig_scraper_runtime import (
+    BackendInstagramProfileAnalysisService,
+    BackendInstagramScrapePersistence,
+    configure_backend_instagram_scraper_runtime,
 )
 
-router = APIRouter(prefix="/ig-scrapper", tags=["instagram"])
+router = APIRouter(prefix="/ig-scraper", tags=["instagram"])
 
 
 @router.post(
@@ -46,10 +48,20 @@ router = APIRouter(prefix="/ig-scrapper", tags=["instagram"])
 )
 async def create_instagram_scrape_job(
     payload: InstagramScrapeJobCreateRequest,
-    _current_user: CurrentUser,
+    current_user: CurrentUser,
+    job_service: InstagramJobServiceDep,
 ) -> InstagramScrapeJobCreateResponse:
     """Enqueue an asynchronous Instagram scraping job."""
-    job_id = await create_scrape_job(payload)
+    try:
+        job_id = await job_service.create_job(
+            payload=payload,
+            owner_user_id=str(current_user.id),
+        )
+    except JobControlUnavailableError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(exc),
+        ) from exc
     return InstagramScrapeJobCreateResponse(job_id=job_id, status="queued")
 
 
@@ -57,16 +69,23 @@ async def create_instagram_scrape_job(
 async def get_instagram_scrape_job(
     job_id: str,
     _current_user: CurrentUser,
+    job_service: InstagramJobServiceDep,
 ) -> InstagramScrapeJobStatusResponse:
     """Fetch status and summary for a scraping job."""
-    doc = await get_scrape_job(job_id)
-    if doc is None:
+    try:
+        job = await job_service.get_job(job_id=job_id)
+    except JobControlUnavailableError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(exc),
+        ) from exc
+    if job is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Scrape job not found.",
         )
 
-    return serialize_job_document(doc)
+    return job
 
 
 @router.post(
@@ -83,10 +102,19 @@ async def instagram_scrape_profiles_batch(
     snapshots_collection: Any = Depends(get_profile_snapshots_collection),
 ) -> InstagramBatchScrapeSummaryResponse:
     """Scrape multiple Instagram profiles using stored credentials/session."""
+    configure_backend_instagram_scraper_runtime()
+    persistence = BackendInstagramScrapePersistence(
+        profiles_collection=profiles_collection,
+        posts_collection=posts_collection,
+        reels_collection=reels_collection,
+        metrics_collection=metrics_collection,
+        snapshots_collection=snapshots_collection,
+    )
+    analysis_service = BackendInstagramProfileAnalysisService()
     original_payload = payload
     payload, early_response = await prepare_scrape_batch_payload(
         payload,
-        profiles_collection,
+        persistence,
     )
     if early_response is not None:
         return build_batch_scrape_summary(
@@ -99,15 +127,14 @@ async def instagram_scrape_profiles_batch(
     response = await scrape_profiles_batch(payload)
 
     # Always enrich with OpenAI categories/roles
-    response = await enrich_with_ai_analysis(response)
+    response = await enrich_with_ai_analysis(
+        response,
+        analysis_service=analysis_service,
+    )
 
     response = await persist_scrape_results_to_db(
         response,
-        profiles_collection=profiles_collection,
-        posts_collection=posts_collection,
-        reels_collection=reels_collection,
-        metrics_collection=metrics_collection,
-        snapshots_collection=snapshots_collection,
+        persistence=persistence,
     )
 
     return build_batch_scrape_summary(
@@ -127,6 +154,7 @@ async def instagram_profiles_recommendations(
     payload: InstagramBatchRecommendationsRequest,
 ) -> InstagramBatchRecommendationsResponse:
     """Fetch recommended users for multiple Instagram profiles."""
+    configure_backend_instagram_scraper_runtime()
     return await scrape_recommendations_batch(payload)
 
 

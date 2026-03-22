@@ -121,9 +121,9 @@ services:
             - .venv
         - path: ./backend/pyproject.toml
           action: rebuild
-        - path: ./packages/kiizama_scrape_core
+        - path: ./packages/scrape_core
           action: sync
-          target: /app/packages/kiizama_scrape_core
+          target: /app/packages/scrape_core
     # TODO: remove once coverage is done locally
     volumes:
       - ./backend/htmlcov:/app/backend/htmlcov

@@ -113,6 +113,23 @@ def get_current_admin_auth(
 
 
 CurrentAdminAuth = Annotated[AdminAuthContext, Depends(get_current_admin_auth)]
+
+
+def get_current_system_admin_auth(
+    current_admin_auth: CurrentAdminAuth,
+) -> AdminAuthContext:
+    if current_admin_auth.role != "system":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The admin user doesn't have enough privileges",
+        )
+    return current_admin_auth
+
+
+CurrentSystemAdminAuth = Annotated[
+    AdminAuthContext,
+    Depends(get_current_system_admin_auth),
+]
 MongoCollection = AsyncCollection[dict[str, Any]]
 
 

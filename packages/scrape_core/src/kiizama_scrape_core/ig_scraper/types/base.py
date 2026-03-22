@@ -34,8 +34,7 @@ from tenacity import (
     wait_exponential,
 )
 
-from app.constants import DEFAULT_USER_AGENT
-
+from ..constants import DEFAULT_USER_AGENT
 from ..classes import (
     InstagramNavigateResult,
     InstagramPost,
@@ -158,7 +157,7 @@ class BaseInstagramWorker:
         self.network_usage = network_usage or NetworkUsage()
 
         self.logger = logging.getLogger(
-            f"app.features.ig_scrapper.{self.__class__.__name__}"
+            f"kiizama_scrape_core.ig_scraper.{self.__class__.__name__}"
         )
         self.logger.setLevel(logging.INFO)
 
@@ -359,7 +358,7 @@ class BaseInstagramWorker:
                 }
             )
         except Exception as exc:
-            logging.getLogger("app.features.ig_scrapper.stealth").warning(
+            logging.getLogger("kiizama_scrape_core.ig_scraper.stealth").warning(
                 "Failed to add stealth script: %s", exc
             )
 

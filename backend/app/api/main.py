@@ -11,7 +11,8 @@ from app.api.routes import (
     ig_profile,
     ig_profile_snapshots,
     ig_reels,
-    ig_scrapper,
+    ig_scraper,
+    ig_scraper_internal,
     internal_login,
     login,
     openai,
@@ -28,6 +29,7 @@ api_router = APIRouter()
 api_router.include_router(health.router)
 api_router.include_router(login.router)
 api_router.include_router(internal_login.router)
+api_router.include_router(ig_scraper_internal.router)
 api_router.include_router(users.router)
 api_router.include_router(utils.router)
 api_router.include_router(feature_flags.router)
@@ -40,7 +42,7 @@ api_router.include_router(ig_posts.router)
 api_router.include_router(ig_reels.router)
 api_router.include_router(ig_metrics.router)
 api_router.include_router(ig_profile_snapshots.router)
-api_router.include_router(ig_scrapper.router)
+api_router.include_router(ig_scraper.router)
 api_router.include_router(social_media_report.router)
 api_router.include_router(openai.router)
 api_router.include_router(brand_intelligence.router)

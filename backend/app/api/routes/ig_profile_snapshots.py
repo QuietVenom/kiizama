@@ -4,6 +4,7 @@ from collections.abc import Awaitable
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from kiizama_scrape_core.ig_scraper.utils import should_refresh_profile
 
 from app.api.deps import (
     get_current_active_superuser,
@@ -23,7 +24,6 @@ from app.features.general.types import (
     is_allowed_profile_picture_url,
     resolve_profile_picture_data_uri,
 )
-from app.features.ig_scrapper.utils import should_refresh_profile
 from app.schemas import (
     ProfileSnapshot,
     ProfileSnapshotCollection,

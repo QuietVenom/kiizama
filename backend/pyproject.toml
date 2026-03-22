@@ -41,7 +41,7 @@ dev-dependencies = [
 ]
 
 [tool.uv.sources]
-kiizama-scrape-core = { path = "../packages/kiizama_scrape_core", editable = true }
+kiizama-scrape-core = { path = "../packages/scrape_core", editable = true }
 
 [build-system]
 requires = ["hatchling"]

@@ -1,6 +1,9 @@
 from datetime import timezone
 from typing import Any
 
+from kiizama_scrape_core.ig_scraper.jobs import (
+    ensure_job_indexes,
+)
 from pymongo import AsyncMongoClient
 from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.database import AsyncDatabase
@@ -95,6 +98,7 @@ async def ensure_indexes(database: MongoDatabase) -> None:
         unique=True,
         name="uniq_ig_credentials_login_username",
     )
+    await ensure_job_indexes(database.get_collection("ig_scrape_jobs"))
 
 
 async def close_mongo_client() -> None:

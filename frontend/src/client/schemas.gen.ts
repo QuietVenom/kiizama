@@ -1230,6 +1230,86 @@ export const InstagramScrapeJobStatusResponseSchema = {
     title: 'InstagramScrapeJobStatusResponse'
 } as const;
 
+export const InstagramScrapeJobTerminalizationRequestSchema = {
+    properties: {
+        status: {
+            type: 'string',
+            enum: ['done', 'failed'],
+            title: 'Status'
+        },
+        attempt: {
+            type: 'integer',
+            minimum: 1,
+            title: 'Attempt'
+        },
+        worker_id: {
+            type: 'string',
+            minLength: 1,
+            title: 'Worker Id'
+        },
+        completed_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Completed At'
+        },
+        summary: {
+            '$ref': '#/components/schemas/InstagramBatchScrapeSummaryResponse'
+        },
+        error: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Error'
+        }
+    },
+    type: 'object',
+    required: ['status', 'attempt', 'worker_id', 'completed_at', 'summary'],
+    title: 'InstagramScrapeJobTerminalizationRequest'
+} as const;
+
+export const InstagramScrapeJobTerminalizationResponseSchema = {
+    properties: {
+        job_id: {
+            type: 'string',
+            title: 'Job Id'
+        },
+        decision: {
+            type: 'string',
+            enum: ['accepted_new', 'accepted_pending', 'duplicate', 'conflict'],
+            title: 'Decision'
+        },
+        status: {
+            type: 'string',
+            enum: ['done', 'failed'],
+            title: 'Status'
+        },
+        notification_id: {
+            type: 'string',
+            minLength: 1,
+            title: 'Notification Id'
+        },
+        terminal_event_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Terminal Event Id'
+        }
+    },
+    type: 'object',
+    required: ['job_id', 'decision', 'status', 'notification_id'],
+    title: 'InstagramScrapeJobTerminalizationResponse'
+} as const;
+
 export const InstagramSuggestedUserSchemaSchema = {
     properties: {
         username: {

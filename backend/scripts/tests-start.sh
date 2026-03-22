@@ -8,9 +8,21 @@ ROOT_DIR="$(cd "${BACKEND_DIR}/.." && pwd)"
 
 cd "${BACKEND_DIR}"
 
+if [ -x ".venv/bin/python" ]; then
+  PYTHON_BIN=".venv/bin/python"
+else
+  PYTHON_BIN="python"
+fi
+
+if [ -x ".venv/bin/alembic" ]; then
+  ALEMBIC_BIN=".venv/bin/alembic"
+else
+  ALEMBIC_BIN="alembic"
+fi
+
 if [ -z "${TEST_DATABASE_URL:-}" ] && [ -f "${ROOT_DIR}/.env" ]; then
   export TEST_DATABASE_URL="$(
-    python3 - <<PY
+    "${PYTHON_BIN}" - <<PY
 from pathlib import Path
 
 env_path = Path(r"${ROOT_DIR}/.env")
@@ -34,6 +46,8 @@ fi
 
 export DATABASE_URL="${TEST_DATABASE_URL}"
 
-python app/tests_pre_start.py
+"${PYTHON_BIN}" app/tests_pre_start.py
+"${ALEMBIC_BIN}" upgrade head
+"${PYTHON_BIN}" app/initial_data.py
 
 bash scripts/test.sh "$@"

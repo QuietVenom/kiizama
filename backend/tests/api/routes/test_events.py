@@ -50,7 +50,7 @@ class StubEventStreamService(UserEventStreamService):
                 event="ig-scrape.job.completed",
                 data={
                     "topic": "jobs",
-                    "source": "ig-scrapper",
+                    "source": "ig-scraper",
                     "kind": "terminal",
                     "notification_id": "job:job-1:terminal",
                     "payload": {"job_id": "job-1"},

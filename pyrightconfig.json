@@ -3,20 +3,21 @@
   "venv": ".venv",
   "include": [
     "backend",
-    "packages/kiizama_scrape_core/src"
+    "packages/scrape_core/src"
   ],
   "executionEnvironments": [
     {
       "root": "backend",
       "extraPaths": [
+        ".",
         "backend",
-        "packages/kiizama_scrape_core/src"
+        "packages/scrape_core/src"
       ]
     },
     {
-      "root": "packages/kiizama_scrape_core/src",
+      "root": "packages/scrape_core/src",
       "extraPaths": [
-        "packages/kiizama_scrape_core/src"
+        "packages/scrape_core/src"
       ]
     }
   ]

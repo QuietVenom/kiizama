@@ -106,7 +106,7 @@ requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.114.2,<1.0.0" },
     { name = "httpx", specifier = ">=0.25.1,<1.0.0" },
     { name = "jinja2", specifier = ">=3.1.4,<4.0.0" },
-    { name = "kiizama-scrape-core", editable = "../packages/kiizama_scrape_core" },
+    { name = "kiizama-scrape-core", editable = "../packages/scrape_core" },
     { name = "openai", specifier = ">=2.5.0" },
     { name = "playwright", specifier = ">=1.55.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.1.13,<4.0.0" },
@@ -1194,7 +1194,7 @@ wheels = [
 [[package]]
 name = "kiizama-scrape-core"
 version = "0.1.0"
-source = { editable = "../packages/kiizama_scrape_core" }
+source = { editable = "../packages/scrape_core" }
 dependencies = [
     { name = "cryptography" },
     { name = "openai" },

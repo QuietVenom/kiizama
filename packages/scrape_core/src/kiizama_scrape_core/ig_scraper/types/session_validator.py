@@ -1,22 +1,15 @@
 from __future__ import annotations
 
-import json
 import random
 from collections.abc import Callable, Mapping
 from typing import Any
 
 from playwright.async_api import Page, StorageState
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
-from pymongo.asynchronous.collection import AsyncCollection
-
-from app.constants import DEFAULT_USER_AGENT
-from app.core.ig_credentials_crypto import decrypt_ig_password
-from app.crud.ig_credentials import (
-    list_ig_credentials,
-    update_ig_credential_session,
-)
 
 from ..classes import CredentialCandidate, SessionValidationResult
+from ..constants import DEFAULT_USER_AGENT
+from ..ports import InstagramCredentialsStore
 from .base import (
     BaseInstagramWorker,
     NetworkUsage,
@@ -28,16 +21,14 @@ StorageStateLike = StorageState | Mapping[str, Any]
 
 MAX_LOGIN_ATTEMPTS = 3
 MAX_CREDENTIALS_FETCH = 200
-CredentialDocument = dict[str, Any]
-CredentialsCollection = AsyncCollection[CredentialDocument]
-_credentials_collection_resolver: Callable[[], CredentialsCollection] | None = None
+_credentials_store_resolver: Callable[[], InstagramCredentialsStore] | None = None
 
 
-def configure_credentials_collection_resolver(
-    resolver: Callable[[], CredentialsCollection] | None,
+def configure_credentials_store_resolver(
+    resolver: Callable[[], InstagramCredentialsStore] | None,
 ) -> None:
-    global _credentials_collection_resolver
-    _credentials_collection_resolver = resolver
+    global _credentials_store_resolver
+    _credentials_store_resolver = resolver
 
 
 class InstagramSessionValidator(BaseInstagramWorker):
@@ -74,7 +65,7 @@ class InstagramSessionValidator(BaseInstagramWorker):
         self.storage_state: dict[str, Any] | None = None
         self._requested_user_agent = user_agent or DEFAULT_USER_AGENT
         self._requested_locale = locale
-        self._credentials_collection: CredentialsCollection | None = None
+        self._credentials_store: InstagramCredentialsStore | None = None
 
         self._raw_state: dict[str, Any] = {}
         self.extra_headers: dict[str, str] = {}
@@ -337,46 +328,8 @@ class InstagramSessionValidator(BaseInstagramWorker):
         self._apply_storage_state(credential.session)
 
     async def _load_credentials(self) -> list[CredentialCandidate]:
-        collection = self._get_credentials_collection()
-        docs = await list_ig_credentials(
-            collection, skip=0, limit=MAX_CREDENTIALS_FETCH
-        )
-        credentials: list[CredentialCandidate] = []
-
-        for doc in docs:
-            credential_id = doc.get("_id")
-            if credential_id is None:
-                continue
-
-            login_username = doc.get("login_username")
-            if isinstance(login_username, str):
-                login_username = login_username.strip()
-            else:
-                login_username = None
-
-            encrypted_password = doc.get("password")
-            if not isinstance(encrypted_password, str):
-                encrypted_password = None
-
-            session = doc.get("session")
-            if isinstance(session, str):
-                try:
-                    session = json.loads(session)
-                except json.JSONDecodeError:
-                    session = None
-            if not isinstance(session, dict) or not session:
-                session = None
-
-            credentials.append(
-                CredentialCandidate(
-                    id=str(credential_id),
-                    login_username=login_username,
-                    encrypted_password=encrypted_password,
-                    session=session,
-                )
-            )
-
-        return credentials
+        store = self._get_credentials_store()
+        return await store.list_credentials(limit=MAX_CREDENTIALS_FETCH)
 
     def _ensure_login_credentials(self, credential: CredentialCandidate) -> bool:
         if self.login_username and self.password:
@@ -390,7 +343,9 @@ class InstagramSessionValidator(BaseInstagramWorker):
             return False
 
         try:
-            decrypted = decrypt_ig_password(credential.encrypted_password)
+            decrypted = self._get_credentials_store().decrypt_password(
+                credential.encrypted_password
+            )
         except Exception as exc:
             self.logger.error(
                 "Failed to decrypt Instagram password for id=%s: %s",
@@ -420,21 +375,19 @@ class InstagramSessionValidator(BaseInstagramWorker):
             self.logger.warning("Failed to apply storage state: %s", exc)
 
         if self.credential_id:
-            await self._persist_to_mongo(self.credential_id, state)
+            await self._persist_session(self.credential_id, state)
         else:
             self.logger.warning("Missing credential id; session not persisted to Mongo")
 
         return state
 
-    async def _persist_to_mongo(
-        self, credential_id: str, state: dict[str, Any]
-    ) -> bool:
-        """Helper para persistir en MongoDB con manejo de errores centralizado."""
+    async def _persist_session(self, credential_id: str, state: dict[str, Any]) -> bool:
+        """Persist refreshed session state through the configured credentials store."""
         try:
-            collection = self._get_credentials_collection()
-            await update_ig_credential_session(collection, credential_id, state)
+            store = self._get_credentials_store()
+            await store.persist_session(credential_id, state)
             self.logger.info(
-                "Persisted Instagram session to Mongo for id=%s",
+                "Persisted Instagram session for id=%s",
                 credential_id,
             )
             return True
@@ -446,19 +399,12 @@ class InstagramSessionValidator(BaseInstagramWorker):
             )
             return False
 
-    def _get_credentials_collection(self) -> CredentialsCollection:
-        if self._credentials_collection is None:
-            if _credentials_collection_resolver is not None:
-                self._credentials_collection = _credentials_collection_resolver()
-            else:
-                from app.core.mongodb import get_mongo_kiizama_ig
-
-                db = get_mongo_kiizama_ig()
-                self._credentials_collection = db.get_collection("ig_credentials")
-        collection = self._credentials_collection
-        if collection is None:
-            raise RuntimeError("Credentials collection is not configured")
-        return collection
+    def _get_credentials_store(self) -> InstagramCredentialsStore:
+        if self._credentials_store is None:
+            if _credentials_store_resolver is None:
+                raise RuntimeError("Credentials store resolver is not configured")
+            self._credentials_store = _credentials_store_resolver()
+        return self._credentials_store
 
     async def _navigate_to_home(self, page: Page) -> bool:
         try:
@@ -524,5 +470,5 @@ class InstagramSessionValidator(BaseInstagramWorker):
 __all__ = [
     "InstagramSessionValidator",
     "SessionValidationResult",
-    "configure_credentials_collection_resolver",
+    "configure_credentials_store_resolver",
 ]

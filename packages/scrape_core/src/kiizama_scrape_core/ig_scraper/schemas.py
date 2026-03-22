@@ -5,7 +5,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.constants import DEFAULT_USER_AGENT
+from .constants import DEFAULT_USER_AGENT
 
 
 class InstagramPostSchema(BaseModel):
@@ -278,6 +278,42 @@ class InstagramScrapeJobStatusResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class InstagramScrapeJobTerminalizationRequest(BaseModel):
+    status: Literal["done", "failed"]
+    attempt: int = Field(ge=1)
+    worker_id: str = Field(min_length=1)
+    completed_at: datetime
+    summary: InstagramBatchScrapeSummaryResponse
+    error: str | None = None
+
+
+class InstagramScrapeJobTerminalEventPayload(BaseModel):
+    event_version: Literal[1] = 1
+    notification_id: str = Field(min_length=1)
+    job_id: str = Field(min_length=1)
+    status: Literal["done", "failed"]
+    created_at: datetime
+    completed_at: datetime
+    requested_usernames: list[str] = Field(default_factory=list)
+    ready_usernames: list[str] = Field(default_factory=list)
+    successful_usernames: list[str] = Field(default_factory=list)
+    skipped_usernames: list[str] = Field(default_factory=list)
+    failed_usernames: list[str] = Field(default_factory=list)
+    not_found_usernames: list[str] = Field(default_factory=list)
+    counters: InstagramBatchCountersSchema = Field(
+        default_factory=InstagramBatchCountersSchema
+    )
+    error: str | None = None
+
+
+class InstagramScrapeJobTerminalizationResponse(BaseModel):
+    job_id: str
+    decision: Literal["accepted_new", "accepted_pending", "duplicate", "conflict"]
+    status: Literal["done", "failed"]
+    notification_id: str = Field(min_length=1)
+    terminal_event_id: str | None = None
+
+
 __all__ = [
     "InstagramPostSchema",
     "InstagramProfileSchema",
@@ -298,4 +334,7 @@ __all__ = [
     "InstagramScrapeJobCreateResponse",
     "InstagramScrapeJobReferences",
     "InstagramScrapeJobStatusResponse",
+    "InstagramScrapeJobTerminalEventPayload",
+    "InstagramScrapeJobTerminalizationRequest",
+    "InstagramScrapeJobTerminalizationResponse",
 ]

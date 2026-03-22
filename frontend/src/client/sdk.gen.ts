@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { BrandIntelligenceReadProfilesExistenceData, BrandIntelligenceReadProfilesExistenceResponse, BrandIntelligenceGenerateReputationCampaignStrategyEndpointData, BrandIntelligenceGenerateReputationCampaignStrategyEndpointResponse, BrandIntelligenceGenerateReputationCreatorStrategyEndpointData, BrandIntelligenceGenerateReputationCreatorStrategyEndpointResponse, EventsStreamUserEventsData, EventsStreamUserEventsResponse, FeatureFlagsListFeatureFlagsResponse, FeatureFlagsCreateFeatureFlagData, FeatureFlagsCreateFeatureFlagResponse, FeatureFlagsGetFeatureFlagData, FeatureFlagsGetFeatureFlagResponse, FeatureFlagsUpdateFeatureFlagData, FeatureFlagsUpdateFeatureFlagResponse, FeatureFlagsDeleteFeatureFlagData, FeatureFlagsDeleteFeatureFlagResponse, FeatureFlagsGetFeatureFlagAuditData, FeatureFlagsGetFeatureFlagAuditResponse, HealthHealthCheckResponse, HealthDeepHealthCheckResponse, IgCredentialsCreateIgCredentialEndpointData, IgCredentialsCreateIgCredentialEndpointResponse, IgCredentialsReadIgCredentialsData, IgCredentialsReadIgCredentialsResponse, IgCredentialsReadIgCredentialData, IgCredentialsReadIgCredentialResponse, IgCredentialsUpdateIgCredentialEndpointData, IgCredentialsUpdateIgCredentialEndpointResponse, IgCredentialsReplaceIgCredentialEndpointData, IgCredentialsReplaceIgCredentialEndpointResponse, IgCredentialsDeleteIgCredentialEndpointData, IgCredentialsDeleteIgCredentialEndpointResponse, IgMetricsCreateIgMetricsData, IgMetricsCreateIgMetricsResponse, IgMetricsReadIgMetricsData, IgMetricsReadIgMetricsResponse, IgMetricsReadIgMetricsByIdData, IgMetricsReadIgMetricsByIdResponse, IgMetricsUpdateIgMetricsData, IgMetricsUpdateIgMetricsResponse, IgMetricsReplaceIgMetricsData, IgMetricsReplaceIgMetricsResponse, IgMetricsDeleteIgMetricsData, IgMetricsDeleteIgMetricsResponse, IgPostsCreateIgPostData, IgPostsCreateIgPostResponse, IgPostsReadIgPostsData, IgPostsReadIgPostsResponse, IgPostsReadIgPostData, IgPostsReadIgPostResponse, IgPostsUpdateIgPostData, IgPostsUpdateIgPostResponse, IgPostsReplaceIgPostData, IgPostsReplaceIgPostResponse, IgPostsDeleteIgPostData, IgPostsDeleteIgPostResponse, IgProfilesCreateIgProfileData, IgProfilesCreateIgProfileResponse, IgProfilesReadIgProfilesData, IgProfilesReadIgProfilesResponse, IgProfilesReadIgProfileByUsernameData, IgProfilesReadIgProfileByUsernameResponse, IgProfilesReadIgProfilesByUsernamesData, IgProfilesReadIgProfilesByUsernamesResponse, IgProfilesReadIgProfileData, IgProfilesReadIgProfileResponse, IgProfilesUpdateIgProfileData, IgProfilesUpdateIgProfileResponse, IgProfilesReplaceIgProfileData, IgProfilesReplaceIgProfileResponse, IgProfilesDeleteIgProfileData, IgProfilesDeleteIgProfileResponse, IgProfileSnapshotsCreateIgProfileSnapshotData, IgProfileSnapshotsCreateIgProfileSnapshotResponse, IgProfileSnapshotsReadIgProfileSnapshotsData, IgProfileSnapshotsReadIgProfileSnapshotsResponse, IgProfileSnapshotsReadIgProfileSnapshotsAdvancedData, IgProfileSnapshotsReadIgProfileSnapshotsAdvancedResponse, IgProfileSnapshotsReadIgProfileSnapshotData, IgProfileSnapshotsReadIgProfileSnapshotResponse, IgProfileSnapshotsUpdateIgProfileSnapshotData, IgProfileSnapshotsUpdateIgProfileSnapshotResponse, IgProfileSnapshotsReplaceIgProfileSnapshotData, IgProfileSnapshotsReplaceIgProfileSnapshotResponse, IgProfileSnapshotsDeleteIgProfileSnapshotData, IgProfileSnapshotsDeleteIgProfileSnapshotResponse, IgReelsCreateIgReelData, IgReelsCreateIgReelResponse, IgReelsReadIgReelsData, IgReelsReadIgReelsResponse, IgReelsReadIgReelData, IgReelsReadIgReelResponse, IgReelsUpdateIgReelData, IgReelsUpdateIgReelResponse, IgReelsReplaceIgReelData, IgReelsReplaceIgReelResponse, IgReelsDeleteIgReelData, IgReelsDeleteIgReelResponse, InstagramCreateInstagramScrapeJobData, InstagramCreateInstagramScrapeJobResponse, InstagramGetInstagramScrapeJobData, InstagramGetInstagramScrapeJobResponse, InstagramInstagramScrapeProfilesBatchData, InstagramInstagramScrapeProfilesBatchResponse, InstagramInstagramProfilesRecommendationsData, InstagramInstagramProfilesRecommendationsResponse, InternalLoginLoginInternalAccessTokenData, InternalLoginLoginInternalAccessTokenResponse, InternalLoginTestInternalTokenResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, OpenaiRunInstagramAiData, OpenaiRunInstagramAiResponse, PrivateCreateUserData, PrivateCreateUserResponse, PublicFeatureFlagsListPublicFeatureFlagsResponse, PublicFeatureFlagsGetPublicFeatureFlagData, PublicFeatureFlagsGetPublicFeatureFlagResponse, PublicWaitingListCreateWaitingListEntryData, PublicWaitingListCreateWaitingListEntryResponse, SocialMediaReportGenerateInstagramReportEndpointData, SocialMediaReportGenerateInstagramReportEndpointResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse } from './types.gen';
+import type { BrandIntelligenceReadProfilesExistenceData, BrandIntelligenceReadProfilesExistenceResponse, BrandIntelligenceGenerateReputationCampaignStrategyEndpointData, BrandIntelligenceGenerateReputationCampaignStrategyEndpointResponse, BrandIntelligenceGenerateReputationCreatorStrategyEndpointData, BrandIntelligenceGenerateReputationCreatorStrategyEndpointResponse, EventsStreamUserEventsData, EventsStreamUserEventsResponse, FeatureFlagsListFeatureFlagsResponse, FeatureFlagsCreateFeatureFlagData, FeatureFlagsCreateFeatureFlagResponse, FeatureFlagsGetFeatureFlagData, FeatureFlagsGetFeatureFlagResponse, FeatureFlagsUpdateFeatureFlagData, FeatureFlagsUpdateFeatureFlagResponse, FeatureFlagsDeleteFeatureFlagData, FeatureFlagsDeleteFeatureFlagResponse, FeatureFlagsGetFeatureFlagAuditData, FeatureFlagsGetFeatureFlagAuditResponse, HealthHealthCheckResponse, HealthDeepHealthCheckResponse, IgCredentialsCreateIgCredentialEndpointData, IgCredentialsCreateIgCredentialEndpointResponse, IgCredentialsReadIgCredentialsData, IgCredentialsReadIgCredentialsResponse, IgCredentialsReadIgCredentialData, IgCredentialsReadIgCredentialResponse, IgCredentialsUpdateIgCredentialEndpointData, IgCredentialsUpdateIgCredentialEndpointResponse, IgCredentialsReplaceIgCredentialEndpointData, IgCredentialsReplaceIgCredentialEndpointResponse, IgCredentialsDeleteIgCredentialEndpointData, IgCredentialsDeleteIgCredentialEndpointResponse, IgMetricsCreateIgMetricsData, IgMetricsCreateIgMetricsResponse, IgMetricsReadIgMetricsData, IgMetricsReadIgMetricsResponse, IgMetricsReadIgMetricsByIdData, IgMetricsReadIgMetricsByIdResponse, IgMetricsUpdateIgMetricsData, IgMetricsUpdateIgMetricsResponse, IgMetricsReplaceIgMetricsData, IgMetricsReplaceIgMetricsResponse, IgMetricsDeleteIgMetricsData, IgMetricsDeleteIgMetricsResponse, IgPostsCreateIgPostData, IgPostsCreateIgPostResponse, IgPostsReadIgPostsData, IgPostsReadIgPostsResponse, IgPostsReadIgPostData, IgPostsReadIgPostResponse, IgPostsUpdateIgPostData, IgPostsUpdateIgPostResponse, IgPostsReplaceIgPostData, IgPostsReplaceIgPostResponse, IgPostsDeleteIgPostData, IgPostsDeleteIgPostResponse, IgProfilesCreateIgProfileData, IgProfilesCreateIgProfileResponse, IgProfilesReadIgProfilesData, IgProfilesReadIgProfilesResponse, IgProfilesReadIgProfileByUsernameData, IgProfilesReadIgProfileByUsernameResponse, IgProfilesReadIgProfilesByUsernamesData, IgProfilesReadIgProfilesByUsernamesResponse, IgProfilesReadIgProfileData, IgProfilesReadIgProfileResponse, IgProfilesUpdateIgProfileData, IgProfilesUpdateIgProfileResponse, IgProfilesReplaceIgProfileData, IgProfilesReplaceIgProfileResponse, IgProfilesDeleteIgProfileData, IgProfilesDeleteIgProfileResponse, IgProfileSnapshotsCreateIgProfileSnapshotData, IgProfileSnapshotsCreateIgProfileSnapshotResponse, IgProfileSnapshotsReadIgProfileSnapshotsData, IgProfileSnapshotsReadIgProfileSnapshotsResponse, IgProfileSnapshotsReadIgProfileSnapshotsAdvancedData, IgProfileSnapshotsReadIgProfileSnapshotsAdvancedResponse, IgProfileSnapshotsReadIgProfileSnapshotData, IgProfileSnapshotsReadIgProfileSnapshotResponse, IgProfileSnapshotsUpdateIgProfileSnapshotData, IgProfileSnapshotsUpdateIgProfileSnapshotResponse, IgProfileSnapshotsReplaceIgProfileSnapshotData, IgProfileSnapshotsReplaceIgProfileSnapshotResponse, IgProfileSnapshotsDeleteIgProfileSnapshotData, IgProfileSnapshotsDeleteIgProfileSnapshotResponse, IgReelsCreateIgReelData, IgReelsCreateIgReelResponse, IgReelsReadIgReelsData, IgReelsReadIgReelsResponse, IgReelsReadIgReelData, IgReelsReadIgReelResponse, IgReelsUpdateIgReelData, IgReelsUpdateIgReelResponse, IgReelsReplaceIgReelData, IgReelsReplaceIgReelResponse, IgReelsDeleteIgReelData, IgReelsDeleteIgReelResponse, InstagramCreateInstagramScrapeJobData, InstagramCreateInstagramScrapeJobResponse, InstagramGetInstagramScrapeJobData, InstagramGetInstagramScrapeJobResponse, InstagramInstagramScrapeProfilesBatchData, InstagramInstagramScrapeProfilesBatchResponse, InstagramInstagramProfilesRecommendationsData, InstagramInstagramProfilesRecommendationsResponse, InternalInstagramCompleteInstagramScrapeJobData, InternalInstagramCompleteInstagramScrapeJobResponse, InternalLoginLoginInternalAccessTokenData, InternalLoginLoginInternalAccessTokenResponse, InternalLoginTestInternalTokenResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, OpenaiRunInstagramAiData, OpenaiRunInstagramAiResponse, PrivateCreateUserData, PrivateCreateUserResponse, PublicFeatureFlagsListPublicFeatureFlagsResponse, PublicFeatureFlagsGetPublicFeatureFlagData, PublicFeatureFlagsGetPublicFeatureFlagResponse, PublicWaitingListCreateWaitingListEntryData, PublicWaitingListCreateWaitingListEntryResponse, SocialMediaReportGenerateInstagramReportEndpointData, SocialMediaReportGenerateInstagramReportEndpointResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse } from './types.gen';
 
 export class BrandIntelligenceService {
     /**
@@ -1080,7 +1080,7 @@ export class InstagramService {
     public static createInstagramScrapeJob(data: InstagramCreateInstagramScrapeJobData): CancelablePromise<InstagramCreateInstagramScrapeJobResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/ig-scrapper/jobs',
+            url: '/api/v1/ig-scraper/jobs',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -1100,7 +1100,7 @@ export class InstagramService {
     public static getInstagramScrapeJob(data: InstagramGetInstagramScrapeJobData): CancelablePromise<InstagramGetInstagramScrapeJobResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/ig-scrapper/jobs/{job_id}',
+            url: '/api/v1/ig-scraper/jobs/{job_id}',
             path: {
                 job_id: data.jobId
             },
@@ -1121,7 +1121,7 @@ export class InstagramService {
     public static instagramScrapeProfilesBatch(data: InstagramInstagramScrapeProfilesBatchData): CancelablePromise<InstagramInstagramScrapeProfilesBatchResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/ig-scrapper/profiles/batch',
+            url: '/api/v1/ig-scraper/profiles/batch',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -1141,7 +1141,32 @@ export class InstagramService {
     public static instagramProfilesRecommendations(data: InstagramInstagramProfilesRecommendationsData): CancelablePromise<InstagramInstagramProfilesRecommendationsResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/ig-scrapper/profiles/recommendations',
+            url: '/api/v1/ig-scraper/profiles/recommendations',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class InternalInstagramService {
+    /**
+     * Complete Instagram Scrape Job
+     * @param data The data for the request.
+     * @param data.jobId
+     * @param data.requestBody
+     * @returns InstagramScrapeJobTerminalizationResponse Successful Response
+     * @throws ApiError
+     */
+    public static completeInstagramScrapeJob(data: InternalInstagramCompleteInstagramScrapeJobData): CancelablePromise<InternalInstagramCompleteInstagramScrapeJobResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/internal/ig-scraper/jobs/{job_id}/complete',
+            path: {
+                job_id: data.jobId
+            },
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {

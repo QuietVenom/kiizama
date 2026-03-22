@@ -153,6 +153,10 @@ You can set several variables, like:
 * `SENTRY_DSN`: The DSN for Sentry, if you are using it.
 * `DOCKER_IMAGE_BACKEND` / `DOCKER_IMAGE_FRONTEND`: Optional Docker image names/tags for Compose deploys.
 * `IG_SCRAPE_WORKER_ID`: Optional explicit worker identity used for lease ownership.
+* `IG_SCRAPE_WORKER_REDIS_URL`: Redis URL for queue/state/event control (falls back to `REDIS_URL`).
+* `IG_SCRAPE_WORKER_BACKEND_BASE_URL`: Backend base URL used for internal job completion callbacks.
+* `IG_SCRAPE_WORKER_SYSTEM_ADMIN_EMAIL`: Internal admin email used by the worker to obtain callback tokens.
+* `IG_SCRAPE_WORKER_SYSTEM_ADMIN_PASSWORD`: Internal admin password used by the worker to obtain callback tokens.
 * `IG_SCRAPE_WORKER_POLL_SECONDS`: Poll interval for queued/stale jobs.
 * `IG_SCRAPE_WORKER_HEARTBEAT_SECONDS`: Heartbeat interval while processing a job.
 * `IG_SCRAPE_WORKER_LEASE_SECONDS`: Lease duration for running jobs before stale recovery.
@@ -161,13 +165,19 @@ You can set several variables, like:
 
 ## Async Scrape Worker Process
 
+Architecture summary for async Instagram jobs:
+
+* Redis owns queueing, live job state, lease ownership, reclaim, and terminal dedupe.
+* MongoDB stores the persisted scrape result and the TTL-backed job projection used for queries/history.
+* The backend is the only component that accepts terminal completion and publishes the final SSE event.
+
 For asynchronous Instagram jobs, run a separate worker process in addition to the API service (for host-based deployments with repository checkout):
 
 ```bash
 backend/.venv/bin/python -m scrape_worker.main
 ```
 
-This worker consumes `ig_scrape_jobs` documents, performs scraping + AI enrichment + persistence, and updates job status (`queued`, `running`, `done`, `failed`).
+This worker consumes Redis-queued jobs, performs scraping + AI enrichment + persistence, and completes the job through the backend so the backend can publish the final SSE event.
 
 ### Render Background Worker (Docker)
 
@@ -188,8 +198,12 @@ To deploy on Render:
 Important: the worker now has dedicated config keys and no longer requires the full backend settings set. At minimum ensure these are present:
 
 * `IG_SCRAPE_WORKER_MONGODB_URL`
+* `IG_SCRAPE_WORKER_REDIS_URL`
+* `IG_SCRAPE_WORKER_BACKEND_BASE_URL`
 * `IG_SCRAPE_WORKER_SECRET_KEY_IG_CREDENTIALS`
 * `IG_SCRAPE_WORKER_OPENAI_API_KEY`
+* `IG_SCRAPE_WORKER_SYSTEM_ADMIN_EMAIL`
+* `IG_SCRAPE_WORKER_SYSTEM_ADMIN_PASSWORD`
 
 Optional (defaults exist):
 
@@ -207,10 +221,13 @@ Worker-specific vars (optional, defaults exist):
 Fallback compatibility:
 
 * If the worker-prefixed vars are not provided, the worker can still read shared keys:
-  * `MONGODB_URL`
-  * `MONGODB_KIIZAMA_IG`
-  * `SECRET_KEY_IG_CREDENTIALS`
-  * `OPENAI_API_KEY`
+* `MONGODB_URL`
+* `MONGODB_KIIZAMA_IG`
+* `REDIS_URL`
+* `SECRET_KEY_IG_CREDENTIALS`
+* `OPENAI_API_KEY`
+* `SYSTEM_ADMIN_EMAIL`
+* `SYSTEM_ADMIN_PASSWORD`
 
 ## GitHub Actions Secrets
 

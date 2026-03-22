@@ -2,240 +2,92 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from contextlib import suppress
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Any
 
-from pymongo import ReturnDocument
-
-from app.features.ig_scrapper.jobs import (
-    JOB_COLLECTION_NAME,
-    build_job_references,
-    configure_jobs_collection_resolver,
-    ensure_job_indexes,
-    get_jobs_collection,
-)
-from app.features.ig_scrapper.schemas import (
+from kiizama_scrape_core.ig_scraper.schemas import (
+    InstagramBatchCountersSchema,
     InstagramBatchScrapeRequest,
     InstagramBatchScrapeSummaryResponse,
+    InstagramBatchUsernameStatus,
+    InstagramScrapeJobTerminalizationRequest,
 )
-from app.features.ig_scrapper.service import (
+from kiizama_scrape_core.ig_scraper.service import (
     build_batch_scrape_summary,
     enrich_with_ai_analysis,
     persist_scrape_results_to_db,
     prepare_scrape_batch_payload,
     scrape_profiles_batch,
 )
-from app.features.ig_scrapper.types.session_validator import (
-    configure_credentials_collection_resolver,
+from kiizama_scrape_core.ig_scraper.types.session_validator import (
+    configure_credentials_store_resolver,
 )
-from scrape_worker.config import settings
+
+from app.features.ig_scraper_jobs import get_instagram_job_queue_spec
+from app.features.ig_scraper_runtime import (
+    BackendInstagramCredentialsStore,
+    BackendInstagramProfileAnalysisService,
+    BackendInstagramScrapePersistence,
+)
+from app.features.job_control import (
+    JobControlRepository,
+    JobWorkerRuntime,
+    QueuedJobMessage,
+)
+
+from scrape_worker.backend_client import (
+    ScrapeWorkerBackendClient,
+    WorkerBackendCompletionResult,
+)
+from scrape_worker.config import WorkerSettings, get_settings
 from scrape_worker.mongodb import (
     close_worker_mongo_client,
     get_worker_mongo_database,
 )
+from scrape_worker.redis import close_worker_redis_client, get_worker_redis_client
+from scrape_worker.types import BackendCompletionPort, WorkerRuntimePort
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("scrape_worker")
+TERMINAL_ACK_STATUS_CODES = frozenset({200, 409})
+
+
+def _settings() -> WorkerSettings:
+    return get_settings()
 
 
 def _truncate_error(error: str) -> str:
-    return error[: settings.max_error_length]
+    return error[: _settings().max_error_length]
 
 
-def _now_utc() -> datetime:
-    return datetime.now(timezone.utc)
-
-
-def _lease_until(from_dt: datetime) -> datetime:
-    return from_dt + timedelta(seconds=settings.lease_seconds)
-
-
-def _stale_running_filter(now: datetime) -> dict[str, Any]:
-    return {
-        "status": "running",
-        "$or": [
-            {"leasedUntil": {"$lt": now}},
-            {"leasedUntil": {"$exists": False}},
-            {"leasedUntil": None},
+def _build_exhausted_summary(
+    payload: dict[str, Any],
+) -> InstagramBatchScrapeSummaryResponse:
+    request = InstagramBatchScrapeRequest.model_validate(payload)
+    return InstagramBatchScrapeSummaryResponse(
+        usernames=[
+            InstagramBatchUsernameStatus(username=username, status="failed")
+            for username in request.usernames
         ],
-    }
-
-
-async def mark_exhausted_jobs() -> int:
-    jobs = get_jobs_collection()
-    now = _now_utc()
-    result = await jobs.update_many(
-        {
-            "expiresAt": {"$gt": now},
-            "attempts": {"$gte": settings.max_attempts},
-            "$or": [
-                {"status": "queued"},
-                _stale_running_filter(now),
-            ],
-        },
-        {
-            "$set": {
-                "status": "failed",
-                "updatedAt": now,
-                "error": _truncate_error(
-                    "Max attempts reached before successful completion."
-                ),
-            },
-            "$unset": {
-                "leaseOwner": "",
-                "leasedUntil": "",
-                "heartbeatAt": "",
-            },
-        },
-    )
-    return int(result.modified_count)
-
-
-async def reserve_next_job() -> dict[str, Any] | None:
-    jobs = get_jobs_collection()
-    now = _now_utc()
-    return await jobs.find_one_and_update(
-        filter={
-            "expiresAt": {"$gt": now},
-            "$and": [
-                {
-                    "$or": [
-                        {"attempts": {"$lt": settings.max_attempts}},
-                        {"attempts": {"$exists": False}},
-                    ]
-                },
-                {
-                    "$or": [
-                        {"status": "queued"},
-                        _stale_running_filter(now),
-                    ]
-                },
-            ],
-        },
-        update={
-            "$set": {
-                "status": "running",
-                "updatedAt": now,
-                "leaseOwner": settings.worker_id,
-                "leasedUntil": _lease_until(now),
-                "heartbeatAt": now,
-            },
-            "$inc": {"attempts": 1},
-        },
-        sort=[("status", 1), ("createdAt", 1)],
-        return_document=ReturnDocument.AFTER,
+        counters=InstagramBatchCountersSchema(
+            requested=len(request.usernames),
+            failed=len(request.usernames),
+        ),
+        error="Max attempts reached before successful completion.",
     )
 
 
-async def renew_lease(job_id: str, lease_owner: str) -> bool:
-    jobs = get_jobs_collection()
-    now = _now_utc()
-    result = await jobs.update_one(
-        {"_id": job_id, "status": "running", "leaseOwner": lease_owner},
-        {
-            "$set": {
-                "updatedAt": now,
-                "heartbeatAt": now,
-                "leasedUntil": _lease_until(now),
-            }
-        },
-    )
-    return result.matched_count == 1
+def _attempt_exhausted(attempt: int) -> bool:
+    return attempt > _settings().max_attempts
 
 
-async def maintain_heartbeat(
-    job_id: str,
-    lease_owner: str,
-    *,
-    lease_lost: asyncio.Event,
-) -> None:
-    try:
-        while not lease_lost.is_set():
-            await asyncio.sleep(settings.heartbeat_seconds)
-            if lease_lost.is_set():
-                return
-            renewed = await renew_lease(job_id, lease_owner)
-            if renewed:
-                continue
-
-            logger.warning(
-                "Lease lost for job %s (owner=%s). The job will be retried by another worker.",
-                job_id,
-                lease_owner,
-            )
-            lease_lost.set()
-            return
-    except asyncio.CancelledError:
-        raise
-    except Exception as exc:  # pragma: no cover - defensive worker resilience
-        logger.exception(
-            "Heartbeat failed for job %s (owner=%s): %s",
-            job_id,
-            lease_owner,
-            exc,
-        )
-        lease_lost.set()
+def _should_ack_completion_result(result: WorkerBackendCompletionResult) -> bool:
+    return result.status_code in TERMINAL_ACK_STATUS_CODES
 
 
-async def mark_done(
-    job_id: str,
-    *,
-    lease_owner: str,
-    summary: InstagramBatchScrapeSummaryResponse,
-    error: str | None,
-) -> bool:
-    jobs = get_jobs_collection()
-    now = _now_utc()
-    references = build_job_references(summary)
-    result = await jobs.update_one(
-        {"_id": job_id, "status": "running", "leaseOwner": lease_owner},
-        {
-            "$set": {
-                "status": "done",
-                "updatedAt": now,
-                "summary": summary.model_dump(mode="json"),
-                "references": references.model_dump(mode="json"),
-                "error": _truncate_error(error) if error else None,
-            },
-            "$unset": {
-                "leaseOwner": "",
-                "leasedUntil": "",
-                "heartbeatAt": "",
-            },
-        },
-    )
-    return result.matched_count == 1
-
-
-async def mark_failed(job_id: str, *, lease_owner: str, error: str) -> bool:
-    jobs = get_jobs_collection()
-    now = _now_utc()
-    result = await jobs.update_one(
-        {"_id": job_id, "status": "running", "leaseOwner": lease_owner},
-        {
-            "$set": {
-                "status": "failed",
-                "updatedAt": now,
-                "error": _truncate_error(error),
-            },
-            "$unset": {
-                "leaseOwner": "",
-                "leasedUntil": "",
-                "heartbeatAt": "",
-            },
-        },
-    )
-    return result.matched_count == 1
-
-
-async def execute_job(
-    job: dict[str, Any],
+async def execute_job_payload(
+    payload: dict[str, Any],
 ) -> tuple[InstagramBatchScrapeSummaryResponse, str | None]:
-    payload = job.get("payload")
-    if not isinstance(payload, dict):
-        raise ValueError("Job payload is invalid.")
-
     request = InstagramBatchScrapeRequest.model_validate(payload)
     original_request = request.model_copy(deep=True)
     database = get_worker_mongo_database()
@@ -245,10 +97,18 @@ async def execute_job(
     reels_collection = database.get_collection("reels")
     metrics_collection = database.get_collection("metrics")
     snapshots_collection = database.get_collection("profile_snapshots")
+    persistence = BackendInstagramScrapePersistence(
+        profiles_collection=profiles_collection,
+        posts_collection=posts_collection,
+        reels_collection=reels_collection,
+        metrics_collection=metrics_collection,
+        snapshots_collection=snapshots_collection,
+    )
+    analysis_service = BackendInstagramProfileAnalysisService()
 
     request, early_response = await prepare_scrape_batch_payload(
         request,
-        profiles_collection,
+        persistence,
     )
     if early_response is not None:
         summary = build_batch_scrape_summary(
@@ -260,34 +120,122 @@ async def execute_job(
         return summary, summary.error
 
     response = await scrape_profiles_batch(request)
-    response = await enrich_with_ai_analysis(response)
+    response = await enrich_with_ai_analysis(
+        response,
+        analysis_service=analysis_service,
+    )
     response = await persist_scrape_results_to_db(
         response,
-        profiles_collection=profiles_collection,
-        posts_collection=posts_collection,
-        reels_collection=reels_collection,
-        metrics_collection=metrics_collection,
-        snapshots_collection=snapshots_collection,
+        persistence=persistence,
     )
 
     summary = build_batch_scrape_summary(original_request, request, response=response)
     return summary, response.error or summary.error
 
 
+async def process_message(
+    *,
+    runtime: WorkerRuntimePort,
+    backend_client: BackendCompletionPort,
+    message: QueuedJobMessage,
+) -> None:
+    settings = _settings()
+    handle = await runtime.start_job(message)
+    if handle is None:
+        return
+
+    ack = False
+    try:
+        logger.info(
+            "Processing scrape job %s (attempt %s/%s, worker=%s)",
+            handle.job_id,
+            handle.attempt,
+            settings.max_attempts,
+            settings.worker_id,
+        )
+        if _attempt_exhausted(handle.attempt):
+            logger.warning(
+                "Job %s exceeded max attempts (%s > %s).",
+                handle.job_id,
+                handle.attempt,
+                settings.max_attempts,
+            )
+            summary = _build_exhausted_summary(handle.message.payload)
+            error = summary.error
+            status = "failed"
+        else:
+            try:
+                summary, error = await execute_job_payload(handle.message.payload)
+                status = "done"
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                logger.exception("Scrape job %s failed: %s", handle.job_id, exc)
+                summary = _build_exhausted_summary(handle.message.payload).model_copy(
+                    update={"error": _truncate_error(str(exc))}
+                )
+                error = _truncate_error(str(exc))
+                status = "failed"
+
+        if handle.lease_lost.is_set():
+            logger.warning(
+                "Skipping finalization for job %s because lease was lost.",
+                handle.job_id,
+            )
+            return
+
+        completion_result = await backend_client.complete_job(
+            job_id=handle.job_id,
+            payload=InstagramScrapeJobTerminalizationRequest(
+                status=status,
+                attempt=handle.attempt,
+                worker_id=settings.worker_id,
+                completed_at=datetime.now(timezone.utc),
+                summary=summary,
+                error=error,
+            ),
+        )
+        ack = _should_ack_completion_result(completion_result)
+        if not ack:
+            logger.warning(
+                "Backend completion for job %s returned %s; leaving message pending.",
+                handle.job_id,
+                completion_result.status_code,
+            )
+    finally:
+        await runtime.finish_job(handle, ack=ack)
+
+
 async def worker_loop() -> None:
+    settings = _settings()
     database = get_worker_mongo_database()
-    configure_jobs_collection_resolver(
-        lambda: database.get_collection(JOB_COLLECTION_NAME)
-    )
-    configure_credentials_collection_resolver(
-        lambda: database.get_collection("ig_credentials")
+    configure_credentials_store_resolver(
+        lambda: BackendInstagramCredentialsStore(
+            lambda: database.get_collection("ig_credentials")
+        )
     )
 
     ping_response = await database.command("ping")
     if int(ping_response.get("ok", 0)) != 1:
         raise RuntimeError("Problem connecting to database cluster.")
 
-    await ensure_job_indexes()
+    redis = get_worker_redis_client()
+    await redis.ping()
+
+    repository = JobControlRepository(
+        spec=get_instagram_job_queue_spec(),
+        redis_provider=get_worker_redis_client,
+    )
+    runtime = JobWorkerRuntime(
+        repository=repository,
+        worker_id=settings.worker_id,
+        lease_seconds=settings.lease_seconds,
+        heartbeat_seconds=settings.heartbeat_seconds,
+        poll_seconds=settings.poll_seconds,
+    )
+    await runtime.ensure_consumer_group()
+
+    backend_client = ScrapeWorkerBackendClient(base_url=settings.backend_base_url)
     logger.info(
         "Worker started. id=%s poll=%.2fs heartbeat=%.2fs lease=%ss max_attempts=%s",
         settings.worker_id,
@@ -297,80 +245,50 @@ async def worker_loop() -> None:
         settings.max_attempts,
     )
 
-    while True:
-        exhausted_count = await mark_exhausted_jobs()
-        if exhausted_count:
-            logger.warning("Marked %s exhausted jobs as failed.", exhausted_count)
-
-        job = await reserve_next_job()
-        if job is None:
-            await asyncio.sleep(settings.poll_seconds)
-            continue
-
-        job_id = str(job["_id"])
-        lease_owner = str(job.get("leaseOwner") or settings.worker_id)
-        attempt = int(job.get("attempts", 0) or 0)
-        logger.info(
-            "Processing scrape job %s (attempt %s/%s, owner=%s)",
-            job_id,
-            attempt,
-            settings.max_attempts,
-            lease_owner,
-        )
-
-        lease_lost = asyncio.Event()
-        heartbeat_task = asyncio.create_task(
-            maintain_heartbeat(job_id, lease_owner, lease_lost=lease_lost)
-        )
-
-        try:
-            summary, error = await execute_job(job)
-            if lease_lost.is_set():
-                logger.warning(
-                    "Skipping finalization for job %s because lease was lost.",
-                    job_id,
-                )
+    try:
+        while True:
+            try:
+                messages = await runtime.poll_messages()
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                logger.exception("Failed to poll scrape jobs: %s", exc)
+                await asyncio.sleep(settings.poll_seconds)
                 continue
 
-            marked = await mark_done(
-                job_id,
-                lease_owner=lease_owner,
-                summary=summary,
-                error=error,
-            )
-            if not marked:
-                logger.warning(
-                    "Could not mark job %s as done because lease is no longer owned.",
-                    job_id,
-                )
-        except asyncio.CancelledError:
-            raise
-        except Exception as exc:
-            logger.exception("Scrape job %s failed: %s", job_id, exc)
-            if lease_lost.is_set():
-                logger.warning(
-                    "Skipping failed finalization for job %s because lease was lost.",
-                    job_id,
-                )
-                continue
-
-            marked = await mark_failed(job_id, lease_owner=lease_owner, error=str(exc))
-            if not marked:
-                logger.warning(
-                    "Could not mark job %s as failed because lease is no longer owned.",
-                    job_id,
-                )
-        finally:
-            heartbeat_task.cancel()
-            with suppress(asyncio.CancelledError):
-                await heartbeat_task
+            for message in messages:
+                try:
+                    await process_message(
+                        runtime=runtime,
+                        backend_client=backend_client,
+                        message=message,
+                    )
+                except asyncio.CancelledError:
+                    raise
+                except Exception as exc:
+                    logger.exception(
+                        "Unexpected worker failure while handling job %s: %s",
+                        getattr(message, "job_id", "<unknown>"),
+                        exc,
+                    )
+    finally:
+        await backend_client.aclose()
 
 
 async def run() -> None:
     try:
         await worker_loop()
     finally:
+        await close_worker_redis_client()
         await close_worker_mongo_client()
 
 
-__all__ = ["run", "worker_loop"]
+__all__ = [
+    "TERMINAL_ACK_STATUS_CODES",
+    "_attempt_exhausted",
+    "_should_ack_completion_result",
+    "execute_job_payload",
+    "process_message",
+    "run",
+    "worker_loop",
+]
