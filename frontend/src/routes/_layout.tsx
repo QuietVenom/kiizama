@@ -12,7 +12,6 @@ import { currentUserQueryOptions, isLoggedIn } from "@/hooks/useAuth"
 
 const dashboardShellRoutes = [
   "/app",
-  "/mining",
   "/creators-search",
   "/brand-intelligence",
 ] as const

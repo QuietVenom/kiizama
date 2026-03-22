@@ -5,6 +5,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from .config import get_default_max_concurrent
 from .constants import DEFAULT_USER_AGENT
 
 
@@ -175,8 +176,24 @@ class InstagramBatchRecommendationsResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-# TEMP: Snapshot request model intentionally excludes `recommended_limit`.
-class InstagramBatchScrapeRequest(BaseModel):
+def _normalize_requested_usernames(usernames: list[str]) -> list[str]:
+    normalized: list[str] = []
+    seen: set[str] = set()
+
+    for raw_username in usernames:
+        username = raw_username.strip().lower()
+        if not username or username in seen:
+            continue
+        seen.add(username)
+        normalized.append(username)
+
+    if not normalized:
+        raise ValueError("At least one non-empty username is required.")
+
+    return normalized
+
+
+class InstagramBaseScrapeRequest(BaseModel):
     # TEMP: Cap payload size to 10 usernames per request.
     usernames: list[str] = Field(min_length=1, max_length=10)
     timeout_ms: int = 30000
@@ -184,8 +201,8 @@ class InstagramBatchScrapeRequest(BaseModel):
     user_agent: str = DEFAULT_USER_AGENT
     locale: str = "en-US"
     max_posts: int = 12
-    # TEMP: Enforce conservative concurrency for worker stability.
-    max_concurrent: int = Field(default=2, ge=1, le=2)
+    # Defaults to IG_SCRAPER_MAX_CONCURRENT when the caller omits the field.
+    max_concurrent: int = Field(default_factory=get_default_max_concurrent, ge=1)
     measure_network_bytes: bool = Field(
         default=False,
         description=(
@@ -194,6 +211,16 @@ class InstagramBatchScrapeRequest(BaseModel):
         ),
     )
     proxy: str | None = None
+
+    @field_validator("usernames")
+    @classmethod
+    def _normalize_usernames(cls, usernames: list[str]) -> list[str]:
+        return _normalize_requested_usernames(usernames)
+
+
+# TEMP: Snapshot request model intentionally excludes `recommended_limit`.
+class InstagramBatchScrapeRequest(InstagramBaseScrapeRequest):
+    pass
 
 
 # TEMP: `recommended_limit` is only exposed for recommendations endpoint payloads.
@@ -207,45 +234,8 @@ class InstagramBatchRecommendationsRequest(InstagramBatchScrapeRequest):
 
 
 # TEMP: Async snapshot jobs intentionally exclude `recommended_limit`.
-class InstagramScrapeJobCreateRequest(BaseModel):
-    # TEMP: Cap async job payload size to 10 usernames.
-    usernames: list[str] = Field(min_length=1, max_length=10)
-    timeout_ms: int = 30000
-    headless: bool = True
-    user_agent: str = DEFAULT_USER_AGENT
-    locale: str = "en-US"
-    max_posts: int = 12
-    # TEMP: Enforce conservative concurrency for worker stability.
-    max_concurrent: int = Field(default=2, ge=1, le=2)
-    measure_network_bytes: bool = Field(
-        default=False,
-        description=(
-            "When true, tracks total downloaded bytes from Playwright responses "
-            "(session validation + scraping)."
-        ),
-    )
-    proxy: str | None = None
-
-    @field_validator("usernames")
-    @classmethod
-    def _normalize_usernames(cls, usernames: list[str]) -> list[str]:
-        normalized: list[str] = []
-        seen: set[str] = set()
-
-        for raw_username in usernames:
-            username = raw_username.strip().lower()
-            if not username or username in seen:
-                continue
-            seen.add(username)
-            normalized.append(username)
-
-        if not normalized:
-            raise ValueError("At least one non-empty username is required.")
-
-        if len(normalized) > 10:
-            raise ValueError("A scrape job supports up to 10 usernames.")
-
-        return normalized
+class InstagramScrapeJobCreateRequest(InstagramBaseScrapeRequest):
+    pass
 
 
 class InstagramScrapeJobCreateResponse(BaseModel):

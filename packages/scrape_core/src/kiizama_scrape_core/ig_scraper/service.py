@@ -21,14 +21,6 @@ NOT_FOUND_ERROR = "Instagram username does not exist"
 INSTAGRAM_USERNAME_RE = re.compile(r"^(?!.*\.\.)(?!\.)(?!.*\.$)[a-z0-9._]{1,30}$")
 
 
-def _normalize_usernames(usernames: list[str]) -> list[str]:
-    return [
-        username.strip().lower()
-        for username in usernames
-        if username and username.strip()
-    ]
-
-
 def _is_valid_instagram_username(username: str) -> bool:
     return bool(INSTAGRAM_USERNAME_RE.fullmatch(username))
 
@@ -61,7 +53,7 @@ async def prepare_scrape_batch_payload(
     payload: InstagramBatchScrapeRequest,
     persistence: InstagramScrapePersistence,
 ) -> tuple[InstagramBatchScrapeRequest, InstagramBatchScrapeResponse | None]:
-    requested_usernames = _normalize_usernames(payload.usernames)
+    requested_usernames = payload.usernames
     if not requested_usernames:
         return payload, InstagramBatchScrapeResponse(
             counters=InstagramBatchCountersSchema(requested=0)
@@ -96,37 +88,18 @@ def prepare_recommendations_batch_payload(
 ]:
     usernames_to_scrape: list[str] = []
     skipped: list[InstagramBatchUsernameStatus] = []
-    seen: set[str] = set()
-
-    for username_raw in payload.usernames:
-        normalized = username_raw.strip().lower() if username_raw else ""
-
-        # Ignore duplicates silently (first occurrence wins).
-        if normalized in seen:
-            continue
-        seen.add(normalized)
-
-        if not normalized:
+    for username in payload.usernames:
+        if not _is_valid_instagram_username(username):
             skipped.append(
                 InstagramBatchUsernameStatus(
-                    username=normalized,
-                    status="skipped",
-                    error="Empty username",
-                )
-            )
-            continue
-
-        if not _is_valid_instagram_username(normalized):
-            skipped.append(
-                InstagramBatchUsernameStatus(
-                    username=normalized,
+                    username=username,
                     status="skipped",
                     error="Invalid username format",
                 )
             )
             continue
 
-        usernames_to_scrape.append(normalized)
+        usernames_to_scrape.append(username)
 
     prepared_payload = payload.model_copy(update={"usernames": usernames_to_scrape})
     if usernames_to_scrape:
@@ -151,8 +124,8 @@ def build_batch_scrape_summary(
     *,
     early_response: InstagramBatchScrapeResponse | None = None,
 ) -> InstagramBatchScrapeSummaryResponse:
-    original_usernames = _normalize_usernames(payload.usernames)
-    scraped_usernames = _normalize_usernames(scrape_payload.usernames)
+    original_usernames = payload.usernames
+    scraped_usernames = scrape_payload.usernames
     scraped_set = set(scraped_usernames)
     if response is None and early_response is not None:
         scraped_set = set()
@@ -202,8 +175,7 @@ def build_batch_recommendations_summary(
     usernames = list(prevalidated_usernames or [])
     recommendations: dict[str, list[InstagramSuggestedUserSchema]] = {}
 
-    normalized = _normalize_usernames(payload.usernames)
-    for username in normalized:
+    for username in payload.usernames:
         status: BatchUsernameStatus = "failed"
         error: str | None = None
         users: list[InstagramSuggestedUserSchema] = []

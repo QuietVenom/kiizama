@@ -2,92 +2,66 @@
 
 ## Prerequisites
 
-* Create your local env file:
+Create your local env file:
 
 ```bash
 cp .env.example .env
 ```
 
-* Set required values before running services locally:
-  * `SECRET_KEY`
-  * `SECRET_KEY_IG_CREDENTIALS`
-  * `FIRST_SUPERUSER_PASSWORD`
-  * `MONGODB_URL`
-  * `OPENAI_API_KEY` (required for AI enrichment/scraping flows)
+Set required values before running services locally:
+
+- `SECRET_KEY`
+- `SECRET_KEY_IG_CREDENTIALS`
+- `FIRST_SUPERUSER_PASSWORD`
+- `MONGODB_URL`
+- `OPENAI_API_KEY`
 
 ## Docker Compose
 
-* Start the local stack with Docker Compose:
+Start the local stack:
 
 ```bash
 docker compose watch
 ```
 
-* Now you can open your browser and interact with these URLs:
+Local service URLs:
 
-Frontend, built with Docker, with routes handled based on the path: http://localhost:5173
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
-Backend, JSON based web API based on OpenAPI: http://localhost:8000
+The first startup can take a while because the backend waits for dependencies and runs prestart tasks.
 
-Automatic interactive documentation with Swagger UI (from the OpenAPI backend): http://localhost:8000/docs
-
-Traefik UI, to see how the routes are being handled by the proxy: http://localhost:8090
-
-**Note**: The first time you start your stack, it might take a minute for it to be ready. While the backend waits for the database to be ready and configures everything. You can check the logs to monitor it.
-
-By default, backend Postgres uses `DATABASE_URL` (typically a managed database URL). For isolated local tests, use the dedicated test compose file:
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.test.yml up -d postgres_test redis
-```
-
-To check the logs, run (in another terminal):
+Useful log commands:
 
 ```bash
 docker compose logs
-```
-
-To check the logs of a specific service, add the name of the service, e.g.:
-
-```bash
 docker compose logs backend
+docker compose logs frontend
 ```
 
 ## Local Development
 
-The Docker Compose files are configured so that each of the services is available in a different port in `localhost`.
+Docker Compose exposes the backend and frontend on the same ports used by their local dev servers. You can stop one service and replace it with the local process without changing URLs.
 
-For the backend and frontend, they use the same port that would be used by their local development server, so, the backend is at `http://localhost:8000` and the frontend at `http://localhost:5173`.
-
-This way, you could turn off a Docker Compose service and start its local development service, and everything would keep working, because it all uses the same ports.
-
-For example, you can stop that `frontend` service in the Docker Compose, in another terminal, run:
+Stop frontend container and run Vite locally:
 
 ```bash
 docker compose stop frontend
-```
-
-And then start the local frontend development server:
-
-```bash
 cd frontend
 npm run dev
 ```
 
-Or you could stop the `backend` Docker Compose service:
+Stop backend container and run FastAPI locally:
 
 ```bash
 docker compose stop backend
-```
-
-And then you can run the local development server for the backend:
-
-```bash
 cd backend
 fastapi dev app/main.py
 ```
 
-If you plan to use Instagram scraping locally (`/api/v1/ig-scraper/profiles/batch` or worker jobs), install Playwright Chromium once:
+If you plan to use Instagram scraping locally, install Playwright Chromium once:
 
 ```bash
 backend/.venv/bin/python -m playwright install chromium
@@ -95,136 +69,73 @@ backend/.venv/bin/python -m playwright install chromium
 
 ## Async Instagram Scrape Jobs
 
-The project now supports asynchronous Instagram scraping jobs with:
+The project supports asynchronous Instagram scraping jobs with:
 
-* `Redis` for queueing, live job state, lease ownership, heartbeat, retry recovery, and terminal dedupe
-* `MongoDB` for the persisted scrape result plus a TTL-backed job projection for queries/history
+- `Redis` for queueing, live job state, lease ownership, heartbeat, retry recovery, and terminal dedupe
+- `MongoDB` for the persisted scrape result plus a TTL-backed job projection for queries and history
 
-The existing synchronous endpoint remains available:
+Relevant endpoints:
 
-* `POST /api/v1/ig-scraper/profiles/batch`
+- `POST /api/v1/ig-scraper/profiles/batch`
+- `POST /api/v1/ig-scraper/jobs`
+- `GET /api/v1/ig-scraper/jobs/{job_id}`
 
-The asynchronous job endpoints are:
-
-* `POST /api/v1/ig-scraper/jobs`
-* `GET /api/v1/ig-scraper/jobs/{job_id}`
-
-`POST /api/v1/ig-scraper/jobs` accepts `usernames` (maximum 10) plus the same scraping options used by the sync flow (`timeout_ms`, `max_concurrent`, etc). It returns:
-
-```json
-{
-  "job_id": "uuid",
-  "status": "queued"
-}
-```
+`POST /api/v1/ig-scraper/jobs` accepts up to 10 usernames plus the same scraping options as the sync flow. It returns a queued job id.
 
 `GET /api/v1/ig-scraper/jobs/{job_id}` returns:
 
-* `status`: `queued`, `running`, `done`, or `failed`
-* `summary`: high-level scrape summary (no large raw payloads)
-* `references`: username groups (`successful`, `failed`, `skipped`, `not_found`)
-* Operational lease metadata: `attempts`, `lease_owner`, `leased_until`, `heartbeat_at`
+- `status`: `queued`, `running`, `done`, or `failed`
+- `summary`
+- `references`
+- operational metadata such as `attempts`, `lease_owner`, `leased_until`, and `heartbeat_at`
 
-Operational ownership rules:
+Ownership rules:
 
-* Redis is the source of truth for live job lifecycle.
-* MongoDB does not decide whether a job is still running.
-* MongoDB keeps the queryable job projection and the persisted scrape result.
-* The MongoDB job projection expires through TTL after `createdAt`.
-* Redis terminal state uses its own TTL and does not live forever.
+- Redis is the source of truth for live job lifecycle
+- MongoDB stores the queryable job projection and persisted scrape result
+- the backend is the only component that accepts terminal completion and emits the final SSE event
 
 ### Worker process
 
 Run the API and worker in separate terminals during local development.
 
-1. Start backend API (from `backend/`):
+1. Start backend API:
 
 ```bash
+cd backend
 fastapi dev app/main.py
 ```
 
-2. Start worker (from repository root):
+2. Start worker:
 
 ```bash
 backend/.venv/bin/python -m scrape_worker.main
 ```
 
-The worker handles the full pipeline for each job:
-
-* consume queued jobs from Redis
-* maintain lease + heartbeat in Redis
-* scrape
-* AI enrichment
-* persistence to MongoDB
-* callback backend for terminalization + SSE publication
+The worker consumes queued jobs, maintains lease and heartbeat state in Redis, performs scraping and AI enrichment, persists results, and calls back into the backend for terminalization.
 
 ### Worker with Docker Compose (optional)
 
 An optional local service `scrape_worker` is available in `docker-compose.override.yml` behind the `worker` profile.
 
-Run backend + worker + frontend stack with:
-
 ```bash
 docker compose --profile worker watch
-```
-
-Check worker logs in another terminal:
-
-```bash
 docker compose logs -f scrape_worker
 ```
 
-### Worker lease and retries
-
-The worker uses lease + heartbeat to recover jobs if a worker process dies mid-run.
-
-* A claimed job gets lease ownership metadata in Redis state.
-* While running, the worker renews heartbeat/lease.
-* If lease expires, another worker can reclaim the pending stream message.
-* `attempts` is incremented per claim.
-* The backend accepts terminalization exactly once and publishes the final user SSE event.
-
-## Docker Compose in `*.localhost`
-
-When you start the Docker Compose stack, it uses `localhost` by default, with different ports for each service (backend, frontend, mailcatcher, etc).
-
-When you deploy it to production (or staging), it will deploy each service in a different subdomain, like `api.example.com` for the backend and `app.example.com` for the frontend.
-
-In the guide about [deployment](deployment.md) you can read about Traefik, the configured proxy. That's the component in charge of transmitting traffic to each service based on the subdomain.
-
-If you want to test that it's all working locally, you can edit the local `.env` file, and change:
-
-```dotenv
-DOMAIN=localhost
-```
-
-That will be used by the Docker Compose files to configure the base domain for the services.
-
-Traefik will use this to transmit traffic at `api.localhost` to the backend, and traffic at `app.localhost` to the frontend.
-
-The `localhost` domain and subdomains like `api.localhost` and `app.localhost` resolve to your local machine (`127.0.0.1` / `::1`) in modern systems. This way you can use that for local development.
-
-After you update it, run again:
-
-```bash
-docker compose watch
-```
-
-When deploying, for example in production, the main Traefik is configured outside of the Docker Compose files. For local development, there's an included Traefik in `docker-compose.override.yml`, just to let you test that the domains work as expected, for example with `api.localhost` and `app.localhost`.
-
 ## Docker Compose files and env vars
 
-There is a main `docker-compose.yml` file with all the configurations that apply to the whole stack, it is used automatically by `docker compose`.
+`docker-compose.yml` is the shared base for local and test stacks.
 
-There's also a `docker-compose.override.yml` with overrides for local development, for example to mount the source code as a volume, expose local ports, and run the development proxy. It is used automatically by `docker compose` to apply overrides on top of `docker-compose.yml`.
+`docker-compose.override.yml` is for local development only. It adds dev-friendly behavior such as:
 
-For tests, use `docker-compose.test.yml`. The test scripts in `scripts/test.sh` and `scripts/test-local.sh` call Docker Compose explicitly with:
+- source sync for backend and worker code
+- backend `--reload`
+- local port publishing
 
-```bash
-docker compose -f docker-compose.yml -f docker-compose.test.yml ...
-```
+`docker-compose.test.yml` is the isolated test stack overlay.
 
-To run backend tests locally against the isolated Postgres + Redis stack:
+The local test scripts call Docker Compose explicitly with the test file. To run backend tests manually against the isolated Postgres + Redis stack:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.test.yml up -d postgres_test redis
@@ -234,13 +145,7 @@ REDIS_URL=redis://localhost:6379/0 \
 bash scripts/tests-start.sh backend/tests/api/routes/test_ig_scraper_jobs.py backend/tests/api/routes/test_events.py
 ```
 
-`scripts/tests-start.sh` now waits for the test database, runs `alembic upgrade head`, seeds initial data, and then executes pytest against the test database URL.
-
-These Docker Compose files use the `.env` file containing configurations to be injected as environment variables in the containers.
-
-They also use some additional configurations taken from environment variables set in the scripts before calling the `docker compose` command.
-
-After changing variables, make sure you restart the stack:
+After changing env vars, restart the stack:
 
 ```bash
 docker compose watch
@@ -248,15 +153,13 @@ docker compose watch
 
 ## The .env file
 
-The `.env` file is the one that contains all your configurations, generated keys and passwords, etc.
+The top-level `.env` file is the local source of truth for Docker Compose, backend, and worker settings.
 
-Depending on your workflow, you could want to exclude it from Git, for example if your project is public. In that case, you would have to make sure to set up a way for your CI tools to obtain it while building or deploying your project.
-
-One way to do it could be to add each environment variable to your CI/CD system, and updating the `docker-compose.yml` file to read that specific env var instead of reading the `.env` file.
+For frontend development outside Docker, Vite still reads `frontend/.env` or shell-provided `VITE_*` variables. The repository `.env.example` provides the default `VITE_API_URL` value used by Docker-based flows.
 
 ## Pre-commits and code linting
 
-we are using a tool called [pre-commit](https://pre-commit.com/) for code linting and formatting.
+This repository uses [pre-commit](https://pre-commit.com/) for linting and formatting.
 
 When you install it, it runs right before making a commit in git. This way it ensures that the code is consistent and formatted even before it is committed.
 
@@ -266,13 +169,15 @@ You can find a file `.pre-commit-config.yaml` with configurations at the root of
 
 `pre-commit` is already part of the dependencies of the project, but you could also install it globally if you prefer to, following [the official pre-commit docs](https://pre-commit.com/).
 
-After having the `pre-commit` tool installed and available, you need to "install" it in the local repository, so that it runs automatically before each commit.
+After having the `pre-commit` tool installed and available, you need to "install" it in the local repository, so that it runs automatically before each commit and push.
 
 Using `uv`, you could do it with:
 
 ```bash
 ❯ uv run pre-commit install
 pre-commit installed at .git/hooks/pre-commit
+❯ uv run pre-commit install --hook-type pre-push
+pre-commit installed at .git/hooks/pre-push
 ```
 
 Now whenever you try to commit, e.g. with:
@@ -284,6 +189,16 @@ git commit
 ...pre-commit will run and check and format the code you are about to commit, and will ask you to add that code (stage it) with git again before committing.
 
 Then you can `git add` the modified/fixed files again and now you can commit.
+
+The `pre-push` hook also verifies the generated frontend API client when your branch includes backend or client-generation changes. If it regenerates files under `frontend/src/client`, the push is aborted and you need to:
+
+```bash
+git add frontend/src/client
+git commit --amend --no-edit  # or create a new commit
+git push
+```
+
+All other configured hooks continue to run on `pre-commit`; only the generated client verification runs on `pre-push`.
 
 #### Running pre-commit hooks manually
 
@@ -299,39 +214,3 @@ ruff-format..............................................................Passed
 eslint...................................................................Passed
 prettier.................................................................Passed
 ```
-
-## URLs
-
-The production or staging URLs would use these same paths, but with your own domain.
-
-### Development URLs
-
-Development URLs, for local development.
-
-Frontend: http://localhost:5173
-
-Backend: http://localhost:8000
-
-Automatic Interactive Docs (Swagger UI): http://localhost:8000/docs
-
-Automatic Alternative Docs (ReDoc): http://localhost:8000/redoc
-
-Traefik UI: http://localhost:8090
-
-MailCatcher: http://localhost:1080
-
-### Development URLs with `*.localhost` Configured
-
-Development URLs, for local development.
-
-Frontend: http://app.localhost
-
-Backend: http://api.localhost
-
-Automatic Interactive Docs (Swagger UI): http://api.localhost/docs
-
-Automatic Alternative Docs (ReDoc): http://api.localhost/redoc
-
-Traefik UI: http://localhost:8090
-
-MailCatcher: http://localhost:1080

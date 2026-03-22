@@ -347,7 +347,7 @@ const CreatorSubmitPanel = ({
             : isValidationStale || orderedProfilesCount === 0
               ? "Validate the creator profile before generating the report."
               : missingUsernames.length > 0
-                ? "consulte los perfiles en Mining y vuelva a intentar"
+                ? "consulte los perfiles validados y vuelva a intentar"
                 : null
 
   return (
@@ -455,7 +455,7 @@ const CreatorStrategyBuilder = ({
         .map((profile) => profile.username)
 
       if (missingProfiles.length > 0) {
-        throw new Error("consulte los perfiles en Mining y vuelva a intentar")
+        throw new Error("consulte los perfiles validados y vuelva a intentar")
       }
 
       const cleanedSignals = {

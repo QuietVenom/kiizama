@@ -4,7 +4,6 @@ import { useMemo, useState } from "react"
 import { FaBars } from "react-icons/fa"
 import { FiHome, FiLogOut, FiSearch, FiSettings, FiUsers } from "react-icons/fi"
 import type { IconType } from "react-icons/lib"
-import { LuPickaxe } from "react-icons/lu"
 
 import useAuth from "@/hooks/useAuth"
 import {
@@ -19,7 +18,6 @@ import ThemeLogo from "./ThemeLogo"
 
 type SidebarRoute =
   | "/app"
-  | "/mining"
   | "/creators-search"
   | "/brand-intelligence"
   | "/settings"
@@ -35,7 +33,6 @@ type SidebarItem = {
 
 const topItems: SidebarItem[] = [
   { icon: FiHome, title: "Overview", path: "/app" },
-  { icon: LuPickaxe, title: "Mining", path: "/mining" },
   { icon: FiSearch, title: "Creators Search", path: "/creators-search" },
   { icon: FiUsers, title: "Brand Intelligence", path: "/brand-intelligence" },
 ]

@@ -30,7 +30,7 @@ jobs:
           version: "0.4.15"
           enable-cache: true
       - run: docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml --env-file .env.example down -v --remove-orphans
-      - run: docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml --env-file .env.example up -d postgres_test mailcatcher
+      - run: docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml --env-file .env.example up -d postgres_test
       - name: Migrate DB
         run: uv run bash scripts/prestart.sh
         working-directory: backend

@@ -110,8 +110,9 @@ function BrandIntelligencePage() {
               fontSize={{ base: "md", lg: "lg" }}
               maxW="70ch"
             >
-              Start with influencer usernames, validate them against Mining, and
-              then generate the selected reputation strategy as a PDF report.
+              Start with influencer usernames, validate them against the saved
+              profile dataset, and then generate the selected reputation
+              strategy as a PDF report.
             </Text>
           </Box>
 
@@ -127,7 +128,7 @@ function BrandIntelligencePage() {
               px={3}
               py={1.5}
             >
-              Mining validation first
+              Profile validation first
             </Badge>
             <Badge
               rounded="full"

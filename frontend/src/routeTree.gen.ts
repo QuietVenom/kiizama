@@ -23,7 +23,6 @@ import { Route as AboutUsRouteImport } from './routes/about-us'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
-import { Route as LayoutMiningRouteImport } from './routes/_layout/mining'
 import { Route as LayoutCreatorsSearchRouteImport } from './routes/_layout/creators-search'
 import { Route as LayoutBrandIntelligenceRouteImport } from './routes/_layout/brand-intelligence'
 import { Route as LayoutAppRouteImport } from './routes/_layout/app'
@@ -98,11 +97,6 @@ const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutMiningRoute = LayoutMiningRouteImport.update({
-  id: '/mining',
-  path: '/mining',
-  getParentRoute: () => LayoutRoute,
-} as any)
 const LayoutCreatorsSearchRoute = LayoutCreatorsSearchRouteImport.update({
   id: '/creators-search',
   path: '/creators-search',
@@ -141,7 +135,6 @@ export interface FileRoutesByFullPath {
   '/app': typeof LayoutAppRoute
   '/brand-intelligence': typeof LayoutBrandIntelligenceRoute
   '/creators-search': typeof LayoutCreatorsSearchRoute
-  '/mining': typeof LayoutMiningRoute
   '/settings': typeof LayoutSettingsRoute
 }
 export interface FileRoutesByTo {
@@ -161,7 +154,6 @@ export interface FileRoutesByTo {
   '/app': typeof LayoutAppRoute
   '/brand-intelligence': typeof LayoutBrandIntelligenceRoute
   '/creators-search': typeof LayoutCreatorsSearchRoute
-  '/mining': typeof LayoutMiningRoute
   '/settings': typeof LayoutSettingsRoute
 }
 export interface FileRoutesById {
@@ -183,7 +175,6 @@ export interface FileRoutesById {
   '/_layout/app': typeof LayoutAppRoute
   '/_layout/brand-intelligence': typeof LayoutBrandIntelligenceRoute
   '/_layout/creators-search': typeof LayoutCreatorsSearchRoute
-  '/_layout/mining': typeof LayoutMiningRoute
   '/_layout/settings': typeof LayoutSettingsRoute
 }
 export interface FileRouteTypes {
@@ -205,7 +196,6 @@ export interface FileRouteTypes {
     | '/app'
     | '/brand-intelligence'
     | '/creators-search'
-    | '/mining'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -225,7 +215,6 @@ export interface FileRouteTypes {
     | '/app'
     | '/brand-intelligence'
     | '/creators-search'
-    | '/mining'
     | '/settings'
   id:
     | '__root__'
@@ -246,7 +235,6 @@ export interface FileRouteTypes {
     | '/_layout/app'
     | '/_layout/brand-intelligence'
     | '/_layout/creators-search'
-    | '/_layout/mining'
     | '/_layout/settings'
   fileRoutesById: FileRoutesById
 }
@@ -366,13 +354,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSettingsRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/mining': {
-      id: '/_layout/mining'
-      path: '/mining'
-      fullPath: '/mining'
-      preLoaderRoute: typeof LayoutMiningRouteImport
-      parentRoute: typeof LayoutRoute
-    }
     '/_layout/creators-search': {
       id: '/_layout/creators-search'
       path: '/creators-search'
@@ -409,7 +390,6 @@ interface LayoutRouteChildren {
   LayoutAppRoute: typeof LayoutAppRoute
   LayoutBrandIntelligenceRoute: typeof LayoutBrandIntelligenceRoute
   LayoutCreatorsSearchRoute: typeof LayoutCreatorsSearchRoute
-  LayoutMiningRoute: typeof LayoutMiningRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
 }
 
@@ -418,7 +398,6 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAppRoute: LayoutAppRoute,
   LayoutBrandIntelligenceRoute: LayoutBrandIntelligenceRoute,
   LayoutCreatorsSearchRoute: LayoutCreatorsSearchRoute,
-  LayoutMiningRoute: LayoutMiningRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
 }
 

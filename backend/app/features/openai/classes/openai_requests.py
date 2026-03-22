@@ -12,7 +12,7 @@ from .templates import OpenAIRequestTemplate
 
 IG_OPENAI_REQUEST = OpenAIRequestTemplate(
     system_prompt=SYSTEM_PROMPT_IG_OPENAI_REQUEST,
-    model="gpt-5-nano-2025-08-07",
+    model="gpt-5.4-nano-2026-03-17",
     text={
         "format": {
             "type": "json_schema",
@@ -68,7 +68,7 @@ IG_OPENAI_REQUEST = OpenAIRequestTemplate(
 
 REPUTATION_OPENAI_REQUEST = OpenAIRequestTemplate(
     system_prompt=SYSTEM_PROMPT_REPUTATION_OPENAI_REQUEST,
-    model="gpt-5.2-2025-12-11",
+    model="gpt-5.4-2026-03-05",
     tools=[{"type": "web_search"}],
     text={
         "format": {
@@ -411,7 +411,7 @@ REPUTATION_OPENAI_REQUEST = OpenAIRequestTemplate(
 
 CREATOR_OPENAI_REQUEST = OpenAIRequestTemplate(
     system_prompt=SYSTEM_PROMPT_REPUTATION_CREATOR_OPENAI_REQUEST,
-    model="gpt-5.2-2025-12-11",
+    model="gpt-5.4-2026-03-05",
     tools=[{"type": "web_search"}],
     text={
         "format": {

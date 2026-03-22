@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Literal
 
 from ..classes import InstagramScrapeResult, SessionValidationResult
+from ..config import get_default_max_concurrent
 from ..constants import DEFAULT_USER_AGENT
 from ..metrics import calculate_metrics_from_scrape
 from ..schemas import InstagramBatchScrapeRequest
@@ -57,8 +58,7 @@ class InstagramBatchScraper(BaseInstagramWorker):
         locale: str = "en-US",
         proxy: str | None = None,
         timeout_ms: int = 30000,
-        # TEMP: Lower default concurrency to reduce CPU burst pressure.
-        max_concurrent: int = 2,
+        max_concurrent: int | None = None,
         login_username: str | None = None,
         password: str | None = None,
         recommended_limit: int | None = 10,
@@ -82,7 +82,9 @@ class InstagramBatchScraper(BaseInstagramWorker):
             username.strip().lower() for username in usernames if username.strip()
         ]
         self.max_posts = max_posts
-        self.max_concurrent = max_concurrent
+        self.max_concurrent = (
+            get_default_max_concurrent() if max_concurrent is None else max_concurrent
+        )
         self.login_username = (login_username or "").strip()
         self.password = password or ""
         self._requested_user_agent = user_agent or DEFAULT_USER_AGENT
