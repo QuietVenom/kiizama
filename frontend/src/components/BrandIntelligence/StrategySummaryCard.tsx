@@ -58,8 +58,8 @@ const StrategySummaryCard = ({ sections, title }: StrategySummaryCardProps) => {
         >
           <Text fontWeight="bold">Nothing captured yet.</Text>
           <Text mt={1.5} color="ui.secondaryText">
-            Start with usernames and the summary will update as the form fills
-            in.
+            Start with creator usernames and the summary will update as the form
+            fills in.
           </Text>
         </Box>
       ) : (

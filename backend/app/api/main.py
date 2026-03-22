@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.routes import (
     brand_intelligence,
+    creators_search_history,
     events,
     feature_flags,
     health,
@@ -46,6 +47,7 @@ api_router.include_router(ig_scraper.router)
 api_router.include_router(social_media_report.router)
 api_router.include_router(openai.router)
 api_router.include_router(brand_intelligence.router)
+api_router.include_router(creators_search_history.router)
 
 
 if settings.ENVIRONMENT == "local":

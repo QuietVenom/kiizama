@@ -1,5 +1,6 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+default_stages: [pre-commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
@@ -30,16 +31,25 @@ repos:
       - id: gitleaks
   - repo: local
     hooks:
+      - id: local-generated-client-pre-push
+        name: generated client pre-push
+        entry: bash scripts/check-generated-client.sh --mode local
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+        always_run: true
       - id: local-backend-mypy
         name: backend mypy
         entry: bash -c 'cd backend && uv run mypy app'
         language: system
         pass_filenames: false
+        stages: [pre-commit]
         files: ^backend/
       - id: local-biome-check
         name: biome check
         entry: bash -c 'cd frontend && npm run lint'
         language: system
+        stages: [pre-commit]
         types: [text]
         files: ^frontend/
 

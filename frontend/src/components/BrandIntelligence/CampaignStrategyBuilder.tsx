@@ -10,7 +10,7 @@ import {
   Textarea,
 } from "@chakra-ui/react"
 import { useMutation } from "@tanstack/react-query"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   type Control,
   Controller,
@@ -23,6 +23,7 @@ import { FiAlertCircle, FiFileText, FiSearch } from "react-icons/fi"
 
 import UsernameTagsInput from "@/components/CreatorsSearch/UsernameTagsInput"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Field } from "@/components/ui/field"
 import { TagsInputField } from "@/components/ui/tags-input-field"
 import {
@@ -69,6 +70,8 @@ const inputStyles = {
   borderColor: "ui.sidebarBorder",
   rounded: "2xl",
 } as const
+
+const CRISIS_BRAND_GOAL = "Crisis"
 
 const getUrlPalette = (invalidUrls: ReadonlySet<string>, value: string) => {
   if (invalidUrls.has(value)) {
@@ -142,10 +145,12 @@ const CampaignTypePreview = ({
 const CampaignStrategySummary = ({
   control,
   expiredUsernames,
+  isNotUsingCreators,
   normalizedProfiles,
 }: {
   control: Control<CampaignFormValues>
   expiredUsernames: string[]
+  isNotUsingCreators: boolean
   normalizedProfiles: string[]
 }) => {
   const [
@@ -182,10 +187,22 @@ const CampaignStrategySummary = ({
 
   const summarySections = [
     {
-      title: "Profiles gate",
+      title: "Creators gate",
       items: [
-        { label: "Influencer usernames", value: normalizedProfiles },
-        { label: "Expired profiles", value: expiredUsernames },
+        {
+          label: "Creator usage",
+          value: isNotUsingCreators
+            ? "Not using creators for this campaign."
+            : undefined,
+        },
+        {
+          label: "Creator usernames",
+          value: isNotUsingCreators ? [] : normalizedProfiles,
+        },
+        {
+          label: "Expired profiles",
+          value: isNotUsingCreators ? [] : expiredUsernames,
+        },
       ],
     },
     {
@@ -223,6 +240,7 @@ const CampaignStrategySummary = ({
 const CampaignSubmitPanel = ({
   control,
   invalidUsernames,
+  isNotUsingCreators,
   isValidationPending,
   isValidationStale,
   missingUsernames,
@@ -232,6 +250,7 @@ const CampaignSubmitPanel = ({
 }: {
   control: Control<CampaignFormValues>
   invalidUsernames: string[]
+  isNotUsingCreators: boolean
   isValidationPending: boolean
   isValidationStale: boolean
   missingUsernames: string[]
@@ -270,7 +289,7 @@ const CampaignSubmitPanel = ({
     (value) => !isValidHttpUrl(value),
   )
   const hasRequiredFields =
-    normalizedProfiles.length > 0 &&
+    (isNotUsingCreators || normalizedProfiles.length > 0) &&
     Boolean(brandName) &&
     Boolean(brandContext) &&
     Boolean(brandGoalsContext) &&
@@ -280,20 +299,21 @@ const CampaignSubmitPanel = ({
     (audience?.length ?? 0) > 0
 
   const submitDisabledReason =
-    normalizedProfiles.length === 0
-      ? "Add at least 1 influencer username to unlock the workflow."
-      : invalidUsernames.length > 0
+    !isNotUsingCreators && normalizedProfiles.length === 0
+      ? "Add at least 1 creator username to unlock the workflow."
+      : !isNotUsingCreators && invalidUsernames.length > 0
         ? "Fix invalid usernames before continuing."
         : hasInvalidBrandUrls
           ? "Use valid http or https URLs."
           : !hasRequiredFields
             ? "Complete the required fields to enable report generation."
-            : isValidationPending
+            : !isNotUsingCreators && isValidationPending
               ? "Profile validation is still running."
-              : isValidationStale || orderedProfilesCount === 0
+              : !isNotUsingCreators &&
+                  (isValidationStale || orderedProfilesCount === 0)
                 ? "Validate profiles before generating the report."
-                : missingUsernames.length > 0
-                  ? "consulte los perfiles en Mining y vuelva a intentar"
+                : !isNotUsingCreators && missingUsernames.length > 0
+                  ? "consulte los perfiles validados y vuelva a intentar"
                   : null
 
   return (
@@ -346,8 +366,10 @@ const CampaignStrategyBuilder = ({
   const { showErrorToast, showSuccessToast } = useCustomToast()
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null)
+  const [notUsingCreators, setNotUsingCreators] = useState(false)
 
   const {
+    clearErrors,
     control,
     formState: { errors },
     handleSubmit,
@@ -355,13 +377,34 @@ const CampaignStrategyBuilder = ({
     setValue,
     trigger,
   } = form
+  const brandGoalsType = useWatch({
+    control,
+    name: "brand_goals_type",
+    defaultValue: "",
+  })
+  const isCrisisGoal = brandGoalsType === CRISIS_BRAND_GOAL
+  const isNotUsingCreators = isCrisisGoal && notUsingCreators
+
+  useEffect(() => {
+    if (!isCrisisGoal) {
+      setNotUsingCreators(false)
+    }
+  }, [isCrisisGoal])
+
+  useEffect(() => {
+    if (isNotUsingCreators) {
+      clearErrors("profiles_list")
+    }
+  }, [clearErrors, isNotUsingCreators])
 
   const invalidUsernames = useMemo(
     () =>
-      normalizedProfiles.filter(
-        (username) => !isValidInstagramUsername(username),
-      ),
-    [normalizedProfiles],
+      isNotUsingCreators
+        ? []
+        : normalizedProfiles.filter(
+            (username) => !isValidInstagramUsername(username),
+          ),
+    [isNotUsingCreators, normalizedProfiles],
   )
   const invalidUsernameSet = useMemo(
     () => new Set(invalidUsernames),
@@ -378,13 +421,16 @@ const CampaignStrategyBuilder = ({
     validationError,
   } = validation
 
-  const isWorkflowUnlocked = normalizedProfiles.length > 0
+  const isWorkflowUnlocked = normalizedProfiles.length > 0 || isNotUsingCreators
   const canRunValidation =
+    !isNotUsingCreators &&
     normalizedProfiles.length > 0 &&
     invalidUsernames.length === 0 &&
     !isValidationPending
 
   const handleValidateProfiles = async () => {
+    if (isNotUsingCreators) return
+
     setSubmitError(null)
     setSubmitSuccess(null)
     setValue("profiles_list", normalizedProfiles, {
@@ -400,14 +446,20 @@ const CampaignStrategyBuilder = ({
 
   const reportMutation = useMutation({
     mutationFn: async (values: CampaignFormValues) => {
-      const profilesList = normalizeUsernameList(values.profiles_list)
-      const validationResult = await validateProfiles(profilesList)
-      const missingProfiles = (validationResult?.profiles ?? [])
-        .filter((profile) => !profile.exists)
-        .map((profile) => profile.username)
+      const normalizedRequestProfiles = normalizeUsernameList(
+        values.profiles_list,
+      )
+      const profilesList = isNotUsingCreators ? [] : normalizedRequestProfiles
 
-      if (missingProfiles.length > 0) {
-        throw new Error("consulte los perfiles en Mining y vuelva a intentar")
+      if (!isNotUsingCreators) {
+        const validationResult = await validateProfiles(profilesList)
+        const missingProfiles = (validationResult?.profiles ?? [])
+          .filter((profile) => !profile.exists)
+          .map((profile) => profile.username)
+
+        if (missingProfiles.length > 0) {
+          throw new Error("consulte los perfiles validados y vuelva a intentar")
+        }
       }
 
       return generateBrandIntelligenceReport({
@@ -476,20 +528,52 @@ const CampaignStrategyBuilder = ({
       <Flex direction="column" gap={6} minW={0}>
         <StrategySection
           eyebrow="Step 1"
-          title="Add influencer usernames"
-          description="This is the first gate of the flow. Capture at least 1 influencer username to unlock the rest of the campaign strategy form."
+          title="Set the brand goal and creators"
+          description="Choose the brand goal first. If this is a Crisis campaign, you can explicitly decide not to use creators; otherwise, add creator usernames to unlock the rest of the campaign strategy form."
         >
+          <Field
+            required
+            invalid={!!errors.brand_goals_type}
+            errorText={errors.brand_goals_type?.message}
+            label="Brand goal"
+            labelEndElement={renderFieldInfo(
+              "Brand goal",
+              CAMPAIGN_FIELD_HELP.brand_goals_type,
+            )}
+          >
+            <NativeSelect.Root>
+              <NativeSelect.Field
+                {...register("brand_goals_type", {
+                  required: "Select the primary brand goal.",
+                })}
+                {...inputStyles}
+              >
+                <option value="">Select a goal</option>
+                {BRAND_GOALS_TYPE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
+          </Field>
+
           <Controller
             control={control}
             name="profiles_list"
             rules={{
               validate: (value) => {
+                if (isNotUsingCreators) {
+                  return true
+                }
+
                 if (!value || value.length === 0) {
-                  return "Add at least 1 influencer username."
+                  return "Add at least 1 creator username."
                 }
 
                 if (value.length > BRAND_INTELLIGENCE_LIMITS.campaignProfiles) {
-                  return "You can include up to 15 influencer usernames."
+                  return "You can include up to 15 creator usernames."
                 }
 
                 if (
@@ -503,21 +587,24 @@ const CampaignStrategyBuilder = ({
             }}
             render={({ field, fieldState }) => (
               <Field
-                required
+                required={!isNotUsingCreators}
                 invalid={!!fieldState.error}
                 errorText={fieldState.error?.message}
-                label="Influencer usernames"
+                label="Creator usernames"
                 labelEndElement={renderFieldInfo(
-                  "Influencer usernames",
+                  "Creator usernames",
                   CAMPAIGN_FIELD_HELP.profiles_list,
                 )}
                 helperText={
                   fieldState.error
                     ? undefined
-                    : "Paste a list, press Enter, or separate usernames with commas."
+                    : isNotUsingCreators
+                      ? "Creators are disabled for this Crisis campaign while this option is active."
+                      : "Paste a list, press Enter, or separate usernames with commas."
                 }
               >
                 <UsernameTagsInput
+                  disabled={isNotUsingCreators}
                   expiredValues={new Set(expiredUsernames)}
                   invalid={!!fieldState.error}
                   invalidValues={invalidUsernameSet}
@@ -525,12 +612,31 @@ const CampaignStrategyBuilder = ({
                   onValueChange={(nextValue) =>
                     field.onChange(normalizeUsernameList(nextValue))
                   }
-                  placeholder="creator_one, creator.two, another_influencer"
+                  placeholder="creator_one, creator.two, another_creator"
                   value={field.value}
                 />
               </Field>
             )}
           />
+
+          <Field
+            mt={4}
+            helperText={
+              isCrisisGoal
+                ? "Available for Crisis campaigns. When enabled, the report will be generated without creator usernames or profile validation."
+                : "Select Brand goal = Crisis to enable this option."
+            }
+          >
+            <Checkbox
+              checked={notUsingCreators}
+              disabled={!isCrisisGoal}
+              onCheckedChange={({ checked }) =>
+                setNotUsingCreators(Boolean(checked))
+              }
+            >
+              Not using creator(s)
+            </Checkbox>
+          </Field>
 
           <Flex
             mt={4}
@@ -540,18 +646,30 @@ const CampaignStrategyBuilder = ({
             wrap="wrap"
           >
             <HStack gap={2} wrap="wrap">
-              <Badge
-                rounded="full"
-                borderWidth="1px"
-                borderColor="ui.border"
-                bg="ui.surfaceSoft"
-                color="ui.secondaryText"
-                px={3}
-                py={1.5}
-              >
-                {normalizedProfiles.length} /{" "}
-                {BRAND_INTELLIGENCE_LIMITS.campaignProfiles} usernames
-              </Badge>
+              {isNotUsingCreators ? (
+                <Badge
+                  rounded="full"
+                  bg="ui.brandSoft"
+                  color="ui.brandText"
+                  px={3}
+                  py={1.5}
+                >
+                  Creators not required for Crisis
+                </Badge>
+              ) : (
+                <Badge
+                  rounded="full"
+                  borderWidth="1px"
+                  borderColor="ui.border"
+                  bg="ui.surfaceSoft"
+                  color="ui.secondaryText"
+                  px={3}
+                  py={1.5}
+                >
+                  {normalizedProfiles.length} /{" "}
+                  {BRAND_INTELLIGENCE_LIMITS.campaignProfiles} creator usernames
+                </Badge>
+              )}
               {isWorkflowUnlocked ? (
                 <Badge
                   rounded="full"
@@ -565,95 +683,87 @@ const CampaignStrategyBuilder = ({
               ) : null}
             </HStack>
 
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleValidateProfiles}
-              disabled={!canRunValidation}
-              loading={isValidationPending}
-            >
-              <FiSearch />
-              Validate profiles
-            </Button>
+            {isNotUsingCreators ? null : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleValidateProfiles}
+                disabled={!canRunValidation}
+                loading={isValidationPending}
+              >
+                <FiSearch />
+                Validate profiles
+              </Button>
+            )}
           </Flex>
 
           <Box mt={4}>
-            <ProfileValidationPanel
-              error={validationError}
-              isLoading={isValidationPending}
-              isStale={isValidationStale}
-              profiles={orderedProfiles}
-              usernames={normalizedProfiles}
-            />
+            {isNotUsingCreators ? (
+              <Box
+                rounded="3xl"
+                borderWidth="1px"
+                borderColor="ui.brandBorderSoft"
+                bg="ui.brandSoft"
+                px={5}
+                py={5}
+              >
+                <Text fontWeight="bold" color="ui.brandText">
+                  Creator validation skipped
+                </Text>
+                <Text mt={2} color="ui.secondaryText">
+                  This Crisis campaign is set to not use creators, so creator
+                  username validation is not required and the report will be
+                  generated with an empty creators list.
+                </Text>
+              </Box>
+            ) : (
+              <ProfileValidationPanel
+                error={validationError}
+                isLoading={isValidationPending}
+                isStale={isValidationStale}
+                profiles={orderedProfiles}
+                usernames={normalizedProfiles}
+              />
+            )}
           </Box>
         </StrategySection>
 
         <StrategySection
           eyebrow="Step 2"
           title="Brand brief"
-          description="Capture the brand context and business goal that will guide the strategy recommendation."
+          description="Capture the brand context and supporting inputs that will guide the strategy recommendation."
         >
-          <Grid templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} gap={4}>
-            <Field
-              required
-              invalid={!!errors.brand_name}
-              errorText={errors.brand_name?.message}
-              label="Brand name"
-              labelEndElement={renderFieldInfo(
-                "Brand name",
-                CAMPAIGN_FIELD_HELP.brand_name,
-              )}
-              helperText={
-                <CharacterCountHelper
-                  control={control}
-                  name="brand_name"
-                  limit={120}
-                />
-              }
-            >
-              <Input
-                {...register("brand_name", {
-                  required: "Brand name is required.",
-                  maxLength: {
-                    value: 120,
-                    message: "Use 120 characters or less.",
-                  },
-                })}
-                {...inputStyles}
-                disabled={!isWorkflowUnlocked}
-                maxLength={120}
-                placeholder="Acme Skincare"
+          <Field
+            required
+            invalid={!!errors.brand_name}
+            errorText={errors.brand_name?.message}
+            label="Brand name"
+            labelEndElement={renderFieldInfo(
+              "Brand name",
+              CAMPAIGN_FIELD_HELP.brand_name,
+            )}
+            helperText={
+              <CharacterCountHelper
+                control={control}
+                name="brand_name"
+                limit={120}
               />
-            </Field>
-
-            <Field
-              required
-              invalid={!!errors.brand_goals_type}
-              errorText={errors.brand_goals_type?.message}
-              label="Brand goal"
-              labelEndElement={renderFieldInfo(
-                "Brand goal",
-                CAMPAIGN_FIELD_HELP.brand_goals_type,
-              )}
-            >
-              <NativeSelect.Root disabled={!isWorkflowUnlocked}>
-                <NativeSelect.Field
-                  {...register("brand_goals_type", {
-                    required: "Select the primary brand goal.",
-                  })}
-                  {...inputStyles}
-                >
-                  <option value="">Select a goal</option>
-                  {BRAND_GOALS_TYPE_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </NativeSelect.Field>
-                <NativeSelect.Indicator />
-              </NativeSelect.Root>
-            </Field>
-          </Grid>
+            }
+          >
+            <Input
+              {...register("brand_name", {
+                required: "Brand name is required.",
+                maxLength: {
+                  value: 120,
+                  message: "Use 120 characters or less.",
+                },
+              })}
+              {...inputStyles}
+              disabled={!isWorkflowUnlocked}
+              maxLength={120}
+              placeholder="Acme Skincare"
+            />
+          </Field>
 
           <Grid
             mt={4}
@@ -947,6 +1057,7 @@ const CampaignStrategyBuilder = ({
         <CampaignSubmitPanel
           control={control}
           invalidUsernames={invalidUsernames}
+          isNotUsingCreators={isNotUsingCreators}
           isValidationPending={isValidationPending}
           isValidationStale={isValidationStale}
           missingUsernames={missingUsernames}
@@ -959,6 +1070,7 @@ const CampaignStrategyBuilder = ({
       <CampaignStrategySummary
         control={control}
         expiredUsernames={expiredUsernames}
+        isNotUsingCreators={isNotUsingCreators}
         normalizedProfiles={normalizedProfiles}
       />
     </Box>

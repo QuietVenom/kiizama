@@ -1,12 +1,7 @@
 import type { BrowserContext, Page } from "@playwright/test"
 
 const oneYearInSeconds = 60 * 60 * 24 * 365
-const cookieConsentHosts = [
-  "localhost",
-  "app.localhost",
-  "www.localhost",
-  "127.0.0.1",
-]
+const cookieConsentHosts = ["localhost", "127.0.0.1"]
 
 const cookieConsentPreferences = encodeURIComponent(
   JSON.stringify({

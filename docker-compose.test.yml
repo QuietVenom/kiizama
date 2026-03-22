@@ -2,25 +2,35 @@ services:
 
   prestart:
     environment:
-      SMTP_HOST: mailcatcher
-      SMTP_PORT: "1025"
-      SMTP_TLS: "false"
-      SMTP_SSL: "false"
-      SMTP_USER: ""
-      SMTP_PASSWORD: ""
-      EMAILS_FROM_EMAIL: noreply@example.com
+      ENVIRONMENT: local
       FRONTEND_HOST: http://localhost:5173
+      BACKEND_CORS_ORIGINS: http://localhost:5173
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres_test:5432/app_test
+      DATABASE_URL_PRODUCTION_INTERNAL: ""
+      POSTGRES_SERVER: postgres_test
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: app_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      REDIS_URL: redis://redis:6379/0
+      MONGODB_URL: ""
+      SENTRY_DSN: ""
 
   backend:
     environment:
-      SMTP_HOST: mailcatcher
-      SMTP_PORT: "1025"
-      SMTP_TLS: "false"
-      SMTP_SSL: "false"
-      SMTP_USER: ""
-      SMTP_PASSWORD: ""
-      EMAILS_FROM_EMAIL: noreply@example.com
+      ENVIRONMENT: local
       FRONTEND_HOST: http://localhost:5173
+      BACKEND_CORS_ORIGINS: http://localhost:5173
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres_test:5432/app_test
+      DATABASE_URL_PRODUCTION_INTERNAL: ""
+      POSTGRES_SERVER: postgres_test
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: app_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      REDIS_URL: redis://redis:6379/0
+      MONGODB_URL: ""
+      SENTRY_DSN: ""
 
   postgres_test:
     image: postgres:18
@@ -45,12 +55,6 @@ services:
     ports:
       - "6379:6379"
 
-  mailcatcher:
-    image: schickling/mailcatcher
-    ports:
-      - "1080:1080"
-      - "1025:1025"
-
   playwright:
     build:
       context: ./frontend
@@ -62,12 +66,10 @@ services:
     ipc: host
     depends_on:
       - backend
-      - mailcatcher
     env_file:
       - .env
     environment:
       - VITE_API_URL=http://backend:8000
-      - MAILCATCHER_HOST=http://mailcatcher:1080
       - FIRST_SUPERUSER=${FIRST_SUPERUSER}
       - FIRST_SUPERUSER_PASSWORD=${FIRST_SUPERUSER_PASSWORD}
       - PLAYWRIGHT_HTML_HOST=0.0.0.0
@@ -77,7 +79,3 @@ services:
       - ./frontend/test-results:/app/test-results
     ports:
       - 9323:9323
-
-networks:
-  traefik-public:
-    external: false

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import importlib
+import logging
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -9,14 +10,20 @@ from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
+import httpx
 import pytest
 from kiizama_scrape_core.ig_scraper.schemas import (
     InstagramBatchCountersSchema,
     InstagramBatchScrapeSummaryResponse,
     InstagramBatchUsernameStatus,
 )
+from pymongo.errors import ConnectionFailure
 
-from app.features.job_control import JobRuntimeHandle, QueuedJobMessage
+from app.features.job_control import (
+    JobControlUnavailableError,
+    JobRuntimeHandle,
+    QueuedJobMessage,
+)
 
 if TYPE_CHECKING:
     from scrape_worker.backend_client import WorkerBackendCompletionResult
@@ -74,6 +81,11 @@ def _settings() -> Any:
 def _attempt_exhausted(attempt: int) -> bool:
     _completion_result_cls, _settings_obj, worker_module = _worker_modules()
     return cast(bool, worker_module._attempt_exhausted(attempt))
+
+
+def _worker_dependency_error_cls() -> type[Exception]:
+    _completion_result_cls, _settings_obj, worker_module = _worker_modules()
+    return cast(type[Exception], worker_module.WorkerDependencyUnavailableError)
 
 
 def _should_ack_completion_result(result: WorkerBackendCompletionResult) -> bool:
@@ -147,6 +159,9 @@ class FakeBackendClient:
     ) -> WorkerBackendCompletionResult:
         self.calls.append((job_id, payload))
         return self.result
+
+    async def aclose(self) -> None:
+        return None
 
 
 def _message(*, job_id: str = "job-1") -> QueuedJobMessage:
@@ -299,3 +314,167 @@ def test_process_message_skips_backend_completion_when_lease_is_lost(
 
     assert backend_client.calls == []
     assert runtime.finished == [(runtime.handle, False)]
+
+
+def test_process_message_leaves_job_pending_when_backend_transport_is_unavailable(
+    monkeypatch: Any,
+) -> None:
+    runtime = FakeRuntime(_handle())
+
+    class UnavailableBackendClient:
+        def __init__(self) -> None:
+            self.calls: list[tuple[str, Any]] = []
+
+        async def complete_job(
+            self,
+            *,
+            job_id: str,
+            payload: Any,
+        ) -> WorkerBackendCompletionResult:
+            self.calls.append((job_id, payload))
+            raise httpx.ConnectError("backend unavailable")
+
+    backend_client = UnavailableBackendClient()
+
+    async def fake_execute_job_payload(
+        payload: dict[str, Any],
+    ) -> tuple[Any, str | None]:
+        del payload
+        return _summary(), None
+
+    _worker_modules()
+    monkeypatch.setattr(
+        "scrape_worker.worker.execute_job_payload", fake_execute_job_payload
+    )
+
+    with pytest.raises(_worker_dependency_error_cls()):
+        _run(
+            _process_message(
+                runtime=runtime,
+                backend_client=backend_client,
+                message=_message(),
+            )
+        )
+
+    assert len(backend_client.calls) == 1
+    assert runtime.finished == [(runtime.handle, False)]
+
+
+def test_process_message_leaves_job_pending_when_mongo_is_unavailable(
+    monkeypatch: Any,
+) -> None:
+    runtime = FakeRuntime(_handle())
+    backend_client = FakeBackendClient(_completion_result(status_code=200))
+
+    async def fake_execute_job_payload(
+        payload: dict[str, Any],
+    ) -> tuple[Any, str | None]:
+        raise ConnectionFailure(f"mongo unavailable: {payload!r}")
+
+    _worker_modules()
+    monkeypatch.setattr(
+        "scrape_worker.worker.execute_job_payload", fake_execute_job_payload
+    )
+
+    with pytest.raises(_worker_dependency_error_cls()):
+        _run(
+            _process_message(
+                runtime=runtime,
+                backend_client=backend_client,
+                message=_message(),
+            )
+        )
+
+    assert backend_client.calls == []
+    assert runtime.finished == [(runtime.handle, False)]
+
+
+def test_worker_loop_uses_exponential_backoff_and_recovers_from_dependency_loss(
+    monkeypatch: Any,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    _completion_result_cls, _settings_obj, worker_module = _worker_modules()
+    caplog.set_level(logging.INFO, logger="scrape_worker")
+
+    class FakeDatabase:
+        async def command(self, name: str) -> dict[str, int]:
+            assert name == "ping"
+            return {"ok": 1}
+
+        def get_collection(self, name: str) -> dict[str, str]:
+            return {"name": name}
+
+    class FakeRedis:
+        async def ping(self) -> bool:
+            return True
+
+    class FakeRuntimeLoop:
+        def __init__(self) -> None:
+            self.ensure_calls = 0
+            self.poll_calls = 0
+
+        async def ensure_consumer_group(self) -> None:
+            self.ensure_calls += 1
+
+        async def poll_messages(self) -> list[QueuedJobMessage]:
+            self.poll_calls += 1
+            if self.poll_calls == 1:
+                raise JobControlUnavailableError("redis down")
+            if self.poll_calls == 2:
+                raise JobControlUnavailableError("redis still down")
+            if self.poll_calls == 3:
+                return []
+            raise asyncio.CancelledError
+
+    fake_database = FakeDatabase()
+    fake_redis = FakeRedis()
+    fake_runtime = FakeRuntimeLoop()
+    fake_backend_client = FakeBackendClient(_completion_result(status_code=200))
+    sleep_calls: list[float] = []
+
+    async def fake_sleep(delay: float) -> None:
+        sleep_calls.append(delay)
+
+    monkeypatch.setattr(
+        worker_module,
+        "configure_credentials_store_resolver",
+        lambda resolver: None,
+    )
+    monkeypatch.setattr(
+        worker_module,
+        "get_worker_mongo_database",
+        lambda: fake_database,
+    )
+    monkeypatch.setattr(
+        worker_module,
+        "get_worker_redis_client",
+        lambda: fake_redis,
+    )
+    monkeypatch.setattr(
+        worker_module,
+        "JobControlRepository",
+        lambda **kwargs: object(),
+    )
+    monkeypatch.setattr(
+        worker_module,
+        "JobWorkerRuntime",
+        lambda **kwargs: fake_runtime,
+    )
+    monkeypatch.setattr(
+        worker_module,
+        "ScrapeWorkerBackendClient",
+        lambda *, base_url: fake_backend_client,
+    )
+    monkeypatch.setattr(worker_module.asyncio, "sleep", fake_sleep)
+
+    with pytest.raises(asyncio.CancelledError):
+        _run(worker_module.worker_loop())
+
+    assert sleep_calls == [_settings().poll_seconds, _settings().poll_seconds * 2]
+    assert fake_runtime.ensure_calls == 1
+    assert fake_runtime.poll_calls == 4
+    assert "Worker entering degraded mode while polling scrape jobs." in caplog.text
+    assert (
+        "Worker still waiting on dependencies while polling scrape jobs." in caplog.text
+    )
+    assert "Worker dependencies recovered. Resuming scrape job polling." in caplog.text

@@ -29,13 +29,11 @@ Source repository: https://github.com/QuietVenom/kiizama
 
 ### Platform and DevOps
 
-- [Docker Compose](https://www.docker.com) for local and server orchestration.
-- [Traefik](https://traefik.io) for routing and TLS termination.
+- [Docker Compose](https://www.docker.com) for local orchestration and test stacks.
 - [uv](https://docs.astral.sh/uv/) for Python dependency and environment management.
-- MailCatcher for local development support.
 - Optional `scrape_worker` process/service for asynchronous jobs.
 - [Pytest](https://pytest.org) and Playwright for automated testing.
-- CI/CD support with GitHub Actions and Render (`render.yaml`).
+- CI/CD support with GitHub Actions and Fly.io (`fly.*.toml`).
 
 ## How To Use It
 
@@ -72,8 +70,6 @@ docker compose watch
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:8000
 - Swagger UI: http://localhost:8000/docs
-- Traefik UI: http://localhost:8090
-- MailCatcher: http://localhost:1080
 
 ### 5) Run async worker (optional)
 
@@ -96,10 +92,9 @@ Configuration lives in `.env` and is consumed by Docker Compose, backend and wor
 ### Core
 
 - `PROJECT_NAME`
-- `STACK_NAME`
 - `ENVIRONMENT` (`local`, `staging`, `production`)
-- `DOMAIN`
 - `FRONTEND_HOST` (authenticated app origin used by backend-generated links)
+- `VITE_API_URL` (frontend API base URL for Docker/frontend envs)
 - `BACKEND_CORS_ORIGINS`
 
 ### Security and auth

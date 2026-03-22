@@ -1,20 +1,10 @@
 import { expect, test } from "@playwright/test"
-import { findLastEmail } from "./utils/mailcatcher"
+import { getPasswordRecoveryLink } from "./utils/passwordRecovery"
 import { randomEmail, randomPassword } from "./utils/random"
 import { anonymousStorageState } from "./utils/storageState"
 import { logInUser, signUpNewUser } from "./utils/user"
 
 test.use({ storageState: anonymousStorageState })
-
-const normalizeAppUrl = (rawUrl: string, appOrigin: string) => {
-  const targetUrl = new URL(rawUrl)
-  const currentAppUrl = new URL(appOrigin)
-
-  targetUrl.protocol = currentAppUrl.protocol
-  targetUrl.host = currentAppUrl.host
-
-  return targetUrl.toString()
-}
 
 test("Password Recovery title is visible", async ({ page }) => {
   await page.goto("/recover-password")
@@ -50,28 +40,13 @@ test("User can reset password successfully using the link", async ({
   // Sign up a new user
   await signUpNewUser(page, fullName, email, password)
 
-  await page.goto("/recover-password")
+  await page.goto("/login")
   const appOrigin = new URL(page.url()).origin
-  await page.getByPlaceholder("Email").fill(email)
-
-  await page.getByRole("button", { name: "Continue" }).click()
-
-  const emailData = await findLastEmail({
+  const url = await getPasswordRecoveryLink({
     request,
-    filter: (e) => e.recipients.includes(`<${email}>`),
-    timeout: 5000,
-  })
-
-  await page.goto(
-    `${process.env.MAILCATCHER_HOST}/messages/${emailData.id}.html`,
-  )
-
-  const selector = 'a[href*="/reset-password?token="]'
-
-  const url = normalizeAppUrl(
-    (await page.getAttribute(selector, "href"))!,
+    email,
     appOrigin,
-  )
+  })
 
   // Set the new password and confirm it
   await page.goto(url)
@@ -107,26 +82,13 @@ test("Weak new password validation", async ({ page, request }) => {
   // Sign up a new user
   await signUpNewUser(page, fullName, email, password)
 
-  await page.goto("/recover-password")
+  await page.goto("/login")
   const appOrigin = new URL(page.url()).origin
-  await page.getByPlaceholder("Email").fill(email)
-  await page.getByRole("button", { name: "Continue" }).click()
-
-  const emailData = await findLastEmail({
+  const url = await getPasswordRecoveryLink({
     request,
-    filter: (e) => e.recipients.includes(`<${email}>`),
-    timeout: 5000,
-  })
-
-  await page.goto(
-    `${process.env.MAILCATCHER_HOST}/messages/${emailData.id}.html`,
-  )
-
-  const selector = 'a[href*="/reset-password?token="]'
-  const url = normalizeAppUrl(
-    (await page.getAttribute(selector, "href"))!,
+    email,
     appOrigin,
-  )
+  })
 
   // Set a weak new password
   await page.goto(url)

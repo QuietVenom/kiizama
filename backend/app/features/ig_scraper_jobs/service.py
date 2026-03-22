@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import uuid
 from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Annotated, Any, Protocol
@@ -32,6 +31,7 @@ from kiizama_scrape_core.user_events.schemas import UserEventEnvelope
 from pymongo.asynchronous.collection import AsyncCollection
 
 from app.core.config import settings
+from app.core.ids import generate_uuid7
 from app.core.mongodb import get_mongo_kiizama_ig
 from app.features.job_control.repository import (
     JobControlRepository,
@@ -154,7 +154,7 @@ class InstagramJobService:
         owner_user_id: str,
     ) -> str:
         now = self._clock()
-        job_id = str(uuid.uuid4())
+        job_id = str(generate_uuid7())
         expires_at = default_job_expires_at(reference_time=now)
         projection = build_job_projection_document(
             job_id=job_id,

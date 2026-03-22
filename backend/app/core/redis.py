@@ -1,27 +1,14 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, cast
+from typing import cast
 
-from redis.asyncio import Redis
+from kiizama_scrape_core.redis import RedisClient, create_redis_client
 
 from app.core.config import settings
 
-RedisClient = Any
-
 _client: RedisClient | None = None
 _client_resolver: Callable[[], RedisClient] | None = None
-
-
-def create_redis_client(redis_url: str) -> Redis:
-    return cast(
-        Redis,
-        Redis.from_url(
-            redis_url,
-            decode_responses=True,
-            health_check_interval=30,
-        ),
-    )
 
 
 def configure_redis_client_resolver(
@@ -41,7 +28,7 @@ def get_redis_client() -> RedisClient:
         raise RuntimeError("REDIS_URL is not configured.")
 
     if _client is None:
-        _client = create_redis_client(redis_url)
+        _client = cast(RedisClient, create_redis_client(redis_url))
     return _client
 
 
