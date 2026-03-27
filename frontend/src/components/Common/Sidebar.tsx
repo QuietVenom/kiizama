@@ -1,8 +1,16 @@
 import { Box, Flex, Icon, IconButton, Text } from "@chakra-ui/react"
 import { Link as RouterLink, useLocation } from "@tanstack/react-router"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { FaBars } from "react-icons/fa"
-import { FiHome, FiLogOut, FiSearch, FiSettings, FiUsers } from "react-icons/fi"
+import {
+  FiChevronDown,
+  FiChevronRight,
+  FiHome,
+  FiLogOut,
+  FiSearch,
+  FiSettings,
+  FiUsers,
+} from "react-icons/fi"
 import type { IconType } from "react-icons/lib"
 
 import useAuth from "@/hooks/useAuth"
@@ -20,21 +28,46 @@ type SidebarRoute =
   | "/app"
   | "/creators-search"
   | "/brand-intelligence"
+  | "/brand-intelligence/reputation-strategy"
   | "/settings"
   | "/admin"
 
+type SidebarChildItem = {
+  key: string
+  title: string
+  path: SidebarRoute
+}
+
 type SidebarItem = {
+  key: string
   icon: IconType
   title: string
   path?: SidebarRoute
+  children?: SidebarChildItem[]
   placeholder?: boolean
   danger?: boolean
 }
 
 const topItems: SidebarItem[] = [
-  { icon: FiHome, title: "Overview", path: "/app" },
-  { icon: FiSearch, title: "Creators Search", path: "/creators-search" },
-  { icon: FiUsers, title: "Brand Intelligence", path: "/brand-intelligence" },
+  { key: "overview", icon: FiHome, title: "Overview", path: "/app" },
+  {
+    key: "creators-search",
+    icon: FiSearch,
+    title: "Creators Search",
+    path: "/creators-search",
+  },
+  {
+    key: "brand-intelligence",
+    icon: FiUsers,
+    title: "Brand Intelligence",
+    children: [
+      {
+        key: "reputation-strategy",
+        title: "Reputation Strategy",
+        path: "/brand-intelligence/reputation-strategy",
+      },
+    ],
+  },
 ]
 
 const isActiveRoute = (pathname: string, route: SidebarRoute) => {
@@ -47,17 +80,27 @@ const isActiveRoute = (pathname: string, route: SidebarRoute) => {
 type SidebarNavItemProps = {
   item: SidebarItem
   currentPath: string
+  isExpanded?: boolean
   onNavigate?: () => void
   onLogout: () => void
+  onToggleExpand?: (key: string) => void
 }
 
 const SidebarNavItem = ({
   item,
   currentPath,
+  isExpanded = false,
   onNavigate,
   onLogout,
+  onToggleExpand,
 }: SidebarNavItemProps) => {
-  const isActive = item.path ? isActiveRoute(currentPath, item.path) : false
+  const hasChildren = (item.children?.length ?? 0) > 0
+  const isChildActive = item.children?.some((child) =>
+    isActiveRoute(currentPath, child.path),
+  )
+  const isActive = item.path
+    ? isActiveRoute(currentPath, item.path)
+    : Boolean(isChildActive)
 
   const baseStyles = {
     alignItems: "center",
@@ -100,17 +143,130 @@ const SidebarNavItem = ({
   } as const
 
   const itemContent = (
-    <Flex {...baseStyles}>
-      <Icon as={item.icon} boxSize={5} />
-      <Text
-        fontSize="md"
-        fontWeight={isActive ? "bold" : "medium"}
-        letterSpacing="-0.01em"
-      >
-        {item.title}
-      </Text>
+    <Flex {...baseStyles} justifyContent="space-between">
+      <Flex alignItems="center" gap={3} minW={0}>
+        <Icon as={item.icon} boxSize={5} />
+        <Text
+          fontSize="md"
+          fontWeight={isActive ? "bold" : "medium"}
+          letterSpacing="-0.01em"
+          truncate
+        >
+          {item.title}
+        </Text>
+      </Flex>
+
+      {hasChildren ? (
+        <Icon
+          as={isExpanded ? FiChevronDown : FiChevronRight}
+          boxSize={4.5}
+          flexShrink={0}
+        />
+      ) : null}
     </Flex>
   )
+
+  if (hasChildren) {
+    const sectionId = `sidebar-section-${item.key}`
+
+    return (
+      <Box>
+        <Box
+          as="button"
+          w="full"
+          textAlign="left"
+          onClick={() => onToggleExpand?.(item.key)}
+          aria-expanded={isExpanded}
+          aria-controls={sectionId}
+        >
+          {itemContent}
+        </Box>
+
+        <Box
+          id={sectionId}
+          overflow="hidden"
+          maxH={isExpanded ? "240px" : "0px"}
+          opacity={isExpanded ? 1 : 0}
+          transition="max-height 180ms ease, opacity 180ms ease"
+          pl={1}
+          pr={1}
+        >
+          <Box ml={3} pl={8} py={1}>
+            <Flex direction="column" gap={1}>
+              {item.children?.map((child, index) => {
+                const isChildRouteActive = isActiveRoute(
+                  currentPath,
+                  child.path,
+                )
+                const isFirstChild = index === 0
+
+                return (
+                  <Box
+                    key={child.key}
+                    position="relative"
+                    _before={{
+                      content: '""',
+                      position: "absolute",
+                      left: "-22px",
+                      top: isFirstChild ? "-12px" : "-8px",
+                      width: "22px",
+                      height: isFirstChild
+                        ? "calc(50% + 12px)"
+                        : "calc(50% + 8px)",
+                      borderLeftWidth: "1px",
+                      borderBottomWidth: "1px",
+                      borderColor: "ui.sidebarBorder",
+                      borderBottomLeftRadius: "12px",
+                    }}
+                  >
+                    <RouterLink to={child.path} onClick={onNavigate}>
+                      <Flex
+                        alignItems="center"
+                        justifyContent="center"
+                        rounded="xl"
+                        px={4}
+                        py={2.5}
+                        minH="11"
+                        textAlign="center"
+                        transition="all 180ms ease"
+                        borderWidth="1px"
+                        borderColor={
+                          isChildRouteActive
+                            ? "ui.sidebarBorder"
+                            : "transparent"
+                        }
+                        bg={
+                          isChildRouteActive ? "ui.activeSoft" : "transparent"
+                        }
+                        color={
+                          isChildRouteActive ? "ui.link" : "ui.secondaryText"
+                        }
+                        _hover={{
+                          bg: isChildRouteActive
+                            ? "ui.activeSoft"
+                            : "ui.surfaceSoft",
+                          borderColor: "ui.sidebarBorder",
+                        }}
+                      >
+                        <Text
+                          fontSize="xs"
+                          fontWeight={isChildRouteActive ? "bold" : "medium"}
+                          letterSpacing="-0.01em"
+                          whiteSpace="nowrap"
+                        >
+                          {child.title}
+                        </Text>
+                      </Flex>
+                    </RouterLink>
+                  </Box>
+                )
+              })}
+            </Flex>
+          </Box>
+        </Box>
+      </Box>
+    )
+  }
 
   if (item.path) {
     return (
@@ -174,17 +330,69 @@ const SidebarBody = ({
   userEmail,
 }: SidebarBodyProps) => {
   const profileSubLabel = isSuperuser ? "Admin Plan" : userEmail || "No email"
+  const [expandedSections, setExpandedSections] = useState<
+    Record<string, boolean>
+  >(() =>
+    Object.fromEntries(
+      topItems
+        .filter((item) =>
+          item.children?.some((child) =>
+            isActiveRoute(currentPath, child.path),
+          ),
+        )
+        .map((item) => [item.key, true]),
+    ),
+  )
 
   const bottomItems: SidebarItem[] = useMemo(
     () => [
       ...(isSuperuser
-        ? [{ icon: FiUsers, title: "Admin", path: "/admin" as const }]
+        ? [
+            {
+              key: "admin",
+              icon: FiUsers,
+              title: "Admin",
+              path: "/admin" as const,
+            },
+          ]
         : []),
-      { icon: FiSettings, title: "Settings", path: "/settings" as const },
-      { icon: FiLogOut, title: "Log Out", danger: true },
+      {
+        key: "settings",
+        icon: FiSettings,
+        title: "Settings",
+        path: "/settings" as const,
+      },
+      { key: "logout", icon: FiLogOut, title: "Log Out", danger: true },
     ],
     [isSuperuser],
   )
+
+  useEffect(() => {
+    setExpandedSections((current) => {
+      let hasChanges = false
+      const nextState = { ...current }
+
+      for (const item of topItems) {
+        const isChildRouteActive = item.children?.some((child) =>
+          isActiveRoute(currentPath, child.path),
+        )
+
+        if (isChildRouteActive && !nextState[item.key]) {
+          nextState[item.key] = true
+          hasChanges = true
+        }
+      }
+
+      return hasChanges ? nextState : current
+    })
+  }, [currentPath])
+
+  const handleToggleExpand = (key: string) => {
+    setExpandedSections((current) => ({
+      ...current,
+      [key]: !current[key],
+    }))
+  }
 
   return (
     <Flex
@@ -207,11 +415,13 @@ const SidebarBody = ({
       <Flex direction="column" gap={1} px={4} pb={4}>
         {topItems.map((item) => (
           <SidebarNavItem
-            key={item.title}
+            key={item.key}
             item={item}
             currentPath={currentPath}
+            isExpanded={Boolean(expandedSections[item.key])}
             onNavigate={onNavigate}
             onLogout={onLogout}
+            onToggleExpand={handleToggleExpand}
           />
         ))}
       </Flex>
@@ -228,7 +438,7 @@ const SidebarBody = ({
         <Flex direction="column" gap={1}>
           {bottomItems.map((item) => (
             <SidebarNavItem
-              key={item.title}
+              key={item.key}
               item={item}
               currentPath={currentPath}
               onNavigate={onNavigate}

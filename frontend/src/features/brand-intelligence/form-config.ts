@@ -17,7 +17,7 @@ export const CAMPAIGN_FIELD_HELP = {
   brand_name: "Nombre de la marca.",
   brand_urls: "Lista de URLs de marca (max 3).",
   campaign_type: "Estrategia de campana seleccionada.",
-  profiles_list: "Lista de perfiles (max 15).",
+  profiles_list: "Lista de usernames de creators (max 15).",
   timeframe: "Horizonte temporal de la campana.",
 } as const
 

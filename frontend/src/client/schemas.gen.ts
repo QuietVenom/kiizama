@@ -132,6 +132,98 @@ export const Body_login_login_access_tokenSchema = {
     title: 'Body_login-login_access_token'
 } as const;
 
+export const CreatorsSearchHistoryCreateRequestSchema = {
+    properties: {
+        source: {
+            type: 'string',
+            enum: ['direct-search', 'ig-scrape-job'],
+            title: 'Source'
+        },
+        job_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Job Id'
+        },
+        ready_usernames: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            maxItems: 50,
+            minItems: 1,
+            title: 'Ready Usernames'
+        }
+    },
+    type: 'object',
+    required: ['source', 'ready_usernames'],
+    title: 'CreatorsSearchHistoryCreateRequest'
+} as const;
+
+export const CreatorsSearchHistoryItemSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        created_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Created At'
+        },
+        source: {
+            type: 'string',
+            enum: ['direct-search', 'ig-scrape-job'],
+            title: 'Source'
+        },
+        job_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Job Id'
+        },
+        ready_usernames: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Ready Usernames'
+        }
+    },
+    type: 'object',
+    required: ['id', 'created_at', 'source'],
+    title: 'CreatorsSearchHistoryItem'
+} as const;
+
+export const CreatorsSearchHistoryListResponseSchema = {
+    properties: {
+        items: {
+            items: {
+                '$ref': '#/components/schemas/CreatorsSearchHistoryItem'
+            },
+            type: 'array',
+            title: 'Items'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count',
+            default: 0
+        }
+    },
+    type: 'object',
+    title: 'CreatorsSearchHistoryListResponse'
+} as const;
+
 export const FeatureFlagAuditPublicSchema = {
     properties: {
         id: {
@@ -2336,9 +2428,8 @@ export const ReputationCampaignStrategyRequestSchema = {
             },
             type: 'array',
             maxItems: 15,
-            minItems: 1,
             title: 'Profiles List',
-            description: 'Lista de perfiles (max 15).'
+            description: 'Lista de creator usernames (max 15). Puede estar vacia solo cuando brand_goals_type es Crisis.'
         },
         campaign_type: {
             type: 'string',

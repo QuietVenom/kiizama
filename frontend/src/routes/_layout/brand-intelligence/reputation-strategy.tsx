@@ -19,8 +19,10 @@ import {
 import { useProfileExistenceValidation } from "@/features/brand-intelligence/use-profile-existence-validation"
 import { normalizeUsernameList } from "@/features/brand-intelligence/utils"
 
-export const Route = createFileRoute("/_layout/brand-intelligence")({
-  component: BrandIntelligencePage,
+export const Route = createFileRoute(
+  "/_layout/brand-intelligence/reputation-strategy",
+)({
+  component: ReputationStrategyPage,
 })
 
 type StrategyType =
@@ -29,7 +31,7 @@ type StrategyType =
 
 const EMPTY_USERNAMES: string[] = []
 
-function BrandIntelligencePage() {
+function ReputationStrategyPage() {
   const [selectedStrategy, setSelectedStrategy] = useState<StrategyType>(
     "reputation-campaign-strategy",
   )
@@ -110,7 +112,7 @@ function BrandIntelligencePage() {
               fontSize={{ base: "md", lg: "lg" }}
               maxW="70ch"
             >
-              Start with influencer usernames, validate them against the saved
+              Start with creator usernames, validate them against the saved
               profile dataset, and then generate the selected reputation
               strategy as a PDF report.
             </Text>
@@ -157,7 +159,7 @@ function BrandIntelligencePage() {
           mb={{ base: 7, lg: 8 }}
         >
           <StrategyOptionCard
-            description="Validate a list of influencers first, then generate a reputation campaign strategy around the selected campaign model."
+            description="Validate a list of creators first, then generate a reputation campaign strategy around the selected campaign model."
             icon={FiTarget}
             isActive={selectedStrategy === "reputation-campaign-strategy"}
             onClick={() => setSelectedStrategy("reputation-campaign-strategy")}

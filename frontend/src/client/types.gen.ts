@@ -23,6 +23,27 @@ export type Body_login_login_access_token = {
     client_secret?: (string | null);
 };
 
+export type CreatorsSearchHistoryCreateRequest = {
+    source: 'direct-search' | 'ig-scrape-job';
+    job_id?: (string | null);
+    ready_usernames: Array<(string)>;
+};
+
+export type source = 'direct-search' | 'ig-scrape-job';
+
+export type CreatorsSearchHistoryItem = {
+    id: string;
+    created_at: string;
+    source: 'direct-search' | 'ig-scrape-job';
+    job_id?: (string | null);
+    ready_usernames?: Array<(string)>;
+};
+
+export type CreatorsSearchHistoryListResponse = {
+    items?: Array<CreatorsSearchHistoryItem>;
+    count?: number;
+};
+
 export type FeatureFlagAuditPublic = {
     id: string;
     feature_flag_key: string;
@@ -527,7 +548,7 @@ export type ReputationCampaignStrategyRequest = {
      */
     timeframe: string;
     /**
-     * Lista de perfiles (max 15).
+     * Lista de creator usernames (max 15). Puede estar vacia solo cuando brand_goals_type es Crisis.
      */
     profiles_list: Array<(string)>;
     /**
@@ -762,6 +783,18 @@ export type BrandIntelligenceGenerateReputationCreatorStrategyEndpointData = {
 };
 
 export type BrandIntelligenceGenerateReputationCreatorStrategyEndpointResponse = (unknown);
+
+export type CreatorsSearchHistoryListCreatorsSearchHistoryData = {
+    limit?: number;
+};
+
+export type CreatorsSearchHistoryListCreatorsSearchHistoryResponse = (CreatorsSearchHistoryListResponse);
+
+export type CreatorsSearchHistoryCreateCreatorsSearchHistoryEntryData = {
+    requestBody: CreatorsSearchHistoryCreateRequest;
+};
+
+export type CreatorsSearchHistoryCreateCreatorsSearchHistoryEntryResponse = (CreatorsSearchHistoryItem);
 
 export type EventsStreamUserEventsData = {
     lastEventId?: (string | null);

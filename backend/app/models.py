@@ -1,10 +1,11 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Literal
+from typing import Any, Literal, cast
 
 from pydantic import EmailStr
 from sqlmodel import Field, SQLModel
 
+from app.core.ids import generate_uuid7
 from app.core.password_policy import (
     PASSWORD_MAX_LENGTH,
     PASSWORD_MIN_LENGTH,
@@ -59,7 +60,7 @@ class UpdatePassword(SQLModel):
 
 # Database model, database table inferred from class name
 class User(UserBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: uuid.UUID = Field(default_factory=generate_uuid7, primary_key=True)
     hashed_password: str
 
 
@@ -99,7 +100,7 @@ class NewPassword(SQLModel):
 
 
 class LuAdminRole(SQLModel, table=True):
-    __tablename__ = "lu_admin_role"
+    __tablename__ = cast(Any, "lu_admin_role")
 
     id: int = Field(primary_key=True)
     code: str = Field(unique=True, index=True, max_length=50)
@@ -112,9 +113,9 @@ class UserAdminBase(SQLModel):
 
 
 class UserAdmin(UserAdminBase, table=True):
-    __tablename__ = "user_admin"
+    __tablename__ = cast(Any, "user_admin")
 
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: uuid.UUID = Field(default_factory=generate_uuid7, primary_key=True)
     hashed_password: str
     role_id: int = Field(foreign_key="lu_admin_role.id", nullable=False)
     created_at: datetime = Field(
@@ -153,9 +154,9 @@ class FeatureFlagUpdate(SQLModel):
 
 
 class FeatureFlag(FeatureFlagBase, table=True):
-    __tablename__ = "feature_flag"
+    __tablename__ = cast(Any, "feature_flag")
 
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: uuid.UUID = Field(default_factory=generate_uuid7, primary_key=True)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False
     )
@@ -177,9 +178,9 @@ class FeatureFlagsPublic(SQLModel):
 
 
 class FeatureFlagAudit(SQLModel, table=True):
-    __tablename__ = "feature_flag_audit"
+    __tablename__ = cast(Any, "feature_flag_audit")
 
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: uuid.UUID = Field(default_factory=generate_uuid7, primary_key=True)
     feature_flag_id: uuid.UUID | None = None
     feature_flag_key: str = Field(index=True, max_length=100)
     action: str = Field(max_length=32)
@@ -228,9 +229,9 @@ class WaitingListCreate(SQLModel):
 
 
 class WaitingList(SQLModel, table=True):
-    __tablename__ = "waiting_list"
+    __tablename__ = cast(Any, "waiting_list")
 
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: uuid.UUID = Field(default_factory=generate_uuid7, primary_key=True)
     email: EmailStr = Field(unique=True, index=True, max_length=255)
     interest: str = Field(max_length=64)
     created_at: datetime = Field(

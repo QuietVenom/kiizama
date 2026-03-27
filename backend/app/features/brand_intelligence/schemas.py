@@ -162,9 +162,11 @@ class ReputationCampaignStrategyRequest(BaseModel):
     )
     profiles_list: list[str] = Field(
         ...,
-        min_length=1,
         max_length=15,
-        description="Lista de perfiles (max 15).",
+        description=(
+            "Lista de creator usernames (max 15). "
+            "Puede estar vacia solo cuando brand_goals_type es Crisis."
+        ),
     )
     campaign_type: str = Field(
         ...,
@@ -290,6 +292,10 @@ class ReputationCampaignStrategyRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_output_flags(self) -> ReputationCampaignStrategyRequest:
+        if not self.profiles_list and self.brand_goals_type != "Crisis":
+            raise ValueError(
+                "Debe agregar al menos 1 creator username salvo que brand_goals_type sea Crisis."
+            )
         if not self.generate_html and not self.generate_pdf:
             raise ValueError("Debe solicitar al menos un formato (HTML o PDF).")
         return self

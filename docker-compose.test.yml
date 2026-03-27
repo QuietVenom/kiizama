@@ -2,21 +2,35 @@ services:
 
   prestart:
     environment:
+      ENVIRONMENT: local
+      FRONTEND_HOST: http://localhost:5173
+      BACKEND_CORS_ORIGINS: http://localhost:5173
       DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres_test:5432/app_test
+      DATABASE_URL_PRODUCTION_INTERNAL: ""
       POSTGRES_SERVER: postgres_test
       POSTGRES_PORT: "5432"
       POSTGRES_DB: app_test
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      REDIS_URL: redis://redis:6379/0
+      MONGODB_URL: ""
+      SENTRY_DSN: ""
 
   backend:
     environment:
+      ENVIRONMENT: local
+      FRONTEND_HOST: http://localhost:5173
+      BACKEND_CORS_ORIGINS: http://localhost:5173
       DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres_test:5432/app_test
+      DATABASE_URL_PRODUCTION_INTERNAL: ""
       POSTGRES_SERVER: postgres_test
       POSTGRES_PORT: "5432"
       POSTGRES_DB: app_test
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      REDIS_URL: redis://redis:6379/0
+      MONGODB_URL: ""
+      SENTRY_DSN: ""
 
   postgres_test:
     image: postgres:18

@@ -61,8 +61,8 @@ const ProfileValidationPanel = ({
       >
         <Text fontWeight="bold">Profile validation gate</Text>
         <Text mt={2} color="ui.secondaryText">
-          Add the required influencer usernames first to enable validation and
-          the rest of the workflow.
+          Add the required creator usernames first to enable validation and the
+          rest of the workflow.
         </Text>
       </Box>
     )

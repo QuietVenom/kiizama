@@ -5,6 +5,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Any
 
+import httpx
 from kiizama_scrape_core.ig_scraper.schemas import (
     InstagramBatchCountersSchema,
     InstagramBatchScrapeRequest,
@@ -22,6 +23,8 @@ from kiizama_scrape_core.ig_scraper.service import (
 from kiizama_scrape_core.ig_scraper.types.session_validator import (
     configure_credentials_store_resolver,
 )
+from pymongo.errors import PyMongoError
+from redis.exceptions import RedisError
 
 from app.features.ig_scraper_jobs import get_instagram_job_queue_spec
 from app.features.ig_scraper_runtime import (
@@ -31,6 +34,7 @@ from app.features.ig_scraper_runtime import (
 )
 from app.features.job_control import (
     JobControlRepository,
+    JobControlUnavailableError,
     JobWorkerRuntime,
     QueuedJobMessage,
 )
@@ -50,6 +54,11 @@ from scrape_worker.types import BackendCompletionPort, WorkerRuntimePort
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("scrape_worker")
 TERMINAL_ACK_STATUS_CODES = frozenset({200, 409})
+MAX_DEPENDENCY_BACKOFF_SECONDS = 30.0
+
+
+class WorkerDependencyUnavailableError(RuntimeError):
+    """Raised when a transient external dependency is unavailable."""
 
 
 def _settings() -> WorkerSettings:
@@ -83,6 +92,55 @@ def _attempt_exhausted(attempt: int) -> bool:
 
 def _should_ack_completion_result(result: WorkerBackendCompletionResult) -> bool:
     return result.status_code in TERMINAL_ACK_STATUS_CODES
+
+
+def _next_dependency_backoff_seconds(previous_delay: float | None) -> float:
+    base_delay = _settings().poll_seconds
+    if previous_delay is None:
+        return base_delay
+    return min(previous_delay * 2, MAX_DEPENDENCY_BACKOFF_SECONDS)
+
+
+def _is_backend_dependency_error(exc: Exception) -> bool:
+    if isinstance(exc, httpx.TransportError):
+        return True
+    if isinstance(exc, httpx.HTTPStatusError):
+        return exc.response.status_code >= 500
+    return False
+
+
+def _is_dependency_error(exc: Exception) -> bool:
+    return isinstance(
+        exc,
+        (
+            WorkerDependencyUnavailableError,
+            JobControlUnavailableError,
+            PyMongoError,
+            RedisError,
+        ),
+    ) or _is_backend_dependency_error(exc)
+
+
+async def _ensure_worker_dependencies_ready(runtime: WorkerRuntimePort) -> None:
+    database = get_worker_mongo_database()
+    try:
+        ping_response = await database.command("ping")
+    except PyMongoError as exc:
+        raise WorkerDependencyUnavailableError(
+            "MongoDB is unavailable for scrape worker."
+        ) from exc
+
+    if int(ping_response.get("ok", 0)) != 1:
+        raise WorkerDependencyUnavailableError("MongoDB ping failed for scrape worker.")
+
+    redis = get_worker_redis_client()
+    try:
+        await redis.ping()
+        await runtime.ensure_consumer_group()
+    except (JobControlUnavailableError, RedisError, RuntimeError) as exc:
+        raise WorkerDependencyUnavailableError(
+            "Redis is unavailable for scrape worker."
+        ) from exc
 
 
 async def execute_job_payload(
@@ -170,6 +228,10 @@ async def process_message(
             except asyncio.CancelledError:
                 raise
             except Exception as exc:
+                if _is_dependency_error(exc):
+                    raise WorkerDependencyUnavailableError(
+                        f"Dependency unavailable while executing job {handle.job_id}."
+                    ) from exc
                 logger.exception("Scrape job %s failed: %s", handle.job_id, exc)
                 summary = _build_exhausted_summary(handle.message.payload).model_copy(
                     update={"error": _truncate_error(str(exc))}
@@ -184,17 +246,24 @@ async def process_message(
             )
             return
 
-        completion_result = await backend_client.complete_job(
-            job_id=handle.job_id,
-            payload=InstagramScrapeJobTerminalizationRequest(
-                status=status,
-                attempt=handle.attempt,
-                worker_id=settings.worker_id,
-                completed_at=datetime.now(timezone.utc),
-                summary=summary,
-                error=error,
-            ),
-        )
+        try:
+            completion_result = await backend_client.complete_job(
+                job_id=handle.job_id,
+                payload=InstagramScrapeJobTerminalizationRequest(
+                    status=status,
+                    attempt=handle.attempt,
+                    worker_id=settings.worker_id,
+                    completed_at=datetime.now(timezone.utc),
+                    summary=summary,
+                    error=error,
+                ),
+            )
+        except Exception as exc:
+            if _is_dependency_error(exc):
+                raise WorkerDependencyUnavailableError(
+                    f"Dependency unavailable while finalizing job {handle.job_id}."
+                ) from exc
+            raise
         ack = _should_ack_completion_result(completion_result)
         if not ack:
             logger.warning(
@@ -215,13 +284,6 @@ async def worker_loop() -> None:
         )
     )
 
-    ping_response = await database.command("ping")
-    if int(ping_response.get("ok", 0)) != 1:
-        raise RuntimeError("Problem connecting to database cluster.")
-
-    redis = get_worker_redis_client()
-    await redis.ping()
-
     repository = JobControlRepository(
         spec=get_instagram_job_queue_spec(),
         redis_provider=get_worker_redis_client,
@@ -233,7 +295,6 @@ async def worker_loop() -> None:
         heartbeat_seconds=settings.heartbeat_seconds,
         poll_seconds=settings.poll_seconds,
     )
-    await runtime.ensure_consumer_group()
 
     backend_client = ScrapeWorkerBackendClient(base_url=settings.backend_base_url)
     logger.info(
@@ -245,17 +306,65 @@ async def worker_loop() -> None:
         settings.max_attempts,
     )
 
+    dependency_backoff_seconds: float | None = None
+
+    async def enter_degraded_mode(exc: Exception, *, context: str) -> None:
+        nonlocal dependency_backoff_seconds
+
+        delay = _next_dependency_backoff_seconds(dependency_backoff_seconds)
+        if dependency_backoff_seconds is None:
+            logger.exception(
+                "Worker entering degraded mode while %s. Retrying in %.2fs.",
+                context,
+                delay,
+            )
+        else:
+            logger.warning(
+                "Worker still waiting on dependencies while %s. Retrying in %.2fs: %s",
+                context,
+                delay,
+                exc,
+            )
+        dependency_backoff_seconds = delay
+        await asyncio.sleep(delay)
+
+    def reset_degraded_mode() -> None:
+        nonlocal dependency_backoff_seconds
+        if dependency_backoff_seconds is None:
+            return
+        logger.info("Worker dependencies recovered. Resuming scrape job polling.")
+        dependency_backoff_seconds = None
+
     try:
+        while True:
+            try:
+                await _ensure_worker_dependencies_ready(runtime)
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                if _is_dependency_error(exc):
+                    await enter_degraded_mode(
+                        exc,
+                        context="verifying worker dependencies",
+                    )
+                    continue
+                raise
+            break
+
         while True:
             try:
                 messages = await runtime.poll_messages()
             except asyncio.CancelledError:
                 raise
             except Exception as exc:
+                if _is_dependency_error(exc):
+                    await enter_degraded_mode(exc, context="polling scrape jobs")
+                    continue
                 logger.exception("Failed to poll scrape jobs: %s", exc)
                 await asyncio.sleep(settings.poll_seconds)
                 continue
 
+            dependency_failure = False
             for message in messages:
                 try:
                     await process_message(
@@ -266,11 +375,25 @@ async def worker_loop() -> None:
                 except asyncio.CancelledError:
                     raise
                 except Exception as exc:
+                    if _is_dependency_error(exc):
+                        dependency_failure = True
+                        await enter_degraded_mode(
+                            exc,
+                            context=(
+                                f"handling scrape job "
+                                f"{getattr(message, 'job_id', '<unknown>')}"
+                            ),
+                        )
+                        break
                     logger.exception(
                         "Unexpected worker failure while handling job %s: %s",
                         getattr(message, "job_id", "<unknown>"),
                         exc,
                     )
+            if dependency_failure:
+                continue
+
+            reset_degraded_mode()
     finally:
         await backend_client.aclose()
 
@@ -286,9 +409,14 @@ async def run() -> None:
 __all__ = [
     "TERMINAL_ACK_STATUS_CODES",
     "_attempt_exhausted",
+    "_ensure_worker_dependencies_ready",
+    "_is_backend_dependency_error",
+    "_is_dependency_error",
+    "_next_dependency_backoff_seconds",
     "_should_ack_completion_result",
     "execute_job_payload",
     "process_message",
     "run",
+    "WorkerDependencyUnavailableError",
     "worker_loop",
 ]

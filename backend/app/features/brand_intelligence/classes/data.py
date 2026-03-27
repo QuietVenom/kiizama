@@ -146,7 +146,7 @@ CAMPAIGN_TYPE_OPTIONS: tuple[CampaignTypeOption, ...] = (
         title='"UGC creators (no importa el follower count)"',
         value=(
             "Mix: 10-50 UGC creators (a veces <10k). Objetivo: producir "
-            "anuncios/contenido para paid sin pagar influencer rates. Ideal para: "
+            "anuncios/contenido para paid sin pagar creator rates. Ideal para: "
             "performance ads (Meta/TikTok). Clave: pagar por produccion + derechos "
             "de uso; no por reach."
         ),
