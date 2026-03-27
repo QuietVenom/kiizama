@@ -66,8 +66,11 @@ def build_influencer_profiles_directory(
                     mentions_per_post=safe_float(post_metrics.get("mentions_per_post")),
                     total_reels=safe_int(reel_metrics.get("total_reels")),
                     total_plays=safe_int(reel_metrics.get("total_plays")),
-                    overall_engagement_rate=safe_float(
-                        metrics_data.get("overall_engagement_rate")
+                    overall_post_engagement_rate=safe_float(
+                        metrics_data.get("overall_post_engagement_rate")
+                    ),
+                    reel_engagement_rate_on_plays=safe_float(
+                        metrics_data.get("reel_engagement_rate_on_plays")
                     ),
                 ),
             )
@@ -157,8 +160,11 @@ def build_creator_metrics_snapshot(
         "mentions_per_post": safe_float(post_metrics.get("mentions_per_post")),
         "total_reels": safe_int(reel_metrics.get("total_reels")),
         "total_plays": safe_int(reel_metrics.get("total_plays")),
-        "overall_engagement_rate": safe_float(
-            metrics_data.get("overall_engagement_rate")
+        "overall_post_engagement_rate": safe_float(
+            metrics_data.get("overall_post_engagement_rate")
+        ),
+        "reel_engagement_rate_on_plays": safe_float(
+            metrics_data.get("reel_engagement_rate_on_plays")
         ),
     }
 

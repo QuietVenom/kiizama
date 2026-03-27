@@ -141,8 +141,6 @@ prepare_playwright_env_file() {
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "POSTGRES_TEST_PASSWORD" "postgres"
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "POSTGRES_TEST_PORT" "55432"
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "REDIS_URL" "redis://redis:6379/0"
-  upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "MONGODB_URL" ""
-  upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "IG_SCRAPE_WORKER_MONGODB_URL" ""
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "CI" ""
 }
 
@@ -218,8 +216,6 @@ run_backend() {
 
   DATABASE_URL="$LOCAL_TEST_DB_URL" \
   REDIS_URL="$LOCAL_TEST_REDIS_URL" \
-  MONGODB_URL="" \
-  IG_SCRAPE_WORKER_MONGODB_URL="" \
     uv run bash scripts/prestart.sh
 
   if [[ $# -gt 0 ]]; then
@@ -227,16 +223,12 @@ run_backend() {
     DATABASE_URL="$LOCAL_TEST_DB_URL" \
     TEST_DATABASE_URL="$LOCAL_TEST_DB_URL" \
     REDIS_URL="$LOCAL_TEST_REDIS_URL" \
-    MONGODB_URL="" \
-    IG_SCRAPE_WORKER_MONGODB_URL="" \
       uv run pytest "$@"
   else
     log "Running backend CI-like test script..."
     DATABASE_URL="$LOCAL_TEST_DB_URL" \
     TEST_DATABASE_URL="$LOCAL_TEST_DB_URL" \
     REDIS_URL="$LOCAL_TEST_REDIS_URL" \
-    MONGODB_URL="" \
-    IG_SCRAPE_WORKER_MONGODB_URL="" \
       uv run bash scripts/tests-start.sh
   fi
 }

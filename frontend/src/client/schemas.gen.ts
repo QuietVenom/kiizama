@@ -1478,18 +1478,22 @@ export const MetricsSchema = {
         reel_metrics: {
             '$ref': '#/components/schemas/ReelMetrics'
         },
-        overall_engagement_rate: {
+        overall_post_engagement_rate: {
             type: 'number',
-            title: 'Overall Engagement Rate'
+            title: 'Overall Post Engagement Rate'
+        },
+        reel_engagement_rate_on_plays: {
+            type: 'number',
+            title: 'Reel Engagement Rate On Plays'
         }
     },
     type: 'object',
-    required: ['post_metrics', 'reel_metrics', 'overall_engagement_rate'],
+    required: ['post_metrics', 'reel_metrics', 'overall_post_engagement_rate', 'reel_engagement_rate_on_plays'],
     title: 'Metrics',
     description: 'Container for metrics derived from posts and reels.',
     example: {
         id: '65c2f0b7f6b7a8c1c3d4e5f8',
-        overall_engagement_rate: 0.5734,
+        overall_post_engagement_rate: 0.5734,
         post_metrics: {
             avg_comments: 718.66,
             avg_engagement_rate: 0.0477,
@@ -1500,6 +1504,7 @@ export const MetricsSchema = {
             total_likes: 838104,
             total_posts: 12
         },
+        reel_engagement_rate_on_plays: 0.1435,
         reel_metrics: {
             avg_plays: 221915.66,
             avg_reel_comments: 390.25,
@@ -2719,7 +2724,7 @@ export const UpdateMetricsSchema = {
                 }
             ]
         },
-        overall_engagement_rate: {
+        overall_post_engagement_rate: {
             anyOf: [
                 {
                     type: 'number'
@@ -2728,14 +2733,26 @@ export const UpdateMetricsSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Overall Engagement Rate'
+            title: 'Overall Post Engagement Rate'
+        },
+        reel_engagement_rate_on_plays: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reel Engagement Rate On Plays'
         }
     },
     type: 'object',
     title: 'UpdateMetrics',
     description: 'A set of optional updates to metrics.',
     example: {
-        overall_engagement_rate: 0.5734
+        overall_post_engagement_rate: 0.5734,
+        reel_engagement_rate_on_plays: 0.1435
     }
 } as const;
 

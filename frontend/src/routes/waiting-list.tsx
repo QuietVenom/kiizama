@@ -69,7 +69,7 @@ export const Route = createFileRoute("/waiting-list")({
   beforeLoad: async () => {
     if (isLoggedIn()) {
       throw redirect({
-        to: "/app",
+        to: "/overview",
       })
     }
   },

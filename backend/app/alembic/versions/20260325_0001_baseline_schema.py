@@ -16,6 +16,8 @@ depends_on = None
 
 
 def upgrade() -> None:
+    op.execute("CREATE SCHEMA IF NOT EXISTS private")
+
     op.create_table(
         "user",
         sa.Column("email", sa.String(length=255), nullable=False),
@@ -25,8 +27,15 @@ def upgrade() -> None:
         sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("hashed_password", sa.String(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
+        schema="private",
     )
-    op.create_index(op.f("ix_user_email"), "user", ["email"], unique=True)
+    op.create_index(
+        "ix_private_user_email",
+        "user",
+        ["email"],
+        unique=True,
+        schema="private",
+    )
 
     op.create_table(
         "lu_admin_role",
@@ -34,12 +43,14 @@ def upgrade() -> None:
         sa.Column("code", sa.String(length=50), nullable=False),
         sa.Column("description", sa.String(length=255), nullable=True),
         sa.PrimaryKeyConstraint("id"),
+        schema="private",
     )
     op.create_index(
-        op.f("ix_lu_admin_role_code"),
+        "ix_private_lu_admin_role_code",
         "lu_admin_role",
         ["code"],
         unique=True,
+        schema="private",
     )
 
     op.create_table(
@@ -51,14 +62,16 @@ def upgrade() -> None:
         sa.Column("role_id", sa.Integer(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(["role_id"], ["lu_admin_role.id"]),
+        sa.ForeignKeyConstraint(["role_id"], ["private.lu_admin_role.id"]),
         sa.PrimaryKeyConstraint("id"),
+        schema="private",
     )
     op.create_index(
-        op.f("ix_user_admin_email"),
+        "ix_private_user_admin_email",
         "user_admin",
         ["email"],
         unique=True,
+        schema="private",
     )
 
     op.create_table(
@@ -71,12 +84,14 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
+        schema="private",
     )
     op.create_index(
-        op.f("ix_feature_flag_key"),
+        "ix_private_feature_flag_key",
         "feature_flag",
         ["key"],
         unique=True,
+        schema="private",
     )
 
     op.create_table(
@@ -94,12 +109,14 @@ def upgrade() -> None:
         sa.Column("changed_by_email", sa.String(length=255), nullable=True),
         sa.Column("changed_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
+        schema="private",
     )
     op.create_index(
-        op.f("ix_feature_flag_audit_feature_flag_key"),
+        "ix_private_feature_flag_audit_feature_flag_key",
         "feature_flag_audit",
         ["feature_flag_key"],
         unique=False,
+        schema="private",
     )
 
     op.create_table(
@@ -109,33 +126,52 @@ def upgrade() -> None:
         sa.Column("interest", sa.String(length=64), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
+        schema="private",
     )
     op.create_index(
-        op.f("ix_waiting_list_email"),
+        "ix_private_waiting_list_email",
         "waiting_list",
         ["email"],
         unique=True,
+        schema="private",
     )
 
 
 def downgrade() -> None:
-    op.drop_index(op.f("ix_waiting_list_email"), table_name="waiting_list")
-    op.drop_table("waiting_list")
+    op.drop_index(
+        "ix_private_waiting_list_email",
+        table_name="waiting_list",
+        schema="private",
+    )
+    op.drop_table("waiting_list", schema="private")
 
     op.drop_index(
-        op.f("ix_feature_flag_audit_feature_flag_key"),
+        "ix_private_feature_flag_audit_feature_flag_key",
         table_name="feature_flag_audit",
+        schema="private",
     )
-    op.drop_table("feature_flag_audit")
+    op.drop_table("feature_flag_audit", schema="private")
 
-    op.drop_index(op.f("ix_feature_flag_key"), table_name="feature_flag")
-    op.drop_table("feature_flag")
+    op.drop_index(
+        "ix_private_feature_flag_key",
+        table_name="feature_flag",
+        schema="private",
+    )
+    op.drop_table("feature_flag", schema="private")
 
-    op.drop_index(op.f("ix_user_admin_email"), table_name="user_admin")
-    op.drop_table("user_admin")
+    op.drop_index(
+        "ix_private_user_admin_email",
+        table_name="user_admin",
+        schema="private",
+    )
+    op.drop_table("user_admin", schema="private")
 
-    op.drop_index(op.f("ix_lu_admin_role_code"), table_name="lu_admin_role")
-    op.drop_table("lu_admin_role")
+    op.drop_index(
+        "ix_private_lu_admin_role_code",
+        table_name="lu_admin_role",
+        schema="private",
+    )
+    op.drop_table("lu_admin_role", schema="private")
 
-    op.drop_index(op.f("ix_user_email"), table_name="user")
-    op.drop_table("user")
+    op.drop_index("ix_private_user_email", table_name="user", schema="private")
+    op.drop_table("user", schema="private")

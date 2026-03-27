@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -20,7 +21,6 @@ from kiizama_scrape_core.ig_scraper.service import (
     scrape_profiles_batch,
     scrape_recommendations_batch,
 )
-from kiizama_scrape_core.job_control.repository import JobControlUnavailableError
 
 from app.api.deps import (
     CurrentUser,
@@ -31,6 +31,11 @@ from app.api.deps import (
     get_profiles_collection,
     get_reels_collection,
 )
+from app.core.resilience import (
+    mark_dependency_failure,
+    mark_dependency_success,
+    translate_instagram_upstream_exception,
+)
 from app.features.ig_scraper_jobs import InstagramJobServiceDep
 from app.features.ig_scraper_runtime import (
     BackendInstagramProfileAnalysisService,
@@ -39,6 +44,7 @@ from app.features.ig_scraper_runtime import (
 )
 
 router = APIRouter(prefix="/ig-scraper", tags=["instagram"])
+logger = logging.getLogger(__name__)
 
 
 @router.post(
@@ -52,16 +58,10 @@ async def create_instagram_scrape_job(
     job_service: InstagramJobServiceDep,
 ) -> InstagramScrapeJobCreateResponse:
     """Enqueue an asynchronous Instagram scraping job."""
-    try:
-        job_id = await job_service.create_job(
-            payload=payload,
-            owner_user_id=str(current_user.id),
-        )
-    except JobControlUnavailableError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(exc),
-        ) from exc
+    job_id = await job_service.create_job(
+        payload=payload,
+        owner_user_id=str(current_user.id),
+    )
     return InstagramScrapeJobCreateResponse(job_id=job_id, status="queued")
 
 
@@ -72,13 +72,7 @@ async def get_instagram_scrape_job(
     job_service: InstagramJobServiceDep,
 ) -> InstagramScrapeJobStatusResponse:
     """Fetch status and summary for a scraping job."""
-    try:
-        job = await job_service.get_job(job_id=job_id)
-    except JobControlUnavailableError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(exc),
-        ) from exc
+    job = await job_service.get_job(job_id=job_id)
     if job is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -124,13 +118,51 @@ async def instagram_scrape_profiles_batch(
             early_response=early_response,
         )
 
-    response = await scrape_profiles_batch(payload)
+    try:
+        response = await scrape_profiles_batch(payload)
+    except Exception as exc:
+        translated = translate_instagram_upstream_exception(exc)
+        mark_dependency_failure(
+            "instagram_upstream",
+            context="ig-scraper-batch",
+            detail=translated.detail,
+            status="degraded",
+            exc=exc,
+        )
+        raise translated from exc
+    else:
+        mark_dependency_success(
+            "instagram_upstream",
+            context="ig-scraper-batch",
+            detail="Instagram upstream scrape completed successfully.",
+        )
 
-    # Always enrich with OpenAI categories/roles
     response = await enrich_with_ai_analysis(
         response,
         analysis_service=analysis_service,
     )
+    ai_errors = sorted(
+        {
+            ai_error
+            for result in response.results.values()
+            if (ai_error := getattr(result, "ai_error", None)) is not None
+        }
+    )
+    if ai_errors:
+        detail = f"AI enrichment skipped: {ai_errors[0]}"
+        mark_dependency_failure(
+            "openai",
+            context="ig-scraper-ai-enrichment",
+            detail=detail,
+            status="degraded",
+        )
+        logger.warning("AI enrichment skipped for ig-scraper batch: %s", ai_errors[0])
+    else:
+        mark_dependency_success(
+            "openai",
+            context="ig-scraper-ai-enrichment",
+            detail="OpenAI enrichment completed successfully.",
+        )
 
     response = await persist_scrape_results_to_db(
         response,
@@ -155,7 +187,24 @@ async def instagram_profiles_recommendations(
 ) -> InstagramBatchRecommendationsResponse:
     """Fetch recommended users for multiple Instagram profiles."""
     configure_backend_instagram_scraper_runtime()
-    return await scrape_recommendations_batch(payload)
+    try:
+        response = await scrape_recommendations_batch(payload)
+    except Exception as exc:
+        translated = translate_instagram_upstream_exception(exc)
+        mark_dependency_failure(
+            "instagram_upstream",
+            context="ig-scraper-recommendations",
+            detail=translated.detail,
+            status="degraded",
+            exc=exc,
+        )
+        raise translated from exc
+    mark_dependency_success(
+        "instagram_upstream",
+        context="ig-scraper-recommendations",
+        detail="Instagram recommendations completed successfully.",
+    )
+    return response
 
 
 __all__ = ["router"]

@@ -26,7 +26,7 @@ async def generate_instagram_report(
     collection: Any,
     payload: InstagramReportRequest | dict[str, Any],
 ) -> list[ReportFile]:
-    """Genera reportes de Instagram (HTML/PDF) desde snapshots en MongoDB."""
+    """Genera reportes de Instagram (HTML/PDF) desde snapshots persistidos."""
 
     if isinstance(payload, dict):
         request = InstagramReportRequest(**payload)

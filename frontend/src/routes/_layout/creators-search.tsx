@@ -13,7 +13,14 @@ import {
 } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import {
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import {
   FiAlertCircle,
   FiClock,
@@ -228,10 +235,14 @@ const syncLocalJobWithStatusResponse = (
     response,
     job.requestedUsernames,
   )
+  const nextStatus: CreatorsSearchJobStatus =
+    response.status === "done" || response.status === "failed"
+      ? response.status
+      : "queued"
 
   return {
     ...job,
-    status: response.status as CreatorsSearchJobStatus,
+    status: nextStatus,
     updatedAt: response.updated_at,
     readyUsernames:
       terminalPayload?.ready_usernames ??
@@ -283,11 +294,11 @@ const getJobStatusLabel = (status: CreatorsSearchJobStatus) => {
     return "Failed"
   }
 
-  if (status === "running") {
-    return "Running"
-  }
-
   return "Queued"
+}
+
+const scrollPageTopIntoView = (targetRef: RefObject<HTMLElement | null>) => {
+  targetRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
 }
 
 const JobUsernamesSection = ({
@@ -740,7 +751,7 @@ const CurrentJobDetailDialog = ({
         >
           {job ? (
             <Flex direction="column" gap={4}>
-              <SimpleGrid columns={{ base: 2, md: 4 }} gap={3}>
+              <SimpleGrid columns={{ base: 1, sm: 2, xl: 4 }} gap={3}>
                 <SearchOverviewCard
                   label="Requested"
                   tone="brand"
@@ -1074,7 +1085,12 @@ const SearchOverviewCard = ({
 
   return (
     <Box layerStyle="dashboardCard" px={5} py={5}>
-      <Flex alignItems="center" justifyContent="space-between" gap={4}>
+      <Flex
+        alignItems="flex-start"
+        justifyContent="space-between"
+        gap={4}
+        direction="column"
+      >
         <Flex alignItems="center" gap={3} minW={0}>
           <Flex
             boxSize="11"
@@ -1104,9 +1120,9 @@ const SearchOverviewCard = ({
         </Flex>
 
         <Text
-          flexShrink={0}
-          textAlign="right"
-          fontSize={{ base: "4xl", lg: "5xl" }}
+          w="full"
+          textAlign="center"
+          fontSize={{ base: "3xl", lg: "4xl" }}
           fontWeight="black"
           lineHeight="1"
         >
@@ -1157,6 +1173,7 @@ function CreatorsSearchPage() {
     string | null
   >(null)
   const reconcileJobsInFlightRef = useRef(false)
+  const pageTopRef = useRef<HTMLDivElement | null>(null)
 
   const invalidUsernames = useMemo(
     () => usernames.filter((username) => !isValidInstagramUsername(username)),
@@ -1255,57 +1272,68 @@ function CreatorsSearchPage() {
 
       persistSearchHistoryEntryMutation.mutate(payload)
     },
-    [persistSearchHistoryEntryMutation],
+    [persistSearchHistoryEntryMutation.mutate],
   )
 
-  const reconcileCurrentJobs = useCallback(async () => {
-    if (reconcileJobsInFlightRef.current) {
-      return
-    }
+  const reconcileCurrentJobs = useCallback(
+    async (trigger: string) => {
+      if (reconcileJobsInFlightRef.current) {
+        return
+      }
 
-    reconcileJobsInFlightRef.current = true
-
-    try {
       const jobsToReconcile = readCreatorsSearchJobs().filter(
-        (job) =>
-          job.status === "queued" ||
-          job.status === "running" ||
-          job.terminalPayload === null,
+        (job) => job.status === "queued" || job.terminalPayload === null,
       )
+      if (jobsToReconcile.length === 0) {
+        return
+      }
 
-      for (const job of jobsToReconcile) {
-        try {
-          const response = await InstagramService.getInstagramScrapeJob({
-            jobId: job.jobId,
+      reconcileJobsInFlightRef.current = true
+
+      try {
+        if (import.meta.env.DEV) {
+          console.debug("[creators-search] reconciling jobs", {
+            count: jobsToReconcile.length,
+            jobIds: jobsToReconcile.map((job) => job.jobId),
+            trigger,
           })
-          if (response.status === "done") {
-            const readyUsernames =
-              buildTerminalPayloadFromJobStatus(
-                response,
-                job.requestedUsernames,
-              )?.ready_usernames ??
-              getReadyUsernamesFromSummary(response.summary)
-            if (readyUsernames.length > 0) {
-              persistSearchHistoryEntry({
-                source: "ig-scrape-job",
-                job_id: response.job_id,
-                ready_usernames: readyUsernames,
-              })
+        }
+
+        for (const job of jobsToReconcile) {
+          try {
+            const response = await InstagramService.getInstagramScrapeJob({
+              jobId: job.jobId,
+            })
+            if (response.status === "done") {
+              const readyUsernames =
+                buildTerminalPayloadFromJobStatus(
+                  response,
+                  job.requestedUsernames,
+                )?.ready_usernames ??
+                getReadyUsernamesFromSummary(response.summary)
+              if (readyUsernames.length > 0) {
+                persistSearchHistoryEntry({
+                  source: "ig-scrape-job",
+                  job_id: response.job_id,
+                  ready_usernames: readyUsernames,
+                })
+              }
+            }
+            updateCreatorsSearchJob(job.jobId, (currentJob) =>
+              syncLocalJobWithStatusResponse(currentJob, response),
+            )
+          } catch (error) {
+            if (error instanceof ApiError && error.status === 404) {
+              removeCreatorsSearchJob(job.jobId)
             }
           }
-          updateCreatorsSearchJob(job.jobId, (currentJob) =>
-            syncLocalJobWithStatusResponse(currentJob, response),
-          )
-        } catch (error) {
-          if (error instanceof ApiError && error.status === 404) {
-            removeCreatorsSearchJob(job.jobId)
-          }
         }
+      } finally {
+        reconcileJobsInFlightRef.current = false
       }
-    } finally {
-      reconcileJobsInFlightRef.current = false
-    }
-  }, [persistSearchHistoryEntry])
+    },
+    [persistSearchHistoryEntry],
+  )
 
   const enqueueScrapeJobs = async (
     sourceBox: CreatorsSearchJobSourceBox,
@@ -1409,15 +1437,15 @@ function CreatorsSearchPage() {
         setExpiredJobsError(
           "An active scrape job already exists for these usernames.",
         )
-        return
       }
 
-      void reconcileCurrentJobs()
+      scrollPageTopIntoView(pageTopRef)
     },
     onError: (error) => {
       setExpiredJobsError(
         extractApiErrorMessage(error, "Unable to create scrape jobs."),
       )
+      scrollPageTopIntoView(pageTopRef)
     },
   })
 
@@ -1432,15 +1460,15 @@ function CreatorsSearchPage() {
         setMissingJobsError(
           "An active scrape job already exists for these usernames.",
         )
-        return
       }
 
-      void reconcileCurrentJobs()
+      scrollPageTopIntoView(pageTopRef)
     },
     onError: (error) => {
       setMissingJobsError(
         extractApiErrorMessage(error, "Unable to create scrape jobs."),
       )
+      scrollPageTopIntoView(pageTopRef)
     },
   })
 
@@ -1483,16 +1511,16 @@ function CreatorsSearchPage() {
   }, [persistSearchHistoryEntry])
 
   useEffect(() => {
-    void reconcileCurrentJobs()
+    void reconcileCurrentJobs("mount")
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        void reconcileCurrentJobs()
+        void reconcileCurrentJobs("visibility")
       }
     }
 
     const handleOnline = () => {
-      void reconcileCurrentJobs()
+      void reconcileCurrentJobs("online")
     }
 
     document.addEventListener("visibilitychange", handleVisibilityChange)
@@ -1537,7 +1565,7 @@ function CreatorsSearchPage() {
   }
 
   return (
-    <Box minH="100vh" bg="ui.page">
+    <Box ref={pageTopRef} minH="100vh" bg="ui.page">
       <DashboardTopbar />
 
       <Box px={{ base: 4, md: 7, lg: 10 }} py={{ base: 7, lg: 9 }}>
@@ -1897,7 +1925,7 @@ function CreatorsSearchPage() {
                       <Text mt={3} color="ui.secondaryText" fontSize="sm">
                         {canOpenDetail
                           ? "Click to review the terminal result."
-                          : "Waiting for the worker to finish this batch."}
+                          : "Waiting for completion."}
                       </Text>
                     </Box>
                   )

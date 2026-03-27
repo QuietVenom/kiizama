@@ -49,6 +49,7 @@ import {
 } from "@/features/brand-intelligence/utils"
 import useCustomToast from "@/hooks/useCustomToast"
 import { extractApiErrorMessage } from "@/lib/api-errors"
+import { autofillIgnoreProps } from "@/lib/autofill"
 import { isValidInstagramUsername } from "@/lib/instagram-usernames"
 import { saveLocalReport } from "@/lib/local-reports"
 import { downloadBlob } from "@/lib/report-files"
@@ -520,6 +521,7 @@ const CampaignStrategyBuilder = ({
   return (
     <Box
       as="form"
+      {...autofillIgnoreProps}
       onSubmit={handleSubmit(onSubmit)}
       display="grid"
       gridTemplateColumns={{ base: "1fr", xl: "minmax(0, 1.65fr) 360px" }}
@@ -546,6 +548,7 @@ const CampaignStrategyBuilder = ({
                 {...register("brand_goals_type", {
                   required: "Select the primary brand goal.",
                 })}
+                {...autofillIgnoreProps}
                 {...inputStyles}
               >
                 <option value="">Select a goal</option>
@@ -758,6 +761,7 @@ const CampaignStrategyBuilder = ({
                   message: "Use 120 characters or less.",
                 },
               })}
+              {...autofillIgnoreProps}
               {...inputStyles}
               disabled={!isWorkflowUnlocked}
               maxLength={120}
@@ -795,6 +799,7 @@ const CampaignStrategyBuilder = ({
                     message: "Use 500 characters or less.",
                   },
                 })}
+                {...autofillIgnoreProps}
                 {...inputStyles}
                 disabled={!isWorkflowUnlocked}
                 maxLength={500}
@@ -828,6 +833,7 @@ const CampaignStrategyBuilder = ({
                     message: "Use 500 characters or less.",
                   },
                 })}
+                {...autofillIgnoreProps}
                 {...inputStyles}
                 disabled={!isWorkflowUnlocked}
                 maxLength={500}
@@ -920,6 +926,7 @@ const CampaignStrategyBuilder = ({
                   {...register("timeframe", {
                     required: "Select the timeframe.",
                   })}
+                  {...autofillIgnoreProps}
                   {...inputStyles}
                 >
                   <option value="">Select a timeframe</option>
@@ -948,6 +955,7 @@ const CampaignStrategyBuilder = ({
                   {...register("campaign_type", {
                     required: "Select the campaign type.",
                   })}
+                  {...autofillIgnoreProps}
                   {...inputStyles}
                 >
                   <option value="">Select a campaign model</option>

@@ -4,7 +4,10 @@ from typing import Any
 import pytest
 from fastapi import Request
 
-from app.features.user_events.repository import UserEventsRepository
+from app.features.user_events.repository import (
+    UserEventsRepository,
+    UserEventsUnavailableError,
+)
 from app.features.user_events.schemas import UserEventEnvelope, UserStreamEntry
 from app.features.user_events.service import UserEventStreamService
 
@@ -215,3 +218,21 @@ def test_stream_events_preserves_cancelled_error() -> None:
 
     with pytest.raises(asyncio.CancelledError):
         _run(anext(iterator))
+
+
+def test_stream_events_closes_cleanly_when_repository_is_unavailable() -> None:
+    service = UserEventStreamService(
+        repository=FakeUserEventsRepository(
+            [UserEventsUnavailableError("Redis is unavailable for user events.")]
+        ),
+        read_block_ms=1,
+    )
+    iterator = service.stream_events(
+        FakeRequest(),
+        user_id="user-1",
+        last_event_id=None,
+    )
+
+    event = _run(_collect_first(iterator))
+
+    assert event.retry == 30_000

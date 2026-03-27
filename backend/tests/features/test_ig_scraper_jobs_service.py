@@ -197,7 +197,7 @@ def test_create_job_rolls_back_projection_when_enqueue_fails() -> None:
     assert jobs_collection.docs == {}
 
 
-def test_get_job_merges_redis_state_over_mongo_projection() -> None:
+def test_get_job_merges_redis_state_over_persisted_projection() -> None:
     jobs_collection = FakeJobsCollection()
     job_control_repository = FakeJobControlRepository()
     service = _service(

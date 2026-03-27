@@ -7,8 +7,14 @@ from collections.abc import AsyncIterator
 from fastapi import Request
 from fastapi.sse import ServerSentEvent
 from pydantic import ValidationError
+from redis.exceptions import RedisError
 
 from app.core.config import settings
+from app.core.resilience import (
+    mark_dependency_failure,
+    mark_dependency_success,
+    translate_redis_exception,
+)
 
 from .repository import (
     UserEventsRepository,
@@ -18,6 +24,7 @@ from .repository import (
 from .schemas import UserEventEnvelope
 
 logger = logging.getLogger(__name__)
+SSE_DEGRADED_RETRY_MS = 30_000
 
 
 class UserEventStreamService:
@@ -32,6 +39,35 @@ class UserEventStreamService:
 
     def assert_available(self) -> None:
         self._repository.assert_available()
+
+    async def assert_connection_available(self) -> None:
+        try:
+            redis = self._repository.require_redis_client()
+            await asyncio.wait_for(redis.ping(), timeout=1.0)
+        except (
+            UserEventsUnavailableError,
+            RedisError,
+            RuntimeError,
+            TimeoutError,
+        ) as exc:
+            translated = translate_redis_exception(
+                exc,
+                detail="Redis is unavailable for user events.",
+            )
+            mark_dependency_failure(
+                "redis",
+                context="user-event-sse-connect",
+                detail=translated.detail,
+                status="degraded",
+                exc=exc,
+            )
+            raise translated from exc
+        else:
+            mark_dependency_success(
+                "redis",
+                context="user-event-sse-connect",
+                detail="Redis is healthy for user events.",
+            )
 
     def stream_events(
         self,
@@ -79,6 +115,20 @@ class UserEventStreamService:
                     )
         except asyncio.CancelledError:
             raise
+        except UserEventsUnavailableError as exc:
+            translated = translate_redis_exception(
+                exc,
+                detail="Redis is unavailable for user events.",
+            )
+            mark_dependency_failure(
+                "redis",
+                context="user-event-sse-stream",
+                detail=translated.detail,
+                status="degraded",
+                exc=exc,
+            )
+            yield ServerSentEvent(retry=SSE_DEGRADED_RETRY_MS)
+            return
         except Exception:
             logger.exception("User event SSE stream failed for user %s.", user_id)
 

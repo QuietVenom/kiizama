@@ -1,19 +1,17 @@
 from collections.abc import Callable, Generator
 from dataclasses import dataclass
-from typing import Annotated, Any, Literal
+from typing import Annotated, Literal
 
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
-from pymongo.asynchronous.collection import AsyncCollection
 from sqlmodel import Session
 
 from app.core import security
 from app.core.config import settings
 from app.core.db import engine
-from app.core.mongodb import get_mongo_kiizama_ig
 from app.models import LuAdminRole, TokenPayload, User, UserAdmin
 
 reusable_oauth2 = OAuth2PasswordBearer(
@@ -81,6 +79,21 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
+def get_current_user_id(token: TokenDep) -> str:
+    token_data = _decode_token_payload(token)
+
+    with Session(engine) as session:
+        user = session.get(User, token_data.sub)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        if not user.is_active:
+            raise HTTPException(status_code=400, detail="Inactive user")
+        return str(user.id)
+
+
+CurrentUserId = Annotated[str, Depends(get_current_user_id)]
+
+
 def get_current_active_superuser(current_user: CurrentUser) -> User:
     if not current_user.is_superuser:
         raise HTTPException(
@@ -130,7 +143,6 @@ CurrentSystemAdminAuth = Annotated[
     AdminAuthContext,
     Depends(get_current_system_admin_auth),
 ]
-MongoCollection = AsyncCollection[dict[str, Any]]
 
 
 def require_superuser_or_admin_roles(
@@ -176,31 +188,21 @@ def require_superuser_or_admin_roles(
     return dependency
 
 
-def get_profiles_collection() -> MongoCollection:
-    db = get_mongo_kiizama_ig()
-    return db.get_collection("profiles")
+def get_profiles_collection(session: SessionDep) -> Session:
+    return session
 
 
-def get_posts_collection() -> MongoCollection:
-    db = get_mongo_kiizama_ig()
-    return db.get_collection("posts")
+def get_posts_collection(session: SessionDep) -> Session:
+    return session
 
 
-def get_reels_collection() -> MongoCollection:
-    db = get_mongo_kiizama_ig()
-    return db.get_collection("reels")
+def get_reels_collection(session: SessionDep) -> Session:
+    return session
 
 
-def get_metrics_collection() -> MongoCollection:
-    db = get_mongo_kiizama_ig()
-    return db.get_collection("metrics")
+def get_metrics_collection(session: SessionDep) -> Session:
+    return session
 
 
-def get_profile_snapshots_collection() -> MongoCollection:
-    db = get_mongo_kiizama_ig()
-    return db.get_collection("profile_snapshots")
-
-
-def get_ig_credentials_collection() -> MongoCollection:
-    db = get_mongo_kiizama_ig()
-    return db.get_collection("ig_credentials")
+def get_profile_snapshots_collection(session: SessionDep) -> Session:
+    return session

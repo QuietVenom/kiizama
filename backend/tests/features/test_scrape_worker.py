@@ -17,7 +17,7 @@ from kiizama_scrape_core.ig_scraper.schemas import (
     InstagramBatchScrapeSummaryResponse,
     InstagramBatchUsernameStatus,
 )
-from pymongo.errors import ConnectionFailure
+from sqlalchemy.exc import OperationalError
 
 from app.features.job_control import (
     JobControlUnavailableError,
@@ -40,7 +40,10 @@ def _ensure_repo_root_on_path() -> None:
 @pytest.fixture(autouse=True)
 def _configure_worker_env(monkeypatch: pytest.MonkeyPatch) -> None:
     _ensure_repo_root_on_path()
-    monkeypatch.setenv("MONGODB_URL", "mongodb://localhost:27017/kiizama_test")
+    monkeypatch.setenv(
+        "DATABASE_URL",
+        "postgresql+psycopg://postgres:postgres@localhost:55432/app_test",
+    )
     monkeypatch.setenv("REDIS_URL", "redis://localhost:6379/0")
     monkeypatch.setenv("SECRET_KEY_IG_CREDENTIALS", "test-secret-key-ig")
     monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
@@ -360,7 +363,7 @@ def test_process_message_leaves_job_pending_when_backend_transport_is_unavailabl
     assert runtime.finished == [(runtime.handle, False)]
 
 
-def test_process_message_leaves_job_pending_when_mongo_is_unavailable(
+def test_process_message_leaves_job_pending_when_postgres_is_unavailable(
     monkeypatch: Any,
 ) -> None:
     runtime = FakeRuntime(_handle())
@@ -369,7 +372,11 @@ def test_process_message_leaves_job_pending_when_mongo_is_unavailable(
     async def fake_execute_job_payload(
         payload: dict[str, Any],
     ) -> tuple[Any, str | None]:
-        raise ConnectionFailure(f"mongo unavailable: {payload!r}")
+        raise OperationalError(
+            statement="select 1",
+            params=payload,
+            orig=RuntimeError("postgres unavailable"),
+        )
 
     _worker_modules()
     monkeypatch.setattr(
@@ -396,14 +403,6 @@ def test_worker_loop_uses_exponential_backoff_and_recovers_from_dependency_loss(
     _completion_result_cls, _settings_obj, worker_module = _worker_modules()
     caplog.set_level(logging.INFO, logger="scrape_worker")
 
-    class FakeDatabase:
-        async def command(self, name: str) -> dict[str, int]:
-            assert name == "ping"
-            return {"ok": 1}
-
-        def get_collection(self, name: str) -> dict[str, str]:
-            return {"name": name}
-
     class FakeRedis:
         async def ping(self) -> bool:
             return True
@@ -426,7 +425,6 @@ def test_worker_loop_uses_exponential_backoff_and_recovers_from_dependency_loss(
                 return []
             raise asyncio.CancelledError
 
-    fake_database = FakeDatabase()
     fake_redis = FakeRedis()
     fake_runtime = FakeRuntimeLoop()
     fake_backend_client = FakeBackendClient(_completion_result(status_code=200))
@@ -442,14 +440,10 @@ def test_worker_loop_uses_exponential_backoff_and_recovers_from_dependency_loss(
     )
     monkeypatch.setattr(
         worker_module,
-        "get_worker_mongo_database",
-        lambda: fake_database,
-    )
-    monkeypatch.setattr(
-        worker_module,
         "get_worker_redis_client",
         lambda: fake_redis,
     )
+    monkeypatch.setattr(worker_module, "ping_postgres", lambda: None)
     monkeypatch.setattr(
         worker_module,
         "JobControlRepository",

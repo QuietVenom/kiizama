@@ -13,7 +13,6 @@ Set required values before running services locally:
 - `SECRET_KEY`
 - `SECRET_KEY_IG_CREDENTIALS`
 - `FIRST_SUPERUSER_PASSWORD`
-- `MONGODB_URL`
 - `OPENAI_API_KEY`
 
 ## Docker Compose
@@ -72,7 +71,7 @@ backend/.venv/bin/python -m playwright install chromium
 The project supports asynchronous Instagram scraping jobs with:
 
 - `Redis` for queueing, live job state, lease ownership, heartbeat, retry recovery, and terminal dedupe
-- `MongoDB` for the persisted scrape result plus a TTL-backed job projection for queries and history
+- `Postgres` for persisted scrape results and the queryable job projection
 
 Relevant endpoints:
 
@@ -92,7 +91,7 @@ Relevant endpoints:
 Ownership rules:
 
 - Redis is the source of truth for live job lifecycle
-- MongoDB stores the queryable job projection and persisted scrape result
+- Postgres stores the queryable job projection and persisted scrape result
 - the backend is the only component that accepts terminal completion and emits the final SSE event
 
 ### Worker process

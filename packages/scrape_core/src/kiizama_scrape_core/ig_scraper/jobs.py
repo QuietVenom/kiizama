@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from pymongo.asynchronous.collection import AsyncCollection
+from kiizama_scrape_core.job_control.schemas import JobQueueSpec
 
 from .schemas import (
     InstagramBatchScrapeSummaryResponse,
@@ -15,22 +15,16 @@ JOB_COLLECTION_NAME = "ig_scrape_jobs"
 JOB_TTL_HOURS = 24
 JOB_STATUS_VALUES = {"queued", "running", "done", "failed"}
 JobDocument = dict[str, Any]
-JobsCollection = AsyncCollection[JobDocument]
 
 
-async def ensure_job_indexes(jobs: JobsCollection) -> None:
-    await jobs.create_index(
-        [("expiresAt", 1)],
-        expireAfterSeconds=0,
-        name="ttl_ig_scrape_jobs_expires_at",
-    )
-    await jobs.create_index(
-        [("ownerUserId", 1), ("createdAt", -1)],
-        name="idx_ig_scrape_jobs_owner_created_at",
-    )
-    await jobs.create_index(
-        [("status", 1), ("createdAt", 1)],
-        name="idx_ig_scrape_jobs_status_created_at",
+def build_instagram_job_queue_spec(
+    state_ttl_seconds: int,
+    queue_maxlen: int,
+) -> JobQueueSpec:
+    return JobQueueSpec(
+        domain="ig-scrape",
+        state_ttl_seconds=state_ttl_seconds,
+        queue_maxlen=queue_maxlen,
     )
 
 
@@ -122,9 +116,9 @@ def serialize_job_document(doc: dict[str, Any]) -> InstagramScrapeJobStatusRespo
 __all__ = [
     "JOB_COLLECTION_NAME",
     "JOB_STATUS_VALUES",
+    "build_instagram_job_queue_spec",
     "build_job_projection_document",
     "default_job_expires_at",
-    "ensure_job_indexes",
     "build_job_references",
     "serialize_job_document",
 ]

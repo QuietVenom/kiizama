@@ -5,6 +5,13 @@ import json
 from collections.abc import Callable, Mapping
 from typing import Any, Literal, Protocol, TypeAlias, overload
 
+from app.core.resilience import (
+    UpstreamBadResponseError,
+    mark_dependency_failure,
+    mark_dependency_success,
+    translate_openai_exception,
+)
+
 from .classes import (
     ReputationCreatorStrategyOutput,
     ReputationStrategyOutput,
@@ -153,16 +160,43 @@ async def execute_strategy_template(
             function_kwargs=req_kwargs,
         )
     except Exception as exc:  # pragma: no cover - network/runtime resilience
-        raise RuntimeError(
-            f"OpenAI strategy call failed for '{template_name}': {exc}"
-        ) from exc
+        translated = translate_openai_exception(
+            exc,
+            detail=f"OpenAI strategy call failed for '{template_name}': {exc}",
+        )
+        mark_dependency_failure(
+            "openai",
+            context=f"openai-strategy:{template_name}",
+            detail=translated.detail,
+            status="degraded",
+            exc=exc,
+        )
+        raise translated from exc
 
     try:
-        return parse_strategy_response(template_name, str(response_text))
+        parsed = parse_strategy_response(template_name, str(response_text))
     except Exception as exc:
-        raise RuntimeError(
-            f"Failed to parse OpenAI strategy response for '{template_name}': {exc}"
-        ) from exc
+        translated = UpstreamBadResponseError(
+            dependency="openai",
+            detail=(
+                f"Failed to parse OpenAI strategy response for '{template_name}': {exc}"
+            ),
+        )
+        mark_dependency_failure(
+            "openai",
+            context=f"openai-strategy:{template_name}",
+            detail=translated.detail,
+            status="degraded",
+            exc=exc,
+        )
+        raise translated from exc
+
+    mark_dependency_success(
+        "openai",
+        context=f"openai-strategy:{template_name}",
+        detail=f"OpenAI strategy '{template_name}' completed successfully.",
+    )
+    return parsed
 
 
 def _resolve_strategy_serializer(

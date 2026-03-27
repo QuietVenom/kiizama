@@ -11,7 +11,7 @@ import { UserEventsBootstrap } from "@/features/user-events/UserEventsBootstrap"
 import { currentUserQueryOptions, isLoggedIn } from "@/hooks/useAuth"
 
 const dashboardShellRoutes = [
-  "/app",
+  "/overview",
   "/creators-search",
   "/brand-intelligence",
 ] as const

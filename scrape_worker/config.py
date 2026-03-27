@@ -53,14 +53,19 @@ def _read_float_env(var_name: str, default: float) -> float:
     return value
 
 
-def _read_int_env(var_name: str, default: int) -> int:
-    raw = os.getenv(var_name)
-    if raw is None or not raw.strip():
+def _read_numeric_env(
+    primary_var: str,
+    *,
+    fallback_var: str | None = None,
+    default: int,
+) -> int:
+    raw = _read_env(primary_var, fallback_var=fallback_var)
+    if raw is None:
         return default
 
     value = int(raw)
     if value <= 0:
-        raise ValueError(f"{var_name} must be greater than zero.")
+        raise ValueError(f"{primary_var} must be greater than zero.")
     return value
 
 
@@ -77,8 +82,7 @@ def _read_worker_id() -> str:
 
 @dataclass(frozen=True)
 class WorkerSettings:
-    mongodb_url: str
-    mongodb_database: str
+    database_url: str
     redis_url: str
     backend_base_url: str
     secret_key_ig_credentials: str
@@ -88,6 +92,8 @@ class WorkerSettings:
     poll_seconds: float
     heartbeat_seconds: float
     lease_seconds: int
+    job_control_terminal_state_ttl_seconds: int
+    job_control_queue_maxlen: int
     max_attempts: int
     max_error_length: int
     worker_id: str
@@ -95,15 +101,10 @@ class WorkerSettings:
 
 def build_settings() -> WorkerSettings:
     settings = WorkerSettings(
-        mongodb_url=_read_required_env(
-            "IG_SCRAPE_WORKER_MONGODB_URL",
-            fallback_var="MONGODB_URL",
+        database_url=_read_required_env(
+            "IG_SCRAPE_WORKER_DATABASE_URL",
+            fallback_var="DATABASE_URL",
         ),
-        mongodb_database=_read_env(
-            "IG_SCRAPE_WORKER_MONGODB_KIIZAMA_IG",
-            fallback_var="MONGODB_KIIZAMA_IG",
-        )
-        or "kiizama_ig",
         redis_url=_read_required_env(
             "IG_SCRAPE_WORKER_REDIS_URL",
             fallback_var="REDIS_URL",
@@ -127,9 +128,25 @@ def build_settings() -> WorkerSettings:
         ),
         poll_seconds=_read_float_env("IG_SCRAPE_WORKER_POLL_SECONDS", 1.0),
         heartbeat_seconds=_read_float_env("IG_SCRAPE_WORKER_HEARTBEAT_SECONDS", 20.0),
-        lease_seconds=_read_int_env("IG_SCRAPE_WORKER_LEASE_SECONDS", 900),
-        max_attempts=_read_int_env("IG_SCRAPE_WORKER_MAX_ATTEMPTS", 3),
-        max_error_length=_read_int_env("IG_SCRAPE_WORKER_ERROR_MAX_LEN", 4000),
+        lease_seconds=_read_numeric_env(
+            "IG_SCRAPE_WORKER_LEASE_SECONDS",
+            default=900,
+        ),
+        job_control_terminal_state_ttl_seconds=_read_numeric_env(
+            "IG_SCRAPE_WORKER_JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS",
+            fallback_var="JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS",
+            default=60 * 60 * 24,
+        ),
+        job_control_queue_maxlen=_read_numeric_env(
+            "IG_SCRAPE_WORKER_JOB_CONTROL_QUEUE_MAXLEN",
+            fallback_var="JOB_CONTROL_QUEUE_MAXLEN",
+            default=10_000,
+        ),
+        max_attempts=_read_numeric_env("IG_SCRAPE_WORKER_MAX_ATTEMPTS", default=3),
+        max_error_length=_read_numeric_env(
+            "IG_SCRAPE_WORKER_ERROR_MAX_LEN",
+            default=4000,
+        ),
         worker_id=_read_worker_id(),
     )
 
@@ -151,17 +168,8 @@ def reset_settings_cache() -> None:
     get_settings.cache_clear()
 
 
-def apply_backend_compat_env(settings: WorkerSettings) -> None:
-    os.environ["MONGODB_URL"] = settings.mongodb_url
-    os.environ["MONGODB_KIIZAMA_IG"] = settings.mongodb_database
-    os.environ["REDIS_URL"] = settings.redis_url
-    os.environ["SECRET_KEY_IG_CREDENTIALS"] = settings.secret_key_ig_credentials
-    os.environ["OPENAI_API_KEY"] = settings.openai_api_key
-
-
 __all__ = [
     "WorkerSettings",
-    "apply_backend_compat_env",
     "build_settings",
     "get_settings",
     "reset_settings_cache",

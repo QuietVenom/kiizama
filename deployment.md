@@ -17,16 +17,11 @@ Most deployments need the same core settings:
 - `FIRST_SUPERUSER`
 - `FIRST_SUPERUSER_PASSWORD`
 - `SYSTEM_ADMIN_EMAIL` / `SYSTEM_ADMIN_PASSWORD` when internal worker callbacks are enabled
-- `SMTP_HOST`
-- `SMTP_PORT`
-- `SMTP_TLS`
-- `SMTP_SSL`
-- `SMTP_USER`
-- `SMTP_PASSWORD`
+- `RESEND_API_KEY`
 - `EMAILS_FROM_EMAIL`
+- `EMAILS_FROM_NAME`
 - `DATABASE_URL` or `DATABASE_URL_PRODUCTION_INTERNAL`
-- `MONGODB_URL`
-- `MONGODB_KIIZAMA_IG`
+- `REDIS_URL`
 - `OPENAI_API_KEY`
 - `SENTRY_DSN` if used
 
@@ -54,7 +49,7 @@ fly deploy . --config fly.backend.toml
 
 The backend app serves `https://api.kiizama.com` and expects:
 
-- production database and MongoDB settings
+- production database and Redis settings
 - SMTP provider credentials
 - app/user/admin secrets
 
@@ -88,7 +83,6 @@ python -m scrape_worker.main
 
 Required worker-focused vars:
 
-- `IG_SCRAPE_WORKER_MONGODB_URL`
 - `IG_SCRAPE_WORKER_REDIS_URL`
 - `IG_SCRAPE_WORKER_BACKEND_BASE_URL`
 - `IG_SCRAPE_WORKER_SECRET_KEY_IG_CREDENTIALS`
@@ -105,7 +99,7 @@ Optional tuning vars:
 - `IG_SCRAPE_WORKER_MAX_ATTEMPTS`
 - `IG_SCRAPE_WORKER_ERROR_MAX_LEN`
 
-Fallback compatibility remains available through shared vars such as `MONGODB_URL`, `REDIS_URL`, `OPENAI_API_KEY`, and `SYSTEM_ADMIN_EMAIL`.
+Fallback compatibility remains available through shared vars such as `REDIS_URL`, `OPENAI_API_KEY`, and `SYSTEM_ADMIN_EMAIL`.
 
 ## GitHub Actions secrets
 

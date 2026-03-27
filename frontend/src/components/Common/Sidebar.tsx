@@ -25,7 +25,7 @@ import {
 import ThemeLogo from "./ThemeLogo"
 
 type SidebarRoute =
-  | "/app"
+  | "/overview"
   | "/creators-search"
   | "/brand-intelligence"
   | "/brand-intelligence/reputation-strategy"
@@ -49,7 +49,7 @@ type SidebarItem = {
 }
 
 const topItems: SidebarItem[] = [
-  { key: "overview", icon: FiHome, title: "Overview", path: "/app" },
+  { key: "overview", icon: FiHome, title: "Overview", path: "/overview" },
   {
     key: "creators-search",
     icon: FiSearch,
@@ -71,7 +71,7 @@ const topItems: SidebarItem[] = [
 ]
 
 const isActiveRoute = (pathname: string, route: SidebarRoute) => {
-  if (route === "/app") {
+  if (route === "/overview") {
     return pathname === route
   }
   return pathname === route || pathname.startsWith(`${route}/`)

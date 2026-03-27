@@ -1,6 +1,5 @@
 from typing import Annotated
 
-from bson import ObjectId
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 from pydantic.functional_validators import BeforeValidator
 
@@ -59,7 +58,6 @@ class UpdateProfileSnapshot(BaseModel):
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
-        json_encoders={ObjectId: str},
         json_schema_extra={
             "example": {
                 "metrics_id": "65c2f0b7f6b7a8c1c3d4e8c1",

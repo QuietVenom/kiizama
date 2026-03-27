@@ -8,7 +8,7 @@ import RecentReportsCard from "@/components/Dashboard/RecentReportsCard"
 import StrategicInsightCard from "@/components/Dashboard/StrategicInsightCard"
 import useAuth from "@/hooks/useAuth"
 
-export const Route = createFileRoute("/_layout/app")({
+export const Route = createFileRoute("/_layout/overview")({
   component: Home,
 })
 
@@ -79,8 +79,12 @@ function Home() {
         </Grid>
 
         <Grid templateColumns={{ base: "1fr", xl: "1.6fr 1fr" }} gap={6}>
-          <RecentReportsCard />
-          <StrategicInsightCard />
+          <Box minW={0}>
+            <RecentReportsCard />
+          </Box>
+          <Box minW={0}>
+            <StrategicInsightCard />
+          </Box>
         </Grid>
       </Box>
     </Box>

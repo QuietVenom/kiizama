@@ -5,6 +5,7 @@ from typing import Any, cast
 import fakeredis.aioredis
 
 from app.features.creators_search_history.repository import (
+    CREATORS_SEARCH_HISTORY_TTL_SECONDS,
     JOB_HISTORY_INDEX_TTL_SECONDS,
     MAX_CREATORS_SEARCH_HISTORY_ITEMS,
     CreatorsSearchHistoryRepository,
@@ -44,6 +45,9 @@ def test_append_item_keeps_newest_first_and_trims_to_max_items() -> None:
     assert len(items) == MAX_CREATORS_SEARCH_HISTORY_ITEMS
     assert items[0].id == f"item-{MAX_CREATORS_SEARCH_HISTORY_ITEMS + 4}"
     assert items[-1].id == "item-5"
+    assert _run(redis.ttl(build_creators_search_history_key("user-1"))) == (
+        CREATORS_SEARCH_HISTORY_TTL_SECONDS
+    )
 
 
 def test_list_items_ignores_corrupted_json_entries() -> None:
@@ -95,11 +99,13 @@ def test_append_item_if_job_absent_is_idempotent_and_sets_ttl() -> None:
 
     items = _run(repository.list_items(user_id="user-1", limit=20))
     job_key = build_creators_search_history_job_key("user-1", "job-1")
+    list_key = build_creators_search_history_key("user-1")
 
     assert first_item == item
     assert second_item == item
     assert [history_item.id for history_item in items] == ["item-1"]
     assert _run(redis.ttl(job_key)) == JOB_HISTORY_INDEX_TTL_SECONDS
+    assert _run(redis.ttl(list_key)) == CREATORS_SEARCH_HISTORY_TTL_SECONDS
 
 
 def test_append_item_if_job_absent_repairs_corrupted_job_index() -> None:
@@ -121,3 +127,4 @@ def test_append_item_if_job_absent_repairs_corrupted_job_index() -> None:
     assert repaired_item == existing_item
     assert [history_item.id for history_item in items] == ["item-1"]
     assert _run(redis.get(job_key)) == existing_item.model_dump_json()
+    assert _run(redis.ttl(list_key)) == -1

@@ -37,9 +37,8 @@ def test_create_user_new_email(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
     with (
-        patch("app.utils.send_email", return_value=None),
-        patch("app.core.config.settings.SMTP_HOST", "smtp.example.com"),
-        patch("app.core.config.settings.SMTP_USER", "admin@example.com"),
+        patch("app.api.routes.users.send_email_best_effort", return_value=None),
+        patch("app.core.config.settings.RESEND_API_KEY", "re_test_123"),
     ):
         username = random_email()
         password = random_password()
@@ -54,6 +53,28 @@ def test_create_user_new_email(
         user = crud.get_user_by_email(session=db, email=username)
         assert user
         assert user.email == created_user["email"]
+
+
+def test_create_user_succeeds_when_email_delivery_fails(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    username = random_email()
+    password = random_password()
+    with patch(
+        "app.utils.send_email_or_raise",
+        side_effect=RuntimeError("resend down"),
+    ):
+        response = client.post(
+            f"{settings.API_V1_STR}/users/",
+            headers=superuser_token_headers,
+            json={"email": username, "password": password},
+        )
+
+    assert 200 <= response.status_code < 300
+    created_user = response.json()
+    user = crud.get_user_by_email(session=db, email=username)
+    assert user
+    assert user.email == created_user["email"]
 
 
 def test_get_existing_user(

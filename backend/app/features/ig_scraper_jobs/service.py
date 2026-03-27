@@ -6,8 +6,8 @@ from typing import Annotated, Any, Protocol
 
 from fastapi import Depends
 from kiizama_scrape_core.ig_scraper.jobs import (
-    JOB_COLLECTION_NAME,
     JOB_STATUS_VALUES,
+    build_instagram_job_queue_spec,
     build_job_projection_document,
     build_job_references,
     default_job_expires_at,
@@ -28,11 +28,11 @@ from kiizama_scrape_core.job_control.schemas import (
     TerminalizationDecision,
 )
 from kiizama_scrape_core.user_events.schemas import UserEventEnvelope
-from pymongo.asynchronous.collection import AsyncCollection
 
+from app.api.deps import SessionDep
 from app.core.config import settings
 from app.core.ids import generate_uuid7
-from app.core.mongodb import get_mongo_kiizama_ig
+from app.features.ig_scraper_jobs.repository import SqlJobProjectionRepository
 from app.features.job_control.repository import (
     JobControlRepository,
     JobControlUnavailableError,
@@ -46,8 +46,6 @@ TERMINAL_JOB_STATUSES = {"done", "failed"}
 TERMINAL_NOTIFICATION_KIND = "terminal"
 TERMINAL_EVENT_SOURCE = "ig-scraper"
 TERMINAL_EVENT_TOPIC = "jobs"
-
-JobsCollection = AsyncCollection[dict[str, Any]]
 
 
 class JobProjectionCollection(Protocol):
@@ -113,15 +111,16 @@ def utcnow() -> datetime:
 
 
 def get_instagram_job_queue_spec() -> JobQueueSpec:
-    return JobQueueSpec(
-        domain="ig-scrape",
+    return build_instagram_job_queue_spec(
         state_ttl_seconds=settings.JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS,
         queue_maxlen=settings.JOB_CONTROL_QUEUE_MAXLEN,
     )
 
 
-def get_instagram_jobs_collection() -> JobsCollection:
-    return get_mongo_kiizama_ig().get_collection(JOB_COLLECTION_NAME)
+def get_instagram_job_projection_repository(
+    session: SessionDep,
+) -> SqlJobProjectionRepository:
+    return SqlJobProjectionRepository(session=session)
 
 
 def get_instagram_job_control_repository() -> JobControlRepository:
@@ -376,7 +375,10 @@ class InstagramJobService:
 
 
 def get_instagram_job_service(
-    jobs_collection: Annotated[JobsCollection, Depends(get_instagram_jobs_collection)],
+    jobs_collection: Annotated[
+        JobProjectionCollection,
+        Depends(get_instagram_job_projection_repository),
+    ],
 ) -> InstagramJobService:
     return InstagramJobService(
         jobs_collection=jobs_collection,
@@ -396,8 +398,8 @@ __all__ = [
     "InstagramJobServiceDep",
     "TERMINAL_JOB_STATUSES",
     "get_instagram_job_control_repository",
+    "get_instagram_job_projection_repository",
     "get_instagram_job_queue_spec",
     "get_instagram_job_service",
-    "get_instagram_jobs_collection",
     "get_instagram_user_events_repository",
 ]

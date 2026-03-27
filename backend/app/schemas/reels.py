@@ -1,6 +1,5 @@
 from typing import Annotated
 
-from bson import ObjectId
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 from pydantic.functional_validators import BeforeValidator
 
@@ -65,7 +64,6 @@ class UpdateReelsDocument(BaseModel):
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
-        json_encoders={ObjectId: str},
         json_schema_extra={
             "example": {
                 "updated_at": "2024-02-12T15:04:05Z",

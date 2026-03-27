@@ -2,6 +2,16 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Literal, cast
 
+from kiizama_scrape_core.ig_scraper.sqlmodels import (
+    PRIVATE_SCHEMA,
+    IgCredential,
+    IgMetrics,
+    IgPostsDocument,
+    IgProfile,
+    IgProfileSnapshot,
+    IgReelsDocument,
+    IgScrapeJob,
+)
 from pydantic import EmailStr
 from sqlmodel import Field, SQLModel
 
@@ -60,6 +70,8 @@ class UpdatePassword(SQLModel):
 
 # Database model, database table inferred from class name
 class User(UserBase, table=True):
+    __table_args__ = {"schema": PRIVATE_SCHEMA}
+
     id: uuid.UUID = Field(default_factory=generate_uuid7, primary_key=True)
     hashed_password: str
 
@@ -101,6 +113,7 @@ class NewPassword(SQLModel):
 
 class LuAdminRole(SQLModel, table=True):
     __tablename__ = cast(Any, "lu_admin_role")
+    __table_args__ = {"schema": PRIVATE_SCHEMA}
 
     id: int = Field(primary_key=True)
     code: str = Field(unique=True, index=True, max_length=50)
@@ -114,10 +127,13 @@ class UserAdminBase(SQLModel):
 
 class UserAdmin(UserAdminBase, table=True):
     __tablename__ = cast(Any, "user_admin")
+    __table_args__ = {"schema": PRIVATE_SCHEMA}
 
     id: uuid.UUID = Field(default_factory=generate_uuid7, primary_key=True)
     hashed_password: str
-    role_id: int = Field(foreign_key="lu_admin_role.id", nullable=False)
+    role_id: int = Field(
+        foreign_key=f"{PRIVATE_SCHEMA}.lu_admin_role.id", nullable=False
+    )
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False
     )
@@ -155,6 +171,7 @@ class FeatureFlagUpdate(SQLModel):
 
 class FeatureFlag(FeatureFlagBase, table=True):
     __tablename__ = cast(Any, "feature_flag")
+    __table_args__ = {"schema": PRIVATE_SCHEMA}
 
     id: uuid.UUID = Field(default_factory=generate_uuid7, primary_key=True)
     created_at: datetime = Field(
@@ -179,6 +196,7 @@ class FeatureFlagsPublic(SQLModel):
 
 class FeatureFlagAudit(SQLModel, table=True):
     __tablename__ = cast(Any, "feature_flag_audit")
+    __table_args__ = {"schema": PRIVATE_SCHEMA}
 
     id: uuid.UUID = Field(default_factory=generate_uuid7, primary_key=True)
     feature_flag_id: uuid.UUID | None = None
@@ -230,6 +248,7 @@ class WaitingListCreate(SQLModel):
 
 class WaitingList(SQLModel, table=True):
     __tablename__ = cast(Any, "waiting_list")
+    __table_args__ = {"schema": PRIVATE_SCHEMA}
 
     id: uuid.UUID = Field(default_factory=generate_uuid7, primary_key=True)
     email: EmailStr = Field(unique=True, index=True, max_length=255)
@@ -237,3 +256,44 @@ class WaitingList(SQLModel, table=True):
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False
     )
+
+
+__all__ = [
+    "PRIVATE_SCHEMA",
+    "FeatureFlag",
+    "FeatureFlagAudit",
+    "FeatureFlagAuditPublic",
+    "FeatureFlagAuditsPublic",
+    "FeatureFlagBase",
+    "FeatureFlagCreate",
+    "FeatureFlagPublic",
+    "FeatureFlagsPublic",
+    "FeatureFlagUpdate",
+    "IgCredential",
+    "IgMetrics",
+    "IgPostsDocument",
+    "IgProfile",
+    "IgProfileSnapshot",
+    "IgReelsDocument",
+    "IgScrapeJob",
+    "LuAdminRole",
+    "Message",
+    "NewPassword",
+    "Token",
+    "TokenPayload",
+    "UpdatePassword",
+    "User",
+    "UserAdmin",
+    "UserAdminBase",
+    "UserAdminPublic",
+    "UserBase",
+    "UserCreate",
+    "UserPublic",
+    "UserRegister",
+    "UsersPublic",
+    "UserUpdate",
+    "UserUpdateMe",
+    "WaitingList",
+    "WaitingListCreate",
+    "WaitingListInterest",
+]

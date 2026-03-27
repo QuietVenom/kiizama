@@ -100,7 +100,8 @@ class InstagramMetricsSchema(BaseModel):
     reel_metrics: InstagramReelMetricsSchema = Field(
         default_factory=InstagramReelMetricsSchema
     )
-    overall_engagement_rate: float = 0.0
+    overall_post_engagement_rate: float = 0.0
+    reel_engagement_rate_on_plays: float = 0.0
     followers: int = 0
     following: int = 0
     media_count: int = 0

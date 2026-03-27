@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import json
 import os
+from typing import Any
 
 from cryptography.fernet import Fernet, InvalidToken
 
@@ -52,8 +54,40 @@ def decrypt_ig_password(
     return value.decode("utf-8")
 
 
+def encrypt_ig_session(
+    session: dict[str, Any] | None,
+    *,
+    secret_key: str | None = None,
+) -> str | None:
+    if session is None:
+        return None
+    payload = json.dumps(
+        session,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    )
+    return encrypt_ig_password(payload, secret_key=secret_key)
+
+
+def decrypt_ig_session(
+    encrypted_session: str | None,
+    *,
+    secret_key: str | None = None,
+) -> dict[str, Any] | None:
+    if not encrypted_session:
+        return None
+    payload = decrypt_ig_password(encrypted_session, secret_key=secret_key)
+    data = json.loads(payload)
+    if not isinstance(data, dict):
+        raise ValueError("Invalid encrypted Instagram session payload.")
+    return data
+
+
 __all__ = [
     "decrypt_ig_password",
+    "decrypt_ig_session",
     "encrypt_ig_password",
+    "encrypt_ig_session",
     "resolve_ig_credentials_secret",
 ]

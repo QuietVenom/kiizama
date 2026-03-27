@@ -49,8 +49,8 @@ def test_recovery_password(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
     with (
-        patch("app.core.config.settings.SMTP_HOST", "smtp.example.com"),
-        patch("app.core.config.settings.SMTP_USER", "admin@example.com"),
+        patch("app.api.routes.login.send_email_or_raise", return_value=None),
+        patch("app.core.config.settings.RESEND_API_KEY", "re_test_123"),
     ):
         email = "test@example.com"
         r = client.post(
@@ -59,6 +59,24 @@ def test_recovery_password(
         )
         assert r.status_code == 200
         assert r.json() == {"message": "Password recovery email sent"}
+
+
+def test_recovery_password_returns_503_when_email_is_not_configured(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    email = "test@example.com"
+    with patch("app.core.config.settings.RESEND_API_KEY", None):
+        r = client.post(
+            f"{settings.API_V1_STR}/password-recovery/{email}",
+            headers=normal_user_token_headers,
+        )
+
+    assert r.status_code == 503
+    assert r.json() == {
+        "detail": "Email service is not configured.",
+        "dependency": "resend",
+        "retryable": False,
+    }
 
 
 def test_recovery_password_user_not_exits(
