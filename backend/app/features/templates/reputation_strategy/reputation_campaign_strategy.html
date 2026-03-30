@@ -543,7 +543,8 @@
                     <div class="metric-item"><b>{{ '%.2f' % (influencer.metrics.mentions_per_post or 0) }}</b><span>Mentions per post</span></div>
                     <div class="metric-item"><b>{{ '{:,}'.format(influencer.metrics.total_reels or 0) }}</b><span>Total reels</span></div>
                     <div class="metric-item"><b>{{ '{:,}'.format(influencer.metrics.total_plays or 0) }}</b><span>Total plays</span></div>
-                    <div class="metric-item"><b>{{ '%.4f' % (influencer.metrics.overall_engagement_rate or 0) }}</b><span>Overall engagement rate</span></div>
+                    <div class="metric-item"><b>{{ '%.4f' % (influencer.metrics.overall_post_engagement_rate or 0) }}</b><span>Overall post engagement rate</span></div>
+                    <div class="metric-item"><b>{{ '%.4f' % (influencer.metrics.reel_engagement_rate_on_plays or 0) }}</b><span>Reel engagement rate on plays</span></div>
                   </div>
                   </div>
                 </td>

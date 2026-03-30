@@ -328,7 +328,8 @@ export type Metrics = {
     _id?: (string | null);
     post_metrics: PostMetrics;
     reel_metrics: ReelMetrics;
-    overall_engagement_rate: number;
+    overall_post_engagement_rate: number;
+    reel_engagement_rate_on_plays: number;
 };
 
 /**
@@ -645,7 +646,8 @@ export type UpdateIgCredential = {
 export type UpdateMetrics = {
     post_metrics?: (PostMetrics | null);
     reel_metrics?: (ReelMetrics | null);
-    overall_engagement_rate?: (number | null);
+    overall_post_engagement_rate?: (number | null);
+    reel_engagement_rate_on_plays?: (number | null);
 };
 
 export type UpdatePassword = {
@@ -835,7 +837,13 @@ export type FeatureFlagsGetFeatureFlagAuditData = {
 
 export type FeatureFlagsGetFeatureFlagAuditResponse = (FeatureFlagAuditsPublic);
 
-export type HealthHealthCheckResponse = (boolean);
+export type HealthLiveHealthCheckResponse = ({
+    [key: string]: (string);
+});
+
+export type HealthReadyHealthCheckResponse = (unknown);
+
+export type HealthHealthCheckResponse = (unknown);
 
 export type HealthDeepHealthCheckResponse = ({
     [key: string]: unknown;

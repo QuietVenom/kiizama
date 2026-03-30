@@ -1,6 +1,8 @@
 import { TagsInput } from "@ark-ui/react"
-import { Box, Flex, Input, Tag } from "@chakra-ui/react"
+import { Box, Flex, Input, Tag, useFieldContext } from "@chakra-ui/react"
 import { FiX } from "react-icons/fi"
+
+import { autofillIgnoreProps } from "@/lib/autofill"
 
 type TagPalette = {
   background: string
@@ -47,6 +49,8 @@ export const TagsInputField = ({
   renderTagLabel,
   value,
 }: TagsInputFieldProps) => {
+  const field = useFieldContext()
+
   return (
     <Box w="full">
       <TagsInput.Root
@@ -70,7 +74,7 @@ export const TagsInputField = ({
         value={value}
         style={{ display: "block", width: "100%" }}
       >
-        <TagsInput.HiddenInput required={false} />
+        <TagsInput.HiddenInput {...autofillIgnoreProps} required={false} />
 
         <TagsInput.Control asChild>
           <Flex
@@ -147,6 +151,9 @@ export const TagsInputField = ({
 
             <TagsInput.Input asChild required={false}>
               <Input
+                {...autofillIgnoreProps}
+                aria-describedby={field?.ariaDescribedby}
+                id={field?.ids.control}
                 minW="0"
                 w="full"
                 flex="1 1 100%"

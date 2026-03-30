@@ -96,7 +96,8 @@ class ReputationInfluencerMetricsInput:
     mentions_per_post: float = 0.0
     total_reels: int = 0
     total_plays: int = 0
-    overall_engagement_rate: float = 0.0
+    overall_post_engagement_rate: float = 0.0
+    reel_engagement_rate_on_plays: float = 0.0
 
     @classmethod
     def from_payload(
@@ -121,8 +122,11 @@ class ReputationInfluencerMetricsInput:
             mentions_per_post=_safe_float(raw_payload.get("mentions_per_post")),
             total_reels=_safe_int(raw_payload.get("total_reels")),
             total_plays=_safe_int(raw_payload.get("total_plays")),
-            overall_engagement_rate=_safe_float(
-                raw_payload.get("overall_engagement_rate")
+            overall_post_engagement_rate=_safe_float(
+                raw_payload.get("overall_post_engagement_rate")
+            ),
+            reel_engagement_rate_on_plays=_safe_float(
+                raw_payload.get("reel_engagement_rate_on_plays")
             ),
         )
 
@@ -402,7 +406,8 @@ def _serialize_metrics(metrics: ReputationInfluencerMetricsInput) -> dict[str, A
         "mentions_per_post": metrics.mentions_per_post,
         "total_reels": metrics.total_reels,
         "total_plays": metrics.total_plays,
-        "overall_engagement_rate": metrics.overall_engagement_rate,
+        "overall_post_engagement_rate": metrics.overall_post_engagement_rate,
+        "reel_engagement_rate_on_plays": metrics.reel_engagement_rate_on_plays,
     }
 
 

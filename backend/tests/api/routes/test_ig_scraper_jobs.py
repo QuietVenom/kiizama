@@ -98,7 +98,11 @@ def test_create_instagram_scrape_job_returns_503_when_redis_is_unavailable(
         app.dependency_overrides.pop(get_instagram_job_service, None)
 
     assert response.status_code == 503
-    assert response.json() == {"detail": "Redis is unavailable."}
+    assert response.json() == {
+        "detail": "Redis is unavailable.",
+        "dependency": "redis",
+        "retryable": True,
+    }
 
 
 def test_get_instagram_scrape_job_uses_service(

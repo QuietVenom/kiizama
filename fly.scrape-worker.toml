@@ -1,8 +1,8 @@
 app = "kiizama-scrape-worker"
 primary_region = "dfw"
 
-# Deploy from the repository root because this image copies backend/,
-# packages/, and scrape_worker/ from the monorepo root:
+# Deploy from the repository root because this image copies
+# packages/ and scrape_worker/ from the monorepo root:
 # fly deploy . --config fly.scrape-worker.toml
 #
 # This app stays private by design: no http_service and no services means
@@ -13,13 +13,14 @@ primary_region = "dfw"
   dockerfile = "Dockerfile.worker"
 
 [env]
-  IG_SCRAPE_WORKER_MONGODB_KIIZAMA_IG = "kiizama_ig"
   IG_SCRAPER_MAX_CONCURRENT = "2"
   IG_SCRAPE_WORKER_POLL_SECONDS = "1"
   IG_SCRAPE_WORKER_HEARTBEAT_SECONDS = "20"
   IG_SCRAPE_WORKER_LEASE_SECONDS = "900"
   IG_SCRAPE_WORKER_MAX_ATTEMPTS = "3"
   IG_SCRAPE_WORKER_ERROR_MAX_LEN = "4000"
+  JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS = "86400"
+  JOB_CONTROL_QUEUE_MAXLEN = "10000"
 
 [processes]
   app = "python -m scrape_worker.main"

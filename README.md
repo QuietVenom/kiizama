@@ -11,8 +11,8 @@ Source repository: https://github.com/QuietVenom/kiizama
 - [FastAPI](https://fastapi.tiangolo.com) for the API.
 - [Pydantic v2](https://docs.pydantic.dev) and pydantic-settings for validation and configuration.
 - [SQLModel](https://sqlmodel.tiangolo.com) + [Alembic](https://alembic.sqlalchemy.org) for relational models and migrations.
-- [PostgreSQL](https://www.postgresql.org) for transactional relational data.
-- [MongoDB](https://www.mongodb.com) for Instagram profile snapshots and async scrape jobs.
+- [PostgreSQL](https://www.postgresql.org) for transactional data and persisted Instagram data.
+- [Redis](https://redis.io) for queueing, leases, heartbeat, live job state, and user-event streams.
 - [Playwright](https://playwright.dev/python/) for scraping execution.
 - [OpenAI API](https://platform.openai.com/docs/overview) for enrichment/analysis.
 - JWT authentication and role-aware endpoints.
@@ -56,7 +56,6 @@ Update at least:
 - `SECRET_KEY_IG_CREDENTIALS`
 - `FIRST_SUPERUSER_PASSWORD`
 - `POSTGRES_PASSWORD` (if using split Postgres vars)
-- `MONGODB_URL`
 - `OPENAI_API_KEY`
 
 ### 3) Start local stack
@@ -122,11 +121,6 @@ Fallback split Postgres variables:
 - `POSTGRES_USER`
 - `POSTGRES_PASSWORD`
 
-MongoDB:
-
-- `MONGODB_URL`
-- `MONGODB_KIIZAMA_IG`
-
 ### AI and scraping
 
 - `OPENAI_API_KEY`
@@ -135,25 +129,23 @@ MongoDB:
 
 ### Email
 
-- `SMTP_HOST`
-- `SMTP_PORT`
-- `SMTP_USER`
-- `SMTP_PASSWORD`
-- `SMTP_TLS`
-- `SMTP_SSL`
+- `RESEND_API_KEY`
 - `EMAILS_FROM_EMAIL`
+- `EMAILS_FROM_NAME`
 
 ### Async worker variables
 
 Required (or fallback-compatible):
 
-- `IG_SCRAPE_WORKER_MONGODB_URL` (fallback: `MONGODB_URL`)
+- `IG_SCRAPE_WORKER_REDIS_URL` (fallback: `REDIS_URL`)
+- `IG_SCRAPE_WORKER_BACKEND_BASE_URL`
 - `IG_SCRAPE_WORKER_SECRET_KEY_IG_CREDENTIALS` (fallback: `SECRET_KEY_IG_CREDENTIALS`)
 - `IG_SCRAPE_WORKER_OPENAI_API_KEY` (fallback: `OPENAI_API_KEY`)
+- `IG_SCRAPE_WORKER_SYSTEM_ADMIN_EMAIL` (fallback: `SYSTEM_ADMIN_EMAIL`)
+- `IG_SCRAPE_WORKER_SYSTEM_ADMIN_PASSWORD` (fallback: `SYSTEM_ADMIN_PASSWORD`)
 
 Optional tuning:
 
-- `IG_SCRAPE_WORKER_MONGODB_KIIZAMA_IG`
 - `IG_SCRAPE_WORKER_ID`
 - `IG_SCRAPE_WORKER_POLL_SECONDS`
 - `IG_SCRAPE_WORKER_HEARTBEAT_SECONDS`

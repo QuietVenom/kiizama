@@ -44,6 +44,12 @@ type MetricTileProps = {
   valueFontSize?: string | { base: string; md: string }
 }
 
+type MetricsGroupBoxProps = {
+  children: ReactNode
+  description?: string
+  title: string
+}
+
 type PostEntry = {
   item: PostItem
   updatedAt: string
@@ -251,6 +257,44 @@ const MetricTile = ({ label, value, valueFontSize }: MetricTileProps) => (
   </Box>
 )
 
+const MetricsGroupBox = ({
+  children,
+  description,
+  title,
+}: MetricsGroupBoxProps) => (
+  <Box
+    rounded="2xl"
+    borderWidth="1px"
+    borderColor="ui.borderSoft"
+    bg="ui.surfaceSoft"
+    p={{ base: 4, md: 5 }}
+  >
+    <Text
+      color="ui.text"
+      fontSize="sm"
+      fontWeight="black"
+      letterSpacing="0.04em"
+    >
+      {title}
+    </Text>
+    {description ? (
+      <Text mt={1.5} color="ui.secondaryText" fontSize="sm">
+        {description}
+      </Text>
+    ) : null}
+    <SimpleGrid
+      mt={4}
+      columns={{
+        base: 1,
+        sm: 2,
+      }}
+      gap={3}
+    >
+      {children}
+    </SimpleGrid>
+  </Box>
+)
+
 const CreatorSnapshotDetailDialog = ({
   onOpenChange,
   snapshot,
@@ -263,6 +307,8 @@ const CreatorSnapshotDetailDialog = ({
   const reelItems = flattenReels(reelsDocuments)
   const latestPostsUpdatedAt = getLatestUpdatedAt(postsDocuments)
   const latestReelsUpdatedAt = getLatestUpdatedAt(reelsDocuments)
+  const hasPostItems = postItems.length > 0
+  const hasReelItems = reelItems.length > 0
   const profileUrl = profile?.username
     ? `https://www.instagram.com/${profile.username}/`
     : undefined
@@ -576,99 +622,119 @@ const CreatorSnapshotDetailDialog = ({
                 title="Metrics"
                 description="Saved creator metrics arranged to match the report view used across the product."
               >
-                {snapshot.metrics ? (
+                {snapshot.metrics && (hasPostItems || hasReelItems) ? (
                   <SimpleGrid
                     columns={{
                       base: 1,
-                      sm: 2,
-                      xl: 3,
+                      xl: hasPostItems && hasReelItems ? 2 : 1,
                     }}
-                    gap={3}
+                    gap={4}
                   >
-                    <MetricTile
-                      label="Total posts"
-                      value={formatNumber(
-                        snapshot.metrics.post_metrics.total_posts,
-                      )}
-                    />
-                    <MetricTile
-                      label="Total post likes"
-                      value={formatNumber(
-                        snapshot.metrics.post_metrics.total_likes,
-                      )}
-                    />
-                    <MetricTile
-                      label="Total post comments"
-                      value={formatNumber(
-                        snapshot.metrics.post_metrics.total_comments,
-                      )}
-                    />
-                    <MetricTile
-                      label="Avg post likes"
-                      value={formatNumber(
-                        snapshot.metrics.post_metrics.avg_likes,
-                      )}
-                    />
-                    <MetricTile
-                      label="Avg post comments"
-                      value={formatNumber(
-                        snapshot.metrics.post_metrics.avg_comments,
-                      )}
-                    />
-                    <MetricTile
-                      label="Avg post ER"
-                      value={formatPercent(
-                        snapshot.metrics.post_metrics.avg_engagement_rate,
-                      )}
-                    />
-                    <MetricTile
-                      label="Hashtags per post"
-                      value={formatNumber(
-                        snapshot.metrics.post_metrics.hashtags_per_post,
-                      )}
-                    />
-                    <MetricTile
-                      label="Mentions per post"
-                      value={formatNumber(
-                        snapshot.metrics.post_metrics.mentions_per_post,
-                      )}
-                    />
-                    <MetricTile
-                      label="Total reels"
-                      value={formatNumber(
-                        snapshot.metrics.reel_metrics.total_reels,
-                      )}
-                    />
-                    <MetricTile
-                      label="Total plays"
-                      value={formatNumber(
-                        snapshot.metrics.reel_metrics.total_plays,
-                      )}
-                    />
-                    <MetricTile
-                      label="Avg reel plays"
-                      value={formatNumber(
-                        snapshot.metrics.reel_metrics.avg_plays,
-                      )}
-                    />
-                    <MetricTile
-                      label="Avg reel likes"
-                      value={formatNumber(
-                        snapshot.metrics.reel_metrics.avg_reel_likes,
-                      )}
-                    />
-                    <MetricTile
-                      label="Avg reel comments"
-                      value={formatNumber(
-                        snapshot.metrics.reel_metrics.avg_reel_comments,
-                      )}
-                    />
-                    <MetricTile
-                      label="Overall engagement rate"
-                      value={formatPercent(
-                        snapshot.metrics.overall_engagement_rate,
-                      )}
-                    />
+                    {hasPostItems ? (
+                      <MetricsGroupBox
+                        title="Posts"
+                        description={`Metrics based on ${postItems.length} saved post${postItems.length === 1 ? "" : "s"}.`}
+                      >
+                        <MetricTile
+                          label="Total posts"
+                          value={formatNumber(
+                            snapshot.metrics.post_metrics.total_posts,
+                          )}
+                        />
+                        <MetricTile
+                          label="Overall post ER"
+                          value={formatPercent(
+                            snapshot.metrics.overall_post_engagement_rate,
+                          )}
+                        />
+                        <MetricTile
+                          label="Total post likes"
+                          value={formatNumber(
+                            snapshot.metrics.post_metrics.total_likes,
+                          )}
+                        />
+                        <MetricTile
+                          label="Total post comments"
+                          value={formatNumber(
+                            snapshot.metrics.post_metrics.total_comments,
+                          )}
+                        />
+                        <MetricTile
+                          label="Avg post likes"
+                          value={formatNumber(
+                            snapshot.metrics.post_metrics.avg_likes,
+                          )}
+                        />
+                        <MetricTile
+                          label="Avg post comments"
+                          value={formatNumber(
+                            snapshot.metrics.post_metrics.avg_comments,
+                          )}
+                        />
+                        <MetricTile
+                          label="Avg post ER"
+                          value={formatPercent(
+                            snapshot.metrics.post_metrics.avg_engagement_rate,
+                          )}
+                        />
+                        <MetricTile
+                          label="Hashtags per post"
+                          value={formatNumber(
+                            snapshot.metrics.post_metrics.hashtags_per_post,
+                          )}
+                        />
+                        <MetricTile
+                          label="Mentions per post"
+                          value={formatNumber(
+                            snapshot.metrics.post_metrics.mentions_per_post,
+                          )}
+                        />
+                      </MetricsGroupBox>
+                    ) : null}
+
+                    {hasReelItems ? (
+                      <MetricsGroupBox
+                        title="Reels"
+                        description={`Metrics based on ${reelItems.length} saved reel${reelItems.length === 1 ? "" : "s"}.`}
+                      >
+                        <MetricTile
+                          label="Total reels"
+                          value={formatNumber(
+                            snapshot.metrics.reel_metrics.total_reels,
+                          )}
+                        />
+                        <MetricTile
+                          label="Reel ER on plays"
+                          value={formatPercent(
+                            snapshot.metrics.reel_engagement_rate_on_plays,
+                          )}
+                        />
+                        <MetricTile
+                          label="Total plays"
+                          value={formatNumber(
+                            snapshot.metrics.reel_metrics.total_plays,
+                          )}
+                        />
+                        <MetricTile
+                          label="Avg reel plays"
+                          value={formatNumber(
+                            snapshot.metrics.reel_metrics.avg_plays,
+                          )}
+                        />
+                        <MetricTile
+                          label="Avg reel likes"
+                          value={formatNumber(
+                            snapshot.metrics.reel_metrics.avg_reel_likes,
+                          )}
+                        />
+                        <MetricTile
+                          label="Avg reel comments"
+                          value={formatNumber(
+                            snapshot.metrics.reel_metrics.avg_reel_comments,
+                          )}
+                        />
+                      </MetricsGroupBox>
+                    ) : null}
                   </SimpleGrid>
                 ) : (
                   <Text color="ui.secondaryText">
@@ -677,17 +743,13 @@ const CreatorSnapshotDetailDialog = ({
                 )}
               </ContentSection>
 
-              <ContentSection
-                title={`Posts (${postItems.length})`}
-                description={
-                  postItems.length > 0
-                    ? `Saved posts from ${postsDocuments.length} update${postsDocuments.length === 1 ? "" : "s"}, latest on ${formatDate(
-                        latestPostsUpdatedAt,
-                      )}.`
-                    : undefined
-                }
-              >
-                {postItems.length > 0 ? (
+              {hasPostItems ? (
+                <ContentSection
+                  title={`Posts (${postItems.length})`}
+                  description={`Saved posts from ${postsDocuments.length} update${postsDocuments.length === 1 ? "" : "s"}, latest on ${formatDate(
+                    latestPostsUpdatedAt,
+                  )}.`}
+                >
                   <Box overflowX="auto">
                     <Table.Root size={{ base: "sm", md: "md" }} minW="920px">
                       <Table.Header>
@@ -825,24 +887,16 @@ const CreatorSnapshotDetailDialog = ({
                       </Table.Body>
                     </Table.Root>
                   </Box>
-                ) : (
-                  <Text color="ui.secondaryText">
-                    No saved posts were returned for this creator.
-                  </Text>
-                )}
-              </ContentSection>
+                </ContentSection>
+              ) : null}
 
-              <ContentSection
-                title={`Reels (${reelItems.length})`}
-                description={
-                  reelItems.length > 0
-                    ? `Saved reels from ${reelsDocuments.length} update${reelsDocuments.length === 1 ? "" : "s"}, latest on ${formatDate(
-                        latestReelsUpdatedAt,
-                      )}.`
-                    : undefined
-                }
-              >
-                {reelItems.length > 0 ? (
+              {hasReelItems ? (
+                <ContentSection
+                  title={`Reels (${reelItems.length})`}
+                  description={`Saved reels from ${reelsDocuments.length} update${reelsDocuments.length === 1 ? "" : "s"}, latest on ${formatDate(
+                    latestReelsUpdatedAt,
+                  )}.`}
+                >
                   <Box overflowX="auto">
                     <Table.Root size={{ base: "sm", md: "md" }} minW="860px">
                       <Table.Header>
@@ -931,12 +985,8 @@ const CreatorSnapshotDetailDialog = ({
                       </Table.Body>
                     </Table.Root>
                   </Box>
-                ) : (
-                  <Text color="ui.secondaryText">
-                    No saved reels were returned for this creator.
-                  </Text>
-                )}
-              </ContentSection>
+                </ContentSection>
+              ) : null}
             </Flex>
           ) : null}
         </DialogBody>

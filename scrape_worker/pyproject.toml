@@ -1,0 +1,28 @@
+[project]
+name = "kiizama-scrape-worker"
+version = "0.1.0"
+description = "Standalone scrape worker runtime for Kiizama."
+requires-python = ">=3.10,<4.0"
+dependencies = [
+    "kiizama-scrape-core",
+    "httpx<1.0.0,>=0.25.1",
+    "psycopg[binary]<4.0.0,>=3.1.13",
+    "redis>=5.2.1,<6.0.0",
+    "sqlmodel<1.0.0,>=0.0.21",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest<8.0.0,>=7.4.3",
+    "ruff<1.0.0,>=0.2.2",
+]
+
+[tool.uv.sources]
+kiizama-scrape-core = { path = "../packages/scrape_core", editable = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]

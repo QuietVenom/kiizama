@@ -114,7 +114,8 @@ Required fields:
       mentions_per_post: number,
       total_reels: number,
       total_plays: number,
-      overall_engagement_rate: number
+      overall_post_engagement_rate: number,
+      reel_engagement_rate_on_plays: number
     }
 
 Optional fields:
@@ -367,7 +368,8 @@ Optional fields:
   - mentions_per_post: number
   - total_reels: number
   - total_plays: number
-  - overall_engagement_rate: number
+  - overall_post_engagement_rate: number
+  - reel_engagement_rate_on_plays: number
 - reputation_signals: optional object with only these keys (arrays of strings): strengths, weaknesses, incidents, concerns. It may be absent or empty.
 - collaborators_list: array of relevant collaborators/brands/communities
 

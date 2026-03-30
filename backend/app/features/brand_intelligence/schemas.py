@@ -78,7 +78,8 @@ class InfluencerMetricsSummary(BaseModel):
     mentions_per_post: float = 0.0
     total_reels: int = 0
     total_plays: int = 0
-    overall_engagement_rate: float = 0.0
+    overall_post_engagement_rate: float = 0.0
+    reel_engagement_rate_on_plays: float = 0.0
 
 
 class InfluencerProfileDirectoryItem(BaseModel):

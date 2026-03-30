@@ -4,13 +4,18 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-import emails  # type: ignore
 import jwt
+import resend
 from jinja2 import Template
 from jwt.exceptions import InvalidTokenError
 
 from app.core import security
 from app.core.config import settings
+from app.core.resilience import (
+    mark_dependency_failure,
+    mark_dependency_success,
+    translate_resend_exception,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,6 +27,10 @@ class EmailData:
     subject: str
 
 
+class EmailNotConfiguredError(RuntimeError):
+    pass
+
+
 def render_email_template(*, template_name: str, context: dict[str, Any]) -> str:
     template_str = (
         Path(__file__).parent / "email-templates" / "build" / template_name
@@ -30,29 +39,98 @@ def render_email_template(*, template_name: str, context: dict[str, Any]) -> str
     return html_content
 
 
+def _send_email_via_resend(
+    *,
+    email_to: str,
+    subject: str = "",
+    html_content: str = "",
+) -> None:
+    resend.api_key = settings.RESEND_API_KEY
+    from_email = str(settings.EMAILS_FROM_EMAIL)
+    from_name = settings.EMAILS_FROM_NAME
+    sender = f"{from_name} <{from_email}>" if from_name else from_email
+    response = resend.Emails.send(
+        {
+            "from": sender,
+            "to": [email_to],
+            "subject": subject,
+            "html": html_content,
+        }
+    )
+    logger.info("send email result: %s", response)
+
+
+def send_email_or_raise(
+    *,
+    email_to: str,
+    subject: str = "",
+    html_content: str = "",
+) -> None:
+    if not settings.emails_enabled:
+        translated = translate_resend_exception(
+            EmailNotConfiguredError("Email service is not configured."),
+            detail="Email service is not configured.",
+            retryable=False,
+        )
+        mark_dependency_failure(
+            "resend",
+            context="email-send",
+            detail=translated.detail,
+            status="degraded",
+        )
+        raise translated
+
+    try:
+        _send_email_via_resend(
+            email_to=email_to,
+            subject=subject,
+            html_content=html_content,
+        )
+    except Exception as exc:
+        translated = translate_resend_exception(exc)
+        mark_dependency_failure(
+            "resend",
+            context="email-send",
+            detail=translated.detail,
+            status="degraded",
+            exc=exc,
+        )
+        raise translated from exc
+
+    mark_dependency_success(
+        "resend",
+        context="email-send",
+        detail="Resend email sent successfully.",
+    )
+
+
+def send_email_best_effort(
+    *,
+    email_to: str,
+    subject: str = "",
+    html_content: str = "",
+) -> None:
+    try:
+        send_email_or_raise(
+            email_to=email_to,
+            subject=subject,
+            html_content=html_content,
+        )
+    except Exception as exc:
+        logger.warning("Skipping email delivery after Resend failure: %s", exc)
+
+
 def send_email(
     *,
     email_to: str,
     subject: str = "",
     html_content: str = "",
 ) -> None:
-    assert settings.emails_enabled, "no provided configuration for email variables"
-    message = emails.Message(
+    send_email_or_raise(
+        email_to=email_to,
         subject=subject,
-        html=html_content,
-        mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
+        html_content=html_content,
     )
-    smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
-    if settings.SMTP_TLS:
-        smtp_options["tls"] = True
-    elif settings.SMTP_SSL:
-        smtp_options["ssl"] = True
-    if settings.SMTP_USER:
-        smtp_options["user"] = settings.SMTP_USER
-    if settings.SMTP_PASSWORD:
-        smtp_options["password"] = settings.SMTP_PASSWORD
-    response = message.send(to=email_to, smtp=smtp_options)
-    logger.info(f"send email result: {response}")
 
 
 def generate_test_email(email_to: str) -> EmailData:
@@ -121,3 +199,18 @@ def verify_password_reset_token(token: str) -> str | None:
         return str(decoded_token["sub"])
     except InvalidTokenError:
         return None
+
+
+__all__ = [
+    "EmailData",
+    "EmailNotConfiguredError",
+    "generate_new_account_email",
+    "generate_password_reset_token",
+    "generate_reset_password_email",
+    "generate_test_email",
+    "render_email_template",
+    "send_email",
+    "send_email_best_effort",
+    "send_email_or_raise",
+    "verify_password_reset_token",
+]

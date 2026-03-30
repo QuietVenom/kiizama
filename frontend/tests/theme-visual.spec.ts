@@ -16,7 +16,7 @@ const publicRoutes: VisualRoute[] = [
 ]
 
 const privateRoutes: VisualRoute[] = [
-  { path: "/app", slug: "app" },
+  { path: "/overview", slug: "overview" },
   { path: "/settings", slug: "settings" },
 ]
 

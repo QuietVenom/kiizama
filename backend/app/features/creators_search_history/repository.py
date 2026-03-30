@@ -10,6 +10,7 @@ from app.core.redis import RedisClient, get_redis_client
 from .schemas import CreatorsSearchHistoryItem
 
 MAX_CREATORS_SEARCH_HISTORY_ITEMS = 20
+CREATORS_SEARCH_HISTORY_TTL_SECONDS = 20 * 24 * 60 * 60
 JOB_HISTORY_INDEX_TTL_SECONDS = 15 * 24 * 60 * 60
 
 
@@ -73,6 +74,7 @@ class CreatorsSearchHistoryRepository:
         key = build_creators_search_history_key(user_id)
         await redis.lpush(key, item.model_dump_json())
         await redis.ltrim(key, 0, MAX_CREATORS_SEARCH_HISTORY_ITEMS - 1)
+        await redis.expire(key, CREATORS_SEARCH_HISTORY_TTL_SECONDS)
 
     async def append_item_if_job_absent(
         self,
@@ -99,6 +101,10 @@ class CreatorsSearchHistoryRepository:
                         pipe.set(job_key, item_json, ex=JOB_HISTORY_INDEX_TTL_SECONDS)
                         pipe.lpush(list_key, item_json)
                         pipe.ltrim(list_key, 0, MAX_CREATORS_SEARCH_HISTORY_ITEMS - 1)
+                        pipe.expire(
+                            list_key,
+                            CREATORS_SEARCH_HISTORY_TTL_SECONDS,
+                        )
                         await pipe.execute()
                         return item
 
@@ -163,6 +169,10 @@ class CreatorsSearchHistoryRepository:
                     if current_item is None:
                         pipe.lpush(list_key, repaired_json)
                         pipe.ltrim(list_key, 0, MAX_CREATORS_SEARCH_HISTORY_ITEMS - 1)
+                        pipe.expire(
+                            list_key,
+                            CREATORS_SEARCH_HISTORY_TTL_SECONDS,
+                        )
                     await pipe.execute()
                     return repaired_item
                 except WatchError:
@@ -176,6 +186,7 @@ def get_creators_search_history_repository() -> CreatorsSearchHistoryRepository:
 __all__ = [
     "CreatorsSearchHistoryRepository",
     "CreatorsSearchHistoryUnavailableError",
+    "CREATORS_SEARCH_HISTORY_TTL_SECONDS",
     "JOB_HISTORY_INDEX_TTL_SECONDS",
     "MAX_CREATORS_SEARCH_HISTORY_ITEMS",
     "build_creators_search_history_job_key",

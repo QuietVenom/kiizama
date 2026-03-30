@@ -38,7 +38,7 @@ Asynchronous scrape jobs are consumed by `scrape_worker` at repository root.
 Current ownership model:
 
 - Redis owns queueing, live job state, lease ownership, reclaim, and terminal dedupe.
-- MongoDB stores the persisted scrape data and the TTL-backed job projection returned by `GET /ig-scraper/jobs/{job_id}`.
+- Postgres stores the persisted scrape data and the queryable job projection returned by `GET /ig-scraper/jobs/{job_id}`.
 - The backend accepts the final job completion and emits the SSE notification.
 
 From repository root:

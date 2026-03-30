@@ -6,6 +6,14 @@ from datetime import datetime, timezone
 from typing import Any
 
 import httpx
+from kiizama_scrape_core.ig_scraper.analysis import (
+    OpenAIInstagramProfileAnalysisService,
+)
+from kiizama_scrape_core.ig_scraper.jobs import build_instagram_job_queue_spec
+from kiizama_scrape_core.ig_scraper.persistence import (
+    SqlInstagramCredentialsStore,
+    SqlInstagramScrapePersistence,
+)
 from kiizama_scrape_core.ig_scraper.schemas import (
     InstagramBatchCountersSchema,
     InstagramBatchScrapeRequest,
@@ -23,31 +31,22 @@ from kiizama_scrape_core.ig_scraper.service import (
 from kiizama_scrape_core.ig_scraper.types.session_validator import (
     configure_credentials_store_resolver,
 )
-from pymongo.errors import PyMongoError
-from redis.exceptions import RedisError
-
-from app.features.ig_scraper_jobs import get_instagram_job_queue_spec
-from app.features.ig_scraper_runtime import (
-    BackendInstagramCredentialsStore,
-    BackendInstagramProfileAnalysisService,
-    BackendInstagramScrapePersistence,
-)
-from app.features.job_control import (
+from kiizama_scrape_core.job_control import (
     JobControlRepository,
     JobControlUnavailableError,
     JobWorkerRuntime,
     QueuedJobMessage,
 )
+from redis.exceptions import RedisError
+from sqlalchemy.exc import SQLAlchemyError
+from sqlmodel import Session
 
 from scrape_worker.backend_client import (
     ScrapeWorkerBackendClient,
     WorkerBackendCompletionResult,
 )
 from scrape_worker.config import WorkerSettings, get_settings
-from scrape_worker.mongodb import (
-    close_worker_mongo_client,
-    get_worker_mongo_database,
-)
+from scrape_worker.db import engine, ping_postgres
 from scrape_worker.redis import close_worker_redis_client, get_worker_redis_client
 from scrape_worker.types import BackendCompletionPort, WorkerRuntimePort
 
@@ -115,23 +114,19 @@ def _is_dependency_error(exc: Exception) -> bool:
         (
             WorkerDependencyUnavailableError,
             JobControlUnavailableError,
-            PyMongoError,
+            SQLAlchemyError,
             RedisError,
         ),
     ) or _is_backend_dependency_error(exc)
 
 
 async def _ensure_worker_dependencies_ready(runtime: WorkerRuntimePort) -> None:
-    database = get_worker_mongo_database()
     try:
-        ping_response = await database.command("ping")
-    except PyMongoError as exc:
+        await asyncio.to_thread(ping_postgres)
+    except SQLAlchemyError as exc:
         raise WorkerDependencyUnavailableError(
-            "MongoDB is unavailable for scrape worker."
+            "Postgres is unavailable for scrape worker."
         ) from exc
-
-    if int(ping_response.get("ok", 0)) != 1:
-        raise WorkerDependencyUnavailableError("MongoDB ping failed for scrape worker.")
 
     redis = get_worker_redis_client()
     try:
@@ -148,47 +143,41 @@ async def execute_job_payload(
 ) -> tuple[InstagramBatchScrapeSummaryResponse, str | None]:
     request = InstagramBatchScrapeRequest.model_validate(payload)
     original_request = request.model_copy(deep=True)
-    database = get_worker_mongo_database()
+    with Session(engine) as session:
+        persistence = SqlInstagramScrapePersistence(session=session)
+        analysis_service = OpenAIInstagramProfileAnalysisService(
+            api_key=_settings().openai_api_key
+        )
 
-    profiles_collection = database.get_collection("profiles")
-    posts_collection = database.get_collection("posts")
-    reels_collection = database.get_collection("reels")
-    metrics_collection = database.get_collection("metrics")
-    snapshots_collection = database.get_collection("profile_snapshots")
-    persistence = BackendInstagramScrapePersistence(
-        profiles_collection=profiles_collection,
-        posts_collection=posts_collection,
-        reels_collection=reels_collection,
-        metrics_collection=metrics_collection,
-        snapshots_collection=snapshots_collection,
-    )
-    analysis_service = BackendInstagramProfileAnalysisService()
+        request, early_response = await prepare_scrape_batch_payload(
+            request,
+            persistence,
+        )
+        if early_response is not None:
+            summary = build_batch_scrape_summary(
+                original_request,
+                request,
+                response=None,
+                early_response=early_response,
+            )
+            return summary, summary.error
 
-    request, early_response = await prepare_scrape_batch_payload(
-        request,
-        persistence,
-    )
-    if early_response is not None:
+        response = await scrape_profiles_batch(request)
+        response = await enrich_with_ai_analysis(
+            response,
+            analysis_service=analysis_service,
+        )
+        response = await persist_scrape_results_to_db(
+            response,
+            persistence=persistence,
+        )
+
         summary = build_batch_scrape_summary(
             original_request,
             request,
-            response=None,
-            early_response=early_response,
+            response=response,
         )
-        return summary, summary.error
-
-    response = await scrape_profiles_batch(request)
-    response = await enrich_with_ai_analysis(
-        response,
-        analysis_service=analysis_service,
-    )
-    response = await persist_scrape_results_to_db(
-        response,
-        persistence=persistence,
-    )
-
-    summary = build_batch_scrape_summary(original_request, request, response=response)
-    return summary, response.error or summary.error
+        return summary, response.error or summary.error
 
 
 async def process_message(
@@ -277,15 +266,15 @@ async def process_message(
 
 async def worker_loop() -> None:
     settings = _settings()
-    database = get_worker_mongo_database()
     configure_credentials_store_resolver(
-        lambda: BackendInstagramCredentialsStore(
-            lambda: database.get_collection("ig_credentials")
-        )
+        lambda: SqlInstagramCredentialsStore(lambda: Session(engine))
     )
 
     repository = JobControlRepository(
-        spec=get_instagram_job_queue_spec(),
+        spec=build_instagram_job_queue_spec(
+            state_ttl_seconds=settings.job_control_terminal_state_ttl_seconds,
+            queue_maxlen=settings.job_control_queue_maxlen,
+        ),
         redis_provider=get_worker_redis_client,
     )
     runtime = JobWorkerRuntime(
@@ -403,7 +392,6 @@ async def run() -> None:
         await worker_loop()
     finally:
         await close_worker_redis_client()
-        await close_worker_mongo_client()
 
 
 __all__ = [

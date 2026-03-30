@@ -106,14 +106,9 @@ class Settings(BaseSettings):
             )
         )
 
-    SMTP_TLS: bool = True
-    SMTP_SSL: bool = False
-    SMTP_PORT: int = 587
-    SMTP_HOST: str | None = None
-    SMTP_USER: str | None = None
-    SMTP_PASSWORD: str | None = None
+    RESEND_API_KEY: str | None = None
     EMAILS_FROM_EMAIL: EmailStr | None = None
-    EMAILS_FROM_NAME: EmailStr | None = None
+    EMAILS_FROM_NAME: str | None = None
 
     @model_validator(mode="after")
     def _set_default_emails_from(self) -> Self:
@@ -126,7 +121,7 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def emails_enabled(self) -> bool:
-        return bool(self.SMTP_HOST and self.EMAILS_FROM_EMAIL)
+        return bool(self.RESEND_API_KEY and self.EMAILS_FROM_EMAIL)
 
     EMAIL_TEST_USER: EmailStr = "test@example.com"
     FIRST_SUPERUSER: EmailStr
@@ -134,8 +129,6 @@ class Settings(BaseSettings):
     SYSTEM_ADMIN_EMAIL: EmailStr | None = None
     SYSTEM_ADMIN_PASSWORD: str | None = None
 
-    MONGODB_URL: str | None = None
-    MONGODB_KIIZAMA_IG: str = "kiizama_ig"
     REDIS_URL: str | None = None
     FLY_REDIS_URL: str | None = None
     JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS: int = 60 * 60 * 24
@@ -173,10 +166,6 @@ class Settings(BaseSettings):
                 "SYSTEM_ADMIN_PASSWORD", self.SYSTEM_ADMIN_PASSWORD
             )
 
-        if self.ENVIRONMENT in {"staging", "production"} and (
-            not self.MONGODB_URL or not self.MONGODB_URL.strip()
-        ):
-            raise ValueError("MONGODB_URL is required outside local environment.")
         if self.ENVIRONMENT in {"staging", "production"} and (
             not self._resolved_redis_url()
         ):

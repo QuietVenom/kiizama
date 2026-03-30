@@ -14,7 +14,7 @@ from app.models import Message, NewPassword, Token, UserPublic
 from app.utils import (
     generate_password_reset_token,
     generate_reset_password_email,
-    send_email,
+    send_email_or_raise,
     verify_password_reset_token,
 )
 
@@ -67,7 +67,7 @@ def recover_password(email: str, session: SessionDep) -> Message:
     email_data = generate_reset_password_email(
         email_to=user.email, email=email, token=password_reset_token
     )
-    send_email(
+    send_email_or_raise(
         email_to=user.email,
         subject=email_data.subject,
         html_content=email_data.html_content,

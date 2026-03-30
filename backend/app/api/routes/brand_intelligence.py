@@ -116,8 +116,6 @@ async def _execute_report_generation(
         raise HTTPException(status_code=404, detail=str(exc))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
-    except RuntimeError as exc:
-        raise HTTPException(status_code=502, detail=str(exc))
 
 
 def _build_files_response(files: list[ReportFile], *, zip_filename: str) -> Response:

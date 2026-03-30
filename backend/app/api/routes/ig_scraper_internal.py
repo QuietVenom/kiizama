@@ -5,11 +5,9 @@ from kiizama_scrape_core.ig_scraper.schemas import (
     InstagramScrapeJobTerminalizationRequest,
     InstagramScrapeJobTerminalizationResponse,
 )
-from kiizama_scrape_core.job_control.repository import JobControlUnavailableError
 
 from app.api.deps import CurrentSystemAdminAuth
 from app.features.ig_scraper_jobs import InstagramJobServiceDep
-from app.features.user_events.repository import UserEventsUnavailableError
 
 router = APIRouter(prefix="/internal/ig-scraper", tags=["internal-instagram"])
 
@@ -24,14 +22,7 @@ async def complete_instagram_scrape_job(
     _current_admin: CurrentSystemAdminAuth,
     job_service: InstagramJobServiceDep,
 ) -> InstagramScrapeJobTerminalizationResponse:
-    try:
-        response = await job_service.complete_job(job_id=job_id, payload=payload)
-    except (JobControlUnavailableError, UserEventsUnavailableError) as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(exc),
-        ) from exc
-
+    response = await job_service.complete_job(job_id=job_id, payload=payload)
     if response is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

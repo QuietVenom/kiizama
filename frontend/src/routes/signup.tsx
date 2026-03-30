@@ -38,7 +38,7 @@ export const Route = createFileRoute("/signup")({
   beforeLoad: async () => {
     if (isLoggedIn()) {
       throw redirect({
-        to: "/app",
+        to: "/overview",
       })
     }
 

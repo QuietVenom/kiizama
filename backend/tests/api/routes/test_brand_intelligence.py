@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 from app.api.deps import get_profile_snapshots_collection, get_profiles_collection
 from app.core.config import settings
+from app.core.resilience import UpstreamUnavailableError
 from app.features.brand_intelligence.service import ReportFile
 from app.main import app
 
@@ -205,3 +206,54 @@ def test_generate_reputation_campaign_strategy_requires_creators_for_non_crisis(
 
     assert response.status_code == 422
     assert "creator username" in str(response.json())
+
+
+def test_generate_reputation_campaign_strategy_returns_standard_503_payload(
+    client: TestClient,
+    normal_user_token_headers: dict[str, str],
+) -> None:
+    fake_profiles_collection = object()
+    fake_profile_snapshots_collection = object()
+    app.dependency_overrides[get_profiles_collection] = lambda: fake_profiles_collection
+    app.dependency_overrides[get_profile_snapshots_collection] = lambda: (
+        fake_profile_snapshots_collection
+    )
+    execute_report_generation = AsyncMock(
+        side_effect=UpstreamUnavailableError(
+            dependency="openai",
+            detail="OpenAI strategy service is unavailable.",
+        )
+    )
+
+    try:
+        with patch(
+            "app.api.routes.brand_intelligence._execute_report_generation",
+            new=execute_report_generation,
+        ):
+            response = client.post(
+                f"{settings.API_V1_STR}/brand-intelligence/reputation-campaign-strategy",
+                headers=normal_user_token_headers,
+                json={
+                    "brand_name": "Acme",
+                    "brand_context": "Brand context",
+                    "brand_urls": ["https://acme.com"],
+                    "brand_goals_type": "Crisis",
+                    "brand_goals_context": "Urgent reputation response.",
+                    "audience": ["Gen Z"],
+                    "timeframe": "3 months",
+                    "profiles_list": [],
+                    "campaign_type": "all_micro_performance_community_trust",
+                    "generate_html": False,
+                    "generate_pdf": True,
+                },
+            )
+    finally:
+        app.dependency_overrides.pop(get_profiles_collection, None)
+        app.dependency_overrides.pop(get_profile_snapshots_collection, None)
+
+    assert response.status_code == 503
+    assert response.json() == {
+        "detail": "OpenAI strategy service is unavailable.",
+        "dependency": "openai",
+        "retryable": True,
+    }

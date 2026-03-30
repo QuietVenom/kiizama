@@ -48,6 +48,7 @@ import {
 } from "@/features/brand-intelligence/utils"
 import useCustomToast from "@/hooks/useCustomToast"
 import { extractApiErrorMessage } from "@/lib/api-errors"
+import { autofillIgnoreProps } from "@/lib/autofill"
 import { isValidInstagramUsername } from "@/lib/instagram-usernames"
 import { saveLocalReport } from "@/lib/local-reports"
 import { downloadBlob } from "@/lib/report-files"
@@ -542,6 +543,7 @@ const CreatorStrategyBuilder = ({
   return (
     <Box
       as="form"
+      {...autofillIgnoreProps}
       onSubmit={handleSubmit(onSubmit)}
       display="grid"
       gridTemplateColumns={{ base: "1fr", xl: "minmax(0, 1.65fr) 360px" }}
@@ -685,6 +687,7 @@ const CreatorStrategyBuilder = ({
                   {...register("goal_type", {
                     required: "Select the primary reputation goal.",
                   })}
+                  {...autofillIgnoreProps}
                   {...inputStyles}
                 >
                   <option value="">Select a goal</option>
@@ -713,6 +716,7 @@ const CreatorStrategyBuilder = ({
                   {...register("timeframe", {
                     required: "Select the timeframe.",
                   })}
+                  {...autofillIgnoreProps}
                   {...inputStyles}
                 >
                   <option value="">Select a timeframe</option>
@@ -757,6 +761,7 @@ const CreatorStrategyBuilder = ({
                     message: "Use 500 characters or less.",
                   },
                 })}
+                {...autofillIgnoreProps}
                 {...inputStyles}
                 disabled={!isWorkflowUnlocked}
                 maxLength={500}
@@ -790,6 +795,7 @@ const CreatorStrategyBuilder = ({
                     message: "Use 500 characters or less.",
                   },
                 })}
+                {...autofillIgnoreProps}
                 {...inputStyles}
                 disabled={!isWorkflowUnlocked}
                 maxLength={500}
@@ -954,6 +960,7 @@ const CreatorStrategyBuilder = ({
                   }
                 >
                   <Textarea
+                    {...autofillIgnoreProps}
                     {...inputStyles}
                     aria-invalid={fieldState.error ? "true" : undefined}
                     disabled={!isWorkflowUnlocked}
@@ -1010,6 +1017,7 @@ const CreatorStrategyBuilder = ({
                   }
                 >
                   <Textarea
+                    {...autofillIgnoreProps}
                     {...inputStyles}
                     aria-invalid={fieldState.error ? "true" : undefined}
                     disabled={!isWorkflowUnlocked}
@@ -1068,6 +1076,7 @@ const CreatorStrategyBuilder = ({
                   }
                 >
                   <Textarea
+                    {...autofillIgnoreProps}
                     {...inputStyles}
                     aria-invalid={fieldState.error ? "true" : undefined}
                     disabled={!isWorkflowUnlocked}
@@ -1123,6 +1132,7 @@ const CreatorStrategyBuilder = ({
                   }
                 >
                   <Textarea
+                    {...autofillIgnoreProps}
                     {...inputStyles}
                     aria-invalid={fieldState.error ? "true" : undefined}
                     disabled={!isWorkflowUnlocked}
@@ -1178,6 +1188,7 @@ const CreatorStrategyBuilder = ({
                   }
                 >
                   <Textarea
+                    {...autofillIgnoreProps}
                     {...inputStyles}
                     aria-invalid={fieldState.error ? "true" : undefined}
                     disabled={!isWorkflowUnlocked}
@@ -1233,6 +1244,7 @@ const CreatorStrategyBuilder = ({
                   }
                 >
                   <Textarea
+                    {...autofillIgnoreProps}
                     {...inputStyles}
                     aria-invalid={fieldState.error ? "true" : undefined}
                     disabled={!isWorkflowUnlocked}

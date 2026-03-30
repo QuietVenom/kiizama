@@ -122,11 +122,11 @@ def calculate_metrics_from_scrape(scrape: Any) -> dict[str, Any]:
         "avg_reel_likes": 0.0,
         "avg_reel_comments": 0.0,
     }
+    reel_total_likes = 0
+    reel_total_comments = 0
 
     if reels:
         total_plays = 0
-        total_likes = 0
-        total_comments = 0
 
         for reel in reels:
             play_count = _get_field_value(reel, "play_count", 0)
@@ -135,28 +135,35 @@ def calculate_metrics_from_scrape(scrape: Any) -> dict[str, Any]:
             if isinstance(play_count, int):
                 total_plays += play_count
             if isinstance(like_count, int):
-                total_likes += like_count
+                reel_total_likes += like_count
             if isinstance(comment_count, int):
-                total_comments += comment_count
+                reel_total_comments += comment_count
 
         count_reels = len(reels)
         reel_metrics["total_plays"] = total_plays
         reel_metrics["avg_plays"] = total_plays / count_reels if count_reels else 0.0
         reel_metrics["avg_reel_likes"] = (
-            total_likes / count_reels if count_reels else 0.0
+            reel_total_likes / count_reels if count_reels else 0.0
         )
         reel_metrics["avg_reel_comments"] = (
-            total_comments / count_reels if count_reels else 0.0
+            reel_total_comments / count_reels if count_reels else 0.0
         )
 
     total_engagement = post_metrics["total_likes"] + post_metrics["total_comments"]
-    overall_engagement_rate = total_engagement / followers if followers else 0.0
+    overall_post_engagement_rate = total_engagement / followers if followers else 0.0
+    reel_total_engagement = reel_total_likes + reel_total_comments
+    reel_engagement_rate_on_plays = (
+        reel_total_engagement / reel_metrics["total_plays"]
+        if reel_metrics["total_plays"]
+        else 0.0
+    )
 
     return {
         "user": user,
         "post_metrics": post_metrics,
         "reel_metrics": reel_metrics,
-        "overall_engagement_rate": overall_engagement_rate,
+        "overall_post_engagement_rate": overall_post_engagement_rate,
+        "reel_engagement_rate_on_plays": reel_engagement_rate_on_plays,
         "followers": followers,
         "following": following,
         "media_count": media_count,

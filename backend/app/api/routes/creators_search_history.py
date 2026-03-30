@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query
 
 from app.api.deps import CurrentUser
 from app.features.creators_search_history import (
@@ -10,7 +10,6 @@ from app.features.creators_search_history import (
     CreatorsSearchHistoryItem,
     CreatorsSearchHistoryListResponse,
     CreatorsSearchHistoryServiceDep,
-    CreatorsSearchHistoryUnavailableError,
 )
 
 router = APIRouter(
@@ -25,16 +24,10 @@ async def list_creators_search_history(
     service: CreatorsSearchHistoryServiceDep,
     limit: Annotated[int, Query(ge=1, le=20)] = 5,
 ) -> CreatorsSearchHistoryListResponse:
-    try:
-        return await service.list_history(
-            user_id=str(current_user.id),
-            limit=limit,
-        )
-    except CreatorsSearchHistoryUnavailableError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(exc),
-        ) from exc
+    return await service.list_history(
+        user_id=str(current_user.id),
+        limit=limit,
+    )
 
 
 @router.post("", response_model=CreatorsSearchHistoryItem)
@@ -43,16 +36,10 @@ async def create_creators_search_history_entry(
     current_user: CurrentUser,
     service: CreatorsSearchHistoryServiceDep,
 ) -> CreatorsSearchHistoryItem:
-    try:
-        return await service.create_entry(
-            user_id=str(current_user.id),
-            payload=payload,
-        )
-    except CreatorsSearchHistoryUnavailableError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(exc),
-        ) from exc
+    return await service.create_entry(
+        user_id=str(current_user.id),
+        payload=payload,
+    )
 
 
 __all__ = ["router"]

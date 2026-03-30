@@ -1,6 +1,5 @@
 from typing import Annotated, Any
 
-from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 from pydantic.functional_validators import BeforeValidator
 
@@ -81,7 +80,6 @@ class UpdateIgCredential(BaseModel):
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
-        json_encoders={ObjectId: str},
         json_schema_extra={
             "example": {
                 "password": "new_plain_password",

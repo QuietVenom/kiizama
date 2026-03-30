@@ -76,7 +76,7 @@ const RecentReportsCard = () => {
   }
 
   return (
-    <Box layerStyle="dashboardCard" p={{ base: 5, lg: 7 }}>
+    <Box layerStyle="dashboardCard" p={{ base: 5, lg: 7 }} minW={0}>
       <Flex
         alignItems={{ base: "flex-start", md: "center" }}
         justifyContent="space-between"
@@ -84,7 +84,7 @@ const RecentReportsCard = () => {
         gap={4}
         direction={{ base: "column", md: "row" }}
       >
-        <HStack gap={3} alignItems="flex-start">
+        <HStack gap={3} alignItems="flex-start" minW={0}>
           <Flex direction="column" alignItems="center" minW="72px">
             <Icon as={FiHardDrive} color="ui.brandText" boxSize={7} />
             <Text
@@ -100,6 +100,7 @@ const RecentReportsCard = () => {
             fontSize={{ base: "lg", lg: "2xl" }}
             fontWeight="black"
             letterSpacing="-0.02em"
+            minW={0}
           >
             Available Reports - Local Storage
           </Text>
@@ -194,9 +195,10 @@ const RecentReportsCard = () => {
             items.map((item) => (
               <Flex
                 key={item.id}
-                alignItems="center"
+                alignItems={{ base: "stretch", sm: "center" }}
                 justifyContent="space-between"
                 gap={{ base: 3, lg: 4 }}
+                direction={{ base: "column", sm: "row" }}
                 rounded="2xl"
                 px={{ base: 3, lg: 4 }}
                 py={{ base: 2.5, lg: 3 }}
@@ -208,7 +210,7 @@ const RecentReportsCard = () => {
                   borderColor: "ui.sidebarBorder",
                 }}
               >
-                <HStack gap={4} minW={0} alignItems="flex-start">
+                <HStack gap={4} minW={0} alignItems="flex-start" w="full">
                   <Box minW={0}>
                     <Text
                       fontSize={{ base: "sm", lg: "lg" }}
@@ -229,7 +231,7 @@ const RecentReportsCard = () => {
                   </Box>
                 </HStack>
 
-                <HStack gap={2}>
+                <HStack gap={2} alignSelf={{ base: "flex-end", sm: "initial" }}>
                   <Button
                     aria-label={`Download report ${item.name}`}
                     variant="solid"

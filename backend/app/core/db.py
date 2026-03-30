@@ -1,11 +1,13 @@
-from sqlmodel import Session, create_engine, select
+from kiizama_scrape_core.sql import create_sqlmodel_engine
+from kiizama_scrape_core.sql import ping_postgres as core_ping_postgres
+from sqlmodel import Session, select
 
 from app import crud_admin
 from app import crud_users as crud
 from app.core.config import settings
 from app.models import User, UserCreate
 
-engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI), pool_pre_ping=True)
+engine = create_sqlmodel_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
 
 # make sure all SQLModel models are imported (app.models) before initializing DB
@@ -14,8 +16,7 @@ engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI), pool_pre_ping=True
 
 
 def ping_postgres() -> None:
-    with Session(engine) as session:
-        session.exec(select(1))
+    core_ping_postgres(engine)
 
 
 def init_db(session: Session) -> None:

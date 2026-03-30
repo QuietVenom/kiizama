@@ -2,7 +2,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.deps import get_current_active_superuser, get_ig_credentials_collection
+from app.api.deps import SessionDep, get_current_active_superuser
 from app.crud.ig_credentials import (
     create_ig_credential,
     delete_ig_credential,
@@ -36,21 +36,21 @@ def _require_credential(credential_doc: Document | None) -> IgCredentialPublic:
 @router.post(
     "/", response_model=IgCredentialPublic, status_code=status.HTTP_201_CREATED
 )
-async def create_ig_credential_endpoint(
+def create_ig_credential_endpoint(
     credential: IgCredential,
-    collection: Any = Depends(get_ig_credentials_collection),
+    session: SessionDep,
 ) -> IgCredentialPublic:
-    created = await create_ig_credential(collection, credential)
+    created = create_ig_credential(session, credential)
     return _require_credential(created)
 
 
 @router.get("/", response_model=IgCredentialPublicCollection)
-async def read_ig_credentials(
+def read_ig_credentials(
+    session: SessionDep,
     skip: int = 0,
     limit: int = 100,
-    collection: Any = Depends(get_ig_credentials_collection),
 ) -> IgCredentialPublicCollection:
-    credentials = await list_ig_credentials(collection, skip=skip, limit=limit)
+    credentials = list_ig_credentials(session, skip=skip, limit=limit)
     return IgCredentialPublicCollection(
         ig_credentials=[
             IgCredentialPublic.model_validate(credential) for credential in credentials
@@ -59,41 +59,39 @@ async def read_ig_credentials(
 
 
 @router.get("/{credential_id}", response_model=IgCredentialPublic)
-async def read_ig_credential(
+def read_ig_credential(
     credential_id: str,
-    collection: Any = Depends(get_ig_credentials_collection),
+    session: SessionDep,
 ) -> IgCredentialPublic:
-    return _require_credential(await get_ig_credential(collection, credential_id))
+    return _require_credential(get_ig_credential(session, credential_id))
 
 
 @router.patch("/{credential_id}", response_model=IgCredentialPublic)
-async def update_ig_credential_endpoint(
+def update_ig_credential_endpoint(
     credential_id: str,
     patch: UpdateIgCredential,
-    collection: Any = Depends(get_ig_credentials_collection),
+    session: SessionDep,
 ) -> IgCredentialPublic:
-    return _require_credential(
-        await update_ig_credential(collection, credential_id, patch)
-    )
+    return _require_credential(update_ig_credential(session, credential_id, patch))
 
 
 @router.put("/{credential_id}", response_model=IgCredentialPublic)
-async def replace_ig_credential_endpoint(
+def replace_ig_credential_endpoint(
     credential_id: str,
     credential_in: IgCredential,
-    collection: Any = Depends(get_ig_credentials_collection),
+    session: SessionDep,
 ) -> IgCredentialPublic:
     return _require_credential(
-        await replace_ig_credential(collection, credential_id, credential_in)
+        replace_ig_credential(session, credential_id, credential_in)
     )
 
 
 @router.delete("/{credential_id}", response_model=IgCredentialPublic)
-async def delete_ig_credential_endpoint(
+def delete_ig_credential_endpoint(
     credential_id: str,
-    collection: Any = Depends(get_ig_credentials_collection),
+    session: SessionDep,
 ) -> IgCredentialPublic:
-    return _require_credential(await delete_ig_credential(collection, credential_id))
+    return _require_credential(delete_ig_credential(session, credential_id))
 
 
 __all__ = ["router"]

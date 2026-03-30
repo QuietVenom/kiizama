@@ -9,21 +9,19 @@ WORKDIR /app
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
 
-# Copy only what is needed for the background worker.
-COPY backend /app/backend
+# Copy only what the worker actually needs.
 COPY packages /app/packages
 COPY scrape_worker /app/scrape_worker
 
-# Install backend dependencies (includes playwright python package).
-WORKDIR /app/backend
-RUN uv sync --frozen --no-dev
+# Install worker dependencies (scrape_core brings Playwright transitively).
+WORKDIR /app/scrape_worker
+RUN uv sync --no-dev
 
 # Ensure Chromium binaries match the installed Playwright package.
-RUN .venv/bin/python -m playwright install chromium
-
-ENV PATH="/app/backend/.venv/bin:$PATH"
-ENV PYTHONPATH="/app/backend:/app"
-
 WORKDIR /app
+RUN /app/scrape_worker/.venv/bin/python -m playwright install chromium
+
+ENV PATH="/app/scrape_worker/.venv/bin:$PATH"
+ENV PYTHONPATH="/app"
 
 CMD ["python", "-m", "scrape_worker.main"]

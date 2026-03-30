@@ -34,6 +34,9 @@ class StubEventStreamService(UserEventStreamService):
         if self.availability_exception is not None:
             raise self.availability_exception
 
+    async def assert_connection_available(self) -> None:
+        self.assert_available()
+
     def stream_events(
         self,
         request: Request,
@@ -125,4 +128,8 @@ def test_stream_user_events_returns_503_when_service_is_unavailable(
         app.dependency_overrides.pop(get_user_event_stream_service, None)
 
     assert response.status_code == 503
-    assert response.json() == {"detail": "Redis is unavailable for user events."}
+    assert response.json() == {
+        "detail": "Redis is unavailable for user events.",
+        "dependency": "redis",
+        "retryable": True,
+    }

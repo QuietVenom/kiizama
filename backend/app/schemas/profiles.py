@@ -1,6 +1,5 @@
 from typing import Annotated
 
-from bson import ObjectId
 from pydantic import (
     AnyUrl,
     AwareDatetime,
@@ -25,9 +24,7 @@ class Profile(BaseModel):
     Container for a single profile record.
     """
 
-    # The primary key for the Profile, stored as a `str` on the instance.
-    # This will be aliased to ``_id`` when sent to MongoDB,
-    # but provided as ``id`` in the API requests and responses.
+    # The primary key for the profile is serialized as a string and exposed as `_id`.
     id: PyObjectId | None = Field(alias="_id", default=None)
     ig_id: str = Field(...)
     username: NonEmptyStr = Field(...)
@@ -106,7 +103,6 @@ class UpdateProfile(BaseModel):
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
-        json_encoders={ObjectId: str},
         json_schema_extra={
             "example": {
                 "biography": "Fitness & lifestyle creator. Links below 👇",

@@ -346,10 +346,10 @@
             <tr><td>Posts analizados</td><td><b>{{ tp }}</b></td></tr>
             <tr><td>Likes totales (posts)</td><td><b>{{ '{:,}'.format(likes_p) }}</b></td></tr>
             <tr><td>Comentarios totales (posts)</td><td><b>{{ '{:,}'.format(comm_p) }}</b></td></tr>
-            <tr><td>Engagement Rate prom. por post</td><td><b>{{ '%.2f%%' % er_p_avg }}</b></td></tr>
+            <tr><td>ER promedio por post (sobre followers)</td><td><b>{{ '%.2f%%' % er_p_avg }}</b></td></tr>
             <tr><td>Reels analizados</td><td><b>{{ tr }}</b></td></tr>
             <tr><td>Reproducciones totales (reels)</td><td><b>{{ '{:,}'.format(plays_r) }}</b></td></tr>
-            <tr><td>ER promedio de reels (sobre plays)</td><td><b>{{ '%.2f%%' % er_r_avg if er_r_avg is not none else 'NA' }}</b></td></tr>
+            <tr><td>ER total de reels sobre plays</td><td><b>{{ '%.2f%%' % er_r_avg if er_r_avg is not none else 'NA' }}</b></td></tr>
           </tbody>
         </table>
       </section>

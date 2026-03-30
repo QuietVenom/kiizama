@@ -32,7 +32,7 @@ def configure_credentials_store_resolver(
 
 
 class InstagramSessionValidator(BaseInstagramWorker):
-    """Validate or refresh an Instagram session stored in MongoDB."""
+    """Validate or refresh an Instagram session stored in the credentials store."""
 
     def __init__(
         self,
@@ -377,7 +377,9 @@ class InstagramSessionValidator(BaseInstagramWorker):
         if self.credential_id:
             await self._persist_session(self.credential_id, state)
         else:
-            self.logger.warning("Missing credential id; session not persisted to Mongo")
+            self.logger.warning(
+                "Missing credential id; session was not persisted to the credentials store"
+            )
 
         return state
 

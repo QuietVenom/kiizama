@@ -8,6 +8,12 @@ from kiizama_scrape_core.ig_scraper.schemas import InstagramPostSchema
 from pydantic import BaseModel, Field
 
 from app.api.deps import get_current_active_superuser
+from app.core.resilience import (
+    UpstreamBadResponseError,
+    mark_dependency_failure,
+    mark_dependency_success,
+    translate_openai_exception,
+)
 from app.features.openai.classes import (
     IG_OPENAI_REQUEST,
     InstagramProfileAnalysisInput,
@@ -76,9 +82,18 @@ async def run_instagram_ai(request: InstagramAIRequest) -> InstagramAIResponse:
             function_kwargs=req_kwargs,
         )
     except Exception as exc:
-        raise HTTPException(
-            status_code=502, detail=f"OpenAI call failed: {exc}"
-        ) from exc
+        translated = translate_openai_exception(
+            exc,
+            detail=f"OpenAI call failed: {exc}",
+        )
+        mark_dependency_failure(
+            "openai",
+            context="openai-instagram-route",
+            detail=translated.detail,
+            status="degraded",
+            exc=exc,
+        )
+        raise translated from exc
 
     try:
         if not text or not str(text).strip():
@@ -86,9 +101,24 @@ async def run_instagram_ai(request: InstagramAIRequest) -> InstagramAIResponse:
         raw = json.loads(text)
         parsed = deserialize_profile_analysis_response(raw)
     except Exception as exc:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to parse OpenAI response: {exc}"
-        ) from exc
+        translated = UpstreamBadResponseError(
+            dependency="openai",
+            detail=f"Failed to parse OpenAI response: {exc}",
+        )
+        mark_dependency_failure(
+            "openai",
+            context="openai-instagram-route",
+            detail=translated.detail,
+            status="degraded",
+            exc=exc,
+        )
+        raise translated from exc
+
+    mark_dependency_success(
+        "openai",
+        context="openai-instagram-route",
+        detail="OpenAI Instagram analysis completed successfully.",
+    )
 
     return InstagramAIResponse(
         results=[
