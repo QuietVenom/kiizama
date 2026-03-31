@@ -45,6 +45,7 @@ if [ -z "${TEST_DATABASE_URL:-}" ]; then
 fi
 
 export DATABASE_URL="${TEST_DATABASE_URL}"
+export RATE_LIMIT_ENABLED="${RATE_LIMIT_ENABLED:-false}"
 
 "${PYTHON_BIN}" app/tests_pre_start.py
 "${ALEMBIC_BIN}" upgrade head

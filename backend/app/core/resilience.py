@@ -3,14 +3,12 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Any, Literal, Protocol, cast
 
 import httpx
 from openai import OpenAIError
 from redis.exceptions import RedisError
 from sqlalchemy.exc import DBAPIError, InterfaceError, OperationalError
-
-from app.features.openai.types import OpenAIResponseError
 
 DependencyName = Literal[
     "postgres",
@@ -70,6 +68,10 @@ class UpstreamBadResponseError(RuntimeError):
         self.detail = detail
         self.retryable = retryable
         self.status_code = 502
+
+
+class _OpenAIResponseErrorLike(Protocol):
+    status_code: int
 
 
 @dataclass(slots=True)
@@ -283,9 +285,11 @@ def translate_openai_exception(
     *,
     detail: str | None = None,
 ) -> DependencyUnavailableError | UpstreamBadResponseError:
-    if isinstance(exc, OpenAIResponseError):
+    if exc.__class__.__name__ == "OpenAIResponseError" and hasattr(exc, "status_code"):
+        response_error = cast(_OpenAIResponseErrorLike, exc)
         message = detail or str(exc)
-        if exc.status_code >= 500:
+        status_code = int(response_error.status_code)
+        if status_code >= 500:
             return UpstreamUnavailableError(
                 dependency="openai",
                 detail=message,

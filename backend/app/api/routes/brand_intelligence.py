@@ -23,6 +23,7 @@ from app.features.brand_intelligence.service import (
     generate_reputation_campaign_strategy_report,
     generate_reputation_creator_strategy_report,
 )
+from app.features.rate_limit import POLICIES, rate_limit
 
 router = APIRouter(prefix="/brand-intelligence", tags=["brand-intelligence"])
 
@@ -38,7 +39,11 @@ REPORT_FILE_RESPONSES: dict[int | str, dict[str, Any]] = {
 }
 
 
-@router.get("/profiles-existence", response_model=ProfileExistenceCollection)
+@router.get(
+    "/profiles-existence",
+    response_model=ProfileExistenceCollection,
+    dependencies=[Depends(rate_limit(POLICIES.private_expensive))],
+)
 async def read_profiles_existence(
     _current_user: CurrentUser,
     usernames: Annotated[list[str] | None, Query()] = None,
@@ -57,6 +62,7 @@ async def read_profiles_existence(
     "/reputation-campaign-strategy",
     response_class=Response,
     responses=REPORT_FILE_RESPONSES,
+    dependencies=[Depends(rate_limit(POLICIES.private_expensive))],
 )
 async def generate_reputation_campaign_strategy_endpoint(
     payload: ReputationCampaignStrategyRequest,
@@ -80,6 +86,7 @@ async def generate_reputation_campaign_strategy_endpoint(
     "/reputation-creator-strategy",
     response_class=Response,
     responses=REPORT_FILE_RESPONSES,
+    dependencies=[Depends(rate_limit(POLICIES.private_expensive))],
 )
 async def generate_reputation_creator_strategy_endpoint(
     payload: ReputationCreatorStrategyRequest,

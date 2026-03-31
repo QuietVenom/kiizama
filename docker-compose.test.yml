@@ -13,6 +13,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       REDIS_URL: redis://redis:6379/0
+      RATE_LIMIT_ENABLED: "false"
       SENTRY_DSN: ""
 
   backend:
@@ -28,6 +29,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       REDIS_URL: redis://redis:6379/0
+      RATE_LIMIT_ENABLED: "false"
       SENTRY_DSN: ""
 
   postgres_test:

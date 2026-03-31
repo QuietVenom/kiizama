@@ -7,6 +7,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Response
 
 from app.api.deps import CurrentUser, get_profile_snapshots_collection
+from app.features.rate_limit import POLICIES, rate_limit
 from app.features.social_media_report.schemas import InstagramReportRequest
 from app.features.social_media_report.service import (
     ReportFile,
@@ -31,6 +32,7 @@ REPORT_FILE_RESPONSES: dict[int | str, dict[str, Any]] = {
     "/instagram",
     response_class=Response,
     responses=REPORT_FILE_RESPONSES,
+    dependencies=[Depends(rate_limit(POLICIES.private_expensive))],
 )
 async def generate_instagram_report_endpoint(
     payload: InstagramReportRequest,

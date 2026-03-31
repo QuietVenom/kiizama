@@ -141,6 +141,7 @@ prepare_playwright_env_file() {
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "POSTGRES_TEST_PASSWORD" "postgres"
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "POSTGRES_TEST_PORT" "55432"
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "REDIS_URL" "redis://redis:6379/0"
+  upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "RATE_LIMIT_ENABLED" "false"
   upsert_env_var "$PLAYWRIGHT_TEST_ENV_FILE" "CI" ""
 }
 

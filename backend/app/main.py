@@ -27,6 +27,7 @@ from app.core.resilience import (
 )
 from app.features.creators_search_history import CreatorsSearchHistoryUnavailableError
 from app.features.job_control import JobControlUnavailableError
+from app.features.rate_limit import RateLimitExceededError
 from app.features.user_events import UserEventsUnavailableError
 
 logger = logging.getLogger(__name__)
@@ -123,6 +124,23 @@ def _build_dependency_error_response(
     )
 
 
+def _build_rate_limit_error_response(exc: RateLimitExceededError) -> JSONResponse:
+    response = JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "detail": "Rate limit exceeded.",
+            "policy": exc.policy,
+            "retry_after_seconds": exc.retry_after_seconds,
+        },
+    )
+    response.headers["Retry-After"] = str(exc.retry_after_seconds)
+    response.headers["RateLimit-Limit"] = str(exc.limit)
+    response.headers["RateLimit-Remaining"] = str(exc.remaining)
+    response.headers["RateLimit-Reset"] = str(exc.reset_after_seconds)
+    response.headers["RateLimit-Policy"] = exc.policy
+    return response
+
+
 @app.exception_handler(DependencyUnavailableError)
 async def dependency_unavailable_exception_handler(
     _request: Request,
@@ -172,6 +190,14 @@ async def creators_search_history_unavailable_exception_handler(
 ) -> JSONResponse:
     translated = translate_redis_exception(exc, detail=str(exc))
     return _build_dependency_error_response(translated)
+
+
+@app.exception_handler(RateLimitExceededError)
+async def rate_limit_exceeded_exception_handler(
+    _request: Request,
+    exc: RateLimitExceededError,
+) -> JSONResponse:
+    return _build_rate_limit_error_response(exc)
 
 
 @app.middleware("http")

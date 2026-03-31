@@ -18,6 +18,7 @@ from app.crud.profile import (
     replace_profile,
     update_profile,
 )
+from app.features.rate_limit import POLICIES, rate_limit
 from app.models import User
 from app.schemas import Profile, ProfileCollection, UpdateProfile
 
@@ -46,7 +47,11 @@ async def create_ig_profile(
     return _require_profile(created)
 
 
-@router.get("/by-username/{username}", response_model=Profile)
+@router.get(
+    "/by-username/{username}",
+    response_model=Profile,
+    dependencies=[Depends(rate_limit(POLICIES.private_basic))],
+)
 async def read_ig_profile_by_username(
     username: str,
     _current_user: CurrentUser,

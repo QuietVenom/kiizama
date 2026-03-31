@@ -60,6 +60,7 @@ jobs:
       run: |
         cp .env.example .env
         printf "\nDATABASE_URL=%s\n" "${DATABASE_URL}" >> .env
+        printf "RATE_LIMIT_ENABLED=false\n" >> .env
     - uses: actions/setup-node@v5
       with:
         node-version: lts/*

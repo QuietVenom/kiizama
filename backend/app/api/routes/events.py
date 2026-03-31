@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Header, Request
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 
 from app.api.deps import CurrentUserId
+from app.features.rate_limit import POLICIES, rate_limit
 from app.features.user_events.service import (
     UserEventStreamService,
     get_user_event_stream_service,
@@ -25,7 +26,11 @@ async def get_stream_user_events_service(
     return event_stream_service
 
 
-@router.get("/stream", response_class=EventSourceResponse)
+@router.get(
+    "/stream",
+    response_class=EventSourceResponse,
+    dependencies=[Depends(rate_limit(POLICIES.stream_connect))],
+)
 async def stream_user_events(
     request: Request,
     current_user_id: CurrentUserId,

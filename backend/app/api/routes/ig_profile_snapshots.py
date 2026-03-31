@@ -24,6 +24,7 @@ from app.features.general.types import (
     is_allowed_profile_picture_url,
     resolve_profile_picture_data_uri,
 )
+from app.features.rate_limit import POLICIES, rate_limit
 from app.schemas import (
     ProfileSnapshot,
     ProfileSnapshotCollection,
@@ -168,7 +169,10 @@ async def read_ig_profile_snapshots(
 @router.get(
     "/advanced",
     response_model=ProfileSnapshotExpandedCollection,
-    dependencies=[Depends(get_current_user)],
+    dependencies=[
+        Depends(get_current_user),
+        Depends(rate_limit(POLICIES.private_expensive)),
+    ],
 )
 async def read_ig_profile_snapshots_advanced(
     skip: int = 0,
