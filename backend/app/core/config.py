@@ -131,6 +131,7 @@ class Settings(BaseSettings):
 
     REDIS_URL: str | None = None
     FLY_REDIS_URL: str | None = None
+    RATE_LIMIT_ENABLED: bool = True
     JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS: int = 60 * 60 * 24
     USER_EVENTS_STREAM_MAXLEN: int = 100
     USER_EVENTS_SSE_READ_BLOCK_MS: int = 10_000

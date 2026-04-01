@@ -42,6 +42,7 @@ from app.features.ig_scraper_runtime import (
     BackendInstagramScrapePersistence,
     configure_backend_instagram_scraper_runtime,
 )
+from app.features.rate_limit import POLICIES, rate_limit
 
 router = APIRouter(prefix="/ig-scraper", tags=["instagram"])
 logger = logging.getLogger(__name__)
@@ -51,6 +52,7 @@ logger = logging.getLogger(__name__)
     "/jobs",
     response_model=InstagramScrapeJobCreateResponse,
     status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[Depends(rate_limit(POLICIES.jobs_write))],
 )
 async def create_instagram_scrape_job(
     payload: InstagramScrapeJobCreateRequest,
@@ -65,7 +67,11 @@ async def create_instagram_scrape_job(
     return InstagramScrapeJobCreateResponse(job_id=job_id, status="queued")
 
 
-@router.get("/jobs/{job_id}", response_model=InstagramScrapeJobStatusResponse)
+@router.get(
+    "/jobs/{job_id}",
+    response_model=InstagramScrapeJobStatusResponse,
+    dependencies=[Depends(rate_limit(POLICIES.jobs_read))],
+)
 async def get_instagram_scrape_job(
     job_id: str,
     _current_user: CurrentUser,

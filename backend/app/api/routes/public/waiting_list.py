@@ -1,14 +1,19 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from sqlalchemy.exc import IntegrityError
 
 from app import crud_waiting_list
 from app.api.deps import SessionDep
+from app.features.rate_limit import POLICIES, rate_limit
 from app.models import Message, WaitingListCreate
 
 router = APIRouter(prefix="/public/waiting-list", tags=["public-waiting-list"])
 
 
-@router.post("/", response_model=Message)
+@router.post(
+    "/",
+    response_model=Message,
+    dependencies=[Depends(rate_limit(POLICIES.public_form_submit))],
+)
 def create_waiting_list_entry(
     session: SessionDep, waiting_list_in: WaitingListCreate
 ) -> Message:

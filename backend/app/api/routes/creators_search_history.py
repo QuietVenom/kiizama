@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
 from app.api.deps import CurrentUser
 from app.features.creators_search_history import (
@@ -11,6 +11,7 @@ from app.features.creators_search_history import (
     CreatorsSearchHistoryListResponse,
     CreatorsSearchHistoryServiceDep,
 )
+from app.features.rate_limit import POLICIES, rate_limit
 
 router = APIRouter(
     prefix="/creators-search/history",
@@ -18,7 +19,11 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=CreatorsSearchHistoryListResponse)
+@router.get(
+    "",
+    response_model=CreatorsSearchHistoryListResponse,
+    dependencies=[Depends(rate_limit(POLICIES.private_basic))],
+)
 async def list_creators_search_history(
     current_user: CurrentUser,
     service: CreatorsSearchHistoryServiceDep,
@@ -30,7 +35,11 @@ async def list_creators_search_history(
     )
 
 
-@router.post("", response_model=CreatorsSearchHistoryItem)
+@router.post(
+    "",
+    response_model=CreatorsSearchHistoryItem,
+    dependencies=[Depends(rate_limit(POLICIES.private_basic))],
+)
 async def create_creators_search_history_entry(
     payload: CreatorsSearchHistoryCreateRequest,
     current_user: CurrentUser,

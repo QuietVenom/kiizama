@@ -11,6 +11,7 @@ from app.api.deps import (
     get_current_active_superuser,
 )
 from app.core.security import get_password_hash, verify_password
+from app.features.rate_limit import POLICIES, rate_limit
 from app.models import (
     Message,
     UpdatePassword,
@@ -76,7 +77,11 @@ def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
     return user
 
 
-@router.patch("/me", response_model=UserPublic)
+@router.patch(
+    "/me",
+    response_model=UserPublic,
+    dependencies=[Depends(rate_limit(POLICIES.private_basic))],
+)
 def update_user_me(
     *, session: SessionDep, user_in: UserUpdateMe, current_user: CurrentUser
 ) -> Any:
@@ -98,7 +103,11 @@ def update_user_me(
     return current_user
 
 
-@router.patch("/me/password", response_model=Message)
+@router.patch(
+    "/me/password",
+    response_model=Message,
+    dependencies=[Depends(rate_limit(POLICIES.private_basic))],
+)
 def update_password_me(
     *, session: SessionDep, body: UpdatePassword, current_user: CurrentUser
 ) -> Any:
@@ -118,7 +127,11 @@ def update_password_me(
     return Message(message="Password updated successfully")
 
 
-@router.get("/me", response_model=UserPublic)
+@router.get(
+    "/me",
+    response_model=UserPublic,
+    dependencies=[Depends(rate_limit(POLICIES.private_basic))],
+)
 def read_user_me(current_user: CurrentUser) -> Any:
     """
     Get current user.
@@ -126,7 +139,11 @@ def read_user_me(current_user: CurrentUser) -> Any:
     return current_user
 
 
-@router.delete("/me", response_model=Message)
+@router.delete(
+    "/me",
+    response_model=Message,
+    dependencies=[Depends(rate_limit(POLICIES.private_basic))],
+)
 def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
     """
     Delete own user.
@@ -140,7 +157,11 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
     return Message(message="User deleted successfully")
 
 
-@router.post("/signup", response_model=UserPublic)
+@router.post(
+    "/signup",
+    response_model=UserPublic,
+    dependencies=[Depends(rate_limit(POLICIES.public_auth_signup))],
+)
 def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     """
     Create new user without the need to be logged in.
