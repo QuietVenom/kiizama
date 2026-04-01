@@ -1,6 +1,7 @@
+import asyncio
 import logging
 from collections.abc import AsyncIterator, Awaitable, Callable
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 
 import sentry_sdk
 from fastapi import FastAPI, Request
@@ -26,11 +27,13 @@ from app.core.resilience import (
     translate_redis_exception,
 )
 from app.features.creators_search_history import CreatorsSearchHistoryUnavailableError
+from app.features.ig_scraper_jobs.apify_runner import ApifyInstagramJobRunner
 from app.features.job_control import JobControlUnavailableError
 from app.features.rate_limit import RateLimitExceededError
 from app.features.user_events import UserEventsUnavailableError
 
 logger = logging.getLogger(__name__)
+APIFY_RUNNER_SUPERVISOR_RETRY_SECONDS = 5.0
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -42,8 +45,88 @@ def ensure_postgres_connection() -> None:
     ping_postgres()
 
 
+class ApifyRunnerSupervisor:
+    def __init__(self, app: FastAPI) -> None:
+        self._app = app
+        self._runner: ApifyInstagramJobRunner | None = None
+        self._task: asyncio.Task[None] | None = None
+        self._stop_event = asyncio.Event()
+
+    async def start(self) -> None:
+        if self._task is not None:
+            return
+        self._task = asyncio.create_task(self._run())
+
+    async def stop(self) -> None:
+        self._stop_event.set()
+        if self._task is not None:
+            done, _ = await asyncio.wait({self._task}, timeout=1)
+            if not done:
+                self._task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await self._task
+            else:
+                await self._task
+            self._task = None
+        if self._runner is not None:
+            await self._runner.stop()
+            self._runner = None
+
+    async def _run(self) -> None:
+        while not self._stop_event.is_set():
+            if not settings.IG_SCRAPER_APIFY_JOBS_ENABLED:
+                return
+            if not settings.APIFY_API_TOKEN or not settings.APIFY_API_TOKEN.strip():
+                logger.warning(
+                    "Skipping Apify job runner startup because APIFY_API_TOKEN "
+                    "is not configured."
+                )
+                return
+
+            try:
+                redis = get_redis_client()
+                await redis.ping()
+                self._app.state.redis_client = redis
+                runner = ApifyInstagramJobRunner()
+                await runner.start()
+                if not runner.is_running:
+                    await runner.stop()
+                    raise RuntimeError("Apify job runner loop did not stay active.")
+                self._runner = runner
+                mark_dependency_success(
+                    "redis",
+                    context="ig-scraper-apify-runner",
+                    detail="Apify job runner connected to Redis.",
+                )
+                return
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                mark_dependency_failure(
+                    "redis",
+                    context="ig-scraper-apify-runner",
+                    detail="Apify job runner is waiting for Redis.",
+                    status="degraded",
+                    exc=exc,
+                )
+                logger.warning(
+                    "Apify job runner startup failed. Retrying in %.1fs: %s",
+                    APIFY_RUNNER_SUPERVISOR_RETRY_SECONDS,
+                    exc,
+                )
+                try:
+                    await asyncio.wait_for(
+                        self._stop_event.wait(),
+                        timeout=APIFY_RUNNER_SUPERVISOR_RETRY_SECONDS,
+                    )
+                except asyncio.TimeoutError:
+                    continue
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    apify_runner_supervisor: ApifyRunnerSupervisor | None = None
+
     try:
         ensure_postgres_connection()
     except Exception as exc:
@@ -66,6 +149,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info("Connected to Postgres database.")
 
     if settings._resolved_redis_url():
+        apify_runner_supervisor = ApifyRunnerSupervisor(app)
         redis = get_redis_client()
         try:
             await redis.ping()
@@ -88,6 +172,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             )
             logger.info("Connected to Redis.")
             app.state.redis_client = redis
+        await apify_runner_supervisor.start()
     else:
         mark_dependency_failure(
             "redis",
@@ -101,6 +186,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     yield
 
+    if apify_runner_supervisor is not None:
+        await apify_runner_supervisor.stop()
     await close_redis_client()
 
 

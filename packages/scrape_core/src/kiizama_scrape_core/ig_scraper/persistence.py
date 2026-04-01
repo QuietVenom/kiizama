@@ -17,6 +17,7 @@ from kiizama_scrape_core.crypto import (
 from .classes import CredentialCandidate
 from .ports import InstagramCredentialsStore, InstagramScrapePersistence
 from .schemas import InstagramBatchScrapeResponse
+from .service import NOT_FOUND_ERROR
 from .sqlmodels import (
     IgCredential,
     IgMetrics,
@@ -108,7 +109,7 @@ def _serialize_profile(record: IgProfile) -> dict[str, Any]:
         "is_private": record.is_private,
         "is_verified": record.is_verified,
         "profile_pic_url": record.profile_pic_url,
-        "profile_pic_src": record.profile_pic_src,
+        "profile_pic_src": None,
         "external_url": record.external_url,
         "updated_date": record.updated_at,
         "follower_count": record.follower_count,
@@ -189,6 +190,7 @@ class SqlInstagramJobProjectionRepository:
         return {
             "_id": str(record.id),
             "ownerUserId": str(record.owner_user_id),
+            "executionMode": record.execution_mode,
             "status": record.status,
             "createdAt": record.created_at,
             "updatedAt": record.updated_at,
@@ -222,6 +224,7 @@ class SqlInstagramJobProjectionRepository:
         record = IgScrapeJob(
             id=uuid.UUID(str(document["_id"])),
             owner_user_id=self._parse_owner_user_id(document.get("ownerUserId")),
+            execution_mode=str(document.get("executionMode") or "worker"),
             status=str(document.get("status") or "queued"),
             attempts=int(document.get("attempts", 0) or 0),
             worker_id=document.get("worker_id"),
@@ -262,6 +265,14 @@ class SqlInstagramJobProjectionRepository:
         record = self._session.get(IgScrapeJob, job_id)
         if record is None:
             return None
+        raw_owner_user_id = filter.get("ownerUserId")
+        if raw_owner_user_id is not None:
+            try:
+                owner_user_id = self._parse_owner_user_id(raw_owner_user_id)
+            except (TypeError, ValueError):
+                return None
+            if record.owner_user_id != owner_user_id:
+                return None
         return self._apply_projection(self._serialize_job(record), projection)
 
     async def update_one(
@@ -278,6 +289,8 @@ class SqlInstagramJobProjectionRepository:
             return
 
         updates = update.get("$set", {})
+        if "executionMode" in updates and updates["executionMode"] is not None:
+            record.execution_mode = str(updates["executionMode"])
         if "status" in updates and updates["status"] is not None:
             record.status = str(updates["status"])
         if "updatedAt" in updates:
@@ -565,6 +578,8 @@ class SqlInstagramScrapePersistence(InstagramScrapePersistence):
                     snapshot.updated_at = now
                     self._session.add(snapshot)
                 except Exception as exc:
+                    profile_result.success = False
+                    profile_result.error = str(exc)
                     errors.append(f"{username}: {exc}")
 
             self._session.commit()
@@ -574,6 +589,20 @@ class SqlInstagramScrapePersistence(InstagramScrapePersistence):
 
         if errors:
             response.error = "Persistence errors: " + "; ".join(errors)
+            response.counters.requested = len(response.results)
+            response.counters.successful = sum(
+                1 for result in response.results.values() if result.success
+            )
+            response.counters.not_found = sum(
+                1
+                for result in response.results.values()
+                if not result.success and result.error == NOT_FOUND_ERROR
+            )
+            response.counters.failed = (
+                response.counters.requested
+                - response.counters.successful
+                - response.counters.not_found
+            )
         return response
 
 

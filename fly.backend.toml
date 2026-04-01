@@ -4,6 +4,16 @@ primary_region = "dfw"
 # Deploy from the repository root so backend/Dockerfile can keep copying
 # packages/ and backend/... paths with the root directory as build context:
 # fly deploy . --config fly.backend.toml
+#
+# Required Fly secrets for this app include:
+# SECRET DATABASE_URL
+# SECRET SECRET_KEY
+# SECRET SECRET_KEY_IG_CREDENTIALS
+# SECRET FIRST_SUPERUSER_PASSWORD
+# SECRET OPENAI_API_KEY
+# SECRET APIFY_API_TOKEN
+# SECRET RESEND_API_KEY
+# SECRET FLY_REDIS_URL
 
 [build]
   dockerfile = "backend/Dockerfile"
@@ -17,6 +27,18 @@ primary_region = "dfw"
   FRONTEND_HOST = "https://app.kiizama.com"
   BACKEND_CORS_ORIGINS = "https://www.kiizama.com,https://app.kiizama.com"
   IG_SCRAPER_MAX_CONCURRENT = "2"
+  IG_SCRAPER_WORKER_JOBS_ENABLED = "false"
+  IG_SCRAPER_APIFY_JOBS_ENABLED = "true"
+  IG_SCRAPER_APIFY_WORKER_ID = "backend-apify"
+  IG_SCRAPER_APIFY_LEASE_SECONDS = "90"
+  IG_SCRAPER_APIFY_HEARTBEAT_SECONDS = "30"
+  IG_SCRAPER_APIFY_POLL_SECONDS = "2"
+  IG_SCRAPER_APIFY_MAX_ATTEMPTS = "3"
+  IG_SCRAPER_APIFY_MAX_CONCURRENT_JOBS = "4"
+  JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS = "86400"
+  JOB_CONTROL_QUEUE_MAXLEN = "10000"
+  USER_EVENTS_STREAM_MAXLEN = "100"
+  USER_EVENTS_SSE_READ_BLOCK_MS = "10000"
   EMAILS_FROM_EMAIL = "noreply@mail.kiizama.com"
   EMAILS_FROM_NAME = "Kiizama"
 
@@ -46,5 +68,5 @@ primary_region = "dfw"
 [[vm]]
   cpu_kind = "shared"
   cpus = 2
-  memory = "1024mb"
+  memory = "4096mb"
   processes = ["app"]

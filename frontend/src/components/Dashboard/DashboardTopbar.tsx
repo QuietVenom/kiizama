@@ -1,5 +1,5 @@
-import { Box, Flex, Icon, IconButton, Text } from "@chakra-ui/react"
-import { FiBell, FiCalendar } from "react-icons/fi"
+import { Box, Flex, Icon, Text } from "@chakra-ui/react"
+import { FiCalendar } from "react-icons/fi"
 
 const formatToday = () =>
   new Intl.DateTimeFormat("es-MX", {
@@ -27,34 +27,6 @@ const DashboardTopbar = () => {
       zIndex={5}
     >
       <Flex alignItems="center" gap={3}>
-        <IconButton
-          aria-label="Notifications"
-          variant="ghost"
-          position="relative"
-          boxSize="40px"
-          rounded="xl"
-          color="ui.secondaryText"
-          borderWidth="1px"
-          borderColor="transparent"
-          _hover={{
-            bg: "ui.surfaceSoft",
-            borderColor: "ui.sidebarBorder",
-            boxShadow: "sm",
-          }}
-        >
-          <FiBell />
-          <Box
-            position="absolute"
-            top="10px"
-            right="10px"
-            boxSize="7px"
-            rounded="full"
-            bg="ui.brandText"
-          />
-        </IconButton>
-
-        <Box h={8} w="1px" bg="ui.sidebarBorder" />
-
         <Flex alignItems="center" gap={3}>
           <Box textAlign="right" display={{ base: "none", sm: "block" }}>
             <Text

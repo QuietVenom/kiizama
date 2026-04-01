@@ -90,7 +90,6 @@ def upgrade() -> None:
         sa.Column("is_private", sa.Boolean(), nullable=False),
         sa.Column("is_verified", sa.Boolean(), nullable=False),
         sa.Column("profile_pic_url", sa.String(length=2048), nullable=True),
-        sa.Column("profile_pic_src", sa.String(), nullable=True),
         sa.Column("external_url", sa.String(length=2048), nullable=True),
         sa.Column("follower_count", sa.Integer(), nullable=False),
         sa.Column("following_count", sa.Integer(), nullable=False),
@@ -276,20 +275,18 @@ def upgrade() -> None:
             FROM pg_extension
             WHERE extname = 'pg_cron'
           ) THEN
-            IF NOT EXISTS (
-              SELECT 1
-              FROM cron.job
-              WHERE jobname = 'cleanup-ig-scrape-jobs'
-            ) THEN
-              PERFORM cron.schedule(
-                'cleanup-ig-scrape-jobs',
-                '0 * * * *',
-                $job$
-                DELETE FROM private.ig_scrape_jobs
-                WHERE expires_at < now();
-                $job$
-              );
-            END IF;
+            PERFORM cron.unschedule(jobid)
+            FROM cron.job
+            WHERE jobname = 'cleanup-ig-scrape-jobs';
+
+            PERFORM cron.schedule(
+              'cleanup-ig-scrape-jobs',
+              '0 * * * *',
+              $job$
+              DELETE FROM private.ig_scrape_jobs
+              WHERE expires_at < now();
+              $job$
+            );
           END IF;
         END
         $$;

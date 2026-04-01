@@ -8,7 +8,10 @@ import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { StrictMode } from "react"
 import ReactDOM from "react-dom/client"
 import { ApiError, OpenAPI } from "./client"
+import NotFound from "./components/Common/NotFound"
 import { CustomProvider } from "./components/ui/provider"
+import { normalizeAppError } from "./features/errors/http"
+import { redirectToLoginWithReturnTo } from "./features/errors/navigation"
 import { routeTree } from "./routeTree.gen"
 
 OpenAPI.BASE = import.meta.env.VITE_API_URL
@@ -17,9 +20,11 @@ OpenAPI.TOKEN = async () => {
 }
 
 const handleApiError = (error: Error) => {
-  if (error instanceof ApiError && [401, 403].includes(error.status)) {
-    localStorage.removeItem("access_token")
-    window.location.href = "/login"
+  if (error instanceof ApiError) {
+    const normalizedError = normalizeAppError(error, "query")
+    if (normalizedError.status === 401) {
+      redirectToLoginWithReturnTo()
+    }
   }
 }
 const queryClient = new QueryClient({
@@ -36,6 +41,8 @@ const router = createRouter({
   context: {
     queryClient,
   },
+  defaultNotFoundComponent: NotFound,
+  notFoundMode: "root",
 })
 declare module "@tanstack/react-router" {
   interface Register {

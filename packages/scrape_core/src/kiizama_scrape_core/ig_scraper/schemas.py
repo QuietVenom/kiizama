@@ -8,6 +8,8 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from .config import get_default_max_concurrent
 from .constants import DEFAULT_USER_AGENT
 
+InstagramScrapeJobExecutionMode = Literal["worker", "apify"]
+
 
 class InstagramPostSchema(BaseModel):
     code: str | None = None
@@ -254,6 +256,7 @@ class InstagramScrapeJobReferences(BaseModel):
 
 class InstagramScrapeJobStatusResponse(BaseModel):
     job_id: str
+    execution_mode: InstagramScrapeJobExecutionMode = "worker"
     status: Literal["queued", "running", "done", "failed"]
     created_at: datetime
     updated_at: datetime
@@ -323,6 +326,7 @@ __all__ = [
     "InstagramBatchRecommendationsResponse",
     "InstagramScrapeJobCreateRequest",
     "InstagramScrapeJobCreateResponse",
+    "InstagramScrapeJobExecutionMode",
     "InstagramScrapeJobReferences",
     "InstagramScrapeJobStatusResponse",
     "InstagramScrapeJobTerminalEventPayload",

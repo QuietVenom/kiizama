@@ -43,7 +43,8 @@ COPY ./backend/tests /app/backend/tests
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
 
-# Install Chromium binaries required by backend scraping endpoints.
+# Install Chromium binaries required by legacy Playwright scraping/login flows.
 RUN .venv/bin/python -m playwright install --with-deps chromium
 
-CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
+# Keep the default container command aligned with Fly's 2-worker process.
+CMD ["fastapi", "run", "--workers", "2", "app/main.py"]

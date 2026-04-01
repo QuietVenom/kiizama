@@ -6,6 +6,13 @@ from dataclasses import dataclass, field
 from html import escape
 from typing import Any, Protocol, cast
 
+from .openai_prompt_metadata import (
+    ResponseLanguage,
+    infer_response_language,
+    normalize_reels_metrics_status,
+    normalize_response_language,
+)
+
 
 class SupportsModelDump(Protocol):
     def model_dump(
@@ -86,6 +93,7 @@ class ReputationCreatorStrategyInput:
     goal_context: str = ""
     audience: list[str] = field(default_factory=list)
     timeframe: str = ""
+    response_language: ResponseLanguage = "es"
     primary_platforms: list[str] = field(default_factory=list)
     current_metrics: dict[str, Any] = field(default_factory=dict)
     reputation_signals: dict[str, Any] = field(default_factory=dict)
@@ -116,6 +124,11 @@ class ReputationCreatorStrategyInput:
         if collaborators_source is None:
             collaborators_source = raw_payload.get("collaborators")
 
+        current_metrics = _coerce_mapping_dict(raw_payload.get("current_metrics"))
+        current_metrics["reels_metrics_status"] = normalize_reels_metrics_status(
+            current_metrics.get("reels_metrics_status")
+        )
+
         return cls(
             creator_username=str(raw_payload.get("creator_username", "")).strip(),
             creator_context=str(raw_payload.get("creator_context", "")).strip(),
@@ -132,12 +145,19 @@ class ReputationCreatorStrategyInput:
                 if item is not None and str(item).strip()
             ],
             timeframe=str(raw_payload.get("timeframe", "")).strip(),
+            response_language=normalize_response_language(
+                raw_payload.get("response_language")
+            )
+            or infer_response_language(
+                raw_payload.get("creator_context"),
+                raw_payload.get("goal_context"),
+            ),
             primary_platforms=[
                 str(item).strip()
                 for item in _as_list(raw_payload.get("primary_platforms"))
                 if item is not None and str(item).strip()
             ],
-            current_metrics=_coerce_mapping_dict(raw_payload.get("current_metrics")),
+            current_metrics=current_metrics,
             reputation_signals=_normalize_reputation_signals(
                 raw_payload.get("reputation_signals")
             ),
@@ -162,6 +182,7 @@ def serialize_creator_strategy_payload(
         "goal_context": creator_input.goal_context,
         "audience": creator_input.audience,
         "timeframe": creator_input.timeframe,
+        "response_language": creator_input.response_language,
         "primary_platforms": creator_input.primary_platforms,
         "current_metrics": creator_input.current_metrics,
     }

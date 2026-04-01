@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from kiizama_scrape_core.job_control.schemas import JobQueueSpec
+from kiizama_scrape_core.job_control.schemas import JobExecutionMode, JobQueueSpec
 
 from .schemas import (
     InstagramBatchScrapeSummaryResponse,
@@ -14,15 +14,28 @@ from .schemas import (
 JOB_COLLECTION_NAME = "ig_scrape_jobs"
 JOB_TTL_HOURS = 24
 JOB_STATUS_VALUES = {"queued", "running", "done", "failed"}
+WORKER_JOB_EXECUTION_MODE: JobExecutionMode = "worker"
+APIFY_JOB_EXECUTION_MODE: JobExecutionMode = "apify"
+JOB_EXECUTION_MODE_VALUES = {
+    WORKER_JOB_EXECUTION_MODE,
+    APIFY_JOB_EXECUTION_MODE,
+}
+JOB_QUEUE_DOMAIN_BY_EXECUTION_MODE: dict[JobExecutionMode, str] = {
+    WORKER_JOB_EXECUTION_MODE: "ig-scrape",
+    APIFY_JOB_EXECUTION_MODE: "ig-scrape-apify",
+}
 JobDocument = dict[str, Any]
 
 
 def build_instagram_job_queue_spec(
     state_ttl_seconds: int,
     queue_maxlen: int,
+    *,
+    execution_mode: JobExecutionMode = WORKER_JOB_EXECUTION_MODE,
 ) -> JobQueueSpec:
     return JobQueueSpec(
-        domain="ig-scrape",
+        domain=JOB_QUEUE_DOMAIN_BY_EXECUTION_MODE[execution_mode],
+        execution_mode=execution_mode,
         state_ttl_seconds=state_ttl_seconds,
         queue_maxlen=queue_maxlen,
     )
@@ -38,12 +51,14 @@ def build_job_projection_document(
     job_id: str,
     owner_user_id: str,
     payload: dict[str, Any],
+    execution_mode: JobExecutionMode,
     created_at: datetime,
     expires_at: datetime,
 ) -> JobDocument:
     return {
         "_id": job_id,
         "ownerUserId": owner_user_id,
+        "executionMode": execution_mode,
         "status": "queued",
         "createdAt": created_at,
         "updatedAt": created_at,
@@ -97,8 +112,16 @@ def serialize_job_document(doc: dict[str, Any]) -> InstagramScrapeJobStatusRespo
         else None
     )
 
+    raw_execution_mode = doc.get("executionMode") or WORKER_JOB_EXECUTION_MODE
+    if raw_execution_mode not in JOB_EXECUTION_MODE_VALUES:
+        raise ValueError(
+            "Invalid job execution mode stored in job projection: "
+            f"{raw_execution_mode!r}"
+        )
+
     return InstagramScrapeJobStatusResponse(
         job_id=str(doc["_id"]),
+        execution_mode=raw_execution_mode,
         status=raw_status,
         created_at=doc["createdAt"],
         updated_at=doc["updatedAt"],
@@ -114,8 +137,12 @@ def serialize_job_document(doc: dict[str, Any]) -> InstagramScrapeJobStatusRespo
 
 
 __all__ = [
+    "APIFY_JOB_EXECUTION_MODE",
     "JOB_COLLECTION_NAME",
+    "JOB_EXECUTION_MODE_VALUES",
+    "JOB_QUEUE_DOMAIN_BY_EXECUTION_MODE",
     "JOB_STATUS_VALUES",
+    "WORKER_JOB_EXECUTION_MODE",
     "build_instagram_job_queue_spec",
     "build_job_projection_document",
     "default_job_expires_at",

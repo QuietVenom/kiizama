@@ -119,14 +119,19 @@ jobs:
     - name: Download blob reports from GitHub Actions Artifacts
       uses: actions/download-artifact@v5
       with:
-        path: frontend/all-blob-reports
+        path: frontend/downloaded-blob-reports
         pattern: blob-report-*
-        merge-multiple: true
+    - name: Stage blob reports for merge
+      working-directory: frontend
+      run: |
+        rm -rf ./all-blob-reports
+        mkdir -p ./all-blob-reports
+        find ./downloaded-blob-reports -type f -name 'report-*.zip' -exec cp {} ./all-blob-reports/ \;
     - name: Check blob reports presence
       id: blob_reports
       working-directory: frontend
       run: |
-        if [ -d "./all-blob-reports" ] && [ "$(find ./all-blob-reports -type f | wc -l)" -gt 0 ]; then
+        if [ -d "./all-blob-reports" ] && [ "$(find ./all-blob-reports -type f -name 'report-*.zip' | wc -l)" -gt 0 ]; then
           echo "found=true" >> "$GITHUB_OUTPUT"
         else
           echo "found=false" >> "$GITHUB_OUTPUT"

@@ -6,6 +6,14 @@ from dataclasses import dataclass, field
 from html import escape
 from typing import Any, Protocol, cast
 
+from .openai_prompt_metadata import (
+    ReelsMetricsStatus,
+    ResponseLanguage,
+    infer_response_language,
+    normalize_reels_metrics_status,
+    normalize_response_language,
+)
+
 
 class SupportsModelDump(Protocol):
     def model_dump(
@@ -98,6 +106,7 @@ class ReputationInfluencerMetricsInput:
     total_plays: int = 0
     overall_post_engagement_rate: float = 0.0
     reel_engagement_rate_on_plays: float = 0.0
+    reels_metrics_status: ReelsMetricsStatus = "unavailable"
 
     @classmethod
     def from_payload(
@@ -127,6 +136,9 @@ class ReputationInfluencerMetricsInput:
             ),
             reel_engagement_rate_on_plays=_safe_float(
                 raw_payload.get("reel_engagement_rate_on_plays")
+            ),
+            reels_metrics_status=normalize_reels_metrics_status(
+                raw_payload.get("reels_metrics_status")
             ),
         )
 
@@ -318,6 +330,7 @@ class ReputationCampaignStrategyInput:
     brand_goals_context: str = ""
     audience: list[str] = field(default_factory=list)
     timeframe: str = ""
+    response_language: ResponseLanguage = "es"
     profiles_list: list[ReputationInfluencerProfileInput] = field(default_factory=list)
     campaign_type: str = ""
     cost_analysis: ReputationCostAnalysisInput | None = None
@@ -390,6 +403,13 @@ class ReputationCampaignStrategyInput:
                 str(item) for item in _as_list(audience_source) if item is not None
             ],
             timeframe=str(raw_payload.get("timeframe", "")),
+            response_language=normalize_response_language(
+                raw_payload.get("response_language")
+            )
+            or infer_response_language(
+                raw_payload.get("brand_context"),
+                raw_payload.get("brand_goals_context"),
+            ),
             profiles_list=profiles_list,
             campaign_type=str(raw_payload.get("campaign_type", "")),
             cost_analysis=cost_analysis,
@@ -408,6 +428,7 @@ def _serialize_metrics(metrics: ReputationInfluencerMetricsInput) -> dict[str, A
         "total_plays": metrics.total_plays,
         "overall_post_engagement_rate": metrics.overall_post_engagement_rate,
         "reel_engagement_rate_on_plays": metrics.reel_engagement_rate_on_plays,
+        "reels_metrics_status": metrics.reels_metrics_status,
     }
 
 
@@ -473,6 +494,7 @@ def serialize_reputation_strategy_payload(
         "brand_goals_context": reputation_input.brand_goals_context,
         "audience": reputation_input.audience,
         "timeframe": reputation_input.timeframe,
+        "response_language": reputation_input.response_language,
         "profiles_list": [
             _serialize_influencer_profile(profile)
             for profile in reputation_input.profiles_list

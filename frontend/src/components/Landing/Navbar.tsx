@@ -19,11 +19,11 @@ import { useColorMode } from "@/components/ui/color-mode"
 
 type SectionKey = "home" | "features" | "pricing" | "faq"
 
-const sectionLinks: { key: SectionKey; label: string }[] = [
-  { key: "home", label: "Home" },
-  { key: "features", label: "Capabilities" },
-  { key: "pricing", label: "Plans" },
-  { key: "faq", label: "FAQ" },
+const sectionLinks: { href: string; key: SectionKey; label: string }[] = [
+  { key: "home", label: "Home", href: "/" },
+  { key: "features", label: "Capabilities", href: "/#capabilities" },
+  { key: "pricing", label: "Plans", href: "/#plans" },
+  { key: "faq", label: "FAQ", href: "/#faq" },
 ]
 
 const MOBILE_MENU_ANIMATION_MS = 320
@@ -74,7 +74,7 @@ const LandingThemeToggleButton = () => {
 type LandingNavbarProps = {
   isWaitingListEnabled: boolean
   navbarRef: RefObject<HTMLElement | null>
-  sectionRefs: Record<SectionKey, RefObject<HTMLElement | null>>
+  sectionRefs?: Partial<Record<SectionKey, RefObject<HTMLElement | null>>>
 }
 
 const LandingNavbar = ({
@@ -84,16 +84,20 @@ const LandingNavbar = ({
 }: LandingNavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const loginUrl = "/login"
+  const blogUrl = "/blog"
 
   const handleSectionClick = (key: SectionKey) => {
+    const targetSection = sectionRefs?.[key]
+    if (!targetSection) return
+
     if (mobileMenuOpen) {
       setMobileMenuOpen(false)
       window.setTimeout(() => {
-        scrollToSection(sectionRefs[key], navbarRef)
+        scrollToSection(targetSection, navbarRef)
       }, MOBILE_MENU_ANIMATION_MS)
       return
     }
-    scrollToSection(sectionRefs[key], navbarRef)
+    scrollToSection(targetSection, navbarRef)
   }
 
   return (
@@ -136,23 +140,54 @@ const LandingNavbar = ({
             justifySelf="center"
             display={{ base: "none", md: "flex" }}
           >
-            {sectionLinks.map((link) => (
+            {sectionLinks.map((link) =>
+              sectionRefs?.[link.key] ? (
+                <Button
+                  key={link.key}
+                  variant="ghost"
+                  color={link.key === "home" ? "ui.text" : "ui.secondaryText"}
+                  fontWeight={link.key === "home" ? "semibold" : "medium"}
+                  fontSize="sm"
+                  px={3}
+                  h={10}
+                  _hover={{ color: "ui.link", bg: "transparent" }}
+                  onClick={() => handleSectionClick(link.key)}
+                >
+                  {link.label}
+                </Button>
+              ) : (
+                <ChakraLink
+                  key={link.key}
+                  href={link.href}
+                  _hover={{ textDecoration: "none" }}
+                >
+                  <Button
+                    variant="ghost"
+                    color={link.key === "home" ? "ui.text" : "ui.secondaryText"}
+                    fontWeight={link.key === "home" ? "semibold" : "medium"}
+                    fontSize="sm"
+                    px={3}
+                    h={10}
+                    _hover={{ color: "ui.link", bg: "transparent" }}
+                  >
+                    {link.label}
+                  </Button>
+                </ChakraLink>
+              ),
+            )}
+            <Link to={blogUrl}>
               <Button
-                key={link.key}
                 variant="ghost"
-                color={link.key === "home" ? "ui.text" : "ui.secondaryText"}
-                fontWeight={link.key === "home" ? "semibold" : "medium"}
+                color="ui.secondaryText"
+                fontWeight="medium"
                 fontSize="sm"
                 px={3}
                 h={10}
                 _hover={{ color: "ui.link", bg: "transparent" }}
-                onClick={() =>
-                  scrollToSection(sectionRefs[link.key], navbarRef)
-                }
               >
-                {link.label}
+                Blog
               </Button>
-            ))}
+            </Link>
           </HStack>
 
           <HStack
@@ -260,22 +295,59 @@ const LandingNavbar = ({
           pointerEvents={mobileMenuOpen ? "auto" : "none"}
         >
           <Stack gap={0}>
-            {sectionLinks.map((link) => (
+            {sectionLinks.map((link) =>
+              sectionRefs?.[link.key] ? (
+                <Button
+                  key={link.key}
+                  variant="ghost"
+                  justifyContent="flex-start"
+                  borderRadius={0}
+                  h="12"
+                  borderBottomWidth="1px"
+                  borderBottomColor="ui.border"
+                  color={link.key === "home" ? "ui.text" : "ui.secondaryText"}
+                  fontWeight={link.key === "home" ? "semibold" : "medium"}
+                  onClick={() => handleSectionClick(link.key)}
+                >
+                  {link.label}
+                </Button>
+              ) : (
+                <ChakraLink
+                  key={link.key}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  _hover={{ textDecoration: "none" }}
+                >
+                  <Button
+                    variant="ghost"
+                    justifyContent="flex-start"
+                    borderRadius={0}
+                    h="12"
+                    w="full"
+                    borderBottomWidth="1px"
+                    borderBottomColor="ui.border"
+                    color={link.key === "home" ? "ui.text" : "ui.secondaryText"}
+                    fontWeight={link.key === "home" ? "semibold" : "medium"}
+                  >
+                    {link.label}
+                  </Button>
+                </ChakraLink>
+              ),
+            )}
+            <Link to={blogUrl} onClick={() => setMobileMenuOpen(false)}>
               <Button
-                key={link.key}
                 variant="ghost"
                 justifyContent="flex-start"
                 borderRadius={0}
                 h="12"
+                w="full"
+                color="ui.secondaryText"
                 borderBottomWidth="1px"
                 borderBottomColor="ui.border"
-                color={link.key === "home" ? "ui.text" : "ui.secondaryText"}
-                fontWeight={link.key === "home" ? "semibold" : "medium"}
-                onClick={() => handleSectionClick(link.key)}
               >
-                {link.label}
+                Blog
               </Button>
-            ))}
+            </Link>
             <Box
               px={3}
               py={3}

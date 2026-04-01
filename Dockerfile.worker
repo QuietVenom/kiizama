@@ -9,7 +9,8 @@ WORKDIR /app
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
 
-# Copy only what the worker actually needs.
+# Legacy Playwright worker image. Keep it available for worker jobs that use
+# login/session scraping; the Apify flow now runs in the backend app process.
 COPY packages /app/packages
 COPY scrape_worker /app/scrape_worker
 

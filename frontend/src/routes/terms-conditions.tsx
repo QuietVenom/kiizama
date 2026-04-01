@@ -1,40 +1,38 @@
-import { Box, Heading, Stack, Text } from "@chakra-ui/react"
-import { createFileRoute } from "@tanstack/react-router"
+import { Box, Link as ChakraLink, Heading, Stack, Text } from "@chakra-ui/react"
+import { createFileRoute, Link as RouterLink } from "@tanstack/react-router"
 import { useEffect } from "react"
 import InfoPageShell from "@/components/Common/InfoPageShell"
 
 const TERMS_TEMPLATE = `TÉRMINOS Y CONDICIONES DE USO Y SUSCRIPCIÓN (B2C – SaaS)
 
-Versión: [v1.0]
-Última actualización: [DD/MM/AAAA]
+Versión: v1.0
+Última actualización: 06/04/2026
 
 1) Identidad del Proveedor
 
-[RAZÓN SOCIAL / NOMBRE COMERCIAL] (“Proveedor”, “nosotros”)
-Domicilio: Ciudad de México, [domicilio completo]
-RFC: [●]
-Correo de contacto: [soporte@tudominio.com
-]
-Correo legal: [legal@tudominio.com
-]
+Izcoatl Ávila Marcos (“Proveedor”, “nosotros”)
+Domicilio: Santa Fe, CDMX.
+RFC: AIMI91041597A
+Correo de contacto: admin@kiizama.com
+Correo legal: NA
 
 2) Aceptación de los Términos (contratación electrónica)
 
-Al crear una cuenta, iniciar un Free Trial, contratar un plan, o usar el Servicio, aceptas estos Términos. La aceptación puede realizarse por medios electrónicos. (Referencia normativa general sobre contratación por medios electrónicos en México y conservación de evidencias; útil si decides robustecer “evidencia” de aceptación con sellado/constancia tipo NOM-151).
+Al crear una cuenta, iniciar un Free Trial, contratar un plan o usar el Servicio, aceptas estos Términos. La aceptación podrá realizarse por medios electrónicos y tendrá la misma validez que una firma autógrafa en la medida permitida por la ley aplicable.
 
 3) Definiciones
 
-Servicio: Plataforma SaaS [NOMBRE DEL PRODUCTO] (web/app/API), documentación y funcionalidades.
+Servicio: Plataforma SaaS Kiizama (web/app/API), documentación y funcionalidades.
 
 Usuario/Consumidor: Persona física que usa el Servicio para fines no empresariales.
 
 Cuenta: Perfil asociado a email para acceso.
 
-Suscripción: Plan de pago Mensual o Anual con cobro recurrente.
+Suscripción: Plan de pago mensual o anual con cobro recurrente.
 
-Free Trial: Periodo de prueba sin costo por [X días], con o sin conversión automática (ver Cláusula 7).
+Free Trial: Periodo de prueba sin costo por 7 días, sin conversión automática.
 
-Procesador de Pago: Tercero que procesa pagos (p. ej. Stripe, Conekta, MercadoPago) (ver Cláusula 8).
+Procesador de Pago: Stripe, a través de tarjetas de crédito o débito.
 
 4) Objeto
 
@@ -52,111 +50,108 @@ Estos Términos regulan el acceso y uso del Servicio, y la contratación de Free
 
 No puedes:
 
-usar el Servicio para fines ilícitos, fraude, spam o suplantación;
-
-vulnerar seguridad, introducir malware, o intentar acceder a sistemas ajenos;
-
-copiar, revender, “scrapear” masivamente, hacer ingeniería inversa o explotar el Servicio fuera del uso normal (salvo lo permitido por ley).
+- usar el Servicio para fines ilícitos, fraude, spam o suplantación;
+- vulnerar seguridad, introducir malware o intentar acceder a sistemas ajenos;
+- copiar, revender, “scrapear” masivamente, hacer ingeniería inversa o explotar el Servicio fuera del uso normal, salvo lo permitido por ley.
 
 Podemos suspender o limitar acceso ante incumplimiento, abuso o riesgo de seguridad.
 
 SUSCRIPCIONES, COBROS RECURRENTES Y CANCELACIÓN (B2C – MÉXICO)
 7) Planes disponibles
 
-Free Trial: [X días] con acceso a [alcance].
+Free Trial: 7 días con acceso a las funcionalidades base de Kiizama, excluyendo integraciones avanzadas, exportaciones masivas y funciones empresariales o premium.
 
 Mensual: cobro recurrente cada 30/31 días según fecha de alta.
 
 Anual: cobro recurrente cada 12 meses.
 
-Transparencia de cobro recurrente (obligatorio): Te informaremos de forma clara y accesible si tu contratación implica cobros automáticos recurrentes, su periodicidad, monto y fecha de cobro, y requerimos tu consentimiento expreso e informado.
+Te informaremos de forma clara y accesible si tu contratación implica cobros automáticos recurrentes, su periodicidad, monto y fecha de cobro, y requeriremos tu consentimiento expreso e informado.
 
 8) Pagos, tarjeta y facturación
 
 8.1 Moneda: MXN.
+
 8.2 Tarjeta: Para Suscripción (y/o conversión de Trial) podrás registrar tarjeta mediante el Procesador de Pago.
+
 8.3 No almacenamos tu tarjeta completa: Salvo que indiques lo contrario y sea técnicamente necesario, el Proveedor no almacena datos completos de tarjeta (PAN/CVV). Normalmente sólo conservamos identificadores como “token”, últimos 4 dígitos, marca y fecha de expiración, provistos por el Procesador.
-8.4 Impuestos: Los precios [incluyen/no incluyen] IVA.
-8.5 Comprobantes: Te enviaremos comprobantes/recibos al email. (Si después quieres ofrecer CFDI, agrega proceso y campos).
+
+8.4 Impuestos: Los precios incluyen IVA.
+
+8.5 Comprobantes: Te enviaremos comprobantes o recibos al correo electrónico registrado en tu cuenta.
 
 9) Renovación automática, aviso y cancelación sin penalización (LFPC 76 Bis – reforma 12-dic-2025)
 
 9.1 Renovación automática: Si tu plan contempla renovación automática, te lo indicaremos durante el checkout.
+
 9.2 Aviso previo mínimo: Si procede renovación automática del servicio, te notificaremos al menos con 5 días naturales de anticipación, permitiendo cancelación sin penalización.
+
 9.3 Cancelación inmediata: Implementamos mecanismos para que puedas cancelar el servicio/suscripción/membresía de manera inmediata, sin trabas indebidas, conforme a la LFPC.
+
 9.4 Cómo cancelar (mecanismo):
 
-En la app/web: [Ruta exacta: Configuración → Suscripción → Cancelar]
+En la app/web: http://app.kiizama.com/settings
 
-O por correo: [cancelaciones@tudominio.com
-] (te responderemos con confirmación).
-9.5 Efecto de la cancelación: La cancelación evita cobros futuros. El acceso permanecerá activo hasta el fin del periodo pagado [sí/no] (elige uno y mantén consistencia).
+O por correo: admin@kiizama.com.
+
+9.5 Efecto de la cancelación: La cancelación evita cobros futuros. El acceso no permanecerá activo hasta el fin del periodo pagado.
 
 10) Free Trial: reglas de conversión y cobro
 
-Define UNA de estas 2 modalidades (recomendación: A es más “safe” en B2C):
-
-A) Trial sin conversión automática (recomendado):
+Trial sin conversión automática:
 
 El Trial termina y no se cobra nada salvo que tú actives un plan y confirmes pago.
-
-B) Trial con conversión automática (si la usarás):
-
-Antes de iniciar Trial te diremos claramente: precio, periodicidad, fecha exacta del primer cobro y que habrá cobro recurrente.
-
-Requerimos tu consentimiento expreso e informado.
-
-Te avisaremos al menos 5 días naturales antes de la renovación/cobro y podrás cancelar sin penalización.
 
 11) Reembolsos y contracargos (B2C)
 
 11.1 Política general:
 
-Mensual: [No hay reembolsos / Reembolso parcial dentro de X días / caso por caso].
+Mensual: Reembolso dentro de los primeros 7 días.
 
-Anual: [No hay reembolsos / prorrateo / reembolso dentro de X días].
-11.2 Cobros indebidos: Si consideras que hubo un cobro erróneo, contáctanos a [soporte] dentro de [15] días.
+Anual: Reembolso dentro de los primeros 7 días.
+
+11.2 Cobros indebidos: Si consideras que hubo un cobro erróneo, contáctanos a admin@kiizama.com dentro de 15 días.
+
 11.3 Contracargos: Si inicias un contracargo sin contactarnos primero, podremos suspender la cuenta mientras se resuelve.
-
-Tip B2C: la política debe ser súper clara y visible en checkout para evitar conflictos con consumidor.
 
 PRIVACIDAD Y DATOS PERSONALES (México)
 12) Datos que recabamos y finalidades
 
 Recabamos: email, nombre completo, y datos relacionados con el pago a través del Procesador (tokens/identificadores).
-Tu información se trata conforme a nuestro Aviso de Privacidad: [URL Aviso de Privacidad]. La LFPDPPP establece obligaciones del responsable y el marco de tratamiento de datos personales en posesión de particulares.
+
+Tu información se trata conforme a nuestro Aviso de Privacidad: http://www.kiizama.com/privacy. La LFPDPPP establece obligaciones del responsable y el marco de tratamiento de datos personales en posesión de particulares.
 
 13) Derechos ARCO y contacto
 
-Puedes ejercer derechos ARCO (Acceso, Rectificación, Cancelación, Oposición) mediante: [privacidad@tudominio.com
-] y el procedimiento del Aviso de Privacidad.
+Puedes ejercer derechos ARCO (Acceso, Rectificación, Cancelación, Oposición) mediante: admin@kiizama.com y el procedimiento del Aviso de Privacidad.
 
 14) Proveedores y transferencias
 
-Podemos usar proveedores (hosting, analítica, email, pagos) que traten datos por cuenta nuestra. Se listan en [URL lista de subencargados/proveedores].
+Podemos usar proveedores (hosting, analítica, email, pagos) que traten datos por cuenta nuestra. Se listan en __PROVIDERS_LINK__.
 
 PROPIEDAD INTELECTUAL, GARANTÍAS Y RESPONSABILIDAD
 15) Propiedad intelectual
 
 El Servicio, software, marca, interfaz y documentación son del Proveedor o licenciantes.
+
 Te damos una licencia limitada, personal, no exclusiva y no transferible para usar el Servicio mientras tu cuenta/suscripción esté activa.
 
 16) Disponibilidad y soporte
 
-16.1 Soporte: [email/chat], horario [●].
+16.1 Soporte: admin@kiizama.com, horario de 09:00 a 18:00 hrs (UTC-06:00, hora de Ciudad de México).
+
 16.2 Mantenimiento: puede haber interrupciones programadas; procuraremos avisar.
 
 17) Limitación de responsabilidad
 
 En la medida permitida por ley, el Proveedor no responde por daños indirectos (lucro cesante, pérdida de datos, etc.).
-La responsabilidad total del Proveedor se limita a [monto pagado por el Usuario en los últimos 3/6/12 meses].
 
-Ojo: en B2C, evita cláusulas abusivas o desproporcionadas; tu abogadx puede ajustar para que sea defendible frente a PROFECO.
+La responsabilidad total del Proveedor se limita al monto efectivamente pagado por el Usuario por el Servicio en los últimos 12 meses previos al hecho que dé lugar a la reclamación.
 
 18) Terminación
 
 Podemos suspender/terminar si incumples estos Términos, o por motivos de seguridad, fraude o requerimiento de autoridad.
-Al terminar, podrías perder acceso; definimos un periodo de exportación de datos si aplica: [X días].
+
+Al terminar, podremos conservar, bloquear o eliminar los datos personales asociados conforme a nuestro Aviso de Privacidad y a las obligaciones legales aplicables.
 
 DISPOSICIONES GENERALES
 19) Modificaciones a los Términos
@@ -169,12 +164,9 @@ Estos Términos se rigen por las leyes de los Estados Unidos Mexicanos. Para con
 
 21) Contacto y quejas
 
-Soporte: [soporte@tudominio.com
-]
-Cancelaciones: [cancelaciones@tudominio.com
-]
-Privacidad: [privacidad@tudominio.com
-]`
+Soporte: admin@kiizama.com
+Cancelaciones: admin@kiizama.com
+Privacidad: admin@kiizama.com`
 
 export const Route = createFileRoute("/terms-conditions")({
   component: TermsConditionsPage,
@@ -185,16 +177,23 @@ function TermsConditionsPage() {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" })
   }, [])
 
+  const [termsBeforeProvidersLink, termsAfterProvidersLink] =
+    TERMS_TEMPLATE.split("__PROVIDERS_LINK__")
+
   return (
     <InfoPageShell useSymbolHomeButton>
       <Box layerStyle="infoCard" p={{ base: 6, md: 10 }}>
         <Stack gap={4}>
           <Text textStyle="eyebrow">Company</Text>
           <Heading size={{ base: "2xl", md: "3xl" }} textStyle="pageTitle">
-            Terms & Conditions
+            Términos y Condiciones
           </Heading>
           <Text textStyle="pageBody" whiteSpace="pre-line">
-            {TERMS_TEMPLATE}
+            {termsBeforeProvidersLink}
+            <ChakraLink asChild className="legal-link">
+              <RouterLink to="/providers">/providers</RouterLink>
+            </ChakraLink>
+            {termsAfterProvidersLink}
           </Text>
         </Stack>
       </Box>

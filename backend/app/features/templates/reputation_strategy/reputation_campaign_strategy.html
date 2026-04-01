@@ -491,8 +491,9 @@
             </tr>
           </thead>
           <tbody>
-            {% for influencer in influencers %}
-              <tr class="profile-main-row">
+	            {% for influencer in influencers %}
+	              {% set has_reels = (influencer.metrics.total_reels or 0) > 0 %}
+	              <tr class="profile-main-row">
                 <td>
                   <div class="profile-cell">
                     <img src="{{ influencer.profile_pic_src or influencer.profile_pic_url or '' }}" alt="Avatar @{{ influencer.username }}">
@@ -538,16 +539,20 @@
                     <div class="metric-item"><b>{{ '{:,}'.format(influencer.metrics.total_posts or 0) }}</b><span>Total posts</span></div>
                     <div class="metric-item"><b>{{ '{:,}'.format(influencer.metrics.total_comments or 0) }}</b><span>Total comments</span></div>
                     <div class="metric-item"><b>{{ '{:,}'.format(influencer.metrics.total_likes or 0) }}</b><span>Total likes</span></div>
-                    <div class="metric-item"><b>{{ '%.4f' % (influencer.metrics.avg_engagement_rate or 0) }}</b><span>Avg engagement rate</span></div>
-                    <div class="metric-item"><b>{{ '%.2f' % (influencer.metrics.hashtags_per_post or 0) }}</b><span>Hashtags per post</span></div>
-                    <div class="metric-item"><b>{{ '%.2f' % (influencer.metrics.mentions_per_post or 0) }}</b><span>Mentions per post</span></div>
-                    <div class="metric-item"><b>{{ '{:,}'.format(influencer.metrics.total_reels or 0) }}</b><span>Total reels</span></div>
-                    <div class="metric-item"><b>{{ '{:,}'.format(influencer.metrics.total_plays or 0) }}</b><span>Total plays</span></div>
-                    <div class="metric-item"><b>{{ '%.4f' % (influencer.metrics.overall_post_engagement_rate or 0) }}</b><span>Overall post engagement rate</span></div>
-                    <div class="metric-item"><b>{{ '%.4f' % (influencer.metrics.reel_engagement_rate_on_plays or 0) }}</b><span>Reel engagement rate on plays</span></div>
-                  </div>
-                  </div>
-                </td>
+	                    <div class="metric-item"><b>{{ '%.4f' % (influencer.metrics.avg_engagement_rate or 0) }}</b><span>Avg engagement rate</span></div>
+	                    <div class="metric-item"><b>{{ '%.2f' % (influencer.metrics.hashtags_per_post or 0) }}</b><span>Hashtags per post</span></div>
+	                    <div class="metric-item"><b>{{ '%.2f' % (influencer.metrics.mentions_per_post or 0) }}</b><span>Mentions per post</span></div>
+	                    {% if has_reels %}
+	                    <div class="metric-item"><b>{{ '{:,}'.format(influencer.metrics.total_reels or 0) }}</b><span>Total reels</span></div>
+	                    <div class="metric-item"><b>{{ '{:,}'.format(influencer.metrics.total_plays or 0) }}</b><span>Total plays</span></div>
+	                    {% endif %}
+	                    <div class="metric-item"><b>{{ '%.4f' % (influencer.metrics.overall_post_engagement_rate or 0) }}</b><span>Overall post engagement rate</span></div>
+	                    {% if has_reels %}
+	                    <div class="metric-item"><b>{{ '%.4f' % (influencer.metrics.reel_engagement_rate_on_plays or 0) }}</b><span>Reel engagement rate on plays</span></div>
+	                    {% endif %}
+	                  </div>
+	                  </div>
+	                </td>
               </tr>
             {% endfor %}
           </tbody>

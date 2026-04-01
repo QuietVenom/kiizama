@@ -5,11 +5,13 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+JobExecutionMode = Literal["worker", "apify"]
 JobStatus = Literal["queued", "running", "done", "failed"]
 
 
 class JobQueueSpec(BaseModel):
     domain: str = Field(min_length=1)
+    execution_mode: JobExecutionMode = "worker"
     state_ttl_seconds: int = Field(gt=0)
     queue_maxlen: int = Field(gt=0)
 
@@ -32,6 +34,7 @@ class QueuedJobMessage(BaseModel):
     job_id: str = Field(min_length=1)
     owner_user_id: str = Field(min_length=1)
     created_at: datetime
+    execution_mode: JobExecutionMode = "worker"
     expires_at: datetime | None = None
     payload: dict[str, Any] = Field(default_factory=dict)
     message_id: str | None = None
@@ -78,6 +81,7 @@ class JobLeaseStatus(BaseModel):
 
 
 __all__ = [
+    "JobExecutionMode",
     "JobLeaseStatus",
     "JobQueueSpec",
     "JobStatus",

@@ -12,6 +12,7 @@ const publicRoutes: VisualRoute[] = [
   { path: "/signup", slug: "signup" },
   { path: "/waiting-list", slug: "waiting-list" },
   { path: "/privacy", slug: "privacy" },
+  { path: "/providers", slug: "providers" },
   { path: "/terms-conditions", slug: "terms-conditions" },
 ]
 

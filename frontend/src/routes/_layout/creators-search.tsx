@@ -1350,7 +1350,7 @@ function CreatorsSearchPage() {
         continue
       }
 
-      const response = await InstagramService.createInstagramScrapeJob({
+      const response = await InstagramService.createInstagramApifyScrapeJob({
         requestBody: {
           usernames: batch,
         },

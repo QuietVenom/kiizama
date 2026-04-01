@@ -1,6 +1,8 @@
 import uuid
 from typing import Any, cast
 
+from sqlalchemy import func
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from app.models import (
@@ -41,7 +43,7 @@ def _serialize_profile(record: IgProfile) -> dict[str, Any]:
         "is_private": record.is_private,
         "is_verified": record.is_verified,
         "profile_pic_url": record.profile_pic_url,
-        "profile_pic_src": record.profile_pic_src,
+        "profile_pic_src": None,
         "external_url": record.external_url,
         "updated_date": record.updated_at,
         "follower_count": record.follower_count,
@@ -121,6 +123,65 @@ def _serialize_snapshot_full(
     snapshot["reels"] = [_serialize_reels(reels_document)] if reels_document else []
     snapshot["metrics"] = _serialize_metrics(metrics) if metrics else None
     return snapshot
+
+
+def _resolve_profile_ids_by_usernames(
+    session: Session,
+    usernames: list[str],
+) -> list[uuid.UUID]:
+    username_column = cast(Any, IgProfile.username)
+    profiles = session.exec(
+        select(IgProfile).where(username_column.in_(list(dict.fromkeys(usernames))))
+    ).all()
+    return [profile.id for profile in profiles]
+
+
+def _build_profile_snapshots_full_statement(
+    *,
+    skip: int,
+    limit: int,
+    profile_ids: list[uuid.UUID] | None,
+) -> Any:
+    scraped_at = cast(Any, IgProfileSnapshot.scraped_at)
+    snapshot_id_column = cast(Any, IgProfileSnapshot.id)
+    profile_relationship = cast(Any, IgProfileSnapshot.profile)
+    posts_document_relationship = cast(Any, IgProfileSnapshot.posts_document)
+    reels_document_relationship = cast(Any, IgProfileSnapshot.reels_document)
+    metrics_relationship = cast(Any, IgProfileSnapshot.metrics)
+    statement = select(IgProfileSnapshot).options(
+        selectinload(profile_relationship),
+        selectinload(posts_document_relationship),
+        selectinload(reels_document_relationship),
+        selectinload(metrics_relationship),
+    )
+    if profile_ids is None:
+        return statement.order_by(scraped_at.desc()).offset(skip).limit(limit)
+
+    profile_id_column = cast(Any, IgProfileSnapshot.profile_id)
+    ranked_snapshots = (
+        select(
+            snapshot_id_column.label("snapshot_id"),
+            func.row_number()
+            .over(
+                partition_by=profile_id_column,
+                order_by=(scraped_at.desc(), snapshot_id_column.desc()),
+            )
+            .label("snapshot_rank"),
+        )
+        .where(profile_id_column.in_(profile_ids))
+        .subquery()
+    )
+    ranked_snapshot_id_column = cast(Any, ranked_snapshots.c.snapshot_id)
+    snapshot_rank_column = cast(Any, ranked_snapshots.c.snapshot_rank)
+    return (
+        statement.join(
+            ranked_snapshots,
+            snapshot_id_column == ranked_snapshot_id_column,
+        )
+        .where(snapshot_rank_column > skip)
+        .where(snapshot_rank_column <= skip + limit)
+        .order_by(scraped_at.desc(), snapshot_id_column.desc())
+    )
 
 
 async def create_profile_snapshot(
@@ -205,46 +266,28 @@ async def list_profile_snapshots_full(
     assert isinstance(session, Session)
     if usernames is not None and not usernames:
         return []
-
-    scraped_at = cast(Any, IgProfileSnapshot.scraped_at)
-    username_column = cast(Any, IgProfile.username)
-    profile_id_column = cast(Any, IgProfileSnapshot.profile_id)
-    statement = select(IgProfileSnapshot).order_by(scraped_at.desc())
+    profile_ids: list[uuid.UUID] | None = None
     if usernames:
-        profiles = session.exec(
-            select(IgProfile).where(username_column.in_(usernames))
-        ).all()
-        if not profiles:
+        profile_ids = _resolve_profile_ids_by_usernames(session, usernames)
+        if not profile_ids:
             return []
-        profile_ids = [profile.id for profile in profiles]
-        statement = statement.where(profile_id_column.in_(profile_ids))
 
-    statement = statement.offset(skip).limit(limit)
+    statement = _build_profile_snapshots_full_statement(
+        skip=skip,
+        limit=limit,
+        profile_ids=profile_ids,
+    )
     snapshots = session.exec(statement).all()
 
     full_snapshots: list[Document] = []
     for snapshot in snapshots:
-        profile = session.get(IgProfile, snapshot.profile_id)
-        posts_document = (
-            session.get(IgPostsDocument, snapshot.posts_document_id)
-            if snapshot.posts_document_id
-            else None
-        )
-        reels_document = (
-            session.get(IgReelsDocument, snapshot.reels_document_id)
-            if snapshot.reels_document_id
-            else None
-        )
-        metrics = (
-            session.get(IgMetrics, snapshot.metrics_id) if snapshot.metrics_id else None
-        )
         full_snapshots.append(
             _serialize_snapshot_full(
                 snapshot,
-                profile=profile,
-                posts_document=posts_document,
-                reels_document=reels_document,
-                metrics=metrics,
+                profile=snapshot.profile,
+                posts_document=snapshot.posts_document,
+                reels_document=snapshot.reels_document,
+                metrics=snapshot.metrics,
             )
         )
     return full_snapshots

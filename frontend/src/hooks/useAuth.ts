@@ -10,13 +10,19 @@ import {
   type UserRegister,
   UsersService,
 } from "@/client"
+import {
+  clearStoredAccessToken,
+  hasStoredAccessToken,
+  setStoredAccessToken,
+} from "@/features/auth/session"
+import { sanitizeReturnTo } from "@/features/errors/navigation"
 import { clearUserEventsCursor } from "@/features/user-events/cursor"
 import { handleError } from "@/utils"
 
 const CURRENT_USER_STALE_TIME_MS = 5 * 60 * 1000
 
 const isLoggedIn = () => {
-  return localStorage.getItem("access_token") !== null
+  return hasStoredAccessToken()
 }
 
 const currentUserQueryOptions = {
@@ -25,7 +31,7 @@ const currentUserQueryOptions = {
   staleTime: CURRENT_USER_STALE_TIME_MS,
 }
 
-const useAuth = () => {
+const useAuth = (loginRedirectTo?: string) => {
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -53,13 +59,13 @@ const useAuth = () => {
     const response = await LoginService.loginAccessToken({
       formData: data,
     })
-    localStorage.setItem("access_token", response.access_token)
+    setStoredAccessToken(response.access_token)
   }
 
   const loginMutation = useMutation({
     mutationFn: login,
     onSuccess: () => {
-      navigate({ to: "/overview" })
+      navigate({ href: sanitizeReturnTo(loginRedirectTo) || "/overview" })
     },
     onError: (err: ApiError) => {
       handleError(err)
@@ -74,7 +80,7 @@ const useAuth = () => {
     if (currentUserId) {
       clearUserEventsCursor(currentUserId)
     }
-    localStorage.removeItem("access_token")
+    clearStoredAccessToken()
     navigate({ to: "/login" })
   }
 

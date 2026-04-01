@@ -40,6 +40,12 @@ class IgCredential(SQLModel, table=True):
 class IgScrapeJob(SQLModel, table=True):
     __tablename__ = cast(Any, "ig_scrape_jobs")
     __table_args__ = (
+        Index(
+            "idx_ig_scrape_jobs_execution_mode_status_created_at",
+            "execution_mode",
+            "status",
+            "created_at",
+        ),
         Index("idx_ig_scrape_jobs_owner_created_at", "owner_user_id", "created_at"),
         Index("idx_ig_scrape_jobs_status_created_at", "status", "created_at"),
         Index("idx_ig_scrape_jobs_expires_at", "expires_at"),
@@ -52,6 +58,7 @@ class IgScrapeJob(SQLModel, table=True):
         nullable=False,
         index=True,
     )
+    execution_mode: str = Field(default="worker", max_length=16, index=True)
     status: str = Field(default="queued", max_length=16, index=True)
     attempts: int = 0
     worker_id: str | None = Field(default=None, max_length=255)
@@ -111,7 +118,6 @@ class IgProfile(SQLModel, table=True):
     is_private: bool = False
     is_verified: bool = False
     profile_pic_url: str | None = Field(default=None, max_length=2048)
-    profile_pic_src: str | None = None
     external_url: str | None = Field(default=None, max_length=2048)
     follower_count: int = 0
     following_count: int = 0
