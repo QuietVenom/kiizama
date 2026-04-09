@@ -670,6 +670,84 @@ export const InstagramBatchCountersSchemaSchema = {
     title: 'InstagramBatchCountersSchema'
 } as const;
 
+export const InstagramBatchProfileResultSchema = {
+    properties: {
+        user: {
+            '$ref': '#/components/schemas/InstagramProfileSchema'
+        },
+        recommended_users: {
+            items: {
+                '$ref': '#/components/schemas/InstagramSuggestedUserSchema'
+            },
+            type: 'array',
+            title: 'Recommended Users'
+        },
+        posts: {
+            items: {
+                '$ref': '#/components/schemas/InstagramPostSchema'
+            },
+            type: 'array',
+            title: 'Posts'
+        },
+        reels: {
+            items: {
+                '$ref': '#/components/schemas/InstagramReelSchema'
+            },
+            type: 'array',
+            title: 'Reels'
+        },
+        success: {
+            type: 'boolean',
+            title: 'Success',
+            default: false
+        },
+        error: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Error'
+        },
+        metrics: {
+            '$ref': '#/components/schemas/InstagramMetricsSchema'
+        },
+        ai_categories: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Ai Categories',
+            description: 'OpenAI-predicted categories for the profile content.'
+        },
+        ai_roles: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Ai Roles',
+            description: 'OpenAI-predicted roles for the profile tone/positioning.'
+        },
+        ai_error: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ai Error',
+            description: 'Error details when AI analysis fails.'
+        }
+    },
+    type: 'object',
+    title: 'InstagramBatchProfileResult'
+} as const;
+
 export const InstagramBatchRecommendationsRequestSchema = {
     properties: {
         usernames: {
@@ -844,6 +922,34 @@ export const InstagramBatchScrapeRequestSchema = {
     title: 'InstagramBatchScrapeRequest'
 } as const;
 
+export const InstagramBatchScrapeResponseSchema = {
+    properties: {
+        results: {
+            additionalProperties: {
+                '$ref': '#/components/schemas/InstagramBatchProfileResult'
+            },
+            type: 'object',
+            title: 'Results'
+        },
+        counters: {
+            '$ref': '#/components/schemas/InstagramBatchCountersSchema'
+        },
+        error: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Error'
+        }
+    },
+    type: 'object',
+    title: 'InstagramBatchScrapeResponse'
+} as const;
+
 export const InstagramBatchScrapeSummaryResponseSchema = {
     properties: {
         usernames: {
@@ -898,6 +1004,111 @@ export const InstagramBatchUsernameStatusSchema = {
     type: 'object',
     required: ['username', 'status'],
     title: 'InstagramBatchUsernameStatus'
+} as const;
+
+export const InstagramMetricsSchemaSchema = {
+    properties: {
+        user: {
+            '$ref': '#/components/schemas/InstagramProfileSchema'
+        },
+        post_metrics: {
+            '$ref': '#/components/schemas/InstagramPostMetricsSchema'
+        },
+        reel_metrics: {
+            '$ref': '#/components/schemas/InstagramReelMetricsSchema'
+        },
+        overall_post_engagement_rate: {
+            type: 'number',
+            title: 'Overall Post Engagement Rate',
+            default: 0
+        },
+        reel_engagement_rate_on_plays: {
+            type: 'number',
+            title: 'Reel Engagement Rate On Plays',
+            default: 0
+        },
+        followers: {
+            type: 'integer',
+            title: 'Followers',
+            default: 0
+        },
+        following: {
+            type: 'integer',
+            title: 'Following',
+            default: 0
+        },
+        media_count: {
+            type: 'integer',
+            title: 'Media Count',
+            default: 0
+        },
+        is_verified: {
+            type: 'boolean',
+            title: 'Is Verified',
+            default: false
+        },
+        is_private: {
+            type: 'boolean',
+            title: 'Is Private',
+            default: false
+        },
+        recommended_users: {
+            items: {
+                '$ref': '#/components/schemas/InstagramSuggestedUserSchema'
+            },
+            type: 'array',
+            title: 'Recommended Users'
+        }
+    },
+    type: 'object',
+    title: 'InstagramMetricsSchema'
+} as const;
+
+export const InstagramPostMetricsSchemaSchema = {
+    properties: {
+        total_posts: {
+            type: 'integer',
+            title: 'Total Posts',
+            default: 0
+        },
+        total_likes: {
+            type: 'integer',
+            title: 'Total Likes',
+            default: 0
+        },
+        total_comments: {
+            type: 'integer',
+            title: 'Total Comments',
+            default: 0
+        },
+        avg_likes: {
+            type: 'number',
+            title: 'Avg Likes',
+            default: 0
+        },
+        avg_comments: {
+            type: 'number',
+            title: 'Avg Comments',
+            default: 0
+        },
+        avg_engagement_rate: {
+            type: 'number',
+            title: 'Avg Engagement Rate',
+            default: 0
+        },
+        hashtags_per_post: {
+            type: 'number',
+            title: 'Hashtags Per Post',
+            default: 0
+        },
+        mentions_per_post: {
+            type: 'number',
+            title: 'Mentions Per Post',
+            default: 0
+        }
+    },
+    type: 'object',
+    title: 'InstagramPostMetricsSchema'
 } as const;
 
 export const InstagramPostSchemaSchema = {
@@ -1051,6 +1262,291 @@ export const InstagramProfileInputSchema = {
     type: 'object',
     required: ['username'],
     title: 'InstagramProfileInput'
+} as const;
+
+export const InstagramProfileSchemaSchema = {
+    properties: {
+        id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Id'
+        },
+        username: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Username'
+        },
+        full_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Full Name'
+        },
+        profile_pic_url: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Profile Pic Url'
+        },
+        biography: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Biography'
+        },
+        is_private: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Private'
+        },
+        is_regulated_c18: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Regulated C18'
+        },
+        is_verified: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Verified'
+        },
+        account_type: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Account Type'
+        },
+        follower_count: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Follower Count'
+        },
+        following_count: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Following Count'
+        },
+        media_count: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Media Count'
+        },
+        external_url: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'External Url'
+        },
+        bio_links: {
+            items: {
+                additionalProperties: true,
+                type: 'object'
+            },
+            type: 'array',
+            title: 'Bio Links'
+        },
+        category_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Category Name'
+        },
+        has_guides: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Has Guides'
+        }
+    },
+    type: 'object',
+    title: 'InstagramProfileSchema'
+} as const;
+
+export const InstagramReelMetricsSchemaSchema = {
+    properties: {
+        total_reels: {
+            type: 'integer',
+            title: 'Total Reels',
+            default: 0
+        },
+        total_plays: {
+            type: 'integer',
+            title: 'Total Plays',
+            default: 0
+        },
+        avg_plays: {
+            type: 'number',
+            title: 'Avg Plays',
+            default: 0
+        },
+        avg_reel_likes: {
+            type: 'number',
+            title: 'Avg Reel Likes',
+            default: 0
+        },
+        avg_reel_comments: {
+            type: 'number',
+            title: 'Avg Reel Comments',
+            default: 0
+        }
+    },
+    type: 'object',
+    title: 'InstagramReelMetricsSchema'
+} as const;
+
+export const InstagramReelSchemaSchema = {
+    properties: {
+        code: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Code'
+        },
+        play_count: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Play Count'
+        },
+        comment_count: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Comment Count'
+        },
+        like_count: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Like Count'
+        },
+        media_type: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Media Type'
+        },
+        product_type: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Product Type'
+        }
+    },
+    type: 'object',
+    title: 'InstagramReelSchema'
 } as const;
 
 export const InstagramReportRequestSchema = {
@@ -1218,6 +1714,12 @@ export const InstagramScrapeJobStatusResponseSchema = {
         job_id: {
             type: 'string',
             title: 'Job Id'
+        },
+        execution_mode: {
+            type: 'string',
+            enum: ['worker', 'apify'],
+            title: 'Execution Mode',
+            default: 'worker'
         },
         status: {
             type: 'string',

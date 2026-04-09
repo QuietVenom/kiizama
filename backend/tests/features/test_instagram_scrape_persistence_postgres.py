@@ -8,6 +8,7 @@ import pytest
 from kiizama_scrape_core.ig_scraper.schemas import (
     InstagramBatchCountersSchema,
     InstagramBatchProfileResult,
+    InstagramBatchScrapeRequest,
     InstagramBatchScrapeResponse,
     InstagramMetricsSchema,
     InstagramPostMetricsSchema,
@@ -16,6 +17,7 @@ from kiizama_scrape_core.ig_scraper.schemas import (
     InstagramReelMetricsSchema,
     InstagramReelSchema,
 )
+from kiizama_scrape_core.ig_scraper.service import build_batch_scrape_summary
 from sqlmodel import Session, delete
 
 from app.crud.profile_snapshots import list_profile_snapshots_full
@@ -149,3 +151,44 @@ def test_backend_instagram_scrape_persistence_writes_full_snapshot_to_postgres(
     assert snapshot["posts"][0]["posts"][0]["code"] == "POST1"
     assert snapshot["reels"][0]["reels"][0]["code"] == "REEL1"
     assert snapshot["metrics"]["post_metrics"]["total_posts"] == 1
+
+
+def test_backend_instagram_scrape_persistence_marks_profile_failed_on_write_error(
+    db: Session,
+) -> None:
+    persistence = BackendInstagramScrapePersistence(
+        profiles_collection=db,
+        posts_collection=db,
+        reels_collection=db,
+        metrics_collection=db,
+        snapshots_collection=db,
+    )
+    response = InstagramBatchScrapeResponse(
+        results={
+            "broken_creator": InstagramBatchProfileResult(
+                user=InstagramProfileSchema(
+                    id="999",
+                    username="broken_creator",
+                    profile_pic_url=None,
+                ),
+                success=True,
+                metrics=InstagramMetricsSchema(),
+            )
+        },
+        counters=InstagramBatchCountersSchema(requested=1, successful=1),
+        error=None,
+    )
+
+    persisted = asyncio.run(persistence.persist_scrape_results(response))
+    summary = build_batch_scrape_summary(
+        InstagramBatchScrapeRequest(usernames=["broken_creator"]),
+        InstagramBatchScrapeRequest(usernames=["broken_creator"]),
+        persisted,
+    )
+
+    assert persisted.results["broken_creator"].success is False
+    assert persisted.results["broken_creator"].error == "Missing profile_pic_url"
+    assert (
+        persisted.error == "Persistence errors: broken_creator: Missing profile_pic_url"
+    )
+    assert summary.usernames[0].status == "failed"

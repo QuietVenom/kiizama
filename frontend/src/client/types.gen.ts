@@ -144,6 +144,28 @@ export type InstagramBatchCountersSchema = {
     not_found?: number;
 };
 
+export type InstagramBatchProfileResult = {
+    user?: InstagramProfileSchema;
+    recommended_users?: Array<InstagramSuggestedUserSchema>;
+    posts?: Array<InstagramPostSchema>;
+    reels?: Array<InstagramReelSchema>;
+    success?: boolean;
+    error?: (string | null);
+    metrics?: InstagramMetricsSchema;
+    /**
+     * OpenAI-predicted categories for the profile content.
+     */
+    ai_categories?: Array<(string)>;
+    /**
+     * OpenAI-predicted roles for the profile tone/positioning.
+     */
+    ai_roles?: Array<(string)>;
+    /**
+     * Error details when AI analysis fails.
+     */
+    ai_error?: (string | null);
+};
+
 export type InstagramBatchRecommendationsRequest = {
     usernames: Array<(string)>;
     timeout_ms?: number;
@@ -187,6 +209,14 @@ export type InstagramBatchScrapeRequest = {
     proxy?: (string | null);
 };
 
+export type InstagramBatchScrapeResponse = {
+    results?: {
+        [key: string]: InstagramBatchProfileResult;
+    };
+    counters?: InstagramBatchCountersSchema;
+    error?: (string | null);
+};
+
 export type InstagramBatchScrapeSummaryResponse = {
     usernames?: Array<InstagramBatchUsernameStatus>;
     counters?: InstagramBatchCountersSchema;
@@ -200,6 +230,31 @@ export type InstagramBatchUsernameStatus = {
 };
 
 export type status = 'success' | 'failed' | 'skipped' | 'not_found';
+
+export type InstagramMetricsSchema = {
+    user?: InstagramProfileSchema;
+    post_metrics?: InstagramPostMetricsSchema;
+    reel_metrics?: InstagramReelMetricsSchema;
+    overall_post_engagement_rate?: number;
+    reel_engagement_rate_on_plays?: number;
+    followers?: number;
+    following?: number;
+    media_count?: number;
+    is_verified?: boolean;
+    is_private?: boolean;
+    recommended_users?: Array<InstagramSuggestedUserSchema>;
+};
+
+export type InstagramPostMetricsSchema = {
+    total_posts?: number;
+    total_likes?: number;
+    total_comments?: number;
+    avg_likes?: number;
+    avg_comments?: number;
+    avg_engagement_rate?: number;
+    hashtags_per_post?: number;
+    mentions_per_post?: number;
+};
 
 export type InstagramPostSchema = {
     code?: (string | null);
@@ -220,6 +275,44 @@ export type InstagramProfileInput = {
     biography?: (string | null);
     follower_count?: (number | null);
     posts?: Array<InstagramPostSchema>;
+};
+
+export type InstagramProfileSchema = {
+    id?: (string | null);
+    username?: (string | null);
+    full_name?: (string | null);
+    profile_pic_url?: (string | null);
+    biography?: (string | null);
+    is_private?: (boolean | null);
+    is_regulated_c18?: (boolean | null);
+    is_verified?: (boolean | null);
+    account_type?: (number | null);
+    follower_count?: (number | null);
+    following_count?: (number | null);
+    media_count?: (number | null);
+    external_url?: (string | null);
+    bio_links?: Array<{
+        [key: string]: unknown;
+    }>;
+    category_name?: (string | null);
+    has_guides?: (boolean | null);
+};
+
+export type InstagramReelMetricsSchema = {
+    total_reels?: number;
+    total_plays?: number;
+    avg_plays?: number;
+    avg_reel_likes?: number;
+    avg_reel_comments?: number;
+};
+
+export type InstagramReelSchema = {
+    code?: (string | null);
+    play_count?: (number | null);
+    comment_count?: (number | null);
+    like_count?: (number | null);
+    media_type?: (number | null);
+    product_type?: (string | null);
 };
 
 /**
@@ -274,6 +367,7 @@ export type InstagramScrapeJobReferences = {
 
 export type InstagramScrapeJobStatusResponse = {
     job_id: string;
+    execution_mode?: 'worker' | 'apify';
     status: 'queued' | 'running' | 'done' | 'failed';
     created_at: string;
     updated_at: string;
@@ -286,6 +380,8 @@ export type InstagramScrapeJobStatusResponse = {
     references?: (InstagramScrapeJobReferences | null);
     error?: (string | null);
 };
+
+export type execution_mode = 'worker' | 'apify';
 
 export type status2 = 'queued' | 'running' | 'done' | 'failed';
 
@@ -1110,6 +1206,12 @@ export type InstagramCreateInstagramScrapeJobData = {
 
 export type InstagramCreateInstagramScrapeJobResponse = (InstagramScrapeJobCreateResponse);
 
+export type InstagramCreateInstagramApifyScrapeJobData = {
+    requestBody: InstagramScrapeJobCreateRequest;
+};
+
+export type InstagramCreateInstagramApifyScrapeJobResponse = (InstagramScrapeJobCreateResponse);
+
 export type InstagramGetInstagramScrapeJobData = {
     jobId: string;
 };
@@ -1127,6 +1229,12 @@ export type InstagramInstagramProfilesRecommendationsData = {
 };
 
 export type InstagramInstagramProfilesRecommendationsResponse = (InstagramBatchRecommendationsResponse);
+
+export type InstagramInstagramScrapeProfilesApifyBatchData = {
+    requestBody: InstagramBatchScrapeRequest;
+};
+
+export type InstagramInstagramScrapeProfilesApifyBatchResponse = (InstagramBatchScrapeResponse);
 
 export type InternalInstagramCompleteInstagramScrapeJobData = {
     jobId: string;

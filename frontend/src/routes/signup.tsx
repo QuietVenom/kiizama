@@ -23,7 +23,8 @@ import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
 import { PasswordInput } from "@/components/ui/password-input"
 import { PasswordRequirements } from "@/components/ui/password-requirements"
-import useAuth, { isLoggedIn } from "@/hooks/useAuth"
+import { ensureValidStoredSession } from "@/features/auth/session"
+import useAuth from "@/hooks/useAuth"
 import { isPublicFeatureFlagEnabled } from "@/hooks/useFeatureFlags"
 import { confirmPasswordRules, emailPattern, newPasswordRules } from "@/utils"
 import SymbolLogo from "/assets/images/symbol.svg"
@@ -36,7 +37,7 @@ const WAITING_LIST_FLAG_KEY = "waiting-list"
 export const Route = createFileRoute("/signup")({
   component: SignUp,
   beforeLoad: async () => {
-    if (isLoggedIn()) {
+    if (await ensureValidStoredSession()) {
       throw redirect({
         to: "/overview",
       })

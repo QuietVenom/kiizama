@@ -111,14 +111,13 @@ test("Logged-out user cannot access protected routes", async ({ page }) => {
   await logOutUser(page)
 
   await page.goto("/settings")
-  await expect(page).toHaveURL(/\/login$/)
+  await expect(page).toHaveURL(/\/login\?redirect=%2Fsettings$/)
 })
 
 test("Redirects to /login when token is wrong", async ({ page }) => {
-  await page.goto("/settings")
-  await page.evaluate(() => {
+  await page.addInitScript(() => {
     localStorage.setItem("access_token", "invalid_token")
   })
   await page.goto("/settings")
-  await expect(page).toHaveURL(/\/login$/)
+  await expect(page).toHaveURL(/\/login\?redirect=%2Fsettings$/)
 })

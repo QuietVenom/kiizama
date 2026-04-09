@@ -149,7 +149,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
               color="ui.text"
               fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
             >
-              Turn Instagram data into{" "}
+              Turn social media data into{" "}
               <Box as="span" display="inline" layerStyle="brandGradientText">
                 reputation strategy
               </Box>

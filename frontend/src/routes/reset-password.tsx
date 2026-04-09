@@ -8,7 +8,7 @@ import { type ApiError, LoginService, type NewPassword } from "@/client"
 import { Button } from "@/components/ui/button"
 import { PasswordInput } from "@/components/ui/password-input"
 import { PasswordRequirements } from "@/components/ui/password-requirements"
-import { isLoggedIn } from "@/hooks/useAuth"
+import { ensureValidStoredSession } from "@/features/auth/session"
 import useCustomToast from "@/hooks/useCustomToast"
 import { confirmPasswordRules, handleError, newPasswordRules } from "@/utils"
 
@@ -19,7 +19,7 @@ interface NewPasswordForm extends NewPassword {
 export const Route = createFileRoute("/reset-password")({
   component: ResetPassword,
   beforeLoad: async () => {
-    if (isLoggedIn()) {
+    if (await ensureValidStoredSession()) {
       throw redirect({
         to: "/overview",
       })

@@ -41,7 +41,16 @@ export default defineConfig({
         channel: 'chromium',
         storageState: 'playwright/.auth/user.json',
       },
+      testIgnore: /.*http-errors\.spec\.ts/,
       dependencies: ['setup'],
+    },
+    {
+      name: 'chromium-mocked',
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chromium',
+      },
+      testMatch: /.*http-errors\.spec\.ts/,
     },
 
     // {

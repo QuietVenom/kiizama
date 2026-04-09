@@ -13,6 +13,7 @@ import {
   PaginationPrevTrigger,
   PaginationRoot,
 } from "@/components/ui/pagination.tsx"
+import { rethrowCriticalQueryError } from "@/features/errors/http"
 
 const usersSearchSchema = z.object({
   page: z.number().catch(1),
@@ -39,10 +40,13 @@ function UsersTable() {
   const navigate = useNavigate({ from: Route.fullPath })
   const { page } = Route.useSearch()
 
-  const { data, isLoading, isPlaceholderData } = useQuery({
+  const { data, error, isLoading, isPlaceholderData } = useQuery({
     ...getUsersQueryOptions({ page }),
     placeholderData: (prevData) => prevData,
+    retry: false,
   })
+
+  rethrowCriticalQueryError(error, "query")
 
   const setPage = (page: number) => {
     navigate({

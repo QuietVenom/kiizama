@@ -86,6 +86,16 @@ class JobWorkerRuntime:
         )
 
     async def start_job(self, message: QueuedJobMessage) -> JobRuntimeHandle | None:
+        if message.execution_mode != self._spec.execution_mode:
+            logger.warning(
+                "Discarding scrape job %s with execution_mode=%s from queue %s.",
+                message.job_id,
+                message.execution_mode,
+                self._spec.execution_mode,
+            )
+            await self._ack(message)
+            return None
+
         state = await self._repository.read_state(message.job_id)
         if state is not None and state.status in TERMINAL_JOB_STATUSES:
             await self._ack(message)

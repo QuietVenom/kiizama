@@ -17,7 +17,7 @@ import { type ApiError, LoginService } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
-import { isLoggedIn } from "@/hooks/useAuth"
+import { ensureValidStoredSession } from "@/features/auth/session"
 import useCustomToast from "@/hooks/useCustomToast"
 import { emailPattern, handleError } from "@/utils"
 import SymbolLogo from "/assets/images/symbol.svg"
@@ -29,7 +29,7 @@ interface FormData {
 export const Route = createFileRoute("/recover-password")({
   component: RecoverPassword,
   beforeLoad: async () => {
-    if (isLoggedIn()) {
+    if (await ensureValidStoredSession()) {
       throw redirect({
         to: "/overview",
       })

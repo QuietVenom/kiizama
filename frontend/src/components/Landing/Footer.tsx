@@ -149,16 +149,16 @@ const Footer = (_props: FooterProps) => {
               >
                 Product
               </Text>
-              <ChakraLink href="#capabilities" {...footerLinkStyles}>
+              <ChakraLink href="/#capabilities" {...footerLinkStyles}>
                 Capabilities
               </ChakraLink>
-              <ChakraLink href="#plans" {...footerLinkStyles}>
+              <ChakraLink href="/#plans" {...footerLinkStyles}>
                 Pricing
               </ChakraLink>
               <ChakraLink href="/" {...footerLinkStyles}>
                 API Documentation
               </ChakraLink>
-              <ChakraLink href="#faq" {...footerLinkStyles}>
+              <ChakraLink href="/#faq" {...footerLinkStyles}>
                 FAQ
               </ChakraLink>
             </Stack>
@@ -183,9 +183,6 @@ const Footer = (_props: FooterProps) => {
               </Link>
               <ChakraLink href="/" {...footerLinkStyles}>
                 Careers
-              </ChakraLink>
-              <ChakraLink href="/" {...footerLinkStyles}>
-                Blog
               </ChakraLink>
               <ChakraLink href="/" {...footerLinkStyles}>
                 Contact
@@ -226,6 +223,15 @@ const Footer = (_props: FooterProps) => {
                   _hover={{ color: "ui.main" }}
                 >
                   Terms of Service
+                </Text>
+              </Link>
+              <Link to="/providers">
+                <Text
+                  color="ui.inverseMutedText"
+                  fontWeight="medium"
+                  _hover={{ color: "ui.main" }}
+                >
+                  Providers
                 </Text>
               </Link>
 

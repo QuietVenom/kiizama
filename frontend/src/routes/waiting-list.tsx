@@ -22,7 +22,7 @@ import ThemeLogo from "@/components/Common/ThemeLogo"
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
-import { isLoggedIn } from "@/hooks/useAuth"
+import { ensureValidStoredSession } from "@/features/auth/session"
 import useCustomToast from "@/hooks/useCustomToast"
 import { emailPattern } from "@/utils"
 import SymbolLogo from "/assets/images/symbol.svg"
@@ -67,7 +67,7 @@ const WAITING_LIST_PATH = "/api/v1/public/waiting-list/"
 export const Route = createFileRoute("/waiting-list")({
   component: WaitingList,
   beforeLoad: async () => {
-    if (isLoggedIn()) {
+    if (await ensureValidStoredSession()) {
       throw redirect({
         to: "/overview",
       })

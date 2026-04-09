@@ -14,6 +14,7 @@ COPY ./ /app/
 
 ARG VITE_API_URL=${VITE_API_URL}
 
+# VITE_API_URL is a public build-time value, not a secret.
 RUN npm run build
 
 

@@ -74,7 +74,7 @@ export const TagsInputField = ({
         value={value}
         style={{ display: "block", width: "100%" }}
       >
-        <TagsInput.HiddenInput {...autofillIgnoreProps} required={false} />
+        <TagsInput.HiddenInput required={false} />
 
         <TagsInput.Control asChild>
           <Flex
@@ -153,7 +153,7 @@ export const TagsInputField = ({
               <Input
                 {...autofillIgnoreProps}
                 aria-describedby={field?.ariaDescribedby}
-                id={field?.ids.control}
+                aria-labelledby={field?.ids.label}
                 minW="0"
                 w="full"
                 flex="1 1 100%"

@@ -49,6 +49,9 @@ class FakeJobsCollection:
         doc = self.docs.get(str(filter_query["_id"]))
         if doc is None:
             return None
+        owner_user_id = filter_query.get("ownerUserId")
+        if owner_user_id is not None and doc.get("ownerUserId") != owner_user_id:
+            return None
         result = dict(doc)
         if projection:
             for key, include in projection.items():
@@ -152,9 +155,13 @@ def _service(
     job_control_repository: FakeJobControlRepository | None = None,
     user_events_repository: FakeUserEventsRepository | None = None,
 ) -> InstagramJobService:
+    repository = job_control_repository or FakeJobControlRepository()
     return InstagramJobService(
         jobs_collection=jobs_collection or FakeJobsCollection(),
-        job_control_repository=job_control_repository or FakeJobControlRepository(),
+        job_control_repositories={
+            "worker": repository,
+            "apify": repository,
+        },
         user_events_repository=user_events_repository or FakeUserEventsRepository(),
         clock=lambda: datetime(2026, 3, 21, 12, 0, tzinfo=timezone.utc),
     )
@@ -224,7 +231,7 @@ def test_get_job_merges_redis_state_over_persisted_projection() -> None:
         updated_at=datetime(2026, 3, 21, 12, 5, tzinfo=timezone.utc),
     )
 
-    response = _run(service.get_job(job_id="job-1"))
+    response = _run(service.get_job(job_id="job-1", owner_user_id="user-1"))
 
     assert response is not None
     assert response.status == "running"
@@ -249,12 +256,32 @@ def test_get_job_returns_queued_projection_when_redis_state_is_not_created_yet()
         "error": None,
     }
 
-    response = _run(service.get_job(job_id="job-1"))
+    response = _run(service.get_job(job_id="job-1", owner_user_id="user-1"))
 
     assert response is not None
     assert response.status == "queued"
     assert response.attempts == 0
     assert response.lease_owner is None
+
+
+def test_get_job_returns_none_for_foreign_owner() -> None:
+    jobs_collection = FakeJobsCollection()
+    service = _service(jobs_collection=jobs_collection)
+    jobs_collection.docs["job-1"] = {
+        "_id": "job-1",
+        "ownerUserId": "user-1",
+        "status": "queued",
+        "createdAt": datetime(2026, 3, 21, 12, 0, tzinfo=timezone.utc),
+        "updatedAt": datetime(2026, 3, 21, 12, 0, tzinfo=timezone.utc),
+        "expiresAt": datetime(2026, 3, 22, 12, 0, tzinfo=timezone.utc),
+        "summary": None,
+        "references": None,
+        "error": None,
+    }
+
+    response = _run(service.get_job(job_id="job-1", owner_user_id="user-2"))
+
+    assert response is None
 
 
 def test_get_job_rejects_stale_transient_projection_without_live_redis_state() -> None:
@@ -273,7 +300,7 @@ def test_get_job_rejects_stale_transient_projection_without_live_redis_state() -
     }
 
     try:
-        _run(service.get_job(job_id="job-1"))
+        _run(service.get_job(job_id="job-1", owner_user_id="user-1"))
     except RuntimeError as exc:
         assert "Unexpected transient job projection without live Redis state." in str(
             exc

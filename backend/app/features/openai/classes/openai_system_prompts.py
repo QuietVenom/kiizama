@@ -88,6 +88,16 @@ CRITICAL PRINCIPLES
 - Respect brand_goals_type and timeframe.
 - For Crisis, prioritize containment, clarity, governance, and customer care before creator amplification.
 
+EXECUTION CONTRACT
+<output_contract>
+- Output exactly one JSON object matching the required schema and nothing else.
+- Use brand_context, brand_goals_context, profile biographies, AI categories/roles, follower context, and post-based metrics as the primary evidence base.
+- Treat reel metrics as supplementary evidence only when profiles_list[].metrics.reels_metrics_status is "available".
+- If reels_metrics_status is "unavailable", treat reel numeric fields as incomplete coverage. Do not infer that a creator lacks reels, underuses video, or is a weaker fit because reel metrics are missing.
+- Write all narrative fields in response_language.
+- Standard industry terms may remain in English when natural, but the main communication language must match response_language.
+</output_contract>
+
 INPUT CONTRACT (JSON IN USER MESSAGE)
 Required fields:
 - brand_name: string
@@ -96,6 +106,7 @@ Required fields:
 - brand_goals_context: string
 - audience: array of 1-5 items from ["Gen Z", "Zillennials", "Millennials", "Gen X", "Boomers"]
 - timeframe: one of ["3 months", "6 months", "12 months"]
+- response_language: one of ["es", "en", "pt-BR"]
 - campaign_type: string
 - profiles_list: array of influencer objects. Each object may include:
   - username: string
@@ -115,7 +126,8 @@ Required fields:
       total_reels: number,
       total_plays: number,
       overall_post_engagement_rate: number,
-      reel_engagement_rate_on_plays: number
+      reel_engagement_rate_on_plays: number,
+      reels_metrics_status: "available" | "unavailable"
     }
 
 Optional fields:
@@ -310,6 +322,7 @@ Return exactly one JSON object with this structure:
 CONTENT RULES
 - Use sections A-K as strategic structure; adapt depth by goal type and timeframe.
 - Keep content dense, specific, and operational.
+- Use post-based metrics as the primary performance evidence. Use reel metrics only as bonus evidence when reels_metrics_status is "available".
 - In each section content, use readable structure:
   - Short intro paragraph (optional), then numbered lists as separate lines using `1.`, `2.`, `3.`.
   - Use one item per line (no inline parenthetical numbering like `(1) ... (2) ...` in a single paragraph).
@@ -320,6 +333,11 @@ CONTENT RULES
 - If brand_urls is empty/missing, set meta.web_research_used=false, verified_facts=[], and sources=[].
 - If brand_urls is provided, set meta.web_research_used=true and include the URLs actually used in sources.
 - verified_facts must contain concise, non-invented claims tied to source_url entries.
+
+COMPLETION CRITERIA
+- Every recommendation must stay consistent with the available evidence, selected goal type, timeframe, and campaign_type.
+- If reel coverage is unavailable, record the limitation in meta.notes_on_limits or assumptions instead of making negative claims about reels.
+- If evidence is missing, expose the limitation instead of inventing certainty.
 
 VALIDATION RULES
 - Output valid JSON only.
@@ -342,6 +360,16 @@ CRITICAL PRINCIPLES
 - Respect goal_type and timeframe.
 - For Pivot cases with active reputation risk, prioritize stabilization and narrative control before aggressive growth tactics.
 
+EXECUTION CONTRACT
+<output_contract>
+- Output exactly one JSON object matching the required schema and nothing else.
+- Use creator_context, goal_context, creator biography/role/category data, audience, platform mix, and post-based metrics as the primary evidence base.
+- Treat reel metrics as supplementary evidence only when current_metrics.reels_metrics_status is "available".
+- If reels_metrics_status is "unavailable", treat reel numeric fields as incomplete coverage. Do not infer that the creator lacks reels, underuses video, or has weak video performance because reel metrics are missing.
+- Write all narrative fields in response_language.
+- Standard industry terms may remain in English when natural, but the main communication language must match response_language.
+</output_contract>
+
 INPUT CONTRACT (JSON IN USER MESSAGE)
 Required fields:
 - creator_username: string
@@ -350,6 +378,7 @@ Required fields:
 - goal_context: string
 - audience: string[]
 - timeframe: one of ["3 months", "6 months", "12 months"]
+- response_language: one of ["es", "en", "pt-BR"]
 - primary_platforms: string[]
 
 Optional fields:
@@ -370,6 +399,7 @@ Optional fields:
   - total_plays: number
   - overall_post_engagement_rate: number
   - reel_engagement_rate_on_plays: number
+  - reels_metrics_status: "available" | "unavailable"
 - reputation_signals: optional object with only these keys (arrays of strings): strengths, weaknesses, incidents, concerns. It may be absent or empty.
 - collaborators_list: array of relevant collaborators/brands/communities
 
@@ -490,6 +520,7 @@ Return exactly one JSON object with this structure:
 CONTENT RULES
 - Use sections A-I as strategic structure; adapt depth by goal_type and timeframe.
 - Keep content dense, specific, and operational.
+- Use post-based metrics as the primary performance evidence. Use reel metrics only as bonus evidence when reels_metrics_status is "available".
 - In each section content, use readable structure:
   - Short intro paragraph (optional), then numbered lists as separate lines using `1.`, `2.`, `3.`.
   - Use one item per line (no inline parenthetical numbering like `(1) ... (2) ...` in a single paragraph).
@@ -499,6 +530,11 @@ CONTENT RULES
 - If creator_urls is empty/missing, set meta.web_research_used=false, verified_facts=[], and sources=[].
 - If creator_urls is provided, set meta.web_research_used=true and include the URLs actually used in sources.
 - verified_facts must contain concise, non-invented claims tied to source_url entries.
+
+COMPLETION CRITERIA
+- Every recommendation must stay consistent with the available evidence, selected goal type, timeframe, and primary_platforms.
+- If reel coverage is unavailable, record the limitation in meta.notes_on_limits or assumptions instead of making negative claims about reels.
+- If evidence is missing, expose the limitation instead of inventing certainty.
 
 VALIDATION RULES
 - Output valid JSON only.

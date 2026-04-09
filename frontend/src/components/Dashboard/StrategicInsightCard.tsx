@@ -1,7 +1,8 @@
-import { Box, Flex, Icon, Text } from "@chakra-ui/react"
+import { Box, Flex, Icon, Link, Text } from "@chakra-ui/react"
 import { keyframes } from "@emotion/react"
 import { FiUser } from "react-icons/fi"
 import { IoNewspaperOutline } from "react-icons/io5"
+import { getAllBlogPosts } from "@/features/blog/content"
 
 const newsCardAttention = keyframes`
   0%, 70%, 100% {
@@ -14,6 +15,8 @@ const newsCardAttention = keyframes`
     transform: scale(1);
   }
 `
+
+const latestBlogPosts = getAllBlogPosts().slice(0, 3)
 
 const StrategicInsightCard = () => {
   return (
@@ -60,10 +63,29 @@ const StrategicInsightCard = () => {
                 News
               </Text>
             </Flex>
-            <Text fontSize={{ base: "sm", lg: "md" }}>
-              Proximamente integraremos reportes y analisis de audiencias de
-              TikTok directamente en Kiizama.
-            </Text>
+            {latestBlogPosts.length > 0 ? (
+              <Flex direction="column" gap={3}>
+                {latestBlogPosts.map((post) => (
+                  <Link
+                    key={post.slug}
+                    href={`/blog/${post.slug}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    color="ui.inverseText"
+                    fontSize={{ base: "sm", lg: "md" }}
+                    fontWeight="semibold"
+                    lineHeight="1.4"
+                    _hover={{ color: "ui.main", textDecoration: "none" }}
+                  >
+                    {post.title}
+                  </Link>
+                ))}
+              </Flex>
+            ) : (
+              <Text fontSize={{ base: "sm", lg: "md" }} color="ui.muted">
+                No published blog posts yet.
+              </Text>
+            )}
           </Box>
         </Flex>
       </Box>

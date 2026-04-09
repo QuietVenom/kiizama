@@ -64,6 +64,14 @@ class JobControlRepository:
         self.require_redis_client()
 
     async def enqueue_job(self, message: QueuedJobMessage) -> None:
+        if message.execution_mode != self.spec.execution_mode:
+            raise ValueError(
+                "Queued job execution_mode does not match queue spec. "
+                f"job_id={message.job_id} "
+                f"message_mode={message.execution_mode!r} "
+                f"queue_mode={self.spec.execution_mode!r}"
+            )
+
         redis = self.require_redis_client()
         state_key = build_state_key(self.spec, message.job_id)
 
@@ -97,6 +105,7 @@ class JobControlRepository:
                         if message.expires_at is not None
                         else ""
                     ),
+                    "execution_mode": message.execution_mode,
                     "payload": json.dumps(message.payload),
                 },
                 maxlen=self.spec.queue_maxlen,
@@ -458,12 +467,24 @@ class JobControlRepository:
                         message_id=str(message_id),
                         job_id=str(raw_fields.get("job_id", "")),
                         owner_user_id=str(raw_fields.get("owner_user_id", "")),
+                        execution_mode=self._parse_execution_mode(raw_fields),
                         created_at=created_at,
                         expires_at=expires_at,
                         payload=dict(payload),
                     )
                 )
         return messages
+
+    def _parse_execution_mode(
+        self, raw_fields: dict[str, object]
+    ) -> Literal[
+        "worker",
+        "apify",
+    ]:
+        raw_execution_mode = raw_fields.get("execution_mode")
+        if raw_execution_mode in {"worker", "apify"}:
+            return cast(Literal["worker", "apify"], raw_execution_mode)
+        return self.spec.execution_mode
 
     def _parse_state(self, raw_state: dict[str, object]) -> JobTransientState:
         attempts_raw = raw_state.get("attempts")

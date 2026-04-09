@@ -4,6 +4,8 @@ primary_region = "dfw"
 # Deploy from the frontend directory so this Dockerfile keeps using
 # frontend/ as the Docker build context:
 # fly deploy ./frontend --config ../fly.frontend.toml
+#
+# This app only needs the public backend origin at build time.
 
 [build.args]
   VITE_API_URL = "https://api.kiizama.com"

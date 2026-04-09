@@ -5,8 +5,10 @@ import {
   redirect,
   useLocation,
 } from "@tanstack/react-router"
-
+import { ApiError, type UserPublic, UsersService } from "@/client"
 import Sidebar from "@/components/Common/Sidebar"
+import { normalizeAppError } from "@/features/errors/http"
+import { buildLoginHrefWithReturnTo } from "@/features/errors/navigation"
 import { UserEventsBootstrap } from "@/features/user-events/UserEventsBootstrap"
 import { currentUserQueryOptions, isLoggedIn } from "@/hooks/useAuth"
 
@@ -23,21 +25,31 @@ const usesDashboardShell = (pathname: string) =>
 
 export const Route = createFileRoute("/_layout")({
   component: Layout,
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, location }) => {
     if (!isLoggedIn()) {
       throw redirect({
-        to: "/login",
+        href: buildLoginHrefWithReturnTo(location.href),
       })
     }
 
     try {
-      await context.queryClient.ensureQueryData(currentUserQueryOptions)
-    } catch {
-      if (!isLoggedIn()) {
-        throw redirect({
-          to: "/login",
-        })
+      const currentUser = await UsersService.readUserMe()
+      context.queryClient.setQueryData<UserPublic>(
+        currentUserQueryOptions.queryKey,
+        currentUser,
+      )
+    } catch (error) {
+      if (error instanceof ApiError || error instanceof Error) {
+        const normalizedError = normalizeAppError(error, "loader")
+
+        if (normalizedError.status === 401 || normalizedError.status === 403) {
+          throw redirect({
+            href: buildLoginHrefWithReturnTo(location.href),
+          })
+        }
       }
+
+      throw error
     }
   },
 })

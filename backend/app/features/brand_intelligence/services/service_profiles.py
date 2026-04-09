@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from typing import Any
+from typing import Any, Literal
 
 from ..schemas import InfluencerMetricsSummary, InfluencerProfileDirectoryItem
 from .service_utils import (
@@ -38,6 +38,7 @@ def build_influencer_profiles_directory(
         metrics_data = coerce_mapping(snapshot_data.get("metrics"))
         post_metrics = coerce_mapping(metrics_data.get("post_metrics"))
         reel_metrics = coerce_mapping(metrics_data.get("reel_metrics"))
+        reels_metrics_status = _derive_reels_metrics_status(snapshot_data)
 
         merged_profile = dict(snapshot_profile_data)
         merged_profile.update(profile_data)
@@ -72,6 +73,7 @@ def build_influencer_profiles_directory(
                     reel_engagement_rate_on_plays=safe_float(
                         metrics_data.get("reel_engagement_rate_on_plays")
                     ),
+                    reels_metrics_status=reels_metrics_status,
                 ),
             )
         )
@@ -117,6 +119,7 @@ def build_creator_profile_summary(
         creator_ai_roles=creator_ai_roles,
         post_metrics=post_metrics,
         reel_metrics=reel_metrics,
+        reels_metrics_status=_derive_reels_metrics_status(snapshot_data),
     )
 
     missing_creator = not merged_profile and not metrics_data
@@ -145,6 +148,7 @@ def build_creator_metrics_snapshot(
     creator_ai_roles: list[str],
     post_metrics: Mapping[str, Any],
     reel_metrics: Mapping[str, Any],
+    reels_metrics_status: Literal["available", "unavailable"],
 ) -> dict[str, Any]:
     return {
         "creator_full_name": creator_full_name,
@@ -166,7 +170,25 @@ def build_creator_metrics_snapshot(
         "reel_engagement_rate_on_plays": safe_float(
             metrics_data.get("reel_engagement_rate_on_plays")
         ),
+        "reels_metrics_status": reels_metrics_status,
     }
+
+
+def _derive_reels_metrics_status(
+    snapshot_data: Mapping[str, Any],
+) -> Literal["available", "unavailable"]:
+    reel_ids = snapshot_data.get("reel_ids")
+    if isinstance(reel_ids, Sequence) and not isinstance(reel_ids, str):
+        if any(str(item).strip() for item in reel_ids if item is not None):
+            return "available"
+
+    reels_documents = snapshot_data.get("reels")
+    if isinstance(reels_documents, Sequence) and not isinstance(reels_documents, str):
+        for document in reels_documents:
+            if coerce_mapping(document):
+                return "available"
+
+    return "unavailable"
 
 
 def _index_profiles_by_username(

@@ -9,7 +9,10 @@ import httpx
 from kiizama_scrape_core.ig_scraper.analysis import (
     OpenAIInstagramProfileAnalysisService,
 )
-from kiizama_scrape_core.ig_scraper.jobs import build_instagram_job_queue_spec
+from kiizama_scrape_core.ig_scraper.jobs import (
+    WORKER_JOB_EXECUTION_MODE,
+    build_instagram_job_queue_spec,
+)
 from kiizama_scrape_core.ig_scraper.persistence import (
     SqlInstagramCredentialsStore,
     SqlInstagramScrapePersistence,
@@ -163,6 +166,8 @@ async def execute_job_payload(
             return summary, summary.error
 
         response = await scrape_profiles_batch(request)
+        # TODO: add a cold browser warm-up before login/scrape so the Playwright
+        # flow can use ISP proxy sessions reliably when worker jobs are re-enabled.
         response = await enrich_with_ai_analysis(
             response,
             analysis_service=analysis_service,
@@ -186,6 +191,14 @@ async def process_message(
     backend_client: BackendCompletionPort,
     message: QueuedJobMessage,
 ) -> None:
+    if message.execution_mode != WORKER_JOB_EXECUTION_MODE:
+        logger.warning(
+            "Ignoring job %s with execution_mode=%s in legacy scrape worker. "
+            "TODO: keep worker reserved for Playwright/login jobs only.",
+            message.job_id,
+            message.execution_mode,
+        )
+
     settings = _settings()
     handle = await runtime.start_job(message)
     if handle is None:

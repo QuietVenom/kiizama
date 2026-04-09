@@ -374,25 +374,27 @@
         </div>
       </section>
 
-      <section class="section">
-        <h2 class="title">Creator Data Snapshot</h2>
+	      <section class="section">
+	        <h2 class="title">Creator Data Snapshot</h2>
 
-        {% set metrics = current_metrics if current_metrics is defined else none %}
-        {% if metrics and metrics.items is defined %}
-          <h3 class="meta" style="font-size:13px;margin:0 0 6px">Current Metrics</h3>
-          <table>
+	        {% set metrics = current_metrics if current_metrics is defined else none %}
+	        {% set reel_metric_keys = ['total_reels', 'total_plays', 'reel_engagement_rate_on_plays'] %}
+	        {% set has_reels = metrics and (metrics.total_reels if metrics.total_reels is defined else 0) > 0 %}
+	        {% if metrics and metrics.items is defined %}
+	          <h3 class="meta" style="font-size:13px;margin:0 0 6px">Current Metrics</h3>
+	          <table>
             <thead>
               <tr>
                 <th>Metric</th>
                 <th>Value</th>
               </tr>
             </thead>
-            <tbody>
-              {% for key, value in metrics.items() %}
-                {% if key != 'creator_profile_pic_url' %}
-                <tr>
-                  <td>{{ key }}</td>
-                  <td>
+	            <tbody>
+	              {% for key, value in metrics.items() %}
+	                {% if key not in ['creator_profile_pic_url', 'reels_metrics_status'] and (has_reels or key not in reel_metric_keys) %}
+	                <tr>
+	                  <td>{{ key }}</td>
+	                  <td>
                     {% if value is sameas true %}
                       Yes
                     {% elif value is sameas false %}
@@ -407,9 +409,9 @@
                       {{ value }}
                     {% endif %}
                   </td>
-                </tr>
-                {% endif %}
-              {% endfor %}
+	                </tr>
+	                {% endif %}
+	              {% endfor %}
             </tbody>
           </table>
         {% else %}

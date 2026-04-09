@@ -8,12 +8,22 @@ primary_region = "dfw"
 # This app stays private by design: no http_service and no services means
 # no public listener is configured. If the worker later needs the backend
 # over private networking, target http://kiizama-backend.internal:8000.
+#
+# Required Fly secrets for this app include:
+# SECRET DATABASE_URL
+# SECRET REDIS_URL
+# SECRET SECRET_KEY_IG_CREDENTIALS
+# SECRET OPENAI_API_KEY
+# SECRET SYSTEM_ADMIN_PASSWORD
+#
+# IG_SCRAPE_WORKER_BACKEND_BASE_URL is required and is not a secret.
 
 [build]
   dockerfile = "Dockerfile.worker"
 
 [env]
   IG_SCRAPER_MAX_CONCURRENT = "2"
+  IG_SCRAPE_WORKER_BACKEND_BASE_URL = "http://kiizama-backend.internal:8000"
   IG_SCRAPE_WORKER_POLL_SECONDS = "1"
   IG_SCRAPE_WORKER_HEARTBEAT_SECONDS = "20"
   IG_SCRAPE_WORKER_LEASE_SECONDS = "900"

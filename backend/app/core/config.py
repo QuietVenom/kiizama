@@ -136,6 +136,15 @@ class Settings(BaseSettings):
     USER_EVENTS_STREAM_MAXLEN: int = 100
     USER_EVENTS_SSE_READ_BLOCK_MS: int = 10_000
     JOB_CONTROL_QUEUE_MAXLEN: int = 10_000
+    IG_SCRAPER_WORKER_JOBS_ENABLED: bool = True
+    IG_SCRAPER_APIFY_JOBS_ENABLED: bool = True
+    IG_SCRAPER_APIFY_WORKER_ID: str = "backend-apify"
+    IG_SCRAPER_APIFY_LEASE_SECONDS: int = 90
+    IG_SCRAPER_APIFY_HEARTBEAT_SECONDS: float = 30.0
+    IG_SCRAPER_APIFY_POLL_SECONDS: float = 2.0
+    IG_SCRAPER_APIFY_MAX_ATTEMPTS: int = 3
+    IG_SCRAPER_APIFY_MAX_CONCURRENT_JOBS: int = 4
+    APIFY_API_TOKEN: str | None = None
 
     def _resolved_redis_url(self) -> str | None:
         return self._first_non_empty(self.REDIS_URL, self.FLY_REDIS_URL)
@@ -179,7 +188,16 @@ class Settings(BaseSettings):
             raise ValueError("JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS must be positive.")
         if self.JOB_CONTROL_QUEUE_MAXLEN <= 0:
             raise ValueError("JOB_CONTROL_QUEUE_MAXLEN must be positive.")
-
+        if self.IG_SCRAPER_APIFY_LEASE_SECONDS <= 0:
+            raise ValueError("IG_SCRAPER_APIFY_LEASE_SECONDS must be positive.")
+        if self.IG_SCRAPER_APIFY_HEARTBEAT_SECONDS <= 0:
+            raise ValueError("IG_SCRAPER_APIFY_HEARTBEAT_SECONDS must be positive.")
+        if self.IG_SCRAPER_APIFY_POLL_SECONDS <= 0:
+            raise ValueError("IG_SCRAPER_APIFY_POLL_SECONDS must be positive.")
+        if self.IG_SCRAPER_APIFY_MAX_ATTEMPTS <= 0:
+            raise ValueError("IG_SCRAPER_APIFY_MAX_ATTEMPTS must be positive.")
+        if self.IG_SCRAPER_APIFY_MAX_CONCURRENT_JOBS <= 0:
+            raise ValueError("IG_SCRAPER_APIFY_MAX_CONCURRENT_JOBS must be positive.")
         return self
 
 

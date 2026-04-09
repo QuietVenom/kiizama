@@ -6,7 +6,9 @@ from typing import Annotated, Any, Protocol
 
 from fastapi import Depends
 from kiizama_scrape_core.ig_scraper.jobs import (
+    APIFY_JOB_EXECUTION_MODE,
     JOB_STATUS_VALUES,
+    WORKER_JOB_EXECUTION_MODE,
     build_instagram_job_queue_spec,
     build_job_projection_document,
     build_job_references,
@@ -15,6 +17,7 @@ from kiizama_scrape_core.ig_scraper.jobs import (
 )
 from kiizama_scrape_core.ig_scraper.schemas import (
     InstagramScrapeJobCreateRequest,
+    InstagramScrapeJobExecutionMode,
     InstagramScrapeJobStatusResponse,
     InstagramScrapeJobTerminalEventPayload,
     InstagramScrapeJobTerminalizationRequest,
@@ -114,6 +117,15 @@ def get_instagram_job_queue_spec() -> JobQueueSpec:
     return build_instagram_job_queue_spec(
         state_ttl_seconds=settings.JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS,
         queue_maxlen=settings.JOB_CONTROL_QUEUE_MAXLEN,
+        execution_mode=WORKER_JOB_EXECUTION_MODE,
+    )
+
+
+def get_instagram_apify_job_queue_spec() -> JobQueueSpec:
+    return build_instagram_job_queue_spec(
+        state_ttl_seconds=settings.JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS,
+        queue_maxlen=settings.JOB_CONTROL_QUEUE_MAXLEN,
+        execution_mode=APIFY_JOB_EXECUTION_MODE,
     )
 
 
@@ -127,6 +139,10 @@ def get_instagram_job_control_repository() -> JobControlRepository:
     return JobControlRepository(spec=get_instagram_job_queue_spec())
 
 
+def get_instagram_apify_job_control_repository() -> JobControlRepository:
+    return JobControlRepository(spec=get_instagram_apify_job_queue_spec())
+
+
 def get_instagram_user_events_repository() -> UserEventsRepository:
     return UserEventsRepository()
 
@@ -136,14 +152,13 @@ class InstagramJobService:
         self,
         *,
         jobs_collection: JobProjectionCollection,
-        job_control_repository: JobControlPort,
+        job_control_repositories: dict[InstagramScrapeJobExecutionMode, JobControlPort],
         user_events_repository: UserEventsPort,
         clock: Callable[[], datetime] = utcnow,
     ) -> None:
         self._jobs_collection = jobs_collection
-        self._job_control_repository = job_control_repository
+        self._job_control_repositories = job_control_repositories
         self._user_events_repository = user_events_repository
-        self._job_spec = job_control_repository.spec
         self._clock = clock
 
     async def create_job(
@@ -151,6 +166,7 @@ class InstagramJobService:
         *,
         payload: InstagramScrapeJobCreateRequest,
         owner_user_id: str,
+        execution_mode: InstagramScrapeJobExecutionMode = WORKER_JOB_EXECUTION_MODE,
     ) -> str:
         now = self._clock()
         job_id = str(generate_uuid7())
@@ -159,17 +175,22 @@ class InstagramJobService:
             job_id=job_id,
             owner_user_id=owner_user_id,
             payload=payload.model_dump(mode="json"),
+            execution_mode=execution_mode,
             created_at=now,
             expires_at=expires_at,
         )
 
         await self._jobs_collection.insert_one(projection)
+        job_control_repository = self._resolve_job_control_repository(
+            execution_mode,
+        )
 
         try:
-            await self._job_control_repository.enqueue_job(
+            await job_control_repository.enqueue_job(
                 QueuedJobMessage(
                     job_id=job_id,
                     owner_user_id=owner_user_id,
+                    execution_mode=execution_mode,
                     created_at=now,
                     expires_at=expires_at,
                     payload=payload.model_dump(mode="json"),
@@ -185,13 +206,21 @@ class InstagramJobService:
         self,
         *,
         job_id: str,
+        owner_user_id: str,
     ) -> InstagramScrapeJobStatusResponse | None:
-        doc = await self._jobs_collection.find_one({"_id": job_id}, {"payload": 0})
+        doc = await self._jobs_collection.find_one(
+            {
+                "_id": job_id,
+                "ownerUserId": owner_user_id,
+            },
+            {"payload": 0},
+        )
         if doc is None:
             return None
+        job_control_repository = self._resolve_job_control_repository_from_doc(doc)
 
         try:
-            state = await self._job_control_repository.read_state(job_id)
+            state = await job_control_repository.read_state(job_id)
         except JobControlUnavailableError:
             if str(doc.get("status")) in TERMINAL_JOB_STATUSES:
                 return serialize_job_document(doc)
@@ -211,13 +240,15 @@ class InstagramJobService:
         doc = await self._jobs_collection.find_one({"_id": job_id})
         if doc is None:
             return None
+        job_control_repository = self._resolve_job_control_repository_from_doc(doc)
+        job_spec = job_control_repository.spec
 
         owner_user_id = str(doc.get("ownerUserId") or "").strip()
         if not owner_user_id:
             raise RuntimeError(f"Job {job_id} is missing ownerUserId.")
 
         notification_id = self._build_notification_id(job_id)
-        decision = await self._job_control_repository.claim_terminal_state(
+        decision = await job_control_repository.claim_terminal_state(
             job_id,
             status=payload.status,
             attempt=payload.attempt,
@@ -271,13 +302,13 @@ class InstagramJobService:
                 payload=event_payload.model_dump(mode="json"),
             ),
             dedupe_key=build_dedupe_key(
-                self._job_spec,
+                job_spec,
                 job_id,
                 TERMINAL_NOTIFICATION_KIND,
             ),
-            dedupe_ttl_seconds=self._job_spec.state_ttl_seconds,
+            dedupe_ttl_seconds=job_spec.state_ttl_seconds,
         )
-        await self._job_control_repository.complete_terminal_state(
+        await job_control_repository.complete_terminal_state(
             job_id,
             terminal_event_id=event_id,
         )
@@ -321,6 +352,24 @@ class InstagramJobService:
             "Unexpected transient job projection without live Redis state. "
             f"job_id={doc.get('_id')} status={status!r}"
         )
+
+    def _resolve_job_control_repository(
+        self,
+        execution_mode: InstagramScrapeJobExecutionMode,
+    ) -> JobControlPort:
+        repository = self._job_control_repositories.get(execution_mode)
+        if repository is None:
+            raise RuntimeError(f"Unsupported job execution mode: {execution_mode!r}")
+        return repository
+
+    def _resolve_job_control_repository_from_doc(
+        self,
+        doc: dict[str, Any],
+    ) -> JobControlPort:
+        execution_mode = doc.get("executionMode") or WORKER_JOB_EXECUTION_MODE
+        if execution_mode not in {WORKER_JOB_EXECUTION_MODE, APIFY_JOB_EXECUTION_MODE}:
+            raise RuntimeError(f"Unsupported job execution mode: {execution_mode!r}")
+        return self._resolve_job_control_repository(execution_mode)
 
     @staticmethod
     def _build_terminal_event_payload(
@@ -382,7 +431,10 @@ def get_instagram_job_service(
 ) -> InstagramJobService:
     return InstagramJobService(
         jobs_collection=jobs_collection,
-        job_control_repository=get_instagram_job_control_repository(),
+        job_control_repositories={
+            WORKER_JOB_EXECUTION_MODE: get_instagram_job_control_repository(),
+            APIFY_JOB_EXECUTION_MODE: get_instagram_apify_job_control_repository(),
+        },
         user_events_repository=get_instagram_user_events_repository(),
     )
 
@@ -398,6 +450,8 @@ __all__ = [
     "InstagramJobServiceDep",
     "TERMINAL_JOB_STATUSES",
     "get_instagram_job_control_repository",
+    "get_instagram_apify_job_control_repository",
+    "get_instagram_apify_job_queue_spec",
     "get_instagram_job_projection_repository",
     "get_instagram_job_queue_spec",
     "get_instagram_job_service",

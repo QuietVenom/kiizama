@@ -26,7 +26,8 @@ class StubInstagramJobService:
         del payload, owner_user_id
         return "job-1"
 
-    async def get_job(self, *, job_id: str):
+    async def get_job(self, *, job_id: str, owner_user_id: str):
+        del owner_user_id
         return {
             "job_id": job_id,
             "status": "queued",

@@ -334,6 +334,7 @@
 
       {% set reels_processed = reels[:reels_processed_limit] %}
       {% set tr = reels_processed|length %}
+      {% set has_reels = tr > 0 %}
       {% set plays_r = reels_processed|sum(attribute='play_count', start=0) %}
       {% set likes_r = reels_processed|sum(attribute='like_count', start=0) %}
       {% set comm_r = reels_processed|sum(attribute='comment_count', start=0) %}
@@ -347,9 +348,11 @@
             <tr><td>Likes totales (posts)</td><td><b>{{ '{:,}'.format(likes_p) }}</b></td></tr>
             <tr><td>Comentarios totales (posts)</td><td><b>{{ '{:,}'.format(comm_p) }}</b></td></tr>
             <tr><td>ER promedio por post (sobre followers)</td><td><b>{{ '%.2f%%' % er_p_avg }}</b></td></tr>
+            {% if has_reels %}
             <tr><td>Reels analizados</td><td><b>{{ tr }}</b></td></tr>
             <tr><td>Reproducciones totales (reels)</td><td><b>{{ '{:,}'.format(plays_r) }}</b></td></tr>
             <tr><td>ER total de reels sobre plays</td><td><b>{{ '%.2f%%' % er_r_avg if er_r_avg is not none else 'NA' }}</b></td></tr>
+            {% endif %}
           </tbody>
         </table>
       </section>
@@ -386,7 +389,7 @@
               <td>{{ '%.2f%%' % er }}</td>
               <td>{{ p.coauthor_producers|length if p.coauthor_producers else 0 }}</td>
               <td>{{ p.usertags|length if p.usertags else 0 }}</td>
-              <td>{% if p.product_type == 'clips' %}Reel{% elif p.product_type == 'carousel_container' %}Carrusel{% else %}Post{% endif %}</td>
+              <td>{% if p.media_type == 2 %}Reel{% elif p.media_type == 8 %}Carrusel{% else %}Post{% endif %}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -394,6 +397,7 @@
       </section>
 
       <!-- ====== Reels (máx. 12) ====== -->
+      {% if has_reels %}
       <section class="section">
         <h2 class="title">Reels ({{ tr }} analizados)</h2>
         <table>
@@ -430,6 +434,7 @@
           </tbody>
         </table>
       </section>
+      {% endif %}
 
       <!-- ====== Usuarios recomendados (username) ====== -->
       {% if recommended_users %}

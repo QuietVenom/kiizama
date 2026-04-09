@@ -80,6 +80,7 @@ class InstagramReportGenerator(HtmlPdfReportGenerator):
                     "coauthor_producers": cls._get_field(post, "coauthor_producers", [])
                     or [],
                     "usertags": cls._get_field(post, "usertags", []) or [],
+                    "media_type": cls._get_field(post, "media_type"),
                     "product_type": cls._get_field(post, "product_type", ""),
                 }
             )

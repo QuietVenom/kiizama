@@ -1,4 +1,5 @@
 import { OpenAPI } from "@/client"
+import { redirectToLoginWithReturnTo } from "@/features/errors/navigation"
 
 import { readUserEventsCursor, writeUserEventsCursor } from "./cursor"
 import type { UserEvent } from "./types"
@@ -24,11 +25,6 @@ export type UserEventListener = (event: UserEvent) => void
 const buildUserEventsUrl = () => `${OpenAPI.BASE}${USER_EVENTS_STREAM_PATH}`
 
 const getAccessToken = () => localStorage.getItem("access_token") || ""
-
-const redirectToLogin = () => {
-  localStorage.removeItem("access_token")
-  window.location.href = "/login"
-}
 
 const parseEventData = (data: string | null): unknown => {
   if (data === null) {
@@ -311,9 +307,14 @@ class UserEventsConnection {
         return
       }
 
-      if (response.status === 401 || response.status === 403) {
+      if (response.status === 401) {
         this.shutdown()
-        redirectToLogin()
+        redirectToLoginWithReturnTo()
+        return
+      }
+
+      if (response.status === 403) {
+        this.shutdown()
         return
       }
 

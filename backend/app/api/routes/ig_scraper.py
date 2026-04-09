@@ -4,10 +4,12 @@ import logging
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from kiizama_scrape_core.ig_scraper.jobs import APIFY_JOB_EXECUTION_MODE
 from kiizama_scrape_core.ig_scraper.schemas import (
     InstagramBatchRecommendationsRequest,
     InstagramBatchRecommendationsResponse,
     InstagramBatchScrapeRequest,
+    InstagramBatchScrapeResponse,
     InstagramBatchScrapeSummaryResponse,
     InstagramScrapeJobCreateRequest,
     InstagramScrapeJobCreateResponse,
@@ -21,6 +23,7 @@ from kiizama_scrape_core.ig_scraper.service import (
     scrape_profiles_batch,
     scrape_recommendations_batch,
 )
+from kiizama_scrape_core.ig_scraper.types import ApifyInstagramProfileScraper
 
 from app.api.deps import (
     CurrentUser,
@@ -31,6 +34,7 @@ from app.api.deps import (
     get_profiles_collection,
     get_reels_collection,
 )
+from app.core.config import settings
 from app.core.resilience import (
     mark_dependency_failure,
     mark_dependency_success,
@@ -60,9 +64,46 @@ async def create_instagram_scrape_job(
     job_service: InstagramJobServiceDep,
 ) -> InstagramScrapeJobCreateResponse:
     """Enqueue an asynchronous Instagram scraping job."""
+    if not settings.IG_SCRAPER_WORKER_JOBS_ENABLED:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Legacy worker Instagram jobs are disabled.",
+        )
+
     job_id = await job_service.create_job(
         payload=payload,
         owner_user_id=str(current_user.id),
+    )
+    return InstagramScrapeJobCreateResponse(job_id=job_id, status="queued")
+
+
+@router.post(
+    "/jobs/apify",
+    response_model=InstagramScrapeJobCreateResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[Depends(rate_limit(POLICIES.jobs_write))],
+)
+async def create_instagram_apify_scrape_job(
+    payload: InstagramScrapeJobCreateRequest,
+    current_user: CurrentUser,
+    job_service: InstagramJobServiceDep,
+) -> InstagramScrapeJobCreateResponse:
+    """Enqueue an asynchronous Apify-backed Instagram scraping job."""
+    if not settings.IG_SCRAPER_APIFY_JOBS_ENABLED:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Apify Instagram jobs are disabled.",
+        )
+    if not settings.APIFY_API_TOKEN:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="APIFY_API_TOKEN is not configured.",
+        )
+
+    job_id = await job_service.create_job(
+        payload=payload,
+        owner_user_id=str(current_user.id),
+        execution_mode=APIFY_JOB_EXECUTION_MODE,
     )
     return InstagramScrapeJobCreateResponse(job_id=job_id, status="queued")
 
@@ -74,11 +115,14 @@ async def create_instagram_scrape_job(
 )
 async def get_instagram_scrape_job(
     job_id: str,
-    _current_user: CurrentUser,
+    current_user: CurrentUser,
     job_service: InstagramJobServiceDep,
 ) -> InstagramScrapeJobStatusResponse:
     """Fetch status and summary for a scraping job."""
-    job = await job_service.get_job(job_id=job_id)
+    job = await job_service.get_job(
+        job_id=job_id,
+        owner_user_id=str(current_user.id),
+    )
     if job is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -211,6 +255,57 @@ async def instagram_profiles_recommendations(
         detail="Instagram recommendations completed successfully.",
     )
     return response
+
+
+@router.post(
+    "/profiles/apify-batch",
+    response_model=InstagramBatchScrapeResponse,
+    dependencies=[Depends(get_current_active_superuser)],
+)
+async def instagram_scrape_profiles_apify_batch(
+    payload: InstagramBatchScrapeRequest,
+    profiles_collection: Any = Depends(get_profiles_collection),
+    posts_collection: Any = Depends(get_posts_collection),
+    reels_collection: Any = Depends(get_reels_collection),
+    metrics_collection: Any = Depends(get_metrics_collection),
+    snapshots_collection: Any = Depends(get_profile_snapshots_collection),
+) -> InstagramBatchScrapeResponse:
+    """Scrape multiple Instagram profiles from Apify and persist fresh results."""
+    if not settings.APIFY_API_TOKEN:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="APIFY_API_TOKEN is not configured.",
+        )
+
+    configure_backend_instagram_scraper_runtime()
+    persistence = BackendInstagramScrapePersistence(
+        profiles_collection=profiles_collection,
+        posts_collection=posts_collection,
+        reels_collection=reels_collection,
+        metrics_collection=metrics_collection,
+        snapshots_collection=snapshots_collection,
+    )
+    analysis_service = BackendInstagramProfileAnalysisService()
+    prepared_payload, early_response = await prepare_scrape_batch_payload(
+        payload,
+        persistence,
+    )
+    if early_response is not None:
+        return early_response
+
+    scraper = ApifyInstagramProfileScraper(
+        api_token=settings.APIFY_API_TOKEN,
+        usernames=prepared_payload.usernames,
+    )
+    response = InstagramBatchScrapeResponse.model_validate(await scraper.run())
+    response = await enrich_with_ai_analysis(
+        response,
+        analysis_service=analysis_service,
+    )
+    return await persist_scrape_results_to_db(
+        response,
+        persistence=persistence,
+    )
 
 
 __all__ = ["router"]

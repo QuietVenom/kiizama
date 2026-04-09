@@ -22,7 +22,9 @@ import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
 import { PasswordInput } from "@/components/ui/password-input"
-import useAuth, { isLoggedIn } from "@/hooks/useAuth"
+import { ensureValidStoredSession } from "@/features/auth/session"
+import { getReturnToFromHref } from "@/features/errors/navigation"
+import useAuth from "@/hooks/useAuth"
 import SymbolLogo from "/assets/images/symbol.svg"
 import { emailPattern, passwordRules } from "../utils"
 
@@ -32,17 +34,21 @@ const FORM_CONTROL_MAX_W = { base: "full", md: "50%" } as const
 
 export const Route = createFileRoute("/login")({
   component: Login,
-  beforeLoad: async () => {
-    if (isLoggedIn()) {
+  beforeLoad: async ({ location }) => {
+    if (await ensureValidStoredSession()) {
       throw redirect({
-        to: "/overview",
+        href: getReturnToFromHref(location.href) || "/overview",
       })
     }
   },
 })
 
 function Login() {
-  const { loginMutation, error, resetError } = useAuth()
+  const redirect =
+    typeof window === "undefined"
+      ? undefined
+      : getReturnToFromHref(window.location.href)
+  const { loginMutation, error, resetError } = useAuth(redirect)
   const landingUrl = "/"
   const {
     register,

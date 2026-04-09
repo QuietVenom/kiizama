@@ -33,7 +33,7 @@ def _serialize_profile(record: IgProfile) -> Document:
         "is_private": record.is_private,
         "is_verified": record.is_verified,
         "profile_pic_url": record.profile_pic_url,
-        "profile_pic_src": record.profile_pic_src,
+        "profile_pic_src": None,
         "external_url": record.external_url,
         "updated_date": record.updated_at,
         "follower_count": record.follower_count,
@@ -60,7 +60,6 @@ async def create_profile(collection: Any, profile: Profile) -> Document | None:
         is_private=profile.is_private,
         is_verified=profile.is_verified,
         profile_pic_url=str(profile.profile_pic_url),
-        profile_pic_src=profile.profile_pic_src,
         external_url=str(profile.external_url) if profile.external_url else None,
         follower_count=profile.follower_count,
         following_count=profile.following_count,
@@ -217,7 +216,6 @@ async def replace_profile(
     record.is_private = profile.is_private
     record.is_verified = profile.is_verified
     record.profile_pic_url = str(profile.profile_pic_url)
-    record.profile_pic_src = profile.profile_pic_src
     record.external_url = str(profile.external_url) if profile.external_url else None
     record.updated_at = profile.updated_date or _utcnow()
     record.follower_count = profile.follower_count

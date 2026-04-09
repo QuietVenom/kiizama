@@ -128,7 +128,10 @@ def test_create_job_persists_projection_in_postgres(db: Session) -> None:
     job_control_repository = FakeJobControlRepository()
     service = InstagramJobService(
         jobs_collection=repository,
-        job_control_repository=job_control_repository,
+        job_control_repositories={
+            "worker": job_control_repository,
+            "apify": job_control_repository,
+        },
         user_events_repository=FakeUserEventsRepository(),
         clock=lambda: datetime(2026, 3, 21, 12, 0, tzinfo=timezone.utc),
     )
@@ -153,7 +156,10 @@ def test_complete_job_updates_postgres_projection_and_returns_terminal_status(
     user_events_repository = FakeUserEventsRepository()
     service = InstagramJobService(
         jobs_collection=repository,
-        job_control_repository=job_control_repository,
+        job_control_repositories={
+            "worker": job_control_repository,
+            "apify": job_control_repository,
+        },
         user_events_repository=user_events_repository,
         clock=lambda: datetime(2026, 3, 21, 12, 0, tzinfo=timezone.utc),
     )
@@ -186,8 +192,41 @@ def test_complete_job_updates_postgres_projection_and_returns_terminal_status(
     assert record.notification_id == f"job:{job_id}:terminal"
     assert len(user_events_repository.publish_calls) == 1
 
-    status_response = _run(service.get_job(job_id=job_id))
+    status_response = _run(
+        service.get_job(
+            job_id=job_id,
+            owner_user_id=_owner_user_id(db),
+        )
+    )
     assert status_response is not None
     assert status_response.status == "done"
     assert status_response.summary is not None
     assert status_response.references is not None
+
+
+def test_get_job_returns_none_for_foreign_owner_in_postgres(db: Session) -> None:
+    repository = SqlJobProjectionRepository(session=db)
+    job_control_repository = FakeJobControlRepository()
+    service = InstagramJobService(
+        jobs_collection=repository,
+        job_control_repositories={
+            "worker": job_control_repository,
+            "apify": job_control_repository,
+        },
+        user_events_repository=FakeUserEventsRepository(),
+        clock=lambda: datetime(2026, 3, 21, 12, 0, tzinfo=timezone.utc),
+    )
+
+    job_id = str(
+        _run(service.create_job(payload=_payload(), owner_user_id=_owner_user_id(db)))
+    )
+
+    assert (
+        _run(
+            service.get_job(
+                job_id=job_id,
+                owner_user_id=str(uuid.uuid4()),
+            )
+        )
+        is None
+    )

@@ -15,13 +15,17 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RecoverPasswordRouteImport } from './routes/recover-password'
+import { Route as ProvidersRouteImport } from './routes/providers'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CookieTablesRouteImport } from './routes/cookie-tables'
 import { Route as CookieNoticeRouteImport } from './routes/cookie-notice'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AboutUsRouteImport } from './routes/about-us'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutOverviewRouteImport } from './routes/_layout/overview'
 import { Route as LayoutCreatorsSearchRouteImport } from './routes/_layout/creators-search'
@@ -60,6 +64,11 @@ const RecoverPasswordRoute = RecoverPasswordRouteImport.update({
   path: '/recover-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProvidersRoute = ProvidersRouteImport.update({
+  id: '/providers',
+  path: '/providers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -80,6 +89,11 @@ const CookieNoticeRoute = CookieNoticeRouteImport.update({
   path: '/cookie-notice',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutUsRoute = AboutUsRouteImport.update({
   id: '/about-us',
   path: '/about-us',
@@ -93,6 +107,16 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogRoute,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BlogRoute,
 } as any)
 const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   id: '/settings',
@@ -136,10 +160,12 @@ const LayoutBrandIntelligenceReputationStrategyRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about-us': typeof AboutUsRoute
+  '/blog': typeof BlogRouteWithChildren
   '/cookie-notice': typeof CookieNoticeRoute
   '/cookie-tables': typeof CookieTablesRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/providers': typeof ProvidersRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
@@ -151,6 +177,8 @@ export interface FileRoutesByFullPath {
   '/creators-search': typeof LayoutCreatorsSearchRoute
   '/overview': typeof LayoutOverviewRoute
   '/settings': typeof LayoutSettingsRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/brand-intelligence/reputation-strategy': typeof LayoutBrandIntelligenceReputationStrategyRoute
   '/brand-intelligence/': typeof LayoutBrandIntelligenceIndexRoute
 }
@@ -161,6 +189,7 @@ export interface FileRoutesByTo {
   '/cookie-tables': typeof CookieTablesRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/providers': typeof ProvidersRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
@@ -171,6 +200,8 @@ export interface FileRoutesByTo {
   '/creators-search': typeof LayoutCreatorsSearchRoute
   '/overview': typeof LayoutOverviewRoute
   '/settings': typeof LayoutSettingsRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog': typeof BlogIndexRoute
   '/brand-intelligence/reputation-strategy': typeof LayoutBrandIntelligenceReputationStrategyRoute
   '/brand-intelligence': typeof LayoutBrandIntelligenceIndexRoute
 }
@@ -179,10 +210,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_layout': typeof LayoutRouteWithChildren
   '/about-us': typeof AboutUsRoute
+  '/blog': typeof BlogRouteWithChildren
   '/cookie-notice': typeof CookieNoticeRoute
   '/cookie-tables': typeof CookieTablesRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/providers': typeof ProvidersRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
@@ -194,6 +227,8 @@ export interface FileRoutesById {
   '/_layout/creators-search': typeof LayoutCreatorsSearchRoute
   '/_layout/overview': typeof LayoutOverviewRoute
   '/_layout/settings': typeof LayoutSettingsRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/_layout/brand-intelligence/reputation-strategy': typeof LayoutBrandIntelligenceReputationStrategyRoute
   '/_layout/brand-intelligence/': typeof LayoutBrandIntelligenceIndexRoute
 }
@@ -202,10 +237,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about-us'
+    | '/blog'
     | '/cookie-notice'
     | '/cookie-tables'
     | '/login'
     | '/privacy'
+    | '/providers'
     | '/recover-password'
     | '/reset-password'
     | '/security'
@@ -217,6 +254,8 @@ export interface FileRouteTypes {
     | '/creators-search'
     | '/overview'
     | '/settings'
+    | '/blog/$slug'
+    | '/blog/'
     | '/brand-intelligence/reputation-strategy'
     | '/brand-intelligence/'
   fileRoutesByTo: FileRoutesByTo
@@ -227,6 +266,7 @@ export interface FileRouteTypes {
     | '/cookie-tables'
     | '/login'
     | '/privacy'
+    | '/providers'
     | '/recover-password'
     | '/reset-password'
     | '/security'
@@ -237,6 +277,8 @@ export interface FileRouteTypes {
     | '/creators-search'
     | '/overview'
     | '/settings'
+    | '/blog/$slug'
+    | '/blog'
     | '/brand-intelligence/reputation-strategy'
     | '/brand-intelligence'
   id:
@@ -244,10 +286,12 @@ export interface FileRouteTypes {
     | '/'
     | '/_layout'
     | '/about-us'
+    | '/blog'
     | '/cookie-notice'
     | '/cookie-tables'
     | '/login'
     | '/privacy'
+    | '/providers'
     | '/recover-password'
     | '/reset-password'
     | '/security'
@@ -259,6 +303,8 @@ export interface FileRouteTypes {
     | '/_layout/creators-search'
     | '/_layout/overview'
     | '/_layout/settings'
+    | '/blog/$slug'
+    | '/blog/'
     | '/_layout/brand-intelligence/reputation-strategy'
     | '/_layout/brand-intelligence/'
   fileRoutesById: FileRoutesById
@@ -267,10 +313,12 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LayoutRoute: typeof LayoutRouteWithChildren
   AboutUsRoute: typeof AboutUsRoute
+  BlogRoute: typeof BlogRouteWithChildren
   CookieNoticeRoute: typeof CookieNoticeRoute
   CookieTablesRoute: typeof CookieTablesRoute
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProvidersRoute: typeof ProvidersRoute
   RecoverPasswordRoute: typeof RecoverPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SecurityRoute: typeof SecurityRoute
@@ -323,6 +371,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecoverPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/providers': {
+      id: '/providers'
+      path: '/providers'
+      fullPath: '/providers'
+      preLoaderRoute: typeof ProvidersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -351,6 +406,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CookieNoticeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about-us': {
       id: '/about-us'
       path: '/about-us'
@@ -371,6 +433,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof BlogRoute
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof BlogRoute
     }
     '/_layout/settings': {
       id: '/_layout/settings'
@@ -461,14 +537,28 @@ const LayoutRouteChildren: LayoutRouteChildren = {
 const LayoutRouteWithChildren =
   LayoutRoute._addFileChildren(LayoutRouteChildren)
 
+interface BlogRouteChildren {
+  BlogSlugRoute: typeof BlogSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
+}
+
+const BlogRouteChildren: BlogRouteChildren = {
+  BlogSlugRoute: BlogSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
+}
+
+const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LayoutRoute: LayoutRouteWithChildren,
   AboutUsRoute: AboutUsRoute,
+  BlogRoute: BlogRouteWithChildren,
   CookieNoticeRoute: CookieNoticeRoute,
   CookieTablesRoute: CookieTablesRoute,
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
+  ProvidersRoute: ProvidersRoute,
   RecoverPasswordRoute: RecoverPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SecurityRoute: SecurityRoute,
