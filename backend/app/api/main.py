@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.routes import (
+    billing,
     brand_intelligence,
     creators_search_history,
     events,
@@ -23,6 +24,7 @@ from app.api.routes import (
     utils,
 )
 from app.api.routes.public import feature_flags as public_feature_flags
+from app.api.routes.public import legal_documents as public_legal_documents
 from app.api.routes.public import waiting_list as public_waiting_list
 from app.core.config import settings
 
@@ -31,10 +33,12 @@ api_router.include_router(health.router)
 api_router.include_router(login.router)
 api_router.include_router(internal_login.router)
 api_router.include_router(ig_scraper_internal.router)
+api_router.include_router(billing.router)
 api_router.include_router(users.router)
 api_router.include_router(utils.router)
 api_router.include_router(feature_flags.router)
 api_router.include_router(public_feature_flags.router)
+api_router.include_router(public_legal_documents.router)
 api_router.include_router(public_waiting_list.router)
 api_router.include_router(events.router)
 api_router.include_router(ig_credentials.router)

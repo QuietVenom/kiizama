@@ -63,6 +63,10 @@ import {
   SkeletonCircle,
   SkeletonText,
 } from "@/components/ui/skeleton"
+import {
+  createIdempotencyKey,
+  invalidateBillingSummary,
+} from "@/features/billing/api"
 import { subscribeToUserEvents } from "@/features/user-events/connection"
 import {
   isIgScrapeJobCompletedEvent,
@@ -870,6 +874,7 @@ const generateInstagramReportPdf = async (username: string) => {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
       Accept: "application/pdf",
+      "Idempotency-Key": createIdempotencyKey(),
     },
     body: JSON.stringify({
       usernames: [username],
@@ -878,7 +883,7 @@ const generateInstagramReportPdf = async (username: string) => {
     }),
   })
 
-  if ([401, 403].includes(response.status)) {
+  if (response.status === 401) {
     localStorage.removeItem("access_token")
     window.location.href = "/login"
     throw new Error("Your session has expired. Please log in again.")
@@ -1350,11 +1355,37 @@ function CreatorsSearchPage() {
         continue
       }
 
-      const response = await InstagramService.createInstagramApifyScrapeJob({
-        requestBody: {
-          usernames: batch,
+      const token = localStorage.getItem("access_token") || ""
+      const rawResponse = await fetch(
+        `${OpenAPI.BASE}/api/v1/ig-scraper/jobs/apify`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "Idempotency-Key": createIdempotencyKey(),
+          },
+          body: JSON.stringify({
+            usernames: batch,
+          }),
         },
-      })
+      )
+      if (rawResponse.status === 401) {
+        localStorage.removeItem("access_token")
+        window.location.href = "/login"
+        throw new Error("Your session has expired. Please log in again.")
+      }
+      if (!rawResponse.ok) {
+        const errorBody = (await rawResponse.json().catch(() => ({}))) as {
+          detail?: string
+        }
+        throw new Error(errorBody.detail || "Unable to create scrape job.")
+      }
+      const response = (await rawResponse.json()) as {
+        job_id: string
+        status: CreatorsSearchJobStatus
+      }
       const now = new Date().toISOString()
 
       upsertCreatorsSearchJob({
@@ -1418,6 +1449,9 @@ function CreatorsSearchPage() {
     mutationFn: generateInstagramReportPdf,
     onMutate: () => {
       setReportError(null)
+    },
+    onSuccess: () => {
+      invalidateBillingSummary(queryClient)
     },
     onError: (error) => {
       setReportError(

@@ -50,6 +50,16 @@ test("All tabs are visible", async ({ page }) => {
   }
 })
 
+test("Superuser does not see payments or danger zone tabs", async ({
+  page,
+}) => {
+  await page.goto("/settings")
+
+  await expect(page.getByRole("tab", { name: "Payments" })).toBeHidden()
+  await expect(page.getByRole("tab", { name: "Danger zone" })).toBeHidden()
+  await expect(page.getByRole("tab", { name: "My profile" })).toBeVisible()
+})
+
 test.describe("Edit user full name and email successfully", () => {
   test.use({ storageState: anonymousStorageState })
 
@@ -68,7 +78,7 @@ test.describe("Edit user full name and email successfully", () => {
     await page.getByRole("button", { name: "Edit" }).click()
     await page.getByLabel("Full name").fill(updatedName)
     await page.getByRole("button", { name: "Save" }).click()
-    await expect(page.getByText("User updated successfully")).toBeVisible()
+    await expect(page.getByText(/User updated successfully\.?/)).toBeVisible()
     // Check if the new name is displayed on the page
     await expect(
       page.getByLabel("My profile").getByText(updatedName, { exact: true }),
@@ -90,7 +100,7 @@ test.describe("Edit user full name and email successfully", () => {
     await page.getByRole("button", { name: "Edit" }).click()
     await page.getByLabel("Email").fill(updatedEmail)
     await page.getByRole("button", { name: "Save" }).click()
-    await expect(page.getByText("User updated successfully")).toBeVisible()
+    await expect(page.getByText(/User updated successfully\.?/)).toBeVisible()
     await expect(
       page.getByLabel("My profile").getByText(updatedEmail, { exact: true }),
     ).toBeVisible()

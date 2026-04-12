@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 from app import crud_admin
 from app import crud_users as crud
 from app.core.config import settings
+from app.features.billing import seed_billing_catalog
 from app.models import User, UserCreate
 
 engine = create_sqlmodel_engine(str(settings.SQLALCHEMY_DATABASE_URI))
@@ -29,6 +30,7 @@ def init_db(session: Session) -> None:
     # SQLModel.metadata.create_all(engine)
 
     crud_admin.seed_admin_roles(session=session)
+    seed_billing_catalog(session=session)
 
     user = session.exec(
         select(User).where(User.email == settings.FIRST_SUPERUSER)

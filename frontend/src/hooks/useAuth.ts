@@ -31,6 +31,12 @@ const currentUserQueryOptions = {
   staleTime: CURRENT_USER_STALE_TIME_MS,
 }
 
+const resetSessionQueryCache = (
+  queryClient: ReturnType<typeof useQueryClient>,
+) => {
+  queryClient.clear()
+}
+
 const useAuth = (loginRedirectTo?: string) => {
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
@@ -65,6 +71,7 @@ const useAuth = (loginRedirectTo?: string) => {
   const loginMutation = useMutation({
     mutationFn: login,
     onSuccess: () => {
+      resetSessionQueryCache(queryClient)
       navigate({ href: sanitizeReturnTo(loginRedirectTo) || "/overview" })
     },
     onError: (err: ApiError) => {
@@ -80,6 +87,7 @@ const useAuth = (loginRedirectTo?: string) => {
     if (currentUserId) {
       clearUserEventsCursor(currentUserId)
     }
+    resetSessionQueryCache(queryClient)
     clearStoredAccessToken()
     navigate({ to: "/login" })
   }

@@ -123,17 +123,30 @@ def _owner_user_id(db: Session) -> str:
     return str(user.id)
 
 
-def test_create_job_persists_projection_in_postgres(db: Session) -> None:
-    repository = SqlJobProjectionRepository(session=db)
-    job_control_repository = FakeJobControlRepository()
-    service = InstagramJobService(
-        jobs_collection=repository,
+def _service(
+    *,
+    db: Session,
+    job_control_repository: FakeJobControlRepository | None = None,
+    user_events_repository: FakeUserEventsRepository | None = None,
+) -> InstagramJobService:
+    repository = job_control_repository or FakeJobControlRepository()
+    return InstagramJobService(
+        session=db,
+        jobs_collection=SqlJobProjectionRepository(session=db),
         job_control_repositories={
-            "worker": job_control_repository,
-            "apify": job_control_repository,
+            "worker": repository,
+            "apify": repository,
         },
-        user_events_repository=FakeUserEventsRepository(),
+        user_events_repository=user_events_repository or FakeUserEventsRepository(),
         clock=lambda: datetime(2026, 3, 21, 12, 0, tzinfo=timezone.utc),
+    )
+
+
+def test_create_job_persists_projection_in_postgres(db: Session) -> None:
+    job_control_repository = FakeJobControlRepository()
+    service = _service(
+        db=db,
+        job_control_repository=job_control_repository,
     )
 
     job_id = _run(
@@ -151,17 +164,12 @@ def test_create_job_persists_projection_in_postgres(db: Session) -> None:
 def test_complete_job_updates_postgres_projection_and_returns_terminal_status(
     db: Session,
 ) -> None:
-    repository = SqlJobProjectionRepository(session=db)
     job_control_repository = FakeJobControlRepository()
     user_events_repository = FakeUserEventsRepository()
-    service = InstagramJobService(
-        jobs_collection=repository,
-        job_control_repositories={
-            "worker": job_control_repository,
-            "apify": job_control_repository,
-        },
+    service = _service(
+        db=db,
+        job_control_repository=job_control_repository,
         user_events_repository=user_events_repository,
-        clock=lambda: datetime(2026, 3, 21, 12, 0, tzinfo=timezone.utc),
     )
 
     job_id = str(
@@ -205,16 +213,10 @@ def test_complete_job_updates_postgres_projection_and_returns_terminal_status(
 
 
 def test_get_job_returns_none_for_foreign_owner_in_postgres(db: Session) -> None:
-    repository = SqlJobProjectionRepository(session=db)
     job_control_repository = FakeJobControlRepository()
-    service = InstagramJobService(
-        jobs_collection=repository,
-        job_control_repositories={
-            "worker": job_control_repository,
-            "apify": job_control_repository,
-        },
-        user_events_repository=FakeUserEventsRepository(),
-        clock=lambda: datetime(2026, 3, 21, 12, 0, tzinfo=timezone.utc),
+    service = _service(
+        db=db,
+        job_control_repository=job_control_repository,
     )
 
     job_id = str(

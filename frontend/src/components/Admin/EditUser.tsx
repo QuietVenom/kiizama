@@ -5,15 +5,20 @@ import {
   DialogTrigger,
   Flex,
   Input,
+  NativeSelect,
   Text,
   VStack,
 } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import { FaExchangeAlt } from "react-icons/fa"
 
-import { type UserPublic, UsersService, type UserUpdate } from "@/client"
+import {
+  type AdminUserPublic,
+  type AdminUserUpdate,
+  UsersService,
+} from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import useCustomToast from "@/hooks/useCustomToast"
 import {
@@ -34,10 +39,10 @@ import {
 import { Field } from "../ui/field"
 
 interface EditUserProps {
-  user: UserPublic
+  user: AdminUserPublic
 }
 
-interface UserUpdateForm extends UserUpdate {
+interface UserUpdateForm extends AdminUserUpdate {
   confirm_password?: string
 }
 
@@ -51,6 +56,8 @@ const EditUser = ({ user }: EditUserProps) => {
     handleSubmit,
     reset,
     getValues,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<UserUpdateForm>({
     mode: "onBlur",
@@ -74,11 +81,32 @@ const EditUser = ({ user }: EditUserProps) => {
     },
   })
 
-  const onSubmit: SubmitHandler<UserUpdateForm> = async (data) => {
-    if (data.password === "") {
-      data.password = undefined
+  const isSaving = isSubmitting || mutation.isPending
+  const currentIsSuperuser = watch("is_superuser")
+  const currentAccessProfile = watch("access_profile")
+  const superuserTransitionLocked = user.access_profile === "ambassador"
+  const ambassadorTransitionLocked =
+    user.is_superuser || Boolean(currentIsSuperuser)
+
+  useEffect(() => {
+    if (ambassadorTransitionLocked && currentAccessProfile === "ambassador") {
+      setValue("access_profile", "standard", { shouldDirty: true })
     }
-    mutation.mutate(data)
+  }, [ambassadorTransitionLocked, currentAccessProfile, setValue])
+
+  useEffect(() => {
+    if (superuserTransitionLocked && currentIsSuperuser) {
+      setValue("is_superuser", false, { shouldDirty: true })
+    }
+  }, [currentIsSuperuser, setValue, superuserTransitionLocked])
+
+  const onSubmit: SubmitHandler<UserUpdateForm> = async (data) => {
+    const { confirm_password: _confirmPassword, ...rest } = data
+    const payload: AdminUserUpdate = {
+      ...rest,
+      password: rest.password || undefined,
+    }
+    await mutation.mutateAsync(payload)
   }
 
   return (
@@ -156,6 +184,35 @@ const EditUser = ({ user }: EditUserProps) => {
                   type="password"
                 />
               </Field>
+
+              <Controller
+                control={control}
+                name="access_profile"
+                render={({ field }) => (
+                  <Field label="Access Profile">
+                    <NativeSelect.Root>
+                      <NativeSelect.Field
+                        value={field.value ?? "standard"}
+                        onChange={(event) => field.onChange(event.target.value)}
+                      >
+                        <option value="standard">Standard</option>
+                        <option
+                          value="ambassador"
+                          disabled={ambassadorTransitionLocked}
+                        >
+                          Ambassador
+                        </option>
+                      </NativeSelect.Field>
+                      <NativeSelect.Indicator />
+                    </NativeSelect.Root>
+                  </Field>
+                )}
+              />
+              <Text fontSize="sm" color="ui.secondaryText" alignSelf="stretch">
+                {user.is_superuser || user.access_profile === "ambassador"
+                  ? "Move the user to Standard and save before switching to Superuser or Ambassador."
+                  : "Superusers and ambassadors are mutually exclusive. Move the user to Standard first before switching between them."}
+              </Text>
             </VStack>
 
             <Flex mt={4} direction="column" gap={4}>
@@ -165,8 +222,9 @@ const EditUser = ({ user }: EditUserProps) => {
                 render={({ field }) => (
                   <Field disabled={field.disabled} colorPalette="design">
                     <Checkbox
-                      checked={field.value}
+                      checked={field.value ?? false}
                       onCheckedChange={({ checked }) => field.onChange(checked)}
+                      disabled={superuserTransitionLocked}
                     >
                       Is superuser?
                     </Checkbox>
@@ -179,7 +237,7 @@ const EditUser = ({ user }: EditUserProps) => {
                 render={({ field }) => (
                   <Field disabled={field.disabled} colorPalette="design">
                     <Checkbox
-                      checked={field.value}
+                      checked={field.value ?? false}
                       onCheckedChange={({ checked }) => field.onChange(checked)}
                     >
                       Is active?
@@ -192,15 +250,16 @@ const EditUser = ({ user }: EditUserProps) => {
 
           <DialogFooter gap={2}>
             <DialogActionTrigger asChild>
-              <Button
-                variant="subtle"
-                colorPalette="gray"
-                disabled={isSubmitting}
-              >
+              <Button variant="subtle" colorPalette="gray" disabled={isSaving}>
                 Cancel
               </Button>
             </DialogActionTrigger>
-            <Button variant="solid" type="submit" loading={isSubmitting}>
+            <Button
+              variant="solid"
+              type="submit"
+              loading={isSaving}
+              disabled={isSaving}
+            >
               Save
             </Button>
           </DialogFooter>

@@ -6,6 +6,8 @@ primary_region = "dfw"
 # fly deploy ./frontend --config ../fly.frontend.toml
 #
 # This app only needs the public backend origin at build time.
+# Stripe billing secrets stay in the backend app. The frontend only calls
+# backend billing endpoints and never uses Stripe secret/webhook config.
 
 [build.args]
   VITE_API_URL = "https://api.kiizama.com"

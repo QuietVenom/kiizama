@@ -356,6 +356,7 @@ class ApifyInstagramJobRunner:
     ) -> bool:
         with Session(engine) as session:
             job_service = InstagramJobService(
+                session=session,
                 jobs_collection=SqlJobProjectionRepository(session=session),
                 job_control_repositories={
                     "apify": self._repository,

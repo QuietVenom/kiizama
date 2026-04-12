@@ -8,13 +8,14 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from sqlalchemy.exc import SQLAlchemyError
+from sqlmodel import Session
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from app.api.main import api_router
 from app.core.config import settings
-from app.core.db import ping_postgres
+from app.core.db import engine, ping_postgres
 from app.core.redis import close_redis_client, get_redis_client
 from app.core.resilience import (
     DependencyUnavailableError,
@@ -26,6 +27,7 @@ from app.core.resilience import (
     mark_dependency_success,
     translate_redis_exception,
 )
+from app.features.billing import process_pending_customer_sync_tasks_async
 from app.features.creators_search_history import CreatorsSearchHistoryUnavailableError
 from app.features.ig_scraper_jobs.apify_runner import ApifyInstagramJobRunner
 from app.features.job_control import JobControlUnavailableError
@@ -34,6 +36,7 @@ from app.features.user_events import UserEventsUnavailableError
 
 logger = logging.getLogger(__name__)
 APIFY_RUNNER_SUPERVISOR_RETRY_SECONDS = 5.0
+STRIPE_CUSTOMER_SYNC_SUPERVISOR_RETRY_SECONDS = 5.0
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -123,9 +126,67 @@ class ApifyRunnerSupervisor:
                     continue
 
 
+class StripeCustomerSyncSupervisor:
+    def __init__(self) -> None:
+        self._task: asyncio.Task[None] | None = None
+        self._stop_event = asyncio.Event()
+
+    async def start(self) -> None:
+        if self._task is not None:
+            return
+        self._task = asyncio.create_task(self._run())
+
+    async def stop(self) -> None:
+        self._stop_event.set()
+        if self._task is None:
+            return
+        done, _ = await asyncio.wait({self._task}, timeout=1)
+        if not done:
+            self._task.cancel()
+            with suppress(asyncio.CancelledError):
+                await self._task
+        else:
+            await self._task
+        self._task = None
+
+    async def _run(self) -> None:
+        while not self._stop_event.is_set():
+            try:
+                with Session(engine) as session:
+                    processed = await process_pending_customer_sync_tasks_async(
+                        session=session
+                    )
+                if processed <= 0:
+                    try:
+                        await asyncio.wait_for(
+                            self._stop_event.wait(),
+                            timeout=settings.STRIPE_CUSTOMER_SYNC_POLL_SECONDS,
+                        )
+                    except asyncio.TimeoutError:
+                        continue
+                    return
+                continue
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                logger.warning(
+                    "Stripe customer sync supervisor failed. Retrying in %.1fs: %s",
+                    STRIPE_CUSTOMER_SYNC_SUPERVISOR_RETRY_SECONDS,
+                    exc,
+                )
+                try:
+                    await asyncio.wait_for(
+                        self._stop_event.wait(),
+                        timeout=STRIPE_CUSTOMER_SYNC_SUPERVISOR_RETRY_SECONDS,
+                    )
+                except asyncio.TimeoutError:
+                    continue
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     apify_runner_supervisor: ApifyRunnerSupervisor | None = None
+    stripe_customer_sync_supervisor: StripeCustomerSyncSupervisor | None = None
 
     try:
         ensure_postgres_connection()
@@ -184,8 +245,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             "REDIS_URL is not configured. SSE/user events will be unavailable."
         )
 
+    # TODO: Move Stripe customer sync polling to a dedicated worker before
+    # scaling web workers/replicas further. Running this supervisor inside each
+    # FastAPI process increases duplicate polling overhead as the backend scales.
+    stripe_customer_sync_supervisor = StripeCustomerSyncSupervisor()
+    await stripe_customer_sync_supervisor.start()
+
     yield
 
+    if stripe_customer_sync_supervisor is not None:
+        await stripe_customer_sync_supervisor.stop()
     if apify_runner_supervisor is not None:
         await apify_runner_supervisor.stop()
     await close_redis_client()

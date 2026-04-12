@@ -13,6 +13,7 @@ from kiizama_scrape_core.ig_scraper.sqlmodels import (
     IgScrapeJob,
 )
 from pydantic import EmailStr
+from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, SQLModel
 
 from app.core.ids import generate_uuid7
@@ -20,6 +21,25 @@ from app.core.password_policy import (
     PASSWORD_MAX_LENGTH,
     PASSWORD_MIN_LENGTH,
     NewPasswordStr,
+)
+from app.features.billing.models import (
+    AccessProfile,
+    BillingCustomerSyncStatus,
+    BillingCustomerSyncTask,
+    BillingCustomerSyncType,
+    BillingSubscription,
+    BillingWebhookEvent,
+    LuBillingFeature,
+    ManagedAccessSource,
+    PlanStatus,
+    SubscriptionPlan,
+    SubscriptionPlanFeatureLimit,
+    UsageCycle,
+    UsageCycleFeature,
+    UsageEvent,
+    UsageReservation,
+    UserAccessOverride,
+    UserBillingAccount,
 )
 
 
@@ -38,12 +58,22 @@ class UserCreate(UserBase):
     )
 
 
+LegalDocumentType = Literal["privacy_notice", "terms_conditions"]
+LegalAcceptanceSource = Literal["public_signup"]
+
+
+class LegalAcceptances(SQLModel):
+    privacy_notice: Literal[True]
+    terms_conditions: Literal[True]
+
+
 class UserRegister(SQLModel):
     email: EmailStr = Field(max_length=255)
     password: NewPasswordStr = Field(
         min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH
     )
     full_name: str | None = Field(default=None, max_length=255)
+    legal_acceptances: LegalAcceptances
 
 
 # Properties to receive via API on update, all are optional
@@ -84,6 +114,68 @@ class UserPublic(UserBase):
 class UsersPublic(SQLModel):
     data: list[UserPublic]
     count: int
+
+
+class AdminUserCreate(SQLModel):
+    email: EmailStr = Field(max_length=255)
+    password: NewPasswordStr = Field(
+        min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH
+    )
+    full_name: str | None = Field(default=None, max_length=255)
+    is_active: bool = True
+    is_superuser: bool = False
+    access_profile: AccessProfile = "standard"
+
+
+class AdminUserUpdate(SQLModel):
+    email: EmailStr | None = Field(default=None, max_length=255)
+    password: NewPasswordStr | None = Field(
+        default=None,
+        min_length=PASSWORD_MIN_LENGTH,
+        max_length=PASSWORD_MAX_LENGTH,
+    )
+    full_name: str | None = Field(default=None, max_length=255)
+    is_active: bool | None = None
+    is_superuser: bool | None = None
+    access_profile: AccessProfile | None = None
+
+
+class AdminUserPublic(UserPublic):
+    access_profile: AccessProfile = "standard"
+    managed_access_source: ManagedAccessSource | None = None
+    billing_eligible: bool = True
+    plan_status: PlanStatus = "none"
+
+
+class AdminUsersPublic(SQLModel):
+    data: list[AdminUserPublic]
+    count: int
+
+
+class UserLegalAcceptance(SQLModel, table=True):
+    __tablename__ = cast(Any, "user_legal_acceptance")
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            "document_type",
+            "document_version",
+            name="uq_private_user_legal_acceptance_user_document_version",
+        ),
+        {"schema": PRIVATE_SCHEMA},
+    )
+
+    id: uuid.UUID = Field(default_factory=generate_uuid7, primary_key=True)
+    user_id: uuid.UUID = Field(
+        foreign_key=f"{PRIVATE_SCHEMA}.user.id",
+        nullable=False,
+        index=True,
+    )
+    document_type: str = Field(max_length=64)
+    document_version: str = Field(max_length=32)
+    accepted_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+    )
+    source: str = Field(max_length=32)
 
 
 # Generic message
@@ -231,6 +323,19 @@ class FeatureFlagAuditsPublic(SQLModel):
     count: int
 
 
+class LegalDocumentPublic(SQLModel):
+    type: LegalDocumentType
+    title: str
+    url: str
+    version: str
+    required: bool = True
+
+
+class PublicLegalDocuments(SQLModel):
+    simplified_notice: str
+    documents: list[LegalDocumentPublic]
+
+
 WaitingListInterest = Literal[
     "public_relations",
     "marketing",
@@ -259,7 +364,17 @@ class WaitingList(SQLModel, table=True):
 
 
 __all__ = [
+    "AccessProfile",
+    "BillingCustomerSyncStatus",
+    "BillingCustomerSyncTask",
+    "BillingCustomerSyncType",
+    "AdminUserCreate",
+    "AdminUserPublic",
+    "AdminUsersPublic",
+    "AdminUserUpdate",
     "PRIVATE_SCHEMA",
+    "BillingSubscription",
+    "BillingWebhookEvent",
     "FeatureFlag",
     "FeatureFlagAudit",
     "FeatureFlagAuditPublic",
@@ -276,18 +391,34 @@ __all__ = [
     "IgProfileSnapshot",
     "IgReelsDocument",
     "IgScrapeJob",
+    "LegalAcceptances",
+    "LegalAcceptanceSource",
+    "LegalDocumentPublic",
+    "LegalDocumentType",
+    "LuBillingFeature",
     "LuAdminRole",
     "Message",
     "NewPassword",
+    "PlanStatus",
+    "PublicLegalDocuments",
+    "SubscriptionPlan",
+    "SubscriptionPlanFeatureLimit",
     "Token",
     "TokenPayload",
     "UpdatePassword",
+    "UsageCycle",
+    "UsageCycleFeature",
+    "UsageEvent",
+    "UsageReservation",
     "User",
+    "UserAccessOverride",
     "UserAdmin",
     "UserAdminBase",
     "UserAdminPublic",
     "UserBase",
+    "UserBillingAccount",
     "UserCreate",
+    "UserLegalAcceptance",
     "UserPublic",
     "UserRegister",
     "UsersPublic",

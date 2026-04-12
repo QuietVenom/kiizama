@@ -4,14 +4,15 @@ import {
   DialogTitle,
   Flex,
   Input,
+  NativeSelect,
   Text,
   VStack,
 } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import { FaPlus } from "react-icons/fa"
-import { type UserCreate, UsersService } from "@/client"
+import { type AdminUserCreate, UsersService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import useCustomToast from "@/hooks/useCustomToast"
 import {
@@ -32,7 +33,7 @@ import {
 } from "../ui/dialog"
 import { Field } from "../ui/field"
 
-interface UserCreateForm extends UserCreate {
+interface UserCreateForm extends AdminUserCreate {
   confirm_password: string
 }
 
@@ -46,6 +47,8 @@ const AddUser = () => {
     handleSubmit,
     reset,
     getValues,
+    setValue,
+    watch,
     formState: { errors, isValid, isSubmitting },
   } = useForm<UserCreateForm>({
     mode: "onBlur",
@@ -55,13 +58,14 @@ const AddUser = () => {
       full_name: "",
       password: "",
       confirm_password: "",
+      access_profile: "standard",
       is_superuser: false,
       is_active: false,
     },
   })
 
   const mutation = useMutation({
-    mutationFn: (data: UserCreate) =>
+    mutationFn: (data: AdminUserCreate) =>
       UsersService.createUser({ requestBody: data }),
     onSuccess: () => {
       showSuccessToast("User created successfully.")
@@ -76,8 +80,18 @@ const AddUser = () => {
     },
   })
 
-  const onSubmit: SubmitHandler<UserCreateForm> = (data) => {
-    mutation.mutate(data)
+  const isSaving = isSubmitting || mutation.isPending
+  const currentIsSuperuser = watch("is_superuser")
+  const currentAccessProfile = watch("access_profile")
+
+  useEffect(() => {
+    if (currentIsSuperuser && currentAccessProfile === "ambassador") {
+      setValue("access_profile", "standard", { shouldDirty: true })
+    }
+  }, [currentAccessProfile, currentIsSuperuser, setValue])
+
+  const onSubmit: SubmitHandler<UserCreateForm> = async (data) => {
+    await mutation.mutateAsync(data)
   }
 
   return (
@@ -159,6 +173,40 @@ const AddUser = () => {
                   type="password"
                 />
               </Field>
+
+              <Controller
+                control={control}
+                name="access_profile"
+                render={({ field }) => (
+                  <Field
+                    required
+                    invalid={!!errors.access_profile}
+                    errorText={errors.access_profile?.message}
+                    label="Access Profile"
+                  >
+                    <NativeSelect.Root>
+                      <NativeSelect.Field
+                        value={field.value}
+                        onChange={(event) => field.onChange(event.target.value)}
+                      >
+                        <option value="standard">Standard</option>
+                        <option
+                          value="ambassador"
+                          disabled={Boolean(currentIsSuperuser)}
+                        >
+                          Ambassador
+                        </option>
+                      </NativeSelect.Field>
+                      <NativeSelect.Indicator />
+                    </NativeSelect.Root>
+                  </Field>
+                )}
+              />
+              <Text fontSize="sm" color="ui.secondaryText" alignSelf="stretch">
+                {currentIsSuperuser
+                  ? "Superusers can only be created as Standard users. Move them to Standard first before changing to Ambassador later."
+                  : "Superusers and ambassadors are mutually exclusive. Move the user to Standard first before switching between them."}
+              </Text>
             </VStack>
 
             <Flex mt={4} direction="column" gap={4}>
@@ -195,19 +243,15 @@ const AddUser = () => {
 
           <DialogFooter gap={2}>
             <DialogActionTrigger asChild>
-              <Button
-                variant="subtle"
-                colorPalette="gray"
-                disabled={isSubmitting}
-              >
+              <Button variant="subtle" colorPalette="gray" disabled={isSaving}>
                 Cancel
               </Button>
             </DialogActionTrigger>
             <Button
               layerStyle="brandGradientButton"
               type="submit"
-              disabled={!isValid}
-              loading={isSubmitting}
+              disabled={!isValid || isSaving}
+              loading={isSaving}
             >
               Save
             </Button>

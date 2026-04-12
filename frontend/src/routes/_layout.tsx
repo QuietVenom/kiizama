@@ -16,6 +16,7 @@ const dashboardShellRoutes = [
   "/overview",
   "/creators-search",
   "/brand-intelligence",
+  "/settings",
 ] as const
 
 const usesDashboardShell = (pathname: string) =>

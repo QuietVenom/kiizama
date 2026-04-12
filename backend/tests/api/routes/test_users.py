@@ -1,4 +1,6 @@
 import uuid
+from datetime import datetime, timedelta, timezone
+from typing import Any, cast
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -7,8 +9,40 @@ from sqlmodel import Session, select
 from app import crud_users as crud
 from app.core.config import settings
 from app.core.security import verify_password
-from app.models import User, UserCreate
+from app.features.billing.models import (
+    BillingCustomerSyncTask,
+    BillingSubscription,
+    UserAccessOverride,
+    UserBillingAccount,
+)
+from app.models import IgScrapeJob, User, UserCreate, UserLegalAcceptance
 from tests.utils.utils import random_email, random_lower_string, random_password
+
+
+def legal_acceptances_payload() -> dict[str, bool]:
+    return {
+        "privacy_notice": True,
+        "terms_conditions": True,
+    }
+
+
+def _create_user_with_headers(
+    *,
+    client: TestClient,
+    db: Session,
+) -> tuple[User, dict[str, str]]:
+    password = random_password()
+    user = crud.create_user(
+        session=db,
+        user_create=UserCreate(email=random_email(), password=password),
+    )
+    login_response = client.post(
+        f"{settings.API_V1_STR}/login/access-token",
+        data={"username": user.email, "password": password},
+    )
+    assert login_response.status_code == 200
+    token = login_response.json()["access_token"]
+    return user, {"Authorization": f"Bearer {token}"}
 
 
 def test_get_users_superuser_me(
@@ -53,6 +87,28 @@ def test_create_user_new_email(
         user = crud.get_user_by_email(session=db, email=username)
         assert user
         assert user.email == created_user["email"]
+
+
+def test_create_user_rejects_superuser_ambassador_combination(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+) -> None:
+    response = client.post(
+        f"{settings.API_V1_STR}/users/",
+        headers=superuser_token_headers,
+        json={
+            "email": random_email(),
+            "password": random_password(),
+            "is_superuser": True,
+            "access_profile": "ambassador",
+        },
+    )
+
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Superuser and ambassador are mutually exclusive. Move the user to standard first."
+    )
 
 
 def test_create_user_succeeds_when_email_delivery_fails(
@@ -189,6 +245,252 @@ def test_retrieve_users(
         assert "email" in item
 
 
+def test_update_user_promotes_superuser_and_schedules_subscription_cancellation(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    db: Session,
+) -> None:
+    user = crud.create_user(
+        session=db,
+        user_create=UserCreate(email=random_email(), password=random_password()),
+    )
+    now = datetime.now(timezone.utc)
+    subscription = BillingSubscription(
+        user_id=user.id,
+        stripe_subscription_id=f"sub_{user.id}",
+        stripe_customer_id=f"cus_{user.id}",
+        stripe_price_id="price_base",
+        plan_code="base",
+        status="active",
+        current_period_start=now - timedelta(days=1),
+        current_period_end=now + timedelta(days=29),
+    )
+    db.add(subscription)
+    db.commit()
+
+    with patch(
+        "app.features.billing.service._stripe_request",
+        autospec=True,
+        return_value={},
+    ) as stripe_request:
+        response = client.patch(
+            f"{settings.API_V1_STR}/users/{user.id}",
+            headers=superuser_token_headers,
+            json={"is_superuser": True},
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["is_superuser"] is True
+    assert payload["managed_access_source"] == "admin"
+
+    db.refresh(subscription)
+    assert subscription.cancel_at_period_end is True
+    stripe_request.assert_called_once()
+
+
+def test_update_user_rejects_direct_superuser_to_ambassador_transition(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    db: Session,
+) -> None:
+    user = crud.create_user(
+        session=db,
+        user_create=UserCreate(
+            email=random_email(),
+            password=random_password(),
+            is_superuser=True,
+        ),
+    )
+
+    response = client.patch(
+        f"{settings.API_V1_STR}/users/{user.id}",
+        headers=superuser_token_headers,
+        json={"is_superuser": False, "access_profile": "ambassador"},
+    )
+
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Superuser and ambassador are mutually exclusive. Move the user to standard first."
+    )
+
+
+def test_update_user_rejects_superuser_ambassador_combination_from_standard(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    db: Session,
+) -> None:
+    user = crud.create_user(
+        session=db,
+        user_create=UserCreate(email=random_email(), password=random_password()),
+    )
+
+    response = client.patch(
+        f"{settings.API_V1_STR}/users/{user.id}",
+        headers=superuser_token_headers,
+        json={"is_superuser": True, "access_profile": "ambassador"},
+    )
+
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Superuser and ambassador are mutually exclusive. Move the user to standard first."
+    )
+
+
+def test_update_user_rejects_direct_ambassador_to_superuser_transition(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    db: Session,
+) -> None:
+    user = crud.create_user(
+        session=db,
+        user_create=UserCreate(email=random_email(), password=random_password()),
+    )
+    db.add(
+        UserAccessOverride(
+            user_id=user.id,
+            code="ambassador",
+            is_unlimited=True,
+            starts_at=datetime.now(timezone.utc),
+            notes="Ambassador access",
+        )
+    )
+    db.commit()
+
+    response = client.patch(
+        f"{settings.API_V1_STR}/users/{user.id}",
+        headers=superuser_token_headers,
+        json={"is_superuser": True, "access_profile": "standard"},
+    )
+
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Superuser and ambassador are mutually exclusive. Move the user to standard first."
+    )
+
+
+def test_update_user_access_profile_rejects_ambassador_for_superuser(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    db: Session,
+) -> None:
+    user = crud.create_user(
+        session=db,
+        user_create=UserCreate(
+            email=random_email(),
+            password=random_password(),
+            is_superuser=True,
+        ),
+    )
+
+    response = client.put(
+        f"{settings.API_V1_STR}/users/{user.id}/access-profile",
+        headers=superuser_token_headers,
+        json={"access_profile": "ambassador"},
+    )
+
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Superuser and ambassador are mutually exclusive. Move the user to standard first."
+    )
+
+
+def test_update_user_allows_superuser_to_standard_transition(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    db: Session,
+) -> None:
+    user = crud.create_user(
+        session=db,
+        user_create=UserCreate(
+            email=random_email(),
+            password=random_password(),
+            is_superuser=True,
+        ),
+    )
+
+    response = client.patch(
+        f"{settings.API_V1_STR}/users/{user.id}",
+        headers=superuser_token_headers,
+        json={"is_superuser": False},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["is_superuser"] is False
+    assert payload["access_profile"] == "standard"
+    assert payload["managed_access_source"] is None
+
+
+def test_update_user_access_profile_allows_ambassador_to_standard_transition(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    db: Session,
+) -> None:
+    user = crud.create_user(
+        session=db,
+        user_create=UserCreate(email=random_email(), password=random_password()),
+    )
+    db.add(
+        UserAccessOverride(
+            user_id=user.id,
+            code="ambassador",
+            is_unlimited=True,
+            starts_at=datetime.now(timezone.utc),
+            notes="Ambassador access",
+        )
+    )
+    db.commit()
+
+    response = client.put(
+        f"{settings.API_V1_STR}/users/{user.id}/access-profile",
+        headers=superuser_token_headers,
+        json={"access_profile": "standard"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["is_superuser"] is False
+    assert payload["access_profile"] == "standard"
+    assert payload["managed_access_source"] is None
+
+
+def test_admin_update_user_email_change_enqueues_customer_sync_task(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    db: Session,
+) -> None:
+    user = crud.create_user(
+        session=db,
+        user_create=UserCreate(email=random_email(), password=random_password()),
+    )
+    db.add(UserBillingAccount(user_id=user.id, stripe_customer_id="cus_admin_user"))
+    db.commit()
+
+    response = client.patch(
+        f"{settings.API_V1_STR}/users/{user.id}",
+        headers=superuser_token_headers,
+        json={"email": "admin-updated@example.com"},
+    )
+
+    assert response.status_code == 200
+    task = db.exec(
+        select(BillingCustomerSyncTask).where(
+            BillingCustomerSyncTask.user_id == user.id
+        )
+    ).one()
+    db.refresh(user)
+    assert user.email == "admin-updated@example.com"
+    assert task.status == "pending"
+    assert task.desired_email == "admin-updated@example.com"
+    assert task.attempt_count == 0
+    assert task.last_stripe_request_id is None
+
+
 def test_update_user_me(
     client: TestClient, normal_user_token_headers: dict[str, str], db: Session
 ) -> None:
@@ -210,6 +512,65 @@ def test_update_user_me(
     assert user_db
     assert user_db.email == email
     assert user_db.full_name == full_name
+
+
+def test_update_user_me_email_change_enqueues_customer_sync_task(
+    client: TestClient,
+    db: Session,
+) -> None:
+    user, headers = _create_user_with_headers(client=client, db=db)
+    db.add(UserBillingAccount(user_id=user.id, stripe_customer_id="cus_test_user"))
+    db.commit()
+
+    response = client.patch(
+        f"{settings.API_V1_STR}/users/me",
+        headers=headers,
+        json={"email": "updated-inline@example.com"},
+    )
+
+    assert response.status_code == 200
+    task = db.exec(
+        select(BillingCustomerSyncTask).where(
+            BillingCustomerSyncTask.user_id == user.id
+        )
+    ).one()
+    db.refresh(user)
+    assert user.email == "updated-inline@example.com"
+    assert task.status == "pending"
+    assert task.desired_email == "updated-inline@example.com"
+    assert task.attempt_count == 0
+    assert task.last_http_status is None
+    assert task.last_stripe_request_id is None
+
+
+def test_update_user_me_email_change_leaves_pending_sync_task(
+    client: TestClient,
+    db: Session,
+) -> None:
+    user, headers = _create_user_with_headers(client=client, db=db)
+    db.add(UserBillingAccount(user_id=user.id, stripe_customer_id="cus_retry_user"))
+    db.commit()
+
+    response = client.patch(
+        f"{settings.API_V1_STR}/users/me",
+        headers=headers,
+        json={"email": "retry-inline@example.com"},
+    )
+
+    assert response.status_code == 200
+    task = db.exec(
+        select(BillingCustomerSyncTask).where(
+            BillingCustomerSyncTask.user_id == user.id
+        )
+    ).one()
+    db.refresh(user)
+    assert user.email == "retry-inline@example.com"
+    assert task.status == "pending"
+    assert task.desired_email == "retry-inline@example.com"
+    assert task.attempt_count == 0
+    assert task.last_http_status is None
+    assert task.last_error is None
+    assert task.next_attempt_at is not None
 
 
 def test_update_password_me(
@@ -307,7 +668,12 @@ def test_register_user(client: TestClient, db: Session) -> None:
     username = random_email()
     password = random_password()
     full_name = random_lower_string()
-    data = {"email": username, "password": password, "full_name": full_name}
+    data = {
+        "email": username,
+        "password": password,
+        "full_name": full_name,
+        "legal_acceptances": legal_acceptances_payload(),
+    }
     r = client.post(
         f"{settings.API_V1_STR}/users/signup",
         json=data,
@@ -324,12 +690,25 @@ def test_register_user(client: TestClient, db: Session) -> None:
     assert user_db.full_name == full_name
     assert verify_password(password, user_db.hashed_password)
 
+    acceptances = db.exec(
+        select(UserLegalAcceptance).where(UserLegalAcceptance.user_id == user_db.id)
+    ).all()
+    assert len(acceptances) == 2
+    assert {acceptance.document_type for acceptance in acceptances} == {
+        "privacy_notice",
+        "terms_conditions",
+    }
+    assert {acceptance.document_version for acceptance in acceptances} == {"v1.0"}
+    assert {acceptance.source for acceptance in acceptances} == {"public_signup"}
+    assert all(acceptance.accepted_at.tzinfo is not None for acceptance in acceptances)
+
 
 def test_register_user_rejects_password_without_uppercase(client: TestClient) -> None:
     data = {
         "email": random_email(),
         "password": "lowercase1!",
         "full_name": "Test User",
+        "legal_acceptances": legal_acceptances_payload(),
     }
     r = client.post(
         f"{settings.API_V1_STR}/users/signup",
@@ -348,6 +727,7 @@ def test_register_user_rejects_password_over_max_length(client: TestClient) -> N
         "email": random_email(),
         "password": f"Aa1!{'a' * 22}",
         "full_name": "Test User",
+        "legal_acceptances": legal_acceptances_payload(),
     }
     r = client.post(
         f"{settings.API_V1_STR}/users/signup",
@@ -365,6 +745,7 @@ def test_register_user_already_exists_error(client: TestClient) -> None:
         "email": settings.FIRST_SUPERUSER,
         "password": password,
         "full_name": full_name,
+        "legal_acceptances": legal_acceptances_payload(),
     }
     r = client.post(
         f"{settings.API_V1_STR}/users/signup",
@@ -372,6 +753,44 @@ def test_register_user_already_exists_error(client: TestClient) -> None:
     )
     assert r.status_code == 400
     assert r.json()["detail"] == "The user with this email already exists in the system"
+
+
+def test_register_user_requires_legal_acceptances(client: TestClient) -> None:
+    data = {
+        "email": random_email(),
+        "password": random_password(),
+        "full_name": "Test User",
+    }
+    r = client.post(
+        f"{settings.API_V1_STR}/users/signup",
+        json=data,
+    )
+
+    assert r.status_code == 422
+    assert r.json()["detail"][0]["loc"] == ["body", "legal_acceptances"]
+
+
+def test_register_user_rejects_unchecked_legal_acceptances(client: TestClient) -> None:
+    data = {
+        "email": random_email(),
+        "password": random_password(),
+        "full_name": "Test User",
+        "legal_acceptances": {
+            "privacy_notice": True,
+            "terms_conditions": False,
+        },
+    }
+    r = client.post(
+        f"{settings.API_V1_STR}/users/signup",
+        json=data,
+    )
+
+    assert r.status_code == 422
+    assert r.json()["detail"][0]["loc"] == [
+        "body",
+        "legal_acceptances",
+        "terms_conditions",
+    ]
 
 
 def test_update_user(
@@ -465,6 +884,79 @@ def test_delete_user_me(client: TestClient, db: Session) -> None:
     user_query = select(User).where(User.id == user_id)
     user_db = db.execute(user_query).first()
     assert user_db is None
+
+
+def test_delete_user_me_removes_owned_ig_scrape_jobs(
+    client: TestClient, db: Session
+) -> None:
+    bind = db.get_bind()
+    cast(Any, IgScrapeJob).__table__.create(bind=bind, checkfirst=True)
+
+    username = random_email()
+    password = random_password()
+    user_in = UserCreate(email=username, password=password)
+    user = crud.create_user(session=db, user_create=user_in)
+    user_id = user.id
+    other_user = crud.create_user(
+        session=db,
+        user_create=UserCreate(email=random_email(), password=random_password()),
+    )
+
+    job = IgScrapeJob(
+        owner_user_id=user.id,
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
+        payload={"usernames": ["alpha"]},
+    )
+    db.add(job)
+    db.add(
+        UserLegalAcceptance(
+            user_id=user.id,
+            document_type="privacy_notice",
+            document_version="v1",
+            source="public_signup",
+        )
+    )
+    override = UserAccessOverride(
+        user_id=other_user.id,
+        code="ambassador",
+        is_unlimited=True,
+        starts_at=datetime.now(timezone.utc),
+        created_by_admin_id=user.id,
+        notes="Created by deleted user",
+    )
+    db.add(override)
+    db.commit()
+
+    login_data = {
+        "username": username,
+        "password": password,
+    }
+    r = client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
+    tokens = r.json()
+    a_token = tokens["access_token"]
+    headers = {"Authorization": f"Bearer {a_token}"}
+
+    r = client.delete(
+        f"{settings.API_V1_STR}/users/me",
+        headers=headers,
+    )
+    assert r.status_code == 200
+    assert r.json()["message"] == "User deleted successfully"
+    assert db.exec(select(User).where(User.id == user_id)).first() is None
+    assert (
+        db.exec(select(IgScrapeJob).where(IgScrapeJob.owner_user_id == user_id)).all()
+        == []
+    )
+    assert (
+        db.exec(
+            select(UserLegalAcceptance).where(UserLegalAcceptance.user_id == user_id)
+        ).all()
+        == []
+    )
+    persisted_override = db.get(UserAccessOverride, override.id)
+    assert persisted_override is not None
+    assert persisted_override.user_id == other_user.id
+    assert persisted_override.created_by_admin_id is None
 
 
 def test_delete_user_me_as_superuser(

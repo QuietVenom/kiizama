@@ -82,6 +82,11 @@ Set `VITE_API_URL` in `frontend/.env`, for example:
 VITE_API_URL=https://api.my-domain.example.com
 ```
 
+Stripe billing configuration is backend-only in this repository. The frontend
+does not use `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, or
+`STRIPE_BASE_PRICE_ID`; it only calls backend billing endpoints exposed by the
+API origin in `VITE_API_URL`.
+
 ## End-to-End Testing (Playwright)
 
 Start required services:

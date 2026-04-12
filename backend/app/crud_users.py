@@ -3,17 +3,51 @@ from typing import Any
 from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
-from app.models import User, UserCreate, UserUpdate
+from app.features.legal_documents import (
+    PUBLIC_SIGNUP_LEGAL_ACCEPTANCE_SOURCE,
+    PUBLIC_SIGNUP_LEGAL_DOCUMENTS,
+)
+from app.models import User, UserCreate, UserLegalAcceptance, UserUpdate
+
+
+def _build_user_db_obj(*, user_create: UserCreate) -> User:
+    return User.model_validate(
+        user_create, update={"hashed_password": get_password_hash(user_create.password)}
+    )
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
-    db_obj = User.model_validate(
-        user_create, update={"hashed_password": get_password_hash(user_create.password)}
-    )
+    db_obj = _build_user_db_obj(user_create=user_create)
     session.add(db_obj)
     session.commit()
     session.refresh(db_obj)
     return db_obj
+
+
+def create_signup_legal_acceptances(
+    *, session: Session, user: User
+) -> list[UserLegalAcceptance]:
+    acceptances = [
+        UserLegalAcceptance(
+            user_id=user.id,
+            document_type=document.type,
+            document_version=document.version,
+            source=PUBLIC_SIGNUP_LEGAL_ACCEPTANCE_SOURCE,
+        )
+        for document in PUBLIC_SIGNUP_LEGAL_DOCUMENTS
+    ]
+    for acceptance in acceptances:
+        session.add(acceptance)
+    return acceptances
+
+
+def create_signup_user(*, session: Session, user_create: UserCreate) -> User:
+    user = _build_user_db_obj(user_create=user_create)
+    session.add(user)
+    create_signup_legal_acceptances(session=session, user=user)
+    session.commit()
+    session.refresh(user)
+    return user
 
 
 def update_user(*, session: Session, db_user: User, user_in: UserUpdate) -> Any:

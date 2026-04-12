@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from kiizama_scrape_core.ig_scraper.jobs import APIFY_JOB_EXECUTION_MODE
 from kiizama_scrape_core.ig_scraper.schemas import (
     InstagramBatchRecommendationsRequest,
@@ -27,6 +27,7 @@ from kiizama_scrape_core.ig_scraper.types import ApifyInstagramProfileScraper
 
 from app.api.deps import (
     CurrentUser,
+    SessionDep,
     get_current_active_superuser,
     get_metrics_collection,
     get_posts_collection,
@@ -39,6 +40,15 @@ from app.core.resilience import (
     mark_dependency_failure,
     mark_dependency_success,
     translate_instagram_upstream_exception,
+)
+from app.features.billing import (
+    FEATURE_ENDPOINT_KEYS,
+    IDEMPOTENCY_HEADER_NAME,
+    attach_job_id_to_reservation,
+    build_usage_request_key,
+    publish_billing_event,
+    release_usage_reservation,
+    reserve_feature_usage,
 )
 from app.features.ig_scraper_jobs import InstagramJobServiceDep
 from app.features.ig_scraper_runtime import (
@@ -86,13 +96,17 @@ async def create_instagram_scrape_job(
 async def create_instagram_apify_scrape_job(
     payload: InstagramScrapeJobCreateRequest,
     current_user: CurrentUser,
+    session: SessionDep,
     job_service: InstagramJobServiceDep,
+    idempotency_key: Annotated[
+        str | None, Header(alias=IDEMPOTENCY_HEADER_NAME)
+    ] = None,
 ) -> InstagramScrapeJobCreateResponse:
-    """Enqueue an asynchronous Apify-backed Instagram scraping job."""
+    """Enqueue an asynchronous Instagram scraping job."""
     if not settings.IG_SCRAPER_APIFY_JOBS_ENABLED:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Apify Instagram jobs are disabled.",
+            detail="Instagram scraping jobs are disabled.",
         )
     if not settings.APIFY_API_TOKEN:
         raise HTTPException(
@@ -100,10 +114,48 @@ async def create_instagram_apify_scrape_job(
             detail="APIFY_API_TOKEN is not configured.",
         )
 
-    job_id = await job_service.create_job(
-        payload=payload,
-        owner_user_id=str(current_user.id),
-        execution_mode=APIFY_JOB_EXECUTION_MODE,
+    request_key = build_usage_request_key(
+        user_id=current_user.id,
+        request_scope="ig-scraper-apify",
+        idempotency_key=idempotency_key,
+    )
+    reservation = reserve_feature_usage(
+        session=session,
+        user_id=current_user.id,
+        feature_code="ig_scraper_apify",
+        endpoint_key=FEATURE_ENDPOINT_KEYS["ig_scraper_apify"],
+        max_units_requested=len(payload.usernames),
+        request_key=request_key,
+        metadata={"usernames": payload.usernames},
+    )
+    if reservation is not None and reservation.job_id:
+        return InstagramScrapeJobCreateResponse(
+            job_id=reservation.job_id,
+            status="queued",
+        )
+    try:
+        job_id = await job_service.create_job(
+            payload=payload,
+            owner_user_id=str(current_user.id),
+            execution_mode=APIFY_JOB_EXECUTION_MODE,
+        )
+    except Exception:
+        release_usage_reservation(session=session, request_key=request_key)
+        await publish_billing_event(
+            session=session,
+            user_id=current_user.id,
+            event_name="account.usage.updated",
+        )
+        raise
+    attach_job_id_to_reservation(
+        session=session,
+        request_key=request_key,
+        job_id=job_id,
+    )
+    await publish_billing_event(
+        session=session,
+        user_id=current_user.id,
+        event_name="account.usage.updated",
     )
     return InstagramScrapeJobCreateResponse(job_id=job_id, status="queued")
 
@@ -270,7 +322,7 @@ async def instagram_scrape_profiles_apify_batch(
     metrics_collection: Any = Depends(get_metrics_collection),
     snapshots_collection: Any = Depends(get_profile_snapshots_collection),
 ) -> InstagramBatchScrapeResponse:
-    """Scrape multiple Instagram profiles from Apify and persist fresh results."""
+    """Scrape multiple Instagram profiles and persist fresh results."""
     if not settings.APIFY_API_TOKEN:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

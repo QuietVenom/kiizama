@@ -3,7 +3,117 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { BrandIntelligenceReadProfilesExistenceData, BrandIntelligenceReadProfilesExistenceResponse, BrandIntelligenceGenerateReputationCampaignStrategyEndpointData, BrandIntelligenceGenerateReputationCampaignStrategyEndpointResponse, BrandIntelligenceGenerateReputationCreatorStrategyEndpointData, BrandIntelligenceGenerateReputationCreatorStrategyEndpointResponse, CreatorsSearchHistoryListCreatorsSearchHistoryData, CreatorsSearchHistoryListCreatorsSearchHistoryResponse, CreatorsSearchHistoryCreateCreatorsSearchHistoryEntryData, CreatorsSearchHistoryCreateCreatorsSearchHistoryEntryResponse, EventsStreamUserEventsData, EventsStreamUserEventsResponse, FeatureFlagsListFeatureFlagsResponse, FeatureFlagsCreateFeatureFlagData, FeatureFlagsCreateFeatureFlagResponse, FeatureFlagsGetFeatureFlagData, FeatureFlagsGetFeatureFlagResponse, FeatureFlagsUpdateFeatureFlagData, FeatureFlagsUpdateFeatureFlagResponse, FeatureFlagsDeleteFeatureFlagData, FeatureFlagsDeleteFeatureFlagResponse, FeatureFlagsGetFeatureFlagAuditData, FeatureFlagsGetFeatureFlagAuditResponse, HealthLiveHealthCheckResponse, HealthReadyHealthCheckResponse, HealthHealthCheckResponse, HealthDeepHealthCheckResponse, IgCredentialsCreateIgCredentialEndpointData, IgCredentialsCreateIgCredentialEndpointResponse, IgCredentialsReadIgCredentialsData, IgCredentialsReadIgCredentialsResponse, IgCredentialsReadIgCredentialData, IgCredentialsReadIgCredentialResponse, IgCredentialsUpdateIgCredentialEndpointData, IgCredentialsUpdateIgCredentialEndpointResponse, IgCredentialsReplaceIgCredentialEndpointData, IgCredentialsReplaceIgCredentialEndpointResponse, IgCredentialsDeleteIgCredentialEndpointData, IgCredentialsDeleteIgCredentialEndpointResponse, IgMetricsCreateIgMetricsData, IgMetricsCreateIgMetricsResponse, IgMetricsReadIgMetricsData, IgMetricsReadIgMetricsResponse, IgMetricsReadIgMetricsByIdData, IgMetricsReadIgMetricsByIdResponse, IgMetricsUpdateIgMetricsData, IgMetricsUpdateIgMetricsResponse, IgMetricsReplaceIgMetricsData, IgMetricsReplaceIgMetricsResponse, IgMetricsDeleteIgMetricsData, IgMetricsDeleteIgMetricsResponse, IgPostsCreateIgPostData, IgPostsCreateIgPostResponse, IgPostsReadIgPostsData, IgPostsReadIgPostsResponse, IgPostsReadIgPostData, IgPostsReadIgPostResponse, IgPostsUpdateIgPostData, IgPostsUpdateIgPostResponse, IgPostsReplaceIgPostData, IgPostsReplaceIgPostResponse, IgPostsDeleteIgPostData, IgPostsDeleteIgPostResponse, IgProfilesCreateIgProfileData, IgProfilesCreateIgProfileResponse, IgProfilesReadIgProfilesData, IgProfilesReadIgProfilesResponse, IgProfilesReadIgProfileByUsernameData, IgProfilesReadIgProfileByUsernameResponse, IgProfilesReadIgProfilesByUsernamesData, IgProfilesReadIgProfilesByUsernamesResponse, IgProfilesReadIgProfileData, IgProfilesReadIgProfileResponse, IgProfilesUpdateIgProfileData, IgProfilesUpdateIgProfileResponse, IgProfilesReplaceIgProfileData, IgProfilesReplaceIgProfileResponse, IgProfilesDeleteIgProfileData, IgProfilesDeleteIgProfileResponse, IgProfileSnapshotsCreateIgProfileSnapshotData, IgProfileSnapshotsCreateIgProfileSnapshotResponse, IgProfileSnapshotsReadIgProfileSnapshotsData, IgProfileSnapshotsReadIgProfileSnapshotsResponse, IgProfileSnapshotsReadIgProfileSnapshotsAdvancedData, IgProfileSnapshotsReadIgProfileSnapshotsAdvancedResponse, IgProfileSnapshotsReadIgProfileSnapshotData, IgProfileSnapshotsReadIgProfileSnapshotResponse, IgProfileSnapshotsUpdateIgProfileSnapshotData, IgProfileSnapshotsUpdateIgProfileSnapshotResponse, IgProfileSnapshotsReplaceIgProfileSnapshotData, IgProfileSnapshotsReplaceIgProfileSnapshotResponse, IgProfileSnapshotsDeleteIgProfileSnapshotData, IgProfileSnapshotsDeleteIgProfileSnapshotResponse, IgReelsCreateIgReelData, IgReelsCreateIgReelResponse, IgReelsReadIgReelsData, IgReelsReadIgReelsResponse, IgReelsReadIgReelData, IgReelsReadIgReelResponse, IgReelsUpdateIgReelData, IgReelsUpdateIgReelResponse, IgReelsReplaceIgReelData, IgReelsReplaceIgReelResponse, IgReelsDeleteIgReelData, IgReelsDeleteIgReelResponse, InstagramCreateInstagramScrapeJobData, InstagramCreateInstagramScrapeJobResponse, InstagramCreateInstagramApifyScrapeJobData, InstagramCreateInstagramApifyScrapeJobResponse, InstagramGetInstagramScrapeJobData, InstagramGetInstagramScrapeJobResponse, InstagramInstagramScrapeProfilesBatchData, InstagramInstagramScrapeProfilesBatchResponse, InstagramInstagramProfilesRecommendationsData, InstagramInstagramProfilesRecommendationsResponse, InstagramInstagramScrapeProfilesApifyBatchData, InstagramInstagramScrapeProfilesApifyBatchResponse, InternalInstagramCompleteInstagramScrapeJobData, InternalInstagramCompleteInstagramScrapeJobResponse, InternalLoginLoginInternalAccessTokenData, InternalLoginLoginInternalAccessTokenResponse, InternalLoginTestInternalTokenResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, OpenaiRunInstagramAiData, OpenaiRunInstagramAiResponse, PrivateCreateUserData, PrivateCreateUserResponse, PublicFeatureFlagsListPublicFeatureFlagsResponse, PublicFeatureFlagsGetPublicFeatureFlagData, PublicFeatureFlagsGetPublicFeatureFlagResponse, PublicWaitingListCreateWaitingListEntryData, PublicWaitingListCreateWaitingListEntryResponse, SocialMediaReportGenerateInstagramReportEndpointData, SocialMediaReportGenerateInstagramReportEndpointResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse } from './types.gen';
+import type { BillingReadBillingMeResponse, BillingReadBillingNoticesResponse, BillingCreateCheckoutSessionEndpointResponse, BillingCreatePortalSessionEndpointResponse, BillingMarkBillingNoticeReadData, BillingMarkBillingNoticeReadResponse, BillingDismissBillingNoticeData, BillingDismissBillingNoticeResponse, BillingStripeWebhookData, BillingStripeWebhookResponse, BrandIntelligenceReadProfilesExistenceData, BrandIntelligenceReadProfilesExistenceResponse, BrandIntelligenceGenerateReputationCampaignStrategyEndpointData, BrandIntelligenceGenerateReputationCampaignStrategyEndpointResponse, BrandIntelligenceGenerateReputationCreatorStrategyEndpointData, BrandIntelligenceGenerateReputationCreatorStrategyEndpointResponse, CreatorsSearchHistoryListCreatorsSearchHistoryData, CreatorsSearchHistoryListCreatorsSearchHistoryResponse, CreatorsSearchHistoryCreateCreatorsSearchHistoryEntryData, CreatorsSearchHistoryCreateCreatorsSearchHistoryEntryResponse, EventsStreamUserEventsData, EventsStreamUserEventsResponse, FeatureFlagsListFeatureFlagsResponse, FeatureFlagsCreateFeatureFlagData, FeatureFlagsCreateFeatureFlagResponse, FeatureFlagsGetFeatureFlagData, FeatureFlagsGetFeatureFlagResponse, FeatureFlagsUpdateFeatureFlagData, FeatureFlagsUpdateFeatureFlagResponse, FeatureFlagsDeleteFeatureFlagData, FeatureFlagsDeleteFeatureFlagResponse, FeatureFlagsGetFeatureFlagAuditData, FeatureFlagsGetFeatureFlagAuditResponse, HealthLiveHealthCheckResponse, HealthReadyHealthCheckResponse, HealthHealthCheckResponse, HealthDeepHealthCheckResponse, IgCredentialsCreateIgCredentialEndpointData, IgCredentialsCreateIgCredentialEndpointResponse, IgCredentialsReadIgCredentialsData, IgCredentialsReadIgCredentialsResponse, IgCredentialsReadIgCredentialData, IgCredentialsReadIgCredentialResponse, IgCredentialsUpdateIgCredentialEndpointData, IgCredentialsUpdateIgCredentialEndpointResponse, IgCredentialsReplaceIgCredentialEndpointData, IgCredentialsReplaceIgCredentialEndpointResponse, IgCredentialsDeleteIgCredentialEndpointData, IgCredentialsDeleteIgCredentialEndpointResponse, IgMetricsCreateIgMetricsData, IgMetricsCreateIgMetricsResponse, IgMetricsReadIgMetricsData, IgMetricsReadIgMetricsResponse, IgMetricsReadIgMetricsByIdData, IgMetricsReadIgMetricsByIdResponse, IgMetricsUpdateIgMetricsData, IgMetricsUpdateIgMetricsResponse, IgMetricsReplaceIgMetricsData, IgMetricsReplaceIgMetricsResponse, IgMetricsDeleteIgMetricsData, IgMetricsDeleteIgMetricsResponse, IgPostsCreateIgPostData, IgPostsCreateIgPostResponse, IgPostsReadIgPostsData, IgPostsReadIgPostsResponse, IgPostsReadIgPostData, IgPostsReadIgPostResponse, IgPostsUpdateIgPostData, IgPostsUpdateIgPostResponse, IgPostsReplaceIgPostData, IgPostsReplaceIgPostResponse, IgPostsDeleteIgPostData, IgPostsDeleteIgPostResponse, IgProfilesCreateIgProfileData, IgProfilesCreateIgProfileResponse, IgProfilesReadIgProfilesData, IgProfilesReadIgProfilesResponse, IgProfilesReadIgProfileByUsernameData, IgProfilesReadIgProfileByUsernameResponse, IgProfilesReadIgProfilesByUsernamesData, IgProfilesReadIgProfilesByUsernamesResponse, IgProfilesReadIgProfileData, IgProfilesReadIgProfileResponse, IgProfilesUpdateIgProfileData, IgProfilesUpdateIgProfileResponse, IgProfilesReplaceIgProfileData, IgProfilesReplaceIgProfileResponse, IgProfilesDeleteIgProfileData, IgProfilesDeleteIgProfileResponse, IgProfileSnapshotsCreateIgProfileSnapshotData, IgProfileSnapshotsCreateIgProfileSnapshotResponse, IgProfileSnapshotsReadIgProfileSnapshotsData, IgProfileSnapshotsReadIgProfileSnapshotsResponse, IgProfileSnapshotsReadIgProfileSnapshotsAdvancedData, IgProfileSnapshotsReadIgProfileSnapshotsAdvancedResponse, IgProfileSnapshotsReadIgProfileSnapshotData, IgProfileSnapshotsReadIgProfileSnapshotResponse, IgProfileSnapshotsUpdateIgProfileSnapshotData, IgProfileSnapshotsUpdateIgProfileSnapshotResponse, IgProfileSnapshotsReplaceIgProfileSnapshotData, IgProfileSnapshotsReplaceIgProfileSnapshotResponse, IgProfileSnapshotsDeleteIgProfileSnapshotData, IgProfileSnapshotsDeleteIgProfileSnapshotResponse, IgReelsCreateIgReelData, IgReelsCreateIgReelResponse, IgReelsReadIgReelsData, IgReelsReadIgReelsResponse, IgReelsReadIgReelData, IgReelsReadIgReelResponse, IgReelsUpdateIgReelData, IgReelsUpdateIgReelResponse, IgReelsReplaceIgReelData, IgReelsReplaceIgReelResponse, IgReelsDeleteIgReelData, IgReelsDeleteIgReelResponse, InstagramCreateInstagramScrapeJobData, InstagramCreateInstagramScrapeJobResponse, InstagramCreateInstagramApifyScrapeJobData, InstagramCreateInstagramApifyScrapeJobResponse, InstagramGetInstagramScrapeJobData, InstagramGetInstagramScrapeJobResponse, InstagramInstagramScrapeProfilesBatchData, InstagramInstagramScrapeProfilesBatchResponse, InstagramInstagramProfilesRecommendationsData, InstagramInstagramProfilesRecommendationsResponse, InstagramInstagramScrapeProfilesApifyBatchData, InstagramInstagramScrapeProfilesApifyBatchResponse, InternalInstagramCompleteInstagramScrapeJobData, InternalInstagramCompleteInstagramScrapeJobResponse, InternalLoginLoginInternalAccessTokenData, InternalLoginLoginInternalAccessTokenResponse, InternalLoginTestInternalTokenResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, OpenaiRunInstagramAiData, OpenaiRunInstagramAiResponse, PrivateCreateUserData, PrivateCreateUserResponse, PublicFeatureFlagsListPublicFeatureFlagsResponse, PublicFeatureFlagsGetPublicFeatureFlagData, PublicFeatureFlagsGetPublicFeatureFlagResponse, PublicLegalDocumentsListPublicLegalDocumentsResponse, PublicWaitingListCreateWaitingListEntryData, PublicWaitingListCreateWaitingListEntryResponse, SocialMediaReportGenerateInstagramReportEndpointData, SocialMediaReportGenerateInstagramReportEndpointResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UsersUpdateUserAccessProfileData, UsersUpdateUserAccessProfileResponse, UtilsTestEmailData, UtilsTestEmailResponse } from './types.gen';
+
+export class BillingService {
+    /**
+     * Read Billing Me
+     * @returns BillingSummaryPublic Successful Response
+     * @throws ApiError
+     */
+    public static readBillingMe(): CancelablePromise<BillingReadBillingMeResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/billing/me'
+        });
+    }
+    
+    /**
+     * Read Billing Notices
+     * @returns BillingNoticeCollectionPublic Successful Response
+     * @throws ApiError
+     */
+    public static readBillingNotices(): CancelablePromise<BillingReadBillingNoticesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/billing/notices'
+        });
+    }
+    
+    /**
+     * Create Checkout Session Endpoint
+     * @returns BillingSessionPublic Successful Response
+     * @throws ApiError
+     */
+    public static createCheckoutSessionEndpoint(): CancelablePromise<BillingCreateCheckoutSessionEndpointResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/billing/checkout-session'
+        });
+    }
+    
+    /**
+     * Create Portal Session Endpoint
+     * @returns BillingSessionPublic Successful Response
+     * @throws ApiError
+     */
+    public static createPortalSessionEndpoint(): CancelablePromise<BillingCreatePortalSessionEndpointResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/billing/portal-session'
+        });
+    }
+    
+    /**
+     * Mark Billing Notice Read
+     * @param data The data for the request.
+     * @param data.noticeId
+     * @returns BillingNoticePublic Successful Response
+     * @throws ApiError
+     */
+    public static markBillingNoticeRead(data: BillingMarkBillingNoticeReadData): CancelablePromise<BillingMarkBillingNoticeReadResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/billing/notices/{notice_id}/read',
+            path: {
+                notice_id: data.noticeId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Dismiss Billing Notice
+     * @param data The data for the request.
+     * @param data.noticeId
+     * @returns BillingNoticePublic Successful Response
+     * @throws ApiError
+     */
+    public static dismissBillingNotice(data: BillingDismissBillingNoticeData): CancelablePromise<BillingDismissBillingNoticeResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/billing/notices/{notice_id}/dismiss',
+            path: {
+                notice_id: data.noticeId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Stripe Webhook
+     * @param data The data for the request.
+     * @param data.stripeSignature
+     * @returns BillingWebhookReceipt Successful Response
+     * @throws ApiError
+     */
+    public static stripeWebhook(data: BillingStripeWebhookData): CancelablePromise<BillingStripeWebhookResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/billing/webhooks/stripe',
+            headers: {
+                'Stripe-Signature': data.stripeSignature
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
 
 export class BrandIntelligenceService {
     /**
@@ -30,6 +140,7 @@ export class BrandIntelligenceService {
      * Generate Reputation Campaign Strategy Endpoint
      * @param data The data for the request.
      * @param data.requestBody
+     * @param data.idempotencyKey
      * @returns unknown Generated report file
      * @throws ApiError
      */
@@ -37,6 +148,9 @@ export class BrandIntelligenceService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/brand-intelligence/reputation-campaign-strategy',
+            headers: {
+                'Idempotency-Key': data.idempotencyKey
+            },
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -49,6 +163,7 @@ export class BrandIntelligenceService {
      * Generate Reputation Creator Strategy Endpoint
      * @param data The data for the request.
      * @param data.requestBody
+     * @param data.idempotencyKey
      * @returns unknown Generated report file
      * @throws ApiError
      */
@@ -56,6 +171,9 @@ export class BrandIntelligenceService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/brand-intelligence/reputation-creator-strategy',
+            headers: {
+                'Idempotency-Key': data.idempotencyKey
+            },
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -1156,9 +1274,10 @@ export class InstagramService {
     
     /**
      * Create Instagram Apify Scrape Job
-     * Enqueue an asynchronous Apify-backed Instagram scraping job.
+     * Enqueue an asynchronous Instagram scraping job.
      * @param data The data for the request.
      * @param data.requestBody
+     * @param data.idempotencyKey
      * @returns InstagramScrapeJobCreateResponse Successful Response
      * @throws ApiError
      */
@@ -1166,6 +1285,9 @@ export class InstagramService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/ig-scraper/jobs/apify',
+            headers: {
+                'Idempotency-Key': data.idempotencyKey
+            },
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -1237,7 +1359,7 @@ export class InstagramService {
     
     /**
      * Instagram Scrape Profiles Apify Batch
-     * Scrape multiple Instagram profiles from Apify and persist fresh results.
+     * Scrape multiple Instagram profiles and persist fresh results.
      * @param data The data for the request.
      * @param data.requestBody
      * @returns InstagramBatchScrapeResponse Successful Response
@@ -1488,6 +1610,20 @@ export class PublicFeatureFlagsService {
     }
 }
 
+export class PublicLegalDocumentsService {
+    /**
+     * List Public Legal Documents
+     * @returns PublicLegalDocuments Successful Response
+     * @throws ApiError
+     */
+    public static listPublicLegalDocuments(): CancelablePromise<PublicLegalDocumentsListPublicLegalDocumentsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/legal-documents/'
+        });
+    }
+}
+
 export class PublicWaitingListService {
     /**
      * Create Waiting List Entry
@@ -1514,6 +1650,7 @@ export class SocialMediaReportService {
      * Generate Instagram Report Endpoint
      * @param data The data for the request.
      * @param data.requestBody
+     * @param data.idempotencyKey
      * @returns unknown Generated report file
      * @throws ApiError
      */
@@ -1521,6 +1658,9 @@ export class SocialMediaReportService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/social-media-report/instagram',
+            headers: {
+                'Idempotency-Key': data.idempotencyKey
+            },
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -1533,11 +1673,10 @@ export class SocialMediaReportService {
 export class UsersService {
     /**
      * Read Users
-     * Retrieve users.
      * @param data The data for the request.
      * @param data.skip
      * @param data.limit
-     * @returns UsersPublic Successful Response
+     * @returns AdminUsersPublic Successful Response
      * @throws ApiError
      */
     public static readUsers(data: UsersReadUsersData = {}): CancelablePromise<UsersReadUsersResponse> {
@@ -1556,10 +1695,9 @@ export class UsersService {
     
     /**
      * Create User
-     * Create new user.
      * @param data The data for the request.
      * @param data.requestBody
-     * @returns UserPublic Successful Response
+     * @returns AdminUserPublic Successful Response
      * @throws ApiError
      */
     public static createUser(data: UsersCreateUserData): CancelablePromise<UsersCreateUserResponse> {
@@ -1576,7 +1714,6 @@ export class UsersService {
     
     /**
      * Read User Me
-     * Get current user.
      * @returns UserPublic Successful Response
      * @throws ApiError
      */
@@ -1589,7 +1726,6 @@ export class UsersService {
     
     /**
      * Delete User Me
-     * Delete own user.
      * @returns Message Successful Response
      * @throws ApiError
      */
@@ -1602,7 +1738,6 @@ export class UsersService {
     
     /**
      * Update User Me
-     * Update own user.
      * @param data The data for the request.
      * @param data.requestBody
      * @returns UserPublic Successful Response
@@ -1622,7 +1757,6 @@ export class UsersService {
     
     /**
      * Update Password Me
-     * Update own password.
      * @param data The data for the request.
      * @param data.requestBody
      * @returns Message Successful Response
@@ -1642,7 +1776,6 @@ export class UsersService {
     
     /**
      * Register User
-     * Create new user without the need to be logged in.
      * @param data The data for the request.
      * @param data.requestBody
      * @returns UserPublic Successful Response
@@ -1662,7 +1795,6 @@ export class UsersService {
     
     /**
      * Read User By Id
-     * Get a specific user by id.
      * @param data The data for the request.
      * @param data.userId
      * @returns UserPublic Successful Response
@@ -1683,11 +1815,10 @@ export class UsersService {
     
     /**
      * Update User
-     * Update a user.
      * @param data The data for the request.
      * @param data.userId
      * @param data.requestBody
-     * @returns UserPublic Successful Response
+     * @returns AdminUserPublic Successful Response
      * @throws ApiError
      */
     public static updateUser(data: UsersUpdateUserData): CancelablePromise<UsersUpdateUserResponse> {
@@ -1707,7 +1838,6 @@ export class UsersService {
     
     /**
      * Delete User
-     * Delete a user.
      * @param data The data for the request.
      * @param data.userId
      * @returns Message Successful Response
@@ -1720,6 +1850,29 @@ export class UsersService {
             path: {
                 user_id: data.userId
             },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update User Access Profile
+     * @param data The data for the request.
+     * @param data.userId
+     * @param data.requestBody
+     * @returns AdminUserPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateUserAccessProfile(data: UsersUpdateUserAccessProfileData): CancelablePromise<UsersUpdateUserAccessProfileResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/users/{user_id}/access-profile',
+            path: {
+                user_id: data.userId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: 'Validation Error'
             }

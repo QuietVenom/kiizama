@@ -4,6 +4,7 @@ import {
   type ReputationCampaignStrategyRequest,
   type ReputationCreatorStrategyRequest,
 } from "@/client"
+import { createIdempotencyKey } from "@/features/billing/api"
 import { extractFilenameFromContentDisposition } from "@/lib/report-files"
 
 export const BRAND_INTELLIGENCE_CAMPAIGN_ENDPOINT =
@@ -90,11 +91,12 @@ export const generateBrandIntelligenceReport = async ({
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
       Accept: "application/pdf, application/zip",
+      "Idempotency-Key": createIdempotencyKey(),
     },
     body: JSON.stringify(payload),
   })
 
-  if ([401, 403].includes(response.status)) {
+  if (response.status === 401) {
     localStorage.removeItem("access_token")
     window.location.href = "/login"
     throw new Error("Your session has expired. Please log in again.")

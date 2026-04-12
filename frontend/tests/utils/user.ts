@@ -15,6 +15,9 @@ export async function signUpNewUser(
   await page.getByPlaceholder("Password", { exact: true }).fill(password)
   await page.getByPlaceholder("Confirm Password").fill(password)
   await page.getByRole("button", { name: "Sign Up" }).click()
+  await page.getByTestId("accept-privacy-checkbox").click()
+  await page.getByTestId("accept-terms-checkbox").click()
+  await page.getByTestId("confirm-legal-acceptance").click()
   await page.goto("/login")
 }
 

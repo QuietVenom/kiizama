@@ -7,8 +7,20 @@ from sqlmodel import Session, delete
 from app.core.config import settings
 from app.core.db import engine, init_db
 from app.core.testing_safety import assert_safe_test_database_url
+from app.features.billing.models import BillingCustomerSyncTask, BillingNotice
 from app.main import app
-from app.models import User
+from app.models import (
+    BillingSubscription,
+    BillingWebhookEvent,
+    UsageCycle,
+    UsageCycleFeature,
+    UsageEvent,
+    UsageReservation,
+    User,
+    UserAccessOverride,
+    UserBillingAccount,
+    UserLegalAcceptance,
+)
 from tests.utils.user import authentication_token_from_email
 from tests.utils.utils import get_superuser_token_headers
 
@@ -20,6 +32,17 @@ def db() -> Generator[Session, None, None]:
     with Session(engine) as session:
         init_db(session)
         yield session
+        session.execute(delete(UsageEvent))
+        session.execute(delete(UsageReservation))
+        session.execute(delete(UsageCycleFeature))
+        session.execute(delete(UsageCycle))
+        session.execute(delete(UserAccessOverride))
+        session.execute(delete(BillingNotice))
+        session.execute(delete(BillingCustomerSyncTask))
+        session.execute(delete(BillingWebhookEvent))
+        session.execute(delete(BillingSubscription))
+        session.execute(delete(UserBillingAccount))
+        session.execute(delete(UserLegalAcceptance))
         statement = delete(User)
         session.execute(statement)
         session.commit()

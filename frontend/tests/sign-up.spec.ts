@@ -22,6 +22,17 @@ const fillForm = async (
   await page.getByPlaceholder("Confirm Password").fill(confirm_password)
 }
 
+const openLegalModal = async (page: Page) => {
+  await page.getByRole("button", { name: "Sign Up" }).click()
+  await expect(page.getByTestId("signup-legal-modal")).toBeVisible()
+}
+
+const acceptLegalDocuments = async (page: Page) => {
+  await page.getByTestId("accept-privacy-checkbox").click()
+  await page.getByTestId("accept-terms-checkbox").click()
+  await page.getByTestId("confirm-legal-acceptance").click()
+}
+
 const verifyInput = async (
   page: Page,
   placeholder: string,
@@ -61,7 +72,9 @@ test("Sign up with valid name, email, and password", async ({ page }) => {
 
   await page.goto("/signup")
   await fillForm(page, full_name, email, password, password)
-  await page.getByRole("button", { name: "Sign Up" }).click()
+  await openLegalModal(page)
+  await acceptLegalDocuments(page)
+  await expect(page).toHaveURL(/\/login$/)
 })
 
 test("Sign up with invalid email", async ({ page }) => {
@@ -77,6 +90,7 @@ test("Sign up with invalid email", async ({ page }) => {
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Invalid email address")).toBeVisible()
+  await expect(page.getByTestId("signup-legal-modal")).toBeHidden()
 })
 
 test("Sign up with existing email", async ({ page }) => {
@@ -88,17 +102,19 @@ test("Sign up with existing email", async ({ page }) => {
   await page.goto("/signup")
 
   await fillForm(page, fullName, email, password, password)
-  await page.getByRole("button", { name: "Sign Up" }).click()
+  await openLegalModal(page)
+  await acceptLegalDocuments(page)
 
   // Sign up again with the same email
   await page.goto("/signup")
 
   await fillForm(page, fullName, email, password, password)
-  await page.getByRole("button", { name: "Sign Up" }).click()
+  await openLegalModal(page)
+  await acceptLegalDocuments(page)
 
-  await page
-    .getByText("The user with this email already exists in the system")
-    .click()
+  await expect(
+    page.getByText("The user with this email already exists in the system"),
+  ).toBeVisible()
 })
 
 test("Sign up with weak password", async ({ page }) => {
@@ -114,6 +130,7 @@ test("Sign up with weak password", async ({ page }) => {
   await expect(
     page.getByText("Password must be between 8 and 25 characters"),
   ).toBeVisible()
+  await expect(page.getByTestId("signup-legal-modal")).toBeHidden()
 })
 
 test("Password requirements checklist updates on sign up", async ({ page }) => {
@@ -156,6 +173,7 @@ test("Sign up with mismatched passwords", async ({ page }) => {
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Passwords do not match")).toBeVisible()
+  await expect(page.getByTestId("signup-legal-modal")).toBeHidden()
 })
 
 test("Sign up with missing full name", async ({ page }) => {
@@ -169,6 +187,7 @@ test("Sign up with missing full name", async ({ page }) => {
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Full Name is required")).toBeVisible()
+  await expect(page.getByTestId("signup-legal-modal")).toBeHidden()
 })
 
 test("Sign up with missing email", async ({ page }) => {
@@ -182,6 +201,7 @@ test("Sign up with missing email", async ({ page }) => {
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Email is required")).toBeVisible()
+  await expect(page.getByTestId("signup-legal-modal")).toBeHidden()
 })
 
 test("Sign up with missing password", async ({ page }) => {
@@ -195,4 +215,73 @@ test("Sign up with missing password", async ({ page }) => {
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Password is required")).toBeVisible()
+  await expect(page.getByTestId("signup-legal-modal")).toBeHidden()
+})
+
+test("Legal acceptance confirm button stays disabled until both checkboxes are checked", async ({
+  page,
+}) => {
+  await page.goto("/signup")
+
+  await fillForm(page, "Test User", randomEmail(), "Valid1!Pass", "Valid1!Pass")
+  await openLegalModal(page)
+
+  const confirmButton = page.getByTestId("confirm-legal-acceptance")
+
+  await expect(confirmButton).toBeDisabled()
+  await page.getByTestId("accept-privacy-checkbox").click()
+  await expect(confirmButton).toBeDisabled()
+  await page.getByTestId("accept-terms-checkbox").click()
+  await expect(confirmButton).toBeEnabled()
+})
+
+test("Legal modal content renders above its backdrop", async ({ page }) => {
+  await page.goto("/signup")
+
+  await fillForm(page, "Test User", randomEmail(), "Valid1!Pass", "Valid1!Pass")
+  await openLegalModal(page)
+
+  const layering = await page.evaluate(() => {
+    const modal = document.querySelector("[data-testid='signup-legal-modal']")
+    const backdrop = document.querySelector(
+      "[data-scope='dialog'][data-part='backdrop']",
+    )
+
+    if (!modal || !backdrop) {
+      return null
+    }
+
+    const modalZIndex = Number.parseInt(getComputedStyle(modal).zIndex, 10)
+    const backdropZIndex = Number.parseInt(
+      getComputedStyle(backdrop).zIndex,
+      10,
+    )
+
+    return {
+      modalZIndex: Number.isNaN(modalZIndex) ? null : modalZIndex,
+      backdropZIndex: Number.isNaN(backdropZIndex) ? null : backdropZIndex,
+    }
+  })
+
+  expect(layering).not.toBeNull()
+  expect(layering?.modalZIndex).not.toBeNull()
+  expect(layering?.backdropZIndex).not.toBeNull()
+  expect(layering!.modalZIndex!).toBeGreaterThan(layering!.backdropZIndex!)
+})
+
+test("Legal document links open in a new tab", async ({ page, context }) => {
+  await page.goto("/signup")
+
+  await fillForm(page, "Test User", randomEmail(), "Valid1!Pass", "Valid1!Pass")
+  await openLegalModal(page)
+
+  const privacyPopupPromise = context.waitForEvent("page")
+  await page.getByTestId("privacy-link").click()
+  const privacyPopup = await privacyPopupPromise
+  await privacyPopup.waitForURL(/\/privacy$/)
+
+  const termsPopupPromise = context.waitForEvent("page")
+  await page.getByTestId("terms-link").click()
+  const termsPopup = await termsPopupPromise
+  await termsPopup.waitForURL(/\/terms-conditions$/)
 })
