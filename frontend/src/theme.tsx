@@ -309,7 +309,7 @@ export const system = createSystem(defaultConfig, {
           pageAccent: { value: { _light: "#FFF9ED", _dark: "#10192A" } },
           panel: { value: { _light: "#FFFFFF", _dark: "#101828" } },
           panelAlt: { value: { _light: "#F8FAFC", _dark: "#172033" } },
-          panelInverse: { value: { _light: "#18183B", _dark: "#060816" } },
+          panelInverse: { value: { _light: "#24244F", _dark: "#060816" } },
           footer: { value: { _light: "#18183B", _dark: "#060816" } },
           text: { value: { _light: "#0F172A", _dark: "#F8FAFC" } },
           textInverse: { value: { _light: "#F8FAFC", _dark: "#F8FAFC" } },
@@ -395,13 +395,13 @@ export const system = createSystem(defaultConfig, {
           },
           inverseSoft: {
             value: {
-              _light: "rgba(255, 255, 255, 0.06)",
+              _light: "rgba(255, 255, 255, 0.10)",
               _dark: "rgba(255, 255, 255, 0.04)",
             },
           },
           inverseBorderSoft: {
             value: {
-              _light: "rgba(255, 255, 255, 0.10)",
+              _light: "rgba(255, 255, 255, 0.16)",
               _dark: "rgba(148, 163, 184, 0.15)",
             },
           },

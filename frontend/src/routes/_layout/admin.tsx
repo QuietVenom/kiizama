@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
 
-import { type UserPublic, UsersService } from "@/client"
+import { type AdminUserPublic, type UserPublic, UsersService } from "@/client"
 import AddUser from "@/components/Admin/AddUser"
 import { UserActionsMenu } from "@/components/Common/UserActionsMenu"
 import PendingUsers from "@/components/Pending/PendingUsers"
@@ -55,8 +55,18 @@ function UsersTable() {
     })
   }
 
-  const users = data?.data.slice(0, PER_PAGE) ?? []
+  const users = (data?.data.slice(0, PER_PAGE) ?? []) as AdminUserPublic[]
   const count = data?.count ?? 0
+
+  const formatAccessLabel = (user: AdminUserPublic) => {
+    if (user.managed_access_source === "admin") {
+      return "Admin"
+    }
+    if (user.managed_access_source === "ambassador") {
+      return "Ambassador"
+    }
+    return user.access_profile ?? "standard"
+  }
 
   if (isLoading) {
     return <PendingUsers />
@@ -70,6 +80,8 @@ function UsersTable() {
             <Table.ColumnHeader w="sm">Full name</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Email</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Role</Table.ColumnHeader>
+            <Table.ColumnHeader w="sm">Access</Table.ColumnHeader>
+            <Table.ColumnHeader w="sm">Plan</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
           </Table.Row>
@@ -90,6 +102,12 @@ function UsersTable() {
               </Table.Cell>
               <Table.Cell>
                 {user.is_superuser ? "Superuser" : "User"}
+              </Table.Cell>
+              <Table.Cell textTransform="capitalize">
+                {formatAccessLabel(user)}
+              </Table.Cell>
+              <Table.Cell textTransform="capitalize">
+                {user.plan_status ?? "none"}
               </Table.Cell>
               <Table.Cell>{user.is_active ? "Active" : "Inactive"}</Table.Cell>
               <Table.Cell>

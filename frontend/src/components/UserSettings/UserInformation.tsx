@@ -17,12 +17,14 @@ import {
   UsersService,
   type UserUpdateMe,
 } from "@/client"
-import useAuth from "@/hooks/useAuth"
+import useAuth, { currentUserQueryOptions } from "@/hooks/useAuth"
 import useCustomToast from "@/hooks/useCustomToast"
 import { emailPattern, handleError } from "@/utils"
 import { Field } from "../ui/field"
 
 const UserInformation = () => {
+  const fullNameFieldId = "user-full-name"
+  const emailFieldId = "user-email"
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
   const [editMode, setEditMode] = useState(false)
@@ -42,14 +44,17 @@ const UserInformation = () => {
     },
   })
 
-  const toggleEditMode = () => {
-    setEditMode(!editMode)
+  const openEditMode = () => {
+    setEditMode(true)
   }
 
   const mutation = useMutation({
     mutationFn: (data: UserUpdateMe) =>
       UsersService.updateUserMe({ requestBody: data }),
-    onSuccess: () => {
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData(currentUserQueryOptions.queryKey, updatedUser)
+      reset(updatedUser)
+      setEditMode(false)
       showSuccessToast("User updated successfully.")
     },
     onError: (err: ApiError) => {
@@ -66,7 +71,7 @@ const UserInformation = () => {
 
   const onCancel = () => {
     reset()
-    toggleEditMode()
+    setEditMode(false)
   }
 
   return (
@@ -79,9 +84,15 @@ const UserInformation = () => {
         as="form"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <Field label="Full name">
+        <Field
+          label="Full name"
+          labelMode={editMode ? "label" : "text"}
+          ids={editMode ? { control: fullNameFieldId } : undefined}
+        >
           {editMode ? (
             <Input
+              id={fullNameFieldId}
+              aria-label="Full name"
               {...register("full_name", { maxLength: 30 })}
               type="text"
               size="md"
@@ -101,11 +112,15 @@ const UserInformation = () => {
         <Field
           mt={4}
           label="Email"
+          labelMode={editMode ? "label" : "text"}
+          ids={editMode ? { control: emailFieldId } : undefined}
           invalid={!!errors.email}
           errorText={errors.email?.message}
         >
           {editMode ? (
             <Input
+              id={emailFieldId}
+              aria-label="Email"
               {...register("email", {
                 required: "Email is required",
                 pattern: emailPattern,
@@ -122,8 +137,8 @@ const UserInformation = () => {
         <Flex mt={4} gap={3}>
           <Button
             layerStyle="brandGradientButton"
-            onClick={toggleEditMode}
-            type={editMode ? "button" : "submit"}
+            onClick={editMode ? undefined : openEditMode}
+            type={editMode ? "submit" : "button"}
             loading={editMode ? isSubmitting : false}
             disabled={editMode ? !isDirty || !getValues("email") : false}
           >

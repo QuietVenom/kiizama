@@ -9,7 +9,7 @@ import {
   Text,
   Textarea,
 } from "@chakra-ui/react"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import {
   type Control,
@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Field } from "@/components/ui/field"
 import { TagsInputField } from "@/components/ui/tags-input-field"
+import { invalidateBillingSummary } from "@/features/billing/api"
 import {
   BRAND_INTELLIGENCE_CAMPAIGN_ENDPOINT,
   generateBrandIntelligenceReport,
@@ -364,6 +365,7 @@ const CampaignStrategyBuilder = ({
   normalizedProfiles,
   validation,
 }: CampaignStrategyBuilderProps) => {
+  const queryClient = useQueryClient()
   const { showErrorToast, showSuccessToast } = useCustomToast()
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null)
@@ -486,6 +488,7 @@ const CampaignStrategyBuilder = ({
       setSubmitSuccess(null)
     },
     onSuccess: async ({ blob, filename }) => {
+      invalidateBillingSummary(queryClient)
       downloadBlob(blob, filename)
       setSubmitSuccess(`Report ready: ${filename}`)
 

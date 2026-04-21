@@ -192,7 +192,7 @@ run_checks() {
   ensure_command uv
 
   cd "$ROOT_DIR"
-  uv run pre-commit run --all-files
+  uv run --project "$BACKEND_DIR" pre-commit run --all-files
 }
 
 run_backend() {

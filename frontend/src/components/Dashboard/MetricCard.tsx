@@ -1,10 +1,11 @@
 import { Box, Flex, Icon, Text } from "@chakra-ui/react"
+import type { ReactNode } from "react"
 import type { IconType } from "react-icons/lib"
 
 type MetricCardProps = {
   icon: IconType
   label: string
-  value: string
+  value: ReactNode
   tone: "info" | "accent" | "positive" | "success"
 }
 

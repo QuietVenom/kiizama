@@ -23,6 +23,10 @@ Most deployments need the same core settings:
 - `DATABASE_URL` or `DATABASE_URL_PRODUCTION_INTERNAL`
 - `REDIS_URL`
 - `OPENAI_API_KEY`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_BASE_PRICE_ID`
+- `BILLING_TRIAL_DAYS`
 - `SENTRY_DSN` if used
 
 For production links and CORS, keep the current public model:
@@ -52,6 +56,31 @@ The backend app serves `https://api.kiizama.com` and expects:
 - production database and Redis settings
 - SMTP provider credentials
 - app/user/admin secrets
+- Stripe billing secrets and price configuration
+
+Stripe billing values live only in the backend app. Do not put Stripe secret or
+webhook variables in the frontend Fly app.
+
+Production billing webhook endpoint:
+
+- `https://api.kiizama.com/api/v1/billing/webhooks/stripe`
+
+Current billing webhook event set:
+
+- `checkout.session.completed`
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `customer.subscription.paused`
+- `customer.subscription.resumed`
+- `customer.subscription.trial_will_end`
+- `invoice.paid`
+- `invoice.payment_failed`
+- `invoice.upcoming`
+- `refund.created`
+- `refund.updated`
+- `refund.failed`
+- `charge.refunded` as temporary compatibility during webhook migration
 
 ### Frontend
 
@@ -64,6 +93,9 @@ fly deploy ./frontend --config ../fly.frontend.toml
 The frontend build uses:
 
 - `VITE_API_URL=https://api.kiizama.com`
+
+The frontend app does not need `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, or
+`STRIPE_BASE_PRICE_ID`.
 
 Keep both `www` and `app` routed to the frontend app so Nginx can apply the redirect rules correctly.
 

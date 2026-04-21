@@ -145,6 +145,13 @@ class Settings(BaseSettings):
     IG_SCRAPER_APIFY_MAX_ATTEMPTS: int = 3
     IG_SCRAPER_APIFY_MAX_CONCURRENT_JOBS: int = 4
     APIFY_API_TOKEN: str | None = None
+    STRIPE_SECRET_KEY: str | None = None
+    STRIPE_WEBHOOK_SECRET: str | None = None
+    STRIPE_BASE_PRICE_ID: str | None = None
+    STRIPE_API_BASE: str = "https://api.stripe.com"
+    BILLING_TRIAL_DAYS: int = 7
+    STRIPE_CUSTOMER_SYNC_POLL_SECONDS: float = 60.0
+    STRIPE_CUSTOMER_SYNC_STALE_PROCESSING_SECONDS: int = 300
 
     def _resolved_redis_url(self) -> str | None:
         return self._first_non_empty(self.REDIS_URL, self.FLY_REDIS_URL)
@@ -198,6 +205,14 @@ class Settings(BaseSettings):
             raise ValueError("IG_SCRAPER_APIFY_MAX_ATTEMPTS must be positive.")
         if self.IG_SCRAPER_APIFY_MAX_CONCURRENT_JOBS <= 0:
             raise ValueError("IG_SCRAPER_APIFY_MAX_CONCURRENT_JOBS must be positive.")
+        if self.BILLING_TRIAL_DAYS <= 0:
+            raise ValueError("BILLING_TRIAL_DAYS must be positive.")
+        if self.STRIPE_CUSTOMER_SYNC_POLL_SECONDS <= 0:
+            raise ValueError("STRIPE_CUSTOMER_SYNC_POLL_SECONDS must be positive.")
+        if self.STRIPE_CUSTOMER_SYNC_STALE_PROCESSING_SECONDS <= 0:
+            raise ValueError(
+                "STRIPE_CUSTOMER_SYNC_STALE_PROCESSING_SECONDS must be positive."
+            )
         return self
 
 

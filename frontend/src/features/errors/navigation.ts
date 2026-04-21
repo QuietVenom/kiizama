@@ -28,7 +28,11 @@ export const getCurrentPathWithSearchAndHash = () => {
 export const buildLoginHrefWithReturnTo = (returnTo?: string) => {
   const safeReturnTo = sanitizeReturnTo(returnTo)
 
-  if (!safeReturnTo) {
+  if (
+    !safeReturnTo ||
+    safeReturnTo === "/login" ||
+    safeReturnTo.startsWith("/login?")
+  ) {
     return "/login"
   }
 

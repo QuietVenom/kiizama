@@ -19,6 +19,24 @@ Backend API will be available at:
 - http://localhost:8000
 - http://localhost:8000/docs
 
+## Stripe billing
+
+Stripe billing is configured in the backend, not the frontend.
+
+Required vars when working on billing flows:
+
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_BASE_PRICE_ID`
+
+Optional:
+
+- `BILLING_TRIAL_DAYS`
+
+Webhook route:
+
+- `POST /api/v1/billing/webhooks/stripe`
+
 ## Local Backend Workflow (without Docker backend service)
 
 From `./backend`:
@@ -67,6 +85,8 @@ From `./backend`:
 uv run bash scripts/lint.sh
 uv run bash scripts/test.sh
 ```
+
+`scripts/lint.sh` runs `mypy` on `app` and runs Ruff check/format validation on `app` and `scripts`.
 
 If the stack is already running and you only want tests:
 

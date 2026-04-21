@@ -57,6 +57,9 @@ Update at least:
 - `FIRST_SUPERUSER_PASSWORD`
 - `POSTGRES_PASSWORD` (if using split Postgres vars)
 - `OPENAI_API_KEY`
+- `STRIPE_SECRET_KEY` if you want to test billing locally
+- `STRIPE_WEBHOOK_SECRET` if you want Stripe webhooks to be accepted locally
+- `STRIPE_BASE_PRICE_ID` if you want checkout sessions to create subscriptions
 
 ### 3) Start local stack
 
@@ -127,6 +130,17 @@ Fallback split Postgres variables:
 - `REPUTATION_OPENAI_TIMEOUT_SECONDS`
 - `REPUTATION_OPENAI_MAX_RETRIES`
 
+### Billing and Stripe
+
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_BASE_PRICE_ID`
+- `BILLING_TRIAL_DAYS`
+
+Billing is backend-owned in this repository. The frontend redirects users to
+backend-created Stripe Checkout and customer portal sessions and does not need
+Stripe secret or webhook variables.
+
 ### Email
 
 - `RESEND_API_KEY`
@@ -170,6 +184,26 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 The current project input variables are the `.env` keys listed above and in `.env.example`.
 
 Use `.env.example` as baseline for each environment (`local`, `staging`, `production`) and provide secrets through your deployment platform.
+
+## Stripe Billing Notes
+
+- Public backend webhook endpoint: `https://api.kiizama.com/api/v1/billing/webhooks/stripe`
+- Local webhook endpoint: `http://localhost:8000/api/v1/billing/webhooks/stripe`
+- Current webhook event set for billing:
+  - `checkout.session.completed`
+  - `customer.subscription.created`
+  - `customer.subscription.updated`
+  - `customer.subscription.deleted`
+  - `customer.subscription.paused`
+  - `customer.subscription.resumed`
+  - `customer.subscription.trial_will_end`
+  - `invoice.paid`
+  - `invoice.payment_failed`
+  - `invoice.upcoming`
+  - `refund.created`
+  - `refund.updated`
+  - `refund.failed`
+  - `charge.refunded` as temporary compatibility during webhook migration
 
 ## Backend Development
 

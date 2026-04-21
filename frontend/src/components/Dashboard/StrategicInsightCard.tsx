@@ -18,7 +18,17 @@ const newsCardAttention = keyframes`
 
 const latestBlogPosts = getAllBlogPosts().slice(0, 3)
 
-const StrategicInsightCard = () => {
+type StrategicInsightCardProps = {
+  planLabel: string
+  periodLabel: string
+  periodValue: string
+}
+
+const StrategicInsightCard = ({
+  planLabel,
+  periodLabel,
+  periodValue,
+}: StrategicInsightCardProps) => {
   return (
     <Flex direction="column" gap={6} h="full" minH="full">
       <Box
@@ -71,7 +81,7 @@ const StrategicInsightCard = () => {
                     href={`/blog/${post.slug}`}
                     target="_blank"
                     rel="noreferrer"
-                    color="ui.inverseText"
+                    color="ui.textInverse"
                     fontSize={{ base: "sm", lg: "md" }}
                     fontWeight="semibold"
                     lineHeight="1.4"
@@ -82,7 +92,10 @@ const StrategicInsightCard = () => {
                 ))}
               </Flex>
             ) : (
-              <Text fontSize={{ base: "sm", lg: "md" }} color="ui.muted">
+              <Text
+                fontSize={{ base: "sm", lg: "md" }}
+                color="ui.inverseMutedText"
+              >
                 No published blog posts yet.
               </Text>
             )}
@@ -112,13 +125,13 @@ const StrategicInsightCard = () => {
           <Text color="ui.secondaryText">
             Plan Type:{" "}
             <Text as="span" fontWeight="bold" color="inherit">
-              Base
+              {planLabel}
             </Text>
           </Text>
           <Text color="ui.secondaryText">
-            Renewal Day:{" "}
+            {periodLabel}:{" "}
             <Text as="span" fontWeight="bold" color="inherit">
-              04 de abril de 2026
+              {periodValue}
             </Text>
           </Text>
         </Flex>

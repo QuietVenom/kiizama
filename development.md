@@ -14,6 +14,12 @@ Set required values before running services locally:
 - `SECRET_KEY_IG_CREDENTIALS`
 - `FIRST_SUPERUSER_PASSWORD`
 - `OPENAI_API_KEY`
+- `STRIPE_SECRET_KEY` if you want local billing checkout and portal flows
+- `STRIPE_BASE_PRICE_ID` if you want checkout sessions to create subscriptions
+
+For local Stripe webhook handling, also set:
+
+- `STRIPE_WEBHOOK_SECRET`
 
 ## Docker Compose
 
@@ -156,6 +162,47 @@ The top-level `.env` file is the local source of truth for Docker Compose, backe
 
 For frontend development outside Docker, Vite still reads `frontend/.env` or shell-provided `VITE_*` variables. The repository `.env.example` provides the default `VITE_API_URL` value used by Docker-based flows.
 
+## Stripe billing local setup
+
+Stripe billing configuration is backend-only in this repository.
+
+Required backend vars:
+
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_BASE_PRICE_ID`
+
+Optional backend var:
+
+- `BILLING_TRIAL_DAYS` (`7` by default)
+
+Local billing webhook URL:
+
+- `http://localhost:8000/api/v1/billing/webhooks/stripe`
+
+If you use the Stripe CLI locally, forward events with:
+
+```bash
+stripe listen --forward-to http://localhost:8000/api/v1/billing/webhooks/stripe
+```
+
+Billing webhook events currently expected by the backend:
+
+- `checkout.session.completed`
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `customer.subscription.paused`
+- `customer.subscription.resumed`
+- `customer.subscription.trial_will_end`
+- `invoice.paid`
+- `invoice.payment_failed`
+- `invoice.upcoming`
+- `refund.created`
+- `refund.updated`
+- `refund.failed`
+- `charge.refunded` as temporary compatibility during webhook migration
+
 ## Pre-commits and code linting
 
 This repository uses [pre-commit](https://pre-commit.com/) for linting and formatting.
@@ -166,16 +213,16 @@ You can find a file `.pre-commit-config.yaml` with configurations at the root of
 
 #### Install pre-commit to run automatically
 
-`pre-commit` is already part of the dependencies of the project, but you could also install it globally if you prefer to, following [the official pre-commit docs](https://pre-commit.com/).
+`pre-commit` is already part of the backend development dependencies, but you could also install it globally if you prefer to, following [the official pre-commit docs](https://pre-commit.com/).
 
 After having the `pre-commit` tool installed and available, you need to "install" it in the local repository, so that it runs automatically before each commit and push.
 
 Using `uv`, you could do it with:
 
 ```bash
-❯ uv run pre-commit install
+❯ uv run --project backend pre-commit install
 pre-commit installed at .git/hooks/pre-commit
-❯ uv run pre-commit install --hook-type pre-push
+❯ uv run --project backend pre-commit install --hook-type pre-push
 pre-commit installed at .git/hooks/pre-push
 ```
 
@@ -204,12 +251,13 @@ All other configured hooks continue to run on `pre-commit`; only the generated c
 you can also run `pre-commit` manually on all the files, you can do it using `uv` with:
 
 ```bash
-❯ uv run pre-commit run --all-files
+❯ uv run --project backend pre-commit run --all-files
 check for added large files..............................................Passed
 check toml...............................................................Passed
 check yaml...............................................................Passed
-ruff.....................................................................Passed
-ruff-format..............................................................Passed
-eslint...................................................................Passed
-prettier.................................................................Passed
+ruff check...............................................................Passed
+ruff format..............................................................Passed
+Detect hardcoded secrets.................................................Passed
+backend mypy.............................................................Passed
+biome check..............................................................Passed
 ```

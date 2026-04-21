@@ -121,6 +121,9 @@ export const confirmPasswordRules = (
   const rules: any = {
     validate: (value: string) => {
       const password = getValues().password || getValues().new_password
+      if (!isRequired && !password && !value) {
+        return true
+      }
       return value === password ? true : "The passwords do not match"
     },
   }

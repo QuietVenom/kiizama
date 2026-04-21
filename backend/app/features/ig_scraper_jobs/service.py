@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Annotated, Any, Protocol
@@ -31,10 +32,16 @@ from kiizama_scrape_core.job_control.schemas import (
     TerminalizationDecision,
 )
 from kiizama_scrape_core.user_events.schemas import UserEventEnvelope
+from sqlmodel import Session
 
 from app.api.deps import SessionDep
 from app.core.config import settings
 from app.core.ids import generate_uuid7
+from app.features.billing import (
+    finalize_usage_reservation,
+    publish_billing_event,
+    release_usage_reservation,
+)
 from app.features.ig_scraper_jobs.repository import SqlJobProjectionRepository
 from app.features.job_control.repository import (
     JobControlRepository,
@@ -151,11 +158,13 @@ class InstagramJobService:
     def __init__(
         self,
         *,
+        session: Session,
         jobs_collection: JobProjectionCollection,
         job_control_repositories: dict[InstagramScrapeJobExecutionMode, JobControlPort],
         user_events_repository: UserEventsPort,
         clock: Callable[[], datetime] = utcnow,
     ) -> None:
+        self._session = session
         self._jobs_collection = jobs_collection
         self._job_control_repositories = job_control_repositories
         self._user_events_repository = user_events_repository
@@ -291,6 +300,25 @@ class InstagramJobService:
             payload=payload,
             notification_id=notification_id,
         )
+        if str(doc.get("executionMode") or "") == APIFY_JOB_EXECUTION_MODE:
+            if payload.summary.counters.successful > 0:
+                finalize_usage_reservation(
+                    session=self._session,
+                    job_id=job_id,
+                    quantity_consumed=payload.summary.counters.successful,
+                    metadata={"job_status": payload.status},
+                )
+            else:
+                release_usage_reservation(
+                    session=self._session,
+                    job_id=job_id,
+                    metadata={"job_status": payload.status},
+                )
+            await publish_billing_event(
+                session=self._session,
+                user_id=uuid.UUID(owner_user_id),
+                event_name="account.usage.updated",
+            )
         event_id, _published = await self._user_events_repository.publish_event(
             user_id=owner_user_id,
             event_name=self._build_event_name(payload.status),
@@ -424,12 +452,14 @@ class InstagramJobService:
 
 
 def get_instagram_job_service(
+    session: SessionDep,
     jobs_collection: Annotated[
         JobProjectionCollection,
         Depends(get_instagram_job_projection_repository),
     ],
 ) -> InstagramJobService:
     return InstagramJobService(
+        session=session,
         jobs_collection=jobs_collection,
         job_control_repositories={
             WORKER_JOB_EXECUTION_MODE: get_instagram_job_control_repository(),

@@ -192,19 +192,26 @@ def test_signup_returns_429_after_same_ip_limit(client: TestClient) -> None:
     redis = EvalShaFakeRedis()
     configure_redis_client_resolver(lambda: redis)
     headers = {"X-Forwarded-For": "203.0.113.50"}
+    signup_payload = {
+        "password": random_password(),
+        "legal_acceptances": {
+            "privacy_notice": True,
+            "terms_conditions": True,
+        },
+    }
 
     for _ in range(5):
         response = client.post(
             f"{settings.API_V1_STR}/users/signup",
             headers=headers,
-            json={"email": random_email(), "password": random_password()},
+            json={**signup_payload, "email": random_email()},
         )
         assert response.status_code == 200
 
     blocked = client.post(
         f"{settings.API_V1_STR}/users/signup",
         headers=headers,
-        json={"email": random_email(), "password": random_password()},
+        json={**signup_payload, "email": random_email()},
     )
     assert blocked.status_code == 429
 

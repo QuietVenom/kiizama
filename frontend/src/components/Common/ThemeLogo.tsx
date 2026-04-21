@@ -11,7 +11,17 @@ const ThemeLogo = (props: ThemeLogoProps) => {
       ? "/assets/images/noBgWhite.svg"
       : "/assets/images/noBgColor.svg"
 
-  return <Image src={logoSrc} alt="Kiizama logo" {...props} />
+  return (
+    <Image
+      src={logoSrc}
+      alt="Kiizama logo"
+      loading="eager"
+      fetchPriority="high"
+      decoding="async"
+      display="block"
+      {...props}
+    />
+  )
 }
 
 export default ThemeLogo

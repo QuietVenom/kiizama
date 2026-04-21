@@ -7,24 +7,37 @@ import {
   Input,
   Text,
 } from "@chakra-ui/react"
+import { useQuery } from "@tanstack/react-query"
 import {
   createFileRoute,
   Link as RouterLink,
   redirect,
 } from "@tanstack/react-router"
+import { useState } from "react"
 import { type SubmitHandler, useForm } from "react-hook-form"
 import { FiLock, FiUser } from "react-icons/fi"
 
-import type { UserRegister } from "@/client"
+import { PublicLegalDocumentsService, type UserRegister } from "@/client"
 import InsightCard from "@/components/Common/InsightCard"
 import ThemeLogo from "@/components/Common/ThemeLogo"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  DialogBody,
+  DialogCloseTrigger,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
 import { PasswordInput } from "@/components/ui/password-input"
 import { PasswordRequirements } from "@/components/ui/password-requirements"
 import { ensureValidStoredSession } from "@/features/auth/session"
 import useAuth from "@/hooks/useAuth"
+import useCustomToast from "@/hooks/useCustomToast"
 import { isPublicFeatureFlagEnabled } from "@/hooks/useFeatureFlags"
 import { confirmPasswordRules, emailPattern, newPasswordRules } from "@/utils"
 import SymbolLogo from "/assets/images/symbol.svg"
@@ -60,13 +73,21 @@ export const Route = createFileRoute("/signup")({
   },
 })
 
-interface UserRegisterForm extends UserRegister {
+type UserRegisterForm = Omit<UserRegister, "legal_acceptances"> & {
   confirm_password: string
 }
 
 function SignUp() {
   const { signUpMutation } = useAuth()
+  const { showErrorToast } = useCustomToast()
   const landingUrl = "/"
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false)
+  const [pendingSignupData, setPendingSignupData] =
+    useState<UserRegisterForm | null>(null)
+  const [hasAcceptedPrivacyNotice, setHasAcceptedPrivacyNotice] =
+    useState(false)
+  const [hasAcceptedTermsConditions, setHasAcceptedTermsConditions] =
+    useState(false)
   const {
     register,
     handleSubmit,
@@ -83,11 +104,88 @@ function SignUp() {
       confirm_password: "",
     },
   })
+  const legalDocumentsQuery = useQuery({
+    queryKey: ["publicLegalDocuments"],
+    queryFn: () => PublicLegalDocumentsService.listPublicLegalDocuments(),
+    retry: false,
+  })
+
+  const legalDocuments = legalDocumentsQuery.data
+  const privacyNoticeDocument = legalDocuments?.documents.find(
+    (document) => document.type === "privacy_notice",
+  )
+  const termsConditionsDocument = legalDocuments?.documents.find(
+    (document) => document.type === "terms_conditions",
+  )
+  const hasRequiredLegalDocuments = Boolean(
+    legalDocuments && privacyNoticeDocument && termsConditionsDocument,
+  )
+
+  const resetLegalModalState = () => {
+    setIsLegalModalOpen(false)
+    setPendingSignupData(null)
+    setHasAcceptedPrivacyNotice(false)
+    setHasAcceptedTermsConditions(false)
+  }
 
   const onSubmit: SubmitHandler<UserRegisterForm> = (data) => {
-    signUpMutation.mutate(data)
+    if (legalDocumentsQuery.isPending) {
+      showErrorToast(
+        "Estamos cargando la documentación legal requerida. Intenta de nuevo.",
+      )
+      return
+    }
+
+    if (legalDocumentsQuery.isError || !hasRequiredLegalDocuments) {
+      const errorMessage =
+        legalDocumentsQuery.error instanceof Error
+          ? legalDocumentsQuery.error.message
+          : "No se pudo cargar la documentación legal requerida. Intenta de nuevo."
+      showErrorToast(errorMessage)
+      return
+    }
+
+    setPendingSignupData(data)
+    setHasAcceptedPrivacyNotice(false)
+    setHasAcceptedTermsConditions(false)
+    setIsLegalModalOpen(true)
   }
+
+  const handleConfirmLegalAcceptance = () => {
+    if (
+      !pendingSignupData ||
+      !hasRequiredLegalDocuments ||
+      !hasAcceptedPrivacyNotice ||
+      !hasAcceptedTermsConditions
+    ) {
+      showErrorToast(
+        "No se pudo cargar la documentación legal requerida. Intenta de nuevo.",
+      )
+      return
+    }
+
+    signUpMutation.mutate(
+      {
+        email: pendingSignupData.email,
+        full_name: pendingSignupData.full_name,
+        password: pendingSignupData.password,
+        legal_acceptances: {
+          privacy_notice: true,
+          terms_conditions: true,
+        },
+      },
+      {
+        onSuccess: () => {
+          resetLegalModalState()
+        },
+      },
+    )
+  }
+
   const passwordValue = watch("password")
+  const isSignupPending = signUpMutation.isPending
+  const isLegalConfirmDisabled =
+    !hasAcceptedPrivacyNotice || !hasAcceptedTermsConditions || isSignupPending
 
   return (
     <Box
@@ -214,10 +312,17 @@ function SignUp() {
             w={FORM_CONTROL_MAX_W}
             layerStyle="brandGradientButton"
             type="submit"
-            loading={isSubmitting}
+            loading={isSignupPending || isSubmitting}
+            disabled={isSignupPending}
           >
             Sign Up
           </Button>
+          {legalDocumentsQuery.isError && (
+            <Text w={FORM_CONTROL_MAX_W} textAlign="center" color="red.300">
+              No se pudo cargar la documentación legal requerida. Intenta de
+              nuevo para continuar.
+            </Text>
+          )}
           <Text w={FORM_CONTROL_MAX_W} textAlign="center">
             Already have an account?{" "}
             <RouterLink to="/login" className="main-link">
@@ -226,6 +331,96 @@ function SignUp() {
           </Text>
         </InsightCard>
       </Container>
+      <DialogRoot
+        open={isLegalModalOpen}
+        onOpenChange={({ open }) => {
+          if (!open && !isSignupPending) {
+            resetLegalModalState()
+          }
+        }}
+      >
+        <DialogContent maxW="lg" data-testid="signup-legal-modal">
+          {!isSignupPending && <DialogCloseTrigger />}
+          <DialogHeader>
+            <DialogTitle>Antes de crear tu cuenta</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <Text mb={5}>
+              {legalDocuments?.simplified_notice ??
+                "Para crear tu cuenta, necesitas leer y aceptar la documentación legal aplicable. Puedes revisar cada documento en una nueva pestaña antes de continuar."}
+            </Text>
+            <Box display="flex" flexDirection="column" gap={4}>
+              {privacyNoticeDocument && (
+                <Box>
+                  <Checkbox
+                    checked={hasAcceptedPrivacyNotice}
+                    onCheckedChange={({ checked }) =>
+                      setHasAcceptedPrivacyNotice(Boolean(checked))
+                    }
+                    data-testid="accept-privacy-checkbox"
+                  >
+                    He leído y acepto el Aviso de Privacidad
+                  </Checkbox>
+                  <ChakraLink
+                    href={privacyNoticeDocument.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    textDecoration="underline"
+                    fontSize="sm"
+                    ms="7"
+                    data-testid="privacy-link"
+                  >
+                    Abrir Aviso de Privacidad
+                  </ChakraLink>
+                </Box>
+              )}
+              {termsConditionsDocument && (
+                <Box>
+                  <Checkbox
+                    checked={hasAcceptedTermsConditions}
+                    onCheckedChange={({ checked }) =>
+                      setHasAcceptedTermsConditions(Boolean(checked))
+                    }
+                    data-testid="accept-terms-checkbox"
+                  >
+                    He leído y acepto los Términos y Condiciones
+                  </Checkbox>
+                  <ChakraLink
+                    href={termsConditionsDocument.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    textDecoration="underline"
+                    fontSize="sm"
+                    ms="7"
+                    data-testid="terms-link"
+                  >
+                    Abrir Términos y Condiciones
+                  </ChakraLink>
+                </Box>
+              )}
+            </Box>
+          </DialogBody>
+          <DialogFooter gap={2}>
+            <Button
+              variant="subtle"
+              colorPalette="gray"
+              onClick={resetLegalModalState}
+              disabled={isSignupPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              layerStyle="brandGradientButton"
+              onClick={handleConfirmLegalAcceptance}
+              disabled={isLegalConfirmDisabled}
+              loading={isSignupPending}
+              data-testid="confirm-legal-acceptance"
+            >
+              Crear cuenta
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </DialogRoot>
     </Box>
   )
 }

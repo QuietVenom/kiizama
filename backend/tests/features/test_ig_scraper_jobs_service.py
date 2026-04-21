@@ -157,6 +157,7 @@ def _service(
 ) -> InstagramJobService:
     repository = job_control_repository or FakeJobControlRepository()
     return InstagramJobService(
+        session=object(),
         jobs_collection=jobs_collection or FakeJobsCollection(),
         job_control_repositories={
             "worker": repository,
