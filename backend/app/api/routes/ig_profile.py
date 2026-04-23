@@ -38,12 +38,12 @@ def _require_profile(profile_doc: Document | None) -> Profile:
 
 
 @router.post("/", response_model=Profile, status_code=status.HTTP_201_CREATED)
-async def create_ig_profile(
+def create_ig_profile(
     profile: Profile,
     collection: Any = Depends(get_profiles_collection),
     _current_user: User = Depends(get_current_active_superuser),
 ) -> Profile:
-    created = await create_profile(collection, profile)
+    created = create_profile(collection, profile)
     return _require_profile(created)
 
 
@@ -52,77 +52,77 @@ async def create_ig_profile(
     response_model=Profile,
     dependencies=[Depends(rate_limit(POLICIES.private_basic))],
 )
-async def read_ig_profile_by_username(
+def read_ig_profile_by_username(
     username: str,
     _current_user: CurrentUser,
     collection: Any = Depends(get_profiles_collection),
 ) -> Profile:
-    return _require_profile(await get_profile_by_username(collection, username))
+    return _require_profile(get_profile_by_username(collection, username))
 
 
 @router.post("/by-usernames", response_model=ProfileCollection)
-async def read_ig_profiles_by_usernames(
+def read_ig_profiles_by_usernames(
     payload: ProfileUsernames,
     collection: Any = Depends(get_profiles_collection),
     _current_user: User = Depends(get_current_active_superuser),
 ) -> ProfileCollection:
     if not payload.usernames:
         raise HTTPException(status_code=400, detail="usernames cannot be empty")
-    profiles = await get_profiles_by_usernames(collection, payload.usernames)
+    profiles = get_profiles_by_usernames(collection, payload.usernames)
     return ProfileCollection(
         profiles=[Profile.model_validate(profile) for profile in profiles]
     )
 
 
 @router.get("/", response_model=ProfileCollection)
-async def read_ig_profiles(
+def read_ig_profiles(
     skip: int = 0,
     limit: int = 100,
     collection: Any = Depends(get_profiles_collection),
     _current_user: User = Depends(get_current_active_superuser),
 ) -> ProfileCollection:
-    profiles = await list_profiles(collection, skip=skip, limit=limit)
+    profiles = list_profiles(collection, skip=skip, limit=limit)
     return ProfileCollection(
         profiles=[Profile.model_validate(profile) for profile in profiles]
     )
 
 
 @router.get("/{profile_id}", response_model=Profile)
-async def read_ig_profile(
+def read_ig_profile(
     profile_id: str,
     collection: Any = Depends(get_profiles_collection),
     _current_user: User = Depends(get_current_active_superuser),
 ) -> Profile:
-    return _require_profile(await get_profile(collection, profile_id))
+    return _require_profile(get_profile(collection, profile_id))
 
 
 @router.patch("/{profile_id}", response_model=Profile)
-async def update_ig_profile(
+def update_ig_profile(
     profile_id: str,
     patch: UpdateProfile,
     collection: Any = Depends(get_profiles_collection),
     _current_user: User = Depends(get_current_active_superuser),
 ) -> Profile:
-    return _require_profile(await update_profile(collection, profile_id, patch))
+    return _require_profile(update_profile(collection, profile_id, patch))
 
 
 @router.put("/{profile_id}", response_model=Profile)
-async def replace_ig_profile(
+def replace_ig_profile(
     profile_id: str,
     profile_in: Profile,
     collection: Any = Depends(get_profiles_collection),
     _current_user: User = Depends(get_current_active_superuser),
 ) -> Profile:
-    return _require_profile(await replace_profile(collection, profile_id, profile_in))
+    return _require_profile(replace_profile(collection, profile_id, profile_in))
 
 
 @router.delete("/{profile_id}", response_model=Profile)
-async def delete_ig_profile(
+def delete_ig_profile(
     profile_id: str,
     collection: Any = Depends(get_profiles_collection),
     _current_user: User = Depends(get_current_active_superuser),
 ) -> Profile:
-    return _require_profile(await delete_profile(collection, profile_id))
+    return _require_profile(delete_profile(collection, profile_id))
 
 
 __all__ = ["router"]

@@ -29,53 +29,53 @@ def _require_metrics(metrics_doc: Document | None) -> Metrics:
 
 
 @router.post("/", response_model=Metrics, status_code=status.HTTP_201_CREATED)
-async def create_ig_metrics(
+def create_ig_metrics(
     metrics: Metrics, collection: Any = Depends(get_metrics_collection)
 ) -> Metrics:
-    created = await create_metrics(collection, metrics)
+    created = create_metrics(collection, metrics)
     return _require_metrics(created)
 
 
 @router.get("/", response_model=MetricsCollection)
-async def read_ig_metrics(
+def read_ig_metrics(
     skip: int = 0,
     limit: int = 100,
     collection: Any = Depends(get_metrics_collection),
 ) -> MetricsCollection:
-    metrics = await list_metrics(collection, skip=skip, limit=limit)
+    metrics = list_metrics(collection, skip=skip, limit=limit)
     return MetricsCollection(metrics=[Metrics.model_validate(item) for item in metrics])
 
 
 @router.get("/{metrics_id}", response_model=Metrics)
-async def read_ig_metrics_by_id(
+def read_ig_metrics_by_id(
     metrics_id: str, collection: Any = Depends(get_metrics_collection)
 ) -> Metrics:
-    return _require_metrics(await get_metrics(collection, metrics_id))
+    return _require_metrics(get_metrics(collection, metrics_id))
 
 
 @router.patch("/{metrics_id}", response_model=Metrics)
-async def update_ig_metrics(
+def update_ig_metrics(
     metrics_id: str,
     patch: UpdateMetrics,
     collection: Any = Depends(get_metrics_collection),
 ) -> Metrics:
-    return _require_metrics(await update_metrics(collection, metrics_id, patch))
+    return _require_metrics(update_metrics(collection, metrics_id, patch))
 
 
 @router.put("/{metrics_id}", response_model=Metrics)
-async def replace_ig_metrics(
+def replace_ig_metrics(
     metrics_id: str,
     metrics_in: Metrics,
     collection: Any = Depends(get_metrics_collection),
 ) -> Metrics:
-    return _require_metrics(await replace_metrics(collection, metrics_id, metrics_in))
+    return _require_metrics(replace_metrics(collection, metrics_id, metrics_in))
 
 
 @router.delete("/{metrics_id}", response_model=Metrics)
-async def delete_ig_metrics(
+def delete_ig_metrics(
     metrics_id: str, collection: Any = Depends(get_metrics_collection)
 ) -> Metrics:
-    return _require_metrics(await delete_metrics(collection, metrics_id))
+    return _require_metrics(delete_metrics(collection, metrics_id))
 
 
 __all__ = ["router"]

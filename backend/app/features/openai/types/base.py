@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable, Generator, Mapping
-from typing import TYPE_CHECKING, Any, Literal, TypedDict, cast
+from typing import TYPE_CHECKING, Any, Literal, NotRequired, TypedDict, cast
 
 from openai import APIStatusError, OpenAI, OpenAIError
-from typing_extensions import NotRequired
 
 if TYPE_CHECKING:  # pragma: no cover - imported for type checking only
     from openai.types.responses import ResponseInputParam

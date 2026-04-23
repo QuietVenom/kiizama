@@ -14,7 +14,7 @@ jobs:
   test-backend:
     runs-on: ubuntu-latest
     env:
-      TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:55432/app_test
+      RATE_LIMIT_ENABLED: "false"
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -23,25 +23,14 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.10"
+          python-version: "3.12"
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
           version: "0.4.15"
           enable-cache: true
-      - run: docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml --env-file .env.example down -v --remove-orphans
-      - run: docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml --env-file .env.example up -d postgres_test
-      - name: Migrate DB
-        run: uv run bash scripts/prestart.sh
-        working-directory: backend
-        env:
-          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
       - name: Run tests
-        run: uv run bash scripts/tests-start.sh "Coverage for ${{ github.sha }}"
-        working-directory: backend
-        env:
-          TEST_DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
-      - run: docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml --env-file .env.example down -v --remove-orphans
+        run: bash scripts/test-local.sh backend
       - name: Store coverage files
         uses: actions/upload-artifact@v7
         with:

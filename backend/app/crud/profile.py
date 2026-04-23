@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, cast
 
 from fastapi import HTTPException
@@ -13,7 +13,7 @@ Document = dict[str, Any]
 
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _parse_profile_id(profile_id: str) -> uuid.UUID | None:
@@ -49,7 +49,7 @@ def _raise_duplicate_profile(exc: IntegrityError) -> None:
     raise HTTPException(status_code=409, detail="ig_id ya existe") from exc
 
 
-async def create_profile(collection: Any, profile: Profile) -> Document | None:
+def create_profile(collection: Any, profile: Profile) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     record = IgProfile(
@@ -79,7 +79,7 @@ async def create_profile(collection: Any, profile: Profile) -> Document | None:
     return _serialize_profile(record)
 
 
-async def get_profile(collection: Any, profile_id: str) -> Document | None:
+def get_profile(collection: Any, profile_id: str) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     parsed_id = _parse_profile_id(profile_id)
@@ -89,7 +89,7 @@ async def get_profile(collection: Any, profile_id: str) -> Document | None:
     return _serialize_profile(record) if record else None
 
 
-async def get_profile_by_username(collection: Any, username: str) -> Document | None:
+def get_profile_by_username(collection: Any, username: str) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     statement = select(IgProfile).where(IgProfile.username == username)
@@ -97,7 +97,7 @@ async def get_profile_by_username(collection: Any, username: str) -> Document | 
     return _serialize_profile(record) if record else None
 
 
-async def get_profile_by_ig_id(collection: Any, ig_id: str) -> Document | None:
+def get_profile_by_ig_id(collection: Any, ig_id: str) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     statement = select(IgProfile).where(IgProfile.ig_id == ig_id)
@@ -105,9 +105,7 @@ async def get_profile_by_ig_id(collection: Any, ig_id: str) -> Document | None:
     return _serialize_profile(record) if record else None
 
 
-async def list_profiles(
-    collection: Any, skip: int = 0, limit: int = 100
-) -> list[Document]:
+def list_profiles(collection: Any, skip: int = 0, limit: int = 100) -> list[Document]:
     session = collection
     assert isinstance(session, Session)
     updated_at = cast(Any, IgProfile.updated_at)
@@ -115,9 +113,7 @@ async def list_profiles(
     return [_serialize_profile(record) for record in session.exec(statement).all()]
 
 
-async def get_profiles_by_usernames(
-    collection: Any, usernames: list[str]
-) -> list[Document]:
+def get_profiles_by_usernames(collection: Any, usernames: list[str]) -> list[Document]:
     session = collection
     assert isinstance(session, Session)
     if not usernames:
@@ -127,9 +123,7 @@ async def get_profiles_by_usernames(
     return [_serialize_profile(record) for record in session.exec(statement).all()]
 
 
-async def get_existing_profile_usernames(
-    collection: Any, usernames: list[str]
-) -> list[str]:
+def get_existing_profile_usernames(collection: Any, usernames: list[str]) -> list[str]:
     session = collection
     assert isinstance(session, Session)
     if not usernames:
@@ -139,7 +133,7 @@ async def get_existing_profile_usernames(
     return list(session.exec(statement).all())
 
 
-async def update_profile(
+def update_profile(
     collection: Any, profile_id: str, patch: UpdateProfile
 ) -> Document | None:
     session = collection
@@ -196,7 +190,7 @@ async def update_profile(
     return _serialize_profile(record)
 
 
-async def replace_profile(
+def replace_profile(
     collection: Any, profile_id: str, profile: Profile
 ) -> Document | None:
     session = collection
@@ -237,7 +231,7 @@ async def replace_profile(
     return _serialize_profile(record)
 
 
-async def delete_profile(collection: Any, profile_id: str) -> Document | None:
+def delete_profile(collection: Any, profile_id: str) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     parsed_id = _parse_profile_id(profile_id)

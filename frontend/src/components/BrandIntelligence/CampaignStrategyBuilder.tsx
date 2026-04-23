@@ -41,7 +41,10 @@ import {
   BRAND_INTELLIGENCE_LIMITS,
   CAMPAIGN_FIELD_HELP,
 } from "@/features/brand-intelligence/form-config"
-import type { CampaignFormValues } from "@/features/brand-intelligence/form-values"
+import {
+  buildCampaignStrategyPayload,
+  type CampaignFormValues,
+} from "@/features/brand-intelligence/form-values"
 import type { useProfileExistenceValidation } from "@/features/brand-intelligence/use-profile-existence-validation"
 import {
   isValidHttpUrl,
@@ -468,19 +471,7 @@ const CampaignStrategyBuilder = ({
       return generateBrandIntelligenceReport({
         endpointPath: BRAND_INTELLIGENCE_CAMPAIGN_ENDPOINT,
         fallbackFilename: "reputation_campaign_strategy.pdf",
-        payload: {
-          ...values,
-          audience: values.audience,
-          brand_context: values.brand_context.trim(),
-          brand_goals_context: values.brand_goals_context.trim(),
-          brand_name: values.brand_name.trim(),
-          brand_urls: normalizeListValues(values.brand_urls ?? []),
-          campaign_type: values.campaign_type,
-          generate_html: false,
-          generate_pdf: true,
-          profiles_list: profilesList,
-          timeframe: values.timeframe,
-        },
+        payload: buildCampaignStrategyPayload(values, { profilesList }),
       })
     },
     onMutate: () => {

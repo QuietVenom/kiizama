@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright/python:latest
+FROM python:3.12-bookworm
 
 ENV PYTHONUNBUFFERED=1
 ENV UV_LINK_MODE=copy
@@ -18,9 +18,9 @@ COPY scrape_worker /app/scrape_worker
 WORKDIR /app/scrape_worker
 RUN uv sync --no-dev
 
-# Ensure Chromium binaries match the installed Playwright package.
+# Install Chromium and system dependencies for the installed Playwright package.
 WORKDIR /app
-RUN /app/scrape_worker/.venv/bin/python -m playwright install chromium
+RUN /app/scrape_worker/.venv/bin/python -m playwright install --with-deps chromium
 
 ENV PATH="/app/scrape_worker/.venv/bin:$PATH"
 ENV PYTHONPATH="/app"

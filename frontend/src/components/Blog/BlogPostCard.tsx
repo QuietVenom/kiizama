@@ -9,7 +9,7 @@ import {
 } from "@chakra-ui/react"
 import { Link } from "@tanstack/react-router"
 import { formatBlogPublishedAt } from "@/features/blog/format"
-import type { BlogPost } from "@/features/blog/parser"
+import type { BlogPost } from "@/features/blog/types"
 
 type BlogPostCardProps = {
   post: BlogPost

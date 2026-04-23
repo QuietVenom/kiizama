@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Literal, cast
 
 from kiizama_scrape_core.ig_scraper.sqlmodels import (
@@ -23,15 +23,10 @@ from app.core.password_policy import (
     NewPasswordStr,
 )
 from app.features.billing.models import (
-    AccessProfile,
-    BillingCustomerSyncStatus,
     BillingCustomerSyncTask,
-    BillingCustomerSyncType,
     BillingSubscription,
     BillingWebhookEvent,
     LuBillingFeature,
-    ManagedAccessSource,
-    PlanStatus,
     SubscriptionPlan,
     SubscriptionPlanFeatureLimit,
     UsageCycle,
@@ -40,6 +35,13 @@ from app.features.billing.models import (
     UsageReservation,
     UserAccessOverride,
     UserBillingAccount,
+)
+from app.features.billing.schemas import (
+    AccessProfile,
+    BillingCustomerSyncStatus,
+    BillingCustomerSyncType,
+    ManagedAccessSource,
+    PlanStatus,
 )
 
 
@@ -173,7 +175,7 @@ class UserLegalAcceptance(SQLModel, table=True):
     document_type: str = Field(max_length=64)
     document_version: str = Field(max_length=32)
     accepted_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+        default_factory=lambda: datetime.now(UTC), nullable=False
     )
     source: str = Field(max_length=32)
 
@@ -227,10 +229,10 @@ class UserAdmin(UserAdminBase, table=True):
         foreign_key=f"{PRIVATE_SCHEMA}.lu_admin_role.id", nullable=False
     )
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+        default_factory=lambda: datetime.now(UTC), nullable=False
     )
     updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+        default_factory=lambda: datetime.now(UTC), nullable=False
     )
 
 
@@ -267,10 +269,10 @@ class FeatureFlag(FeatureFlagBase, table=True):
 
     id: uuid.UUID = Field(default_factory=generate_uuid7, primary_key=True)
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+        default_factory=lambda: datetime.now(UTC), nullable=False
     )
     updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+        default_factory=lambda: datetime.now(UTC), nullable=False
     )
 
 
@@ -302,7 +304,7 @@ class FeatureFlagAudit(SQLModel, table=True):
     changed_by_admin_id: uuid.UUID | None = None
     changed_by_email: str | None = Field(default=None, max_length=255)
     changed_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+        default_factory=lambda: datetime.now(UTC), nullable=False
     )
 
 
@@ -359,7 +361,7 @@ class WaitingList(SQLModel, table=True):
     email: EmailStr = Field(unique=True, index=True, max_length=255)
     interest: str = Field(max_length=64)
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+        default_factory=lambda: datetime.now(UTC), nullable=False
     )
 
 

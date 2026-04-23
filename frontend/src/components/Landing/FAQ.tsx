@@ -22,7 +22,7 @@ const faqs = [
     id: "report-outputs",
     question: "What outputs does the platform generate?",
     answer:
-      "You can generate HTML and PDF reports. Multi-profile requests can be delivered as a ZIP file containing each output.",
+      "You can generate PDF reports. Multi-profile requests can be delivered as a ZIP file containing each output.",
   },
   {
     id: "ai-enrichment",
@@ -34,7 +34,7 @@ const faqs = [
     id: "request-limits",
     question: "Are there operational limits per request?",
     answer:
-      "Yes. Current limits are up to 10 usernames per scrape job, up to 20 usernames per Instagram report request, and up to 15 profiles per campaign strategy request.",
+      "Yes. The Base plan currently includes 50 profile lookups, 20 social media reports, and 5 reputation strategy requests per monthly cycle. Per-request caps still apply: up to 10 usernames per scrape job, up to 20 usernames per Instagram report request, and up to 15 profiles per campaign strategy request. We will add new plans or adjust limits as demand grows.",
   },
 ]
 

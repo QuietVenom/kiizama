@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Literal
 
 from sqlalchemy import desc
@@ -113,7 +113,7 @@ def update_feature_flag(
 ) -> FeatureFlag:
     update_data = feature_flag_in.model_dump(exclude_unset=True)
     db_feature_flag.sqlmodel_update(update_data)
-    db_feature_flag.updated_at = datetime.now(timezone.utc)
+    db_feature_flag.updated_at = datetime.now(UTC)
     session.add(db_feature_flag)
     session.commit()
     session.refresh(db_feature_flag)

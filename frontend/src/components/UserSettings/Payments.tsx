@@ -8,12 +8,16 @@ import {
   Heading,
   Text,
 } from "@chakra-ui/react"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useEffect, useRef } from "react"
 import {
+  billingNoticesQueryOptions,
   billingSummaryQueryOptions,
   createCheckoutSession,
   createPortalSession,
   getFeatureUsage,
+  readBillingMe,
+  readBillingNotices,
 } from "@/features/billing/api"
 import {
   getBillingPeriodPresentation,
@@ -53,9 +57,40 @@ const noticeToneMap = {
   trial_will_end: "yellow",
 } as const
 
-const Payments = () => {
+type PaymentsProps = {
+  billingReturn?: number
+  onBillingReturnConsumed?: () => void
+}
+
+const Payments = ({
+  billingReturn,
+  onBillingReturnConsumed,
+}: PaymentsProps = {}) => {
   const { showErrorToast } = useCustomToast()
+  const queryClient = useQueryClient()
+  const consumedBillingReturnRef = useRef<number | undefined>(undefined)
   const { data, isLoading } = useQuery(billingSummaryQueryOptions)
+
+  useEffect(() => {
+    if (billingReturn === undefined) {
+      return
+    }
+    if (consumedBillingReturnRef.current === billingReturn) {
+      return
+    }
+
+    consumedBillingReturnRef.current = billingReturn
+    void Promise.allSettled([
+      readBillingMe().then((summary) => {
+        queryClient.setQueryData(billingSummaryQueryOptions.queryKey, summary)
+      }),
+      readBillingNotices().then((notices) => {
+        queryClient.setQueryData(billingNoticesQueryOptions.queryKey, notices)
+      }),
+    ]).finally(() => {
+      onBillingReturnConsumed?.()
+    })
+  }, [billingReturn, onBillingReturnConsumed, queryClient])
 
   const checkoutMutation = useMutation({
     mutationFn: createCheckoutSession,

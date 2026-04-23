@@ -29,53 +29,49 @@ def _require_reel(reel_doc: Document | None) -> Reel:
 
 
 @router.post("/", response_model=Reel, status_code=status.HTTP_201_CREATED)
-async def create_ig_reel(
-    reel: Reel, collection: Any = Depends(get_reels_collection)
-) -> Reel:
-    created = await create_reel(collection, reel)
+def create_ig_reel(reel: Reel, collection: Any = Depends(get_reels_collection)) -> Reel:
+    created = create_reel(collection, reel)
     return _require_reel(created)
 
 
 @router.get("/", response_model=ReelCollection)
-async def read_ig_reels(
+def read_ig_reels(
     skip: int = 0,
     limit: int = 100,
     collection: Any = Depends(get_reels_collection),
 ) -> ReelCollection:
-    reels = await list_reels(collection, skip=skip, limit=limit)
+    reels = list_reels(collection, skip=skip, limit=limit)
     return ReelCollection(reels=[Reel.model_validate(reel) for reel in reels])
 
 
 @router.get("/{reel_id}", response_model=Reel)
-async def read_ig_reel(
-    reel_id: str, collection: Any = Depends(get_reels_collection)
-) -> Reel:
-    return _require_reel(await get_reel(collection, reel_id))
+def read_ig_reel(reel_id: str, collection: Any = Depends(get_reels_collection)) -> Reel:
+    return _require_reel(get_reel(collection, reel_id))
 
 
 @router.patch("/{reel_id}", response_model=Reel)
-async def update_ig_reel(
+def update_ig_reel(
     reel_id: str,
     patch: UpdateReel,
     collection: Any = Depends(get_reels_collection),
 ) -> Reel:
-    return _require_reel(await update_reel(collection, reel_id, patch))
+    return _require_reel(update_reel(collection, reel_id, patch))
 
 
 @router.put("/{reel_id}", response_model=Reel)
-async def replace_ig_reel(
+def replace_ig_reel(
     reel_id: str,
     reel_in: Reel,
     collection: Any = Depends(get_reels_collection),
 ) -> Reel:
-    return _require_reel(await replace_reel(collection, reel_id, reel_in))
+    return _require_reel(replace_reel(collection, reel_id, reel_in))
 
 
 @router.delete("/{reel_id}", response_model=Reel)
-async def delete_ig_reel(
+def delete_ig_reel(
     reel_id: str, collection: Any = Depends(get_reels_collection)
 ) -> Reel:
-    return _require_reel(await delete_reel(collection, reel_id))
+    return _require_reel(delete_reel(collection, reel_id))
 
 
 __all__ = ["router"]

@@ -25,6 +25,9 @@ Usage:
   ./scripts/test-local.sh
   ./scripts/test-local.sh all
   ./scripts/test-local.sh checks
+  ./scripts/test-local.sh frontend
+  ./scripts/test-local.sh frontend tests/component/routes/test_login_form.tsx
+  ./scripts/test-local.sh frontend frontend/tests/component/routes/test_login_form.tsx
   ./scripts/test-local.sh backend
   ./scripts/test-local.sh backend -x
   ./scripts/test-local.sh backend backend/tests/api/routes/test_ig_profile_snapshots.py -x
@@ -35,11 +38,14 @@ Usage:
 Targets:
   all         Run pre-commit checks, backend tests, and Playwright tests
   checks      Run only pre-commit checks
+  frontend    Run frontend Vitest non-E2E tests
   backend     Run backend test flow
   playwright  Run Playwright test flow
 
 Notes:
-  - Extra args are passed only to pytest or Playwright for that target.
+  - Extra args are passed to Vitest, pytest, or Playwright for that target.
+  - For "frontend", file paths are resolved from the frontend app root; a leading
+    "frontend/" prefix is accepted and stripped for convenience.
   - "backend" uses the local Docker Redis container at localhost:6379.
   - "backend" does not require fly redis proxy kiizama-redis.
   - For "backend" with no extra args, this script runs scripts/tests-start.sh.
@@ -195,6 +201,31 @@ run_checks() {
   uv run --project "$BACKEND_DIR" pre-commit run --all-files
 }
 
+run_frontend() {
+  log "Running frontend non-E2E test flow..."
+  ensure_command npm
+
+  cd "$FRONTEND_DIR"
+  npm ci
+
+  local test_args=()
+  local arg
+  for arg in "$@"; do
+    if [[ "$arg" == frontend/* ]]; then
+      test_args+=("${arg#frontend/}")
+    else
+      test_args+=("$arg")
+    fi
+  done
+
+  if [[ ${#test_args[@]} -gt 0 ]]; then
+    log "Running Vitest with custom args: ${test_args[*]}"
+    npm run test -- "${test_args[@]}"
+  else
+    npm run test
+  fi
+}
+
 run_backend() {
   log "Running backend test flow..."
   ensure_command docker
@@ -276,11 +307,15 @@ run_playwright() {
 case "$TARGET" in
   all)
     run_checks
+    run_frontend
     run_backend
     run_playwright
     ;;
   checks)
     run_checks
+    ;;
+  frontend)
+    run_frontend "$@"
     ;;
   backend)
     run_backend "$@"

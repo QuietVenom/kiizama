@@ -1,6 +1,6 @@
 import secrets
 import warnings
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Self
 
 from pydantic import (
     AnyUrl,
@@ -12,7 +12,6 @@ from pydantic import (
     model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing_extensions import Self
 
 INSECURE_PLACEHOLDER_VALUES = {"changethis", "ChangeThis1!"}
 
@@ -57,9 +56,9 @@ class Settings(BaseSettings):
     SENTRY_DSN: HttpUrl | None = None
     DATABASE_URL: str | None = None
     DATABASE_URL_PRODUCTION_INTERNAL: str | None = None
-    POSTGRES_SERVER: str
+    POSTGRES_SERVER: str = ""
     POSTGRES_PORT: int = 5432
-    POSTGRES_USER: str
+    POSTGRES_USER: str = ""
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
 
@@ -133,7 +132,8 @@ class Settings(BaseSettings):
     FLY_REDIS_URL: str | None = None
     RATE_LIMIT_ENABLED: bool = True
     JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS: int = 60 * 60 * 24
-    USER_EVENTS_STREAM_MAXLEN: int = 100
+    USER_EVENTS_STREAM_MAXLEN: int = 25
+    USER_EVENTS_STREAM_TTL_SECONDS: int = 60 * 60 * 24 * 7
     USER_EVENTS_SSE_READ_BLOCK_MS: int = 10_000
     JOB_CONTROL_QUEUE_MAXLEN: int = 10_000
     IG_SCRAPER_WORKER_JOBS_ENABLED: bool = True
@@ -191,6 +191,8 @@ class Settings(BaseSettings):
             raise ValueError("USER_EVENTS_SSE_READ_BLOCK_MS must be positive.")
         if self.USER_EVENTS_STREAM_MAXLEN <= 0:
             raise ValueError("USER_EVENTS_STREAM_MAXLEN must be positive.")
+        if self.USER_EVENTS_STREAM_TTL_SECONDS <= 0:
+            raise ValueError("USER_EVENTS_STREAM_TTL_SECONDS must be positive.")
         if self.JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS <= 0:
             raise ValueError("JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS must be positive.")
         if self.JOB_CONTROL_QUEUE_MAXLEN <= 0:

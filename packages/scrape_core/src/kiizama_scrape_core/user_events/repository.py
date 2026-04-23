@@ -15,7 +15,8 @@ STREAM_PAYLOAD_FIELD = "payload"
 
 PUBLISH_USER_EVENT_SCRIPT = """
 local dedupe_enabled = ARGV[1] == '1'
-local ttl_seconds = tonumber(ARGV[2]) or 0
+local dedupe_ttl_seconds = tonumber(ARGV[2]) or 0
+local stream_ttl_seconds = tonumber(ARGV[3]) or 0
 
 if dedupe_enabled then
   local existing = redis.call('GET', KEYS[2])
@@ -28,22 +29,22 @@ local event_id = redis.call(
   'XADD',
   KEYS[1],
   'MAXLEN',
-  ARGV[3],
-  '*',
   ARGV[4],
+  '*',
   ARGV[5],
   ARGV[6],
   ARGV[7],
   ARGV[8],
-  ARGV[9]
+  ARGV[9],
+  ARGV[10]
 )
 
-if ttl_seconds > 0 then
-  redis.call('EXPIRE', KEYS[1], ttl_seconds)
+if stream_ttl_seconds > 0 then
+  redis.call('EXPIRE', KEYS[1], stream_ttl_seconds)
 end
 
 if dedupe_enabled then
-  redis.call('SET', KEYS[2], event_id, 'EX', ttl_seconds)
+  redis.call('SET', KEYS[2], event_id, 'EX', dedupe_ttl_seconds)
 end
 
 return {event_id, '1'}
@@ -64,9 +65,11 @@ class UserEventsRepository:
         *,
         redis_provider: Callable[[], RedisClient],
         stream_maxlen: int,
+        stream_ttl_seconds: int,
     ) -> None:
         self._redis_provider = redis_provider
         self._stream_maxlen = stream_maxlen
+        self._stream_ttl_seconds = stream_ttl_seconds
 
     def require_redis_client(self) -> RedisClient:
         try:
@@ -92,7 +95,7 @@ class UserEventsRepository:
             )
 
         redis = self.require_redis_client()
-        ttl_seconds = dedupe_ttl_seconds or 0
+        dedupe_ttl = dedupe_ttl_seconds or 0
         keys = [build_user_events_stream_key(user_id)]
         if dedupe_key:
             keys.append(dedupe_key)
@@ -103,7 +106,8 @@ class UserEventsRepository:
                 len(keys),
                 *keys,
                 "1" if dedupe_key else "0",
-                str(ttl_seconds),
+                str(dedupe_ttl),
+                str(self._stream_ttl_seconds),
                 str(self._stream_maxlen),
                 STREAM_EVENT_FIELD,
                 event_name,
@@ -123,6 +127,16 @@ class UserEventsRepository:
         event_id = str(result[0])
         published = str(result[1]) == "1"
         return event_id, published
+
+    async def delete_user_stream(self, *, user_id: str) -> None:
+        redis = self.require_redis_client()
+
+        try:
+            await redis.delete(build_user_events_stream_key(user_id))
+        except RedisError as exc:
+            raise UserEventsUnavailableError(
+                "Redis is unavailable for user events."
+            ) from exc
 
     async def read_events(
         self,

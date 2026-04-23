@@ -1,5 +1,6 @@
 export const INSTAGRAM_USERNAME_PATTERN =
   /^(?!.*\.\.)(?!\.)(?!.*\.$)[a-z0-9._]{1,30}$/
+export const MAX_INSTAGRAM_USERNAMES = 50
 
 export const normalizeInstagramUsername = (value: string) =>
   value.trim().replace(/^@+/, "").toLowerCase()
@@ -17,3 +18,8 @@ export const isValidInstagramUsername = (value: string) =>
 export const areStringArraysEqual = (left: string[], right: string[]) =>
   left.length === right.length &&
   left.every((value, index) => value === right[index])
+
+export const parseInstagramUsernamesInput = (
+  input: string,
+  max = MAX_INSTAGRAM_USERNAMES,
+) => sanitizeInstagramUsernames(input.split(/[\s,]+/)).slice(0, max)

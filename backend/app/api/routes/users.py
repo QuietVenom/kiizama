@@ -11,15 +11,19 @@ from app.api.deps import (
     get_current_active_superuser,
 )
 from app.core.security import get_password_hash, verify_password
+from app.features.account_cleanup import (
+    cleanup_user_related_data_before_delete,
+    delete_user_event_stream_best_effort,
+)
 from app.features.billing import (
+    BillingAccessError,
     build_billing_summary,
-    delete_user_billing_data,
     publish_billing_event,
     queue_customer_email_sync_async,
     set_access_profile_async,
     sync_superuser_billing_access_async,
 )
-from app.features.billing.models import AccessProfileUpdate
+from app.features.billing.schemas import AccessProfileUpdate
 from app.features.rate_limit import POLICIES, rate_limit
 from app.models import (
     AdminUserCreate,
@@ -56,6 +60,29 @@ def _build_admin_user_public(*, session: SessionDep, user: User) -> AdminUserPub
         billing_eligible=summary.billing_eligible,
         plan_status=summary.plan_status,
     )
+
+
+def _build_admin_user_public_billing_fallback(*, user: User) -> AdminUserPublic:
+    return AdminUserPublic(
+        id=user.id,
+        email=user.email,
+        full_name=user.full_name,
+        is_active=user.is_active,
+        is_superuser=user.is_superuser,
+        access_profile="standard",
+        managed_access_source=None,
+        billing_eligible=False,
+        plan_status="none",
+    )
+
+
+def _build_admin_user_public_for_list(
+    *, session: SessionDep, user: User
+) -> AdminUserPublic:
+    try:
+        return _build_admin_user_public(session=session, user=user)
+    except BillingAccessError:
+        return _build_admin_user_public_billing_fallback(user=user)
 
 
 def _raise_superuser_ambassador_conflict() -> None:
@@ -97,7 +124,7 @@ def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
     statement = select(User).offset(skip).limit(limit)
     users = session.exec(statement).all()
     users_public = [
-        _build_admin_user_public(session=session, user=user) for user in users
+        _build_admin_user_public_for_list(session=session, user=user) for user in users
     ]
     return AdminUsersPublic(data=users_public, count=count)
 
@@ -228,9 +255,14 @@ async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
         raise HTTPException(
             status_code=403, detail="Super users are not allowed to delete themselves"
         )
-    await delete_user_billing_data(session=session, user_id=current_user.id)
+    user_id = current_user.id
+    await cleanup_user_related_data_before_delete(
+        session=session,
+        user_id=user_id,
+    )
     session.delete(current_user)
     session.commit()
+    await delete_user_event_stream_best_effort(user_id=user_id)
     return Message(message="User deleted successfully")
 
 
@@ -396,7 +428,12 @@ async def delete_user(
         raise HTTPException(
             status_code=403, detail="Super users are not allowed to delete themselves"
         )
-    await delete_user_billing_data(session=session, user_id=user.id)
+    deleted_user_id = user.id
+    await cleanup_user_related_data_before_delete(
+        session=session,
+        user_id=deleted_user_id,
+    )
     session.delete(user)
     session.commit()
+    await delete_user_event_stream_best_effort(user_id=deleted_user_id)
     return Message(message="User deleted successfully")

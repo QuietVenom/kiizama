@@ -26,6 +26,11 @@ from tests.utils.utils import get_superuser_token_headers
 
 assert_safe_test_database_url(str(settings.SQLALCHEMY_DATABASE_URI))
 
+pytest_plugins = (
+    "tests.fixtures.db",
+    "tests.fixtures.redis",
+)
+
 
 @pytest.fixture(scope="session", autouse=True)
 def db() -> Generator[Session, None, None]:
@@ -52,6 +57,11 @@ def db() -> Generator[Session, None, None]:
 def client() -> Generator[TestClient, None, None]:
     with TestClient(app) as c:
         yield c
+
+
+@pytest.fixture
+def anyio_backend() -> str:
+    return "asyncio"
 
 
 @pytest.fixture(scope="module")

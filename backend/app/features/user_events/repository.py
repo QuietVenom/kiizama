@@ -23,6 +23,7 @@ class UserEventsRepository(CoreUserEventsRepository):
         super().__init__(
             redis_provider=redis_provider,
             stream_maxlen=settings.USER_EVENTS_STREAM_MAXLEN,
+            stream_ttl_seconds=settings.USER_EVENTS_STREAM_TTL_SECONDS,
         )
 
 

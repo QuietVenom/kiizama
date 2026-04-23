@@ -13,8 +13,9 @@ RUN npm config set fetch-retries 5 \
 COPY ./ /app/
 
 ARG VITE_API_URL=${VITE_API_URL}
+ARG VITE_SITE_URL=${VITE_SITE_URL}
 
-# VITE_API_URL is a public build-time value, not a secret.
+# VITE_* values are public build-time values, not secrets.
 RUN npm run build
 
 

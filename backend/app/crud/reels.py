@@ -25,7 +25,7 @@ def _serialize_reel(record: IgReelsDocument) -> Document:
     }
 
 
-async def create_reel(collection: Any, reel: Reel) -> Document | None:
+def create_reel(collection: Any, reel: Reel) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     record = IgReelsDocument(
@@ -39,7 +39,7 @@ async def create_reel(collection: Any, reel: Reel) -> Document | None:
     return _serialize_reel(record)
 
 
-async def get_reel(collection: Any, reel_id: str) -> Document | None:
+def get_reel(collection: Any, reel_id: str) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     parsed_id = _parse_reel_id(reel_id)
@@ -49,9 +49,7 @@ async def get_reel(collection: Any, reel_id: str) -> Document | None:
     return _serialize_reel(record) if record else None
 
 
-async def list_reels(
-    collection: Any, skip: int = 0, limit: int = 100
-) -> list[Document]:
+def list_reels(collection: Any, skip: int = 0, limit: int = 100) -> list[Document]:
     session = collection
     assert isinstance(session, Session)
     updated_at = cast(Any, IgReelsDocument.updated_at)
@@ -61,9 +59,7 @@ async def list_reels(
     return [_serialize_reel(record) for record in session.exec(statement).all()]
 
 
-async def update_reel(
-    collection: Any, reel_id: str, patch: UpdateReel
-) -> Document | None:
+def update_reel(collection: Any, reel_id: str, patch: UpdateReel) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     parsed_id = _parse_reel_id(reel_id)
@@ -85,7 +81,7 @@ async def update_reel(
     return _serialize_reel(record)
 
 
-async def replace_reel(collection: Any, reel_id: str, reel: Reel) -> Document | None:
+def replace_reel(collection: Any, reel_id: str, reel: Reel) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     parsed_id = _parse_reel_id(reel_id)
@@ -105,7 +101,7 @@ async def replace_reel(collection: Any, reel_id: str, reel: Reel) -> Document | 
     return _serialize_reel(record)
 
 
-async def delete_reel(collection: Any, reel_id: str) -> Document | None:
+def delete_reel(collection: Any, reel_id: str) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     parsed_id = _parse_reel_id(reel_id)

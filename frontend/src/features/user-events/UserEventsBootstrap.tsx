@@ -25,6 +25,8 @@ export const UserEventsBootstrap = () => {
           event.name === "account.usage.updated" ||
           event.name === "account.subscription.updated"
         ) {
+          // Billing SSE is invalidation-only. The backend remains the source of
+          // truth, so UI state is refreshed via the canonical HTTP queries.
           void queryClient.invalidateQueries({
             queryKey: billingSummaryQueryKey,
           })

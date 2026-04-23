@@ -29,53 +29,49 @@ def _require_post(post_doc: Document | None) -> Post:
 
 
 @router.post("/", response_model=Post, status_code=status.HTTP_201_CREATED)
-async def create_ig_post(
-    post: Post, collection: Any = Depends(get_posts_collection)
-) -> Post:
-    created = await create_post(collection, post)
+def create_ig_post(post: Post, collection: Any = Depends(get_posts_collection)) -> Post:
+    created = create_post(collection, post)
     return _require_post(created)
 
 
 @router.get("/", response_model=PostCollection)
-async def read_ig_posts(
+def read_ig_posts(
     skip: int = 0,
     limit: int = 100,
     collection: Any = Depends(get_posts_collection),
 ) -> PostCollection:
-    posts = await list_posts(collection, skip=skip, limit=limit)
+    posts = list_posts(collection, skip=skip, limit=limit)
     return PostCollection(posts=[Post.model_validate(post) for post in posts])
 
 
 @router.get("/{post_id}", response_model=Post)
-async def read_ig_post(
-    post_id: str, collection: Any = Depends(get_posts_collection)
-) -> Post:
-    return _require_post(await get_post(collection, post_id))
+def read_ig_post(post_id: str, collection: Any = Depends(get_posts_collection)) -> Post:
+    return _require_post(get_post(collection, post_id))
 
 
 @router.patch("/{post_id}", response_model=Post)
-async def update_ig_post(
+def update_ig_post(
     post_id: str,
     patch: UpdatePost,
     collection: Any = Depends(get_posts_collection),
 ) -> Post:
-    return _require_post(await update_post(collection, post_id, patch))
+    return _require_post(update_post(collection, post_id, patch))
 
 
 @router.put("/{post_id}", response_model=Post)
-async def replace_ig_post(
+def replace_ig_post(
     post_id: str,
     post_in: Post,
     collection: Any = Depends(get_posts_collection),
 ) -> Post:
-    return _require_post(await replace_post(collection, post_id, post_in))
+    return _require_post(replace_post(collection, post_id, post_in))
 
 
 @router.delete("/{post_id}", response_model=Post)
-async def delete_ig_post(
+def delete_ig_post(
     post_id: str, collection: Any = Depends(get_posts_collection)
 ) -> Post:
-    return _require_post(await delete_post(collection, post_id))
+    return _require_post(delete_post(collection, post_id))
 
 
 __all__ = ["router"]

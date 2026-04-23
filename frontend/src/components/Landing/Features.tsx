@@ -62,7 +62,7 @@ const features: Feature[] = [
     icon: FiBarChart2,
     title: "Performance Reports",
     description:
-      "Generate downloadable HTML and PDF outputs from stored Instagram snapshots and historical metrics.",
+      "Generate downloadable PDF outputs from stored Instagram snapshots and historical metrics.",
     tone: "brand",
   },
   {

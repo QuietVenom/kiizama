@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Annotated, Any, Protocol
 
 from fastapi import Depends
@@ -117,7 +117,7 @@ class UserEventsPort(Protocol):
 
 
 def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def get_instagram_job_queue_spec() -> JobQueueSpec:
