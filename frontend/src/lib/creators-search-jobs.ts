@@ -1,3 +1,7 @@
+import type {
+  InstagramBatchScrapeSummaryResponse,
+  InstagramScrapeJobStatusResponse,
+} from "@/client"
 import type { IgScrapeTerminalEventPayload } from "@/features/user-events/types"
 
 export const CREATORS_SEARCH_JOBS_STORAGE_KEY = "kiizama-creators-search-jobs"
@@ -229,3 +233,122 @@ export const createBalancedUsernameBatches = (
 
   return batches
 }
+
+export const getReadyUsernamesFromSummary = (
+  summary?: InstagramBatchScrapeSummaryResponse | null,
+) =>
+  (summary?.usernames ?? [])
+    .filter((item) => item.status === "success" || item.status === "skipped")
+    .map((item) => item.username)
+
+export const buildTerminalPayloadFromJobStatus = (
+  response: InstagramScrapeJobStatusResponse,
+  fallbackRequestedUsernames: string[],
+): IgScrapeTerminalEventPayload | null => {
+  if (response.status !== "done" && response.status !== "failed") {
+    return null
+  }
+
+  const summaryUsernames = response.summary?.usernames ?? []
+  const requestedUsernames =
+    summaryUsernames.length > 0
+      ? summaryUsernames.map((item) => item.username)
+      : (response.references?.all_usernames ?? fallbackRequestedUsernames)
+  const successfulUsernames =
+    summaryUsernames.length > 0
+      ? summaryUsernames
+          .filter((item) => item.status === "success")
+          .map((item) => item.username)
+      : (response.references?.successful_usernames ?? [])
+  const skippedUsernames =
+    summaryUsernames.length > 0
+      ? summaryUsernames
+          .filter((item) => item.status === "skipped")
+          .map((item) => item.username)
+      : (response.references?.skipped_usernames ?? [])
+  const failedUsernames =
+    summaryUsernames.length > 0
+      ? summaryUsernames
+          .filter((item) => item.status === "failed")
+          .map((item) => item.username)
+      : (response.references?.failed_usernames ?? [])
+  const notFoundUsernames =
+    summaryUsernames.length > 0
+      ? summaryUsernames
+          .filter((item) => item.status === "not_found")
+          .map((item) => item.username)
+      : (response.references?.not_found_usernames ?? [])
+
+  return {
+    event_version: 1,
+    notification_id: `job:${response.job_id}:fallback`,
+    job_id: response.job_id,
+    status: response.status,
+    created_at: response.created_at,
+    completed_at: response.updated_at,
+    requested_usernames: requestedUsernames,
+    ready_usernames: [...successfulUsernames, ...skippedUsernames],
+    successful_usernames: successfulUsernames,
+    skipped_usernames: skippedUsernames,
+    failed_usernames: failedUsernames,
+    not_found_usernames: notFoundUsernames,
+    counters: {
+      requested:
+        response.summary?.counters?.requested ?? requestedUsernames.length,
+      successful:
+        response.summary?.counters?.successful ?? successfulUsernames.length,
+      failed: response.summary?.counters?.failed ?? failedUsernames.length,
+      not_found:
+        response.summary?.counters?.not_found ?? notFoundUsernames.length,
+    },
+    error: response.error ?? response.summary?.error ?? null,
+  }
+}
+
+export const syncLocalJobWithStatusResponse = (
+  job: CreatorsSearchLocalJob,
+  response: InstagramScrapeJobStatusResponse,
+): CreatorsSearchLocalJob => {
+  const terminalPayload = buildTerminalPayloadFromJobStatus(
+    response,
+    job.requestedUsernames,
+  )
+  const nextStatus: CreatorsSearchJobStatus =
+    response.status === "done" || response.status === "failed"
+      ? response.status
+      : "queued"
+
+  return {
+    ...job,
+    status: nextStatus,
+    updatedAt: response.updated_at,
+    readyUsernames:
+      terminalPayload?.ready_usernames ??
+      getReadyUsernamesFromSummary(response.summary),
+    error: response.error ?? response.summary?.error ?? null,
+    terminalPayload: terminalPayload ?? job.terminalPayload,
+  }
+}
+
+export const getCreatorsSearchJobStatusLabel = (
+  status: CreatorsSearchJobStatus,
+) => {
+  if (status === "done") {
+    return "Done"
+  }
+
+  if (status === "failed") {
+    return "Failed"
+  }
+
+  return "Queued"
+}
+
+export const getCreatorsSearchJobProgressText = ({
+  canOpenDetail,
+}: {
+  canOpenDetail: boolean
+}) =>
+  canOpenDetail
+    ? "Click to review the terminal result."
+    : "Waiting for completion."

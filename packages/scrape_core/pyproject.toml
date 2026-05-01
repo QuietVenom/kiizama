@@ -2,7 +2,7 @@
 name = "kiizama-scrape-core"
 version = "0.1.0"
 description = "Shared scrape core for Kiizama backend and worker runtimes."
-requires-python = ">=3.10,<4.0"
+requires-python = ">=3.12,<4.0"
 dependencies = [
     "apify-client>=2.5.0,<3.0.0",
     "cryptography>=46.0.4",

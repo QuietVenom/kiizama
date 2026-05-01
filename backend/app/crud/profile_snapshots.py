@@ -184,7 +184,7 @@ def _build_profile_snapshots_full_statement(
     )
 
 
-async def create_profile_snapshot(
+def create_profile_snapshot(
     collection: Any, snapshot: ProfileSnapshot
 ) -> Document | None:
     session = collection
@@ -206,7 +206,7 @@ async def create_profile_snapshot(
     return _serialize_snapshot(record)
 
 
-async def get_profile_snapshot(collection: Any, snapshot_id: str) -> Document | None:
+def get_profile_snapshot(collection: Any, snapshot_id: str) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     parsed_id = _parse_snapshot_id(snapshot_id)
@@ -216,7 +216,7 @@ async def get_profile_snapshot(collection: Any, snapshot_id: str) -> Document | 
     return _serialize_snapshot(record) if record else None
 
 
-async def get_profile_snapshot_by_profile_id(
+def get_profile_snapshot_by_profile_id(
     collection: Any, profile_id: str
 ) -> Document | None:
     session = collection
@@ -234,7 +234,7 @@ async def get_profile_snapshot_by_profile_id(
     return _serialize_snapshot(record) if record else None
 
 
-async def list_profile_snapshots(
+def list_profile_snapshots(
     collection: Any,
     skip: int = 0,
     limit: int = 100,
@@ -256,7 +256,7 @@ async def list_profile_snapshots(
     return [_serialize_snapshot(record) for record in session.exec(statement).all()]
 
 
-async def list_profile_snapshots_full(
+def list_profile_snapshots_full(
     collection: Any,
     skip: int = 0,
     limit: int = 100,
@@ -293,7 +293,7 @@ async def list_profile_snapshots_full(
     return full_snapshots
 
 
-async def update_profile_snapshot(
+def update_profile_snapshot(
     collection: Any, snapshot_id: str, patch: UpdateProfileSnapshot
 ) -> Document | None:
     session = collection
@@ -331,7 +331,7 @@ async def update_profile_snapshot(
     return _serialize_snapshot(record)
 
 
-async def replace_profile_snapshot(
+def replace_profile_snapshot(
     collection: Any, snapshot_id: str, snapshot: ProfileSnapshot
 ) -> Document | None:
     session = collection
@@ -359,7 +359,7 @@ async def replace_profile_snapshot(
     return _serialize_snapshot(record)
 
 
-async def delete_profile_snapshot(collection: Any, snapshot_id: str) -> Document | None:
+def delete_profile_snapshot(collection: Any, snapshot_id: str) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     parsed_id = _parse_snapshot_id(snapshot_id)

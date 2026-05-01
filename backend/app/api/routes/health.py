@@ -276,7 +276,7 @@ async def deep_health_check() -> dict[str, Any]:
     for task in done:
         service, result = task.result()
         checks[service] = result
-        if result["status"] == "ERROR":
+        if result["status"] != "OK":
             errors[service] = str(result.get("error") or result.get("detail"))
 
     for task in pending:

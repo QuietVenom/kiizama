@@ -1,48 +1,19 @@
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime, timezone
-from typing import Any, Literal, cast
+from datetime import UTC, datetime
+from typing import Any, cast
 
 from kiizama_scrape_core.ig_scraper.sqlmodels import PRIVATE_SCHEMA
-from pydantic import BaseModel
 from sqlalchemy import Column, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
 
 from app.core.ids import generate_uuid7
 
-AccessProfile = Literal["standard", "ambassador"]
-ManagedAccessSource = Literal["admin", "ambassador"]
-PlanStatus = Literal["trial", "base", "ambassador", "none"]
-BillingSubscriptionStatus = Literal[
-    "trialing",
-    "active",
-    "paused",
-    "canceled",
-    "incomplete",
-    "incomplete_expired",
-    "past_due",
-    "unpaid",
-]
-BillingEventProcessingStatus = Literal["pending", "processed", "ignored", "failed"]
-BillingCustomerSyncType = Literal["customer_email_update"]
-BillingCustomerSyncStatus = Literal["pending", "processing", "succeeded", "failed"]
-BillingNoticeType = Literal[
-    "invoice_upcoming",
-    "trial_will_end",
-    "subscription_paused",
-    "access_revoked",
-]
-BillingNoticeStatus = Literal["unread", "read", "dismissed"]
-UsageSourceType = Literal["subscription", "override", "managed"]
-UsageCycleStatus = Literal["open", "closed", "revoked"]
-UsageReservationStatus = Literal["reserved", "finalized", "released"]
-UsageResultStatus = Literal["success", "partial_success", "no_charge", "reversed"]
-
 
 def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class LuBillingFeature(SQLModel, table=True):
@@ -365,93 +336,18 @@ class BillingNotice(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=utcnow, nullable=False)
 
 
-class BillingFeatureUsagePublic(BaseModel):
-    code: str
-    name: str
-    limit: int | None
-    used: int
-    reserved: int
-    remaining: int | None
-    is_unlimited: bool = False
-
-
-class BillingNoticePublic(BaseModel):
-    id: uuid.UUID
-    notice_type: BillingNoticeType
-    status: BillingNoticeStatus
-    title: str
-    message: str
-    effective_at: datetime | None = None
-    expires_at: datetime | None = None
-    created_at: datetime
-
-
-class BillingSummaryPublic(BaseModel):
-    access_profile: AccessProfile
-    managed_access_source: ManagedAccessSource | None = None
-    billing_eligible: bool
-    trial_eligible: bool
-    plan_status: PlanStatus
-    subscription_status: str | None = None
-    latest_invoice_status: str | None = None
-    access_revoked_reason: str | None = None
-    pending_ambassador_activation: bool = False
-    cancel_at: datetime | None = None
-    current_period_start: datetime | None = None
-    current_period_end: datetime | None = None
-    renewal_day: date | None = None
-    features: list[BillingFeatureUsagePublic]
-    notices: list[BillingNoticePublic] = []
-
-
-class BillingSessionPublic(BaseModel):
-    url: str
-
-
-class BillingWebhookReceipt(BaseModel):
-    received: bool = True
-
-
-class BillingNoticeCollectionPublic(BaseModel):
-    data: list[BillingNoticePublic]
-
-
-class AccessProfileUpdate(BaseModel):
-    access_profile: AccessProfile
-
-
 __all__ = [
-    "AccessProfile",
-    "AccessProfileUpdate",
-    "BillingCustomerSyncStatus",
     "BillingCustomerSyncTask",
-    "BillingCustomerSyncType",
-    "BillingEventProcessingStatus",
     "BillingNotice",
-    "BillingNoticeCollectionPublic",
-    "BillingNoticePublic",
-    "BillingNoticeStatus",
-    "BillingNoticeType",
-    "BillingSessionPublic",
     "BillingSubscription",
-    "BillingSubscriptionStatus",
-    "BillingSummaryPublic",
     "BillingWebhookEvent",
-    "BillingWebhookReceipt",
-    "BillingFeatureUsagePublic",
     "LuBillingFeature",
-    "ManagedAccessSource",
-    "PlanStatus",
     "SubscriptionPlan",
     "SubscriptionPlanFeatureLimit",
     "UsageCycle",
     "UsageCycleFeature",
-    "UsageCycleStatus",
     "UsageEvent",
     "UsageReservation",
-    "UsageReservationStatus",
-    "UsageResultStatus",
-    "UsageSourceType",
     "UserAccessOverride",
     "UserBillingAccount",
     "utcnow",

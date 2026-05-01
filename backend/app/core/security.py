@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import jwt
@@ -18,7 +18,7 @@ def create_access_token(
     expires_delta: timedelta,
     additional_claims: dict[str, Any] | None = None,
 ) -> str:
-    expire = datetime.now(timezone.utc) + expires_delta
+    expire = datetime.now(UTC) + expires_delta
     to_encode = {"exp": expire, "sub": str(subject)}
     if additional_claims:
         to_encode.update(additional_claims)

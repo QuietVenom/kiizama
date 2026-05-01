@@ -52,7 +52,7 @@ const pulse = keyframes`
 const trustSignals = [
   "Profile snapshots and engagement metrics",
   "AI-powered classification workflows",
-  "Strategic HTML and PDF reports",
+  "Strategic PDF reports",
   "Durable storage and async pipelines",
 ]
 

@@ -2,9 +2,14 @@ import asyncio
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 from typing import Any, cast
 
+from anyio import to_thread
+from sqlmodel import Session
+
+from app.core.db import engine
 from app.crud.profile_snapshots import list_profile_snapshots_full
 
 from .schemas import InstagramReportRequest
@@ -22,22 +27,30 @@ class ReportFile:
     content: bytes
 
 
+def _list_report_snapshots(usernames: list[str]) -> list[dict[str, Any]]:
+    with Session(engine) as session:
+        return list_profile_snapshots_full(
+            session,
+            skip=0,
+            limit=max(len(usernames), 1),
+            usernames=usernames,
+        )
+
+
 async def generate_instagram_report(
     collection: Any,
     payload: InstagramReportRequest | dict[str, Any],
 ) -> list[ReportFile]:
     """Genera reportes de Instagram (HTML/PDF) desde snapshots persistidos."""
+    del collection
 
     if isinstance(payload, dict):
         request = InstagramReportRequest(**payload)
     else:
         request = payload
 
-    snapshots = await list_profile_snapshots_full(
-        collection,
-        skip=0,
-        limit=max(len(request.usernames), 1),
-        usernames=request.usernames,
+    snapshots = await to_thread.run_sync(
+        partial(_list_report_snapshots, request.usernames)
     )
 
     if not snapshots:

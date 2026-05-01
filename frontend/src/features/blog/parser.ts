@@ -1,59 +1,21 @@
 import type { TokensList } from "marked"
 import { marked } from "marked"
-
-export type BlogPostFrontmatter = {
-  title: string
-  slug: string
-  excerpt: string
-  publishedAt: string
-  author?: string
-  coverImage?: string
-  tags?: string[]
-  draft?: boolean
-  seoTitle?: string
-  metaDescription?: string
-  canonicalUrl?: string
-  ogTitle?: string
-  ogDescription?: string
-  ogImage?: string
-  robots?: string
-}
-
-export type BlogPost = Omit<
-  BlogPostFrontmatter,
-  | "seoTitle"
-  | "metaDescription"
-  | "canonicalUrl"
-  | "ogTitle"
-  | "ogDescription"
-  | "ogImage"
-  | "robots"
-> & {
-  html: string
-  readingTime: number
-  seoTitle: string
-  metaDescription: string
-  canonicalUrl: string
-  ogTitle: string
-  ogDescription: string
-  ogImage?: string
-  robots: string
-}
+import {
+  type BlogPost,
+  type BlogPostFrontmatter,
+  DEFAULT_SITE_URL,
+  normalizeSiteUrl,
+  type ParseBlogPostOptions,
+} from "./types"
 
 type ParsedBlogPostFile = BlogPost & {
   sourcePath: string
-}
-
-type ParseBlogPostOptions = {
-  siteUrl?: string
 }
 
 type ParsedFrontmatterModule = {
   content: string
   data: Record<string, unknown>
 }
-
-export const DEFAULT_SITE_URL = "https://kiizama.com"
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const ISO_DATETIME_PATTERN =
@@ -139,8 +101,6 @@ renderer.image = ({ href, title, text }) => {
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value)
-
-export const normalizeSiteUrl = (siteUrl: string) => siteUrl.replace(/\/+$/, "")
 
 const isValidIsoDate = (value: string) => {
   if (!ISO_DATE_PATTERN.test(value) && !ISO_DATETIME_PATTERN.test(value)) {

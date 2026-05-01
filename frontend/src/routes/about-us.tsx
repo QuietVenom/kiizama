@@ -4,17 +4,11 @@ import InfoPageShell from "@/components/Common/InfoPageShell"
 
 const ABOUT_US_TEMPLATE = `SOBRE KIIZAMA
 
-Kiizama nace en un contexto muy concreto: creators, marcas, agencias y equipos de comunicación trabajan todos los días con mucha información dispersa, poco contexto accionable y herramientas que no siempre ayudan a decidir mejor.
+Kiizama nace de una realidad bastante común: demasiada información, poco contexto y herramientas que no siempre ayudan a tomar mejores decisiones.
 
-Frente a ese problema, Kiizama se construye como una plataforma de inteligencia que transforma datos de redes sociales en análisis, reportes y estrategias útiles para tomar decisiones con más criterio.
+En medio de todo ese ruido, Kiizama llega para hacer algo más simple (y mucho más útil): transformar datos de redes sociales en análisis, reportes y estrategias que realmente ayudan a decidir mejor y con más criterio.
 
-¿Qué es Kiizama?
-
-Kiizama es una plataforma de inteligencia para creators, marcas, agencias y equipos de comunicación. Combina datos de redes sociales, análisis asistido por IA y reportes descargables para facilitar decisiones mejor informadas.
-
-La propuesta no es quedarse en la superficie ni limitarse a mostrar métricas. Kiizama busca ayudar a entender mejor a los creators, organizar información útil, detectar oportunidades y convertir información operativa en dirección estratégica.
-
-En otras palabras: Kiizama convierte datos en criterio.`
+¿Qué es Kiizama? Kiizama es una plataforma de inteligencia para creators, marcas, agencias y equipos de comunicación. Combina datos de redes sociales, análisis asistido por IA y reportes descargables para facilitar decisiones mejor informadas. La propuesta no es quedarse en la superficie ni limitarse a mostrar métricas. Kiizama busca ayudar a entender mejor a los creators, organizar información útil, detectar oportunidades y convertir información operativa en dirección estratégica. En otras palabras: Kiizama convierte datos en criterio.`
 
 export const Route = createFileRoute("/about-us")({
   component: AboutUsPage,

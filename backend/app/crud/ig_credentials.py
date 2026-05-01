@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, cast
 
 from fastapi import HTTPException
@@ -18,7 +18,7 @@ Document = dict[str, Any]
 
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _parse_credential_id(credential_id: str) -> uuid.UUID | None:

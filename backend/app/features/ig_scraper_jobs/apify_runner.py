@@ -5,7 +5,7 @@ import logging
 import os
 import socket
 from contextlib import suppress
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Literal
 
 from kiizama_scrape_core.ig_scraper.persistence import SqlInstagramScrapePersistence
@@ -370,7 +370,7 @@ class ApifyInstagramJobRunner:
                     status=status,
                     attempt=attempt,
                     worker_id=self._worker_id,
-                    completed_at=datetime.now(timezone.utc),
+                    completed_at=datetime.now(UTC),
                     summary=summary,
                     error=error,
                 ),

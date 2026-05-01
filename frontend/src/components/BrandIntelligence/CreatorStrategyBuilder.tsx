@@ -41,6 +41,7 @@ import type {
   CreatorFormValues,
   CreatorTextInputValues,
 } from "@/features/brand-intelligence/form-values"
+import { buildCreatorStrategyPayload } from "@/features/brand-intelligence/form-values"
 import type { useProfileExistenceValidation } from "@/features/brand-intelligence/use-profile-existence-validation"
 import {
   isValidHttpUrl,
@@ -461,48 +462,10 @@ const CreatorStrategyBuilder = ({
         throw new Error("consulte los perfiles validados y vuelva a intentar")
       }
 
-      const cleanedSignals = {
-        concerns: normalizeListValues(
-          values.reputation_signals?.concerns ?? [],
-        ),
-        incidents: normalizeListValues(
-          values.reputation_signals?.incidents ?? [],
-        ),
-        strengths: normalizeListValues(
-          values.reputation_signals?.strengths ?? [],
-        ),
-        weaknesses: normalizeListValues(
-          values.reputation_signals?.weaknesses ?? [],
-        ),
-      }
-
-      const hasSignals = Object.values(cleanedSignals).some(
-        (entries) => entries.length > 0,
-      )
-
       return generateBrandIntelligenceReport({
         endpointPath: BRAND_INTELLIGENCE_CREATOR_ENDPOINT,
         fallbackFilename: "reputation_creator_strategy.pdf",
-        payload: {
-          ...values,
-          audience: values.audience,
-          collaborators_list:
-            normalizeListValues(values.collaborators_list ?? []).length > 0
-              ? normalizeListValues(values.collaborators_list ?? [])
-              : undefined,
-          creator_context: values.creator_context.trim(),
-          creator_urls: normalizeListValues(values.creator_urls ?? []),
-          creator_username: normalizedUsername,
-          generate_html: false,
-          generate_pdf: true,
-          goal_context: values.goal_context.trim(),
-          goal_type: values.goal_type,
-          primary_platforms: normalizeListValues(
-            values.primary_platforms ?? [],
-          ),
-          reputation_signals: hasSignals ? cleanedSignals : undefined,
-          timeframe: values.timeframe,
-        },
+        payload: buildCreatorStrategyPayload(values),
       })
     },
     onMutate: () => {

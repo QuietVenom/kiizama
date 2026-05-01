@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 from collections.abc import Callable, Mapping
-from typing import Any, Literal, Protocol, TypeAlias, overload
+from typing import Any, Literal, Protocol, overload
 
 from app.core.resilience import (
     UpstreamBadResponseError,
@@ -30,14 +30,14 @@ class SupportsModelDump(Protocol):
     ) -> Mapping[str, Any]: ...
 
 
-StrategyTemplateName: TypeAlias = Literal[
+type StrategyTemplateName = Literal[
     "reputation_campaign_strategy",
     "reputation_creator_strategy",
 ]
 
-StrategyOutput: TypeAlias = ReputationStrategyOutput | ReputationCreatorStrategyOutput
-CampaignStrategyTemplateName: TypeAlias = Literal["reputation_campaign_strategy"]
-CreatorStrategyTemplateName: TypeAlias = Literal["reputation_creator_strategy"]
+type StrategyOutput = ReputationStrategyOutput | ReputationCreatorStrategyOutput
+type CampaignStrategyTemplateName = Literal["reputation_campaign_strategy"]
+type CreatorStrategyTemplateName = Literal["reputation_creator_strategy"]
 
 _StrategySerializer = Callable[
     [Mapping[str, Any] | SupportsModelDump | Any],

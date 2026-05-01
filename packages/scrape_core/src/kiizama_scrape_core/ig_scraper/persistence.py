@@ -29,6 +29,8 @@ from .sqlmodels import (
 )
 
 _URL_ADAPTER = TypeAdapter(AnyUrl)
+_IG_PROFILE_USERNAME_MAX_LENGTH = 255
+_STALE_USERNAME_PROFILE_ID_SUFFIX_LENGTH = 12
 
 
 def _utcnow() -> datetime:
@@ -80,6 +82,36 @@ def _sanitize_bio_links(value: Any) -> list[dict[str, Any]]:
         title = title_raw.strip() if isinstance(title_raw, str) else ""
         sanitized.append({"title": title, "url": url})
     return sanitized
+
+
+def _truncate_stale_username(
+    *,
+    prefix: str,
+    claimed_username: str,
+    suffix: str = "",
+) -> str:
+    remaining_length = _IG_PROFILE_USERNAME_MAX_LENGTH - len(prefix) - len(suffix)
+    return f"{prefix}{claimed_username[: max(remaining_length, 0)]}{suffix}"
+
+
+def _build_stale_username(
+    *,
+    displaced_profile: IgProfile,
+    claimed_username: str,
+    include_profile_id_suffix: bool = False,
+) -> str:
+    prefix = f"__stale__{displaced_profile.ig_id}__"
+    suffix = ""
+    if include_profile_id_suffix:
+        profile_id_suffix = str(displaced_profile.id).replace("-", "")[
+            :_STALE_USERNAME_PROFILE_ID_SUFFIX_LENGTH
+        ]
+        suffix = f"__{profile_id_suffix}"
+    return _truncate_stale_username(
+        prefix=prefix,
+        claimed_username=claimed_username,
+        suffix=suffix,
+    )
 
 
 def _parse_uuid(raw_value: str) -> uuid.UUID:
@@ -346,6 +378,48 @@ class SqlInstagramScrapePersistence(InstagramScrapePersistence):
             select(IgProfile).where(IgProfile.ig_id == ig_id)
         ).first()
 
+    def _build_available_stale_username(
+        self,
+        *,
+        displaced_profile: IgProfile,
+        claimed_username: str,
+    ) -> str:
+        stale_username = _build_stale_username(
+            displaced_profile=displaced_profile,
+            claimed_username=claimed_username,
+        )
+        stale_username_owner = self._get_profile_by_username(stale_username)
+        if (
+            stale_username_owner is None
+            or stale_username_owner.id == displaced_profile.id
+        ):
+            return stale_username
+
+        return _build_stale_username(
+            displaced_profile=displaced_profile,
+            claimed_username=claimed_username,
+            include_profile_id_suffix=True,
+        )
+
+    def _claim_username_for_profile(
+        self,
+        *,
+        profile_record: IgProfile,
+        username: str,
+        now: datetime,
+    ) -> None:
+        username_owner = self._get_profile_by_username(username)
+        if username_owner is not None and username_owner.id != profile_record.id:
+            username_owner.username = self._build_available_stale_username(
+                displaced_profile=username_owner,
+                claimed_username=username,
+            )
+            username_owner.updated_at = now
+            self._session.add(username_owner)
+            self._session.flush()
+
+        profile_record.username = username
+
     def _get_latest_snapshot(self, profile_id: uuid.UUID) -> IgProfileSnapshot | None:
         scraped_at = cast(Any, IgProfileSnapshot.scraped_at)
         return self._session.exec(
@@ -370,9 +444,10 @@ class SqlInstagramScrapePersistence(InstagramScrapePersistence):
 
                 try:
                     user = profile_result.user
-                    ig_id = _get_field_value(user, "id")
-                    if not ig_id:
+                    raw_ig_id = _get_field_value(user, "id")
+                    if not raw_ig_id:
                         raise ValueError("Missing ig_id")
+                    ig_id = str(raw_ig_id)
 
                     profile_pic_url = _get_field_value(user, "profile_pic_url")
                     if not profile_pic_url:
@@ -386,16 +461,18 @@ class SqlInstagramScrapePersistence(InstagramScrapePersistence):
                         _get_field_value(user, "bio_links", []) or []
                     )
 
-                    profile_record = self._get_profile_by_username(username_value)
-                    if profile_record is None:
-                        profile_record = self._get_profile_by_ig_id(ig_id)
-
+                    profile_record = self._get_profile_by_ig_id(ig_id)
                     if profile_record is None:
                         profile_record = IgProfile(
                             ig_id=ig_id,
                             username=username_value,
                             created_at=now,
                         )
+                    self._claim_username_for_profile(
+                        profile_record=profile_record,
+                        username=username_value,
+                        now=now,
+                    )
 
                     profile_record.full_name = _get_field_value(user, "full_name") or ""
                     profile_record.biography = _get_field_value(user, "biography") or ""

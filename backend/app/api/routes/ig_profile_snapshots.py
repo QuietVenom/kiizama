@@ -1,16 +1,20 @@
 import asyncio
 import logging
 from collections.abc import Awaitable
+from functools import partial
 from typing import Annotated, Any
 
+from anyio import to_thread
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from kiizama_scrape_core.ig_scraper.utils import should_refresh_profile
+from sqlmodel import Session
 
 from app.api.deps import (
     get_current_active_superuser,
     get_current_user,
     get_profile_snapshots_collection,
 )
+from app.core.db import engine
 from app.crud.profile_snapshots import (
     create_profile_snapshot,
     delete_profile_snapshot,
@@ -130,17 +134,32 @@ async def _enrich_snapshot_profile_picture_sources(snapshots: list[Document]) ->
             profile["profile_pic_src"] = resolved_source
 
 
+def _list_profile_snapshots_full_in_new_session(
+    *,
+    skip: int,
+    limit: int,
+    usernames: list[str] | None,
+) -> list[Document]:
+    with Session(engine) as session:
+        return list_profile_snapshots_full(
+            session,
+            skip=skip,
+            limit=limit,
+            usernames=usernames,
+        )
+
+
 @router.post(
     "/",
     response_model=ProfileSnapshot,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(get_current_active_superuser)],
 )
-async def create_ig_profile_snapshot(
+def create_ig_profile_snapshot(
     snapshot: ProfileSnapshot,
     collection: Any = Depends(get_profile_snapshots_collection),
 ) -> ProfileSnapshot:
-    created = await create_profile_snapshot(collection, snapshot)
+    created = create_profile_snapshot(collection, snapshot)
     return _require_snapshot(created)
 
 
@@ -149,13 +168,13 @@ async def create_ig_profile_snapshot(
     response_model=ProfileSnapshotCollection,
     dependencies=[Depends(get_current_active_superuser)],
 )
-async def read_ig_profile_snapshots(
+def read_ig_profile_snapshots(
     skip: int = 0,
     limit: int = 100,
     snapshot_ids: list[str] | None = Query(default=None),
     collection: Any = Depends(get_profile_snapshots_collection),
 ) -> ProfileSnapshotCollection:
-    snapshots = await list_profile_snapshots(
+    snapshots = list_profile_snapshots(
         collection,
         skip=skip,
         limit=limit,
@@ -178,13 +197,14 @@ async def read_ig_profile_snapshots_advanced(
     skip: int = 0,
     limit: int = 100,
     usernames: Annotated[list[str] | None, Query(max_length=50)] = None,
-    collection: Any = Depends(get_profile_snapshots_collection),
 ) -> ProfileSnapshotExpandedCollection:
-    snapshots = await list_profile_snapshots_full(
-        collection,
-        skip=skip,
-        limit=limit,
-        usernames=usernames,
+    snapshots = await to_thread.run_sync(
+        partial(
+            _list_profile_snapshots_full_in_new_session,
+            skip=skip,
+            limit=limit,
+            usernames=usernames,
+        )
     )
     await _enrich_snapshot_profile_picture_sources(snapshots)
     return ProfileSnapshotExpandedCollection(
@@ -201,10 +221,10 @@ async def read_ig_profile_snapshots_advanced(
     response_model=ProfileSnapshot,
     dependencies=[Depends(get_current_active_superuser)],
 )
-async def read_ig_profile_snapshot(
+def read_ig_profile_snapshot(
     snapshot_id: str, collection: Any = Depends(get_profile_snapshots_collection)
 ) -> ProfileSnapshot:
-    return _require_snapshot(await get_profile_snapshot(collection, snapshot_id))
+    return _require_snapshot(get_profile_snapshot(collection, snapshot_id))
 
 
 @router.patch(
@@ -212,14 +232,12 @@ async def read_ig_profile_snapshot(
     response_model=ProfileSnapshot,
     dependencies=[Depends(get_current_active_superuser)],
 )
-async def update_ig_profile_snapshot(
+def update_ig_profile_snapshot(
     snapshot_id: str,
     patch: UpdateProfileSnapshot,
     collection: Any = Depends(get_profile_snapshots_collection),
 ) -> ProfileSnapshot:
-    return _require_snapshot(
-        await update_profile_snapshot(collection, snapshot_id, patch)
-    )
+    return _require_snapshot(update_profile_snapshot(collection, snapshot_id, patch))
 
 
 @router.put(
@@ -227,13 +245,13 @@ async def update_ig_profile_snapshot(
     response_model=ProfileSnapshot,
     dependencies=[Depends(get_current_active_superuser)],
 )
-async def replace_ig_profile_snapshot(
+def replace_ig_profile_snapshot(
     snapshot_id: str,
     snapshot_in: ProfileSnapshot,
     collection: Any = Depends(get_profile_snapshots_collection),
 ) -> ProfileSnapshot:
     return _require_snapshot(
-        await replace_profile_snapshot(collection, snapshot_id, snapshot_in)
+        replace_profile_snapshot(collection, snapshot_id, snapshot_in)
     )
 
 
@@ -242,10 +260,10 @@ async def replace_ig_profile_snapshot(
     response_model=ProfileSnapshot,
     dependencies=[Depends(get_current_active_superuser)],
 )
-async def delete_ig_profile_snapshot(
+def delete_ig_profile_snapshot(
     snapshot_id: str, collection: Any = Depends(get_profile_snapshots_collection)
 ) -> ProfileSnapshot:
-    return _require_snapshot(await delete_profile_snapshot(collection, snapshot_id))
+    return _require_snapshot(delete_profile_snapshot(collection, snapshot_id))
 
 
 __all__ = ["router"]

@@ -59,7 +59,7 @@ def _apply_metrics_payload(record: IgMetrics, metrics: Metrics) -> None:
     record.reel_engagement_rate_on_plays = metrics.reel_engagement_rate_on_plays
 
 
-async def create_metrics(collection: Any, metrics: Metrics) -> Document | None:
+def create_metrics(collection: Any, metrics: Metrics) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     record = IgMetrics()
@@ -70,7 +70,7 @@ async def create_metrics(collection: Any, metrics: Metrics) -> Document | None:
     return _serialize_metrics(record)
 
 
-async def get_metrics(collection: Any, metrics_id: str) -> Document | None:
+def get_metrics(collection: Any, metrics_id: str) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     parsed_id = _parse_metrics_id(metrics_id)
@@ -80,9 +80,7 @@ async def get_metrics(collection: Any, metrics_id: str) -> Document | None:
     return _serialize_metrics(record) if record else None
 
 
-async def list_metrics(
-    collection: Any, skip: int = 0, limit: int = 100
-) -> list[Document]:
+def list_metrics(collection: Any, skip: int = 0, limit: int = 100) -> list[Document]:
     session = collection
     assert isinstance(session, Session)
     updated_at = cast(Any, IgMetrics.updated_at)
@@ -90,7 +88,7 @@ async def list_metrics(
     return [_serialize_metrics(record) for record in session.exec(statement).all()]
 
 
-async def update_metrics(
+def update_metrics(
     collection: Any, metrics_id: str, patch: UpdateMetrics
 ) -> Document | None:
     session = collection
@@ -131,7 +129,7 @@ async def update_metrics(
     return _serialize_metrics(record)
 
 
-async def replace_metrics(
+def replace_metrics(
     collection: Any, metrics_id: str, metrics: Metrics
 ) -> Document | None:
     session = collection
@@ -150,7 +148,7 @@ async def replace_metrics(
     return _serialize_metrics(record)
 
 
-async def delete_metrics(collection: Any, metrics_id: str) -> Document | None:
+def delete_metrics(collection: Any, metrics_id: str) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     parsed_id = _parse_metrics_id(metrics_id)

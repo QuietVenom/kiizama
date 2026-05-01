@@ -1,21 +1,20 @@
-import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises"
+import { mkdir, readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 import dotenv from "dotenv"
-import {
-  type BlogPost,
-  DEFAULT_SITE_URL,
-  normalizeSiteUrl,
-  parseBlogPostModules,
-} from "../src/features/blog/parser.ts"
+import { getAllBlogPosts } from "../src/features/blog/content.ts"
 import {
   buildBlogIndexSeo,
   buildBlogPostSeo,
 } from "../src/features/blog/seo.ts"
+import type { BlogPost } from "../src/features/blog/types.ts"
+import {
+  DEFAULT_SITE_URL,
+  normalizeSiteUrl,
+} from "../src/features/blog/types.ts"
 
 const projectRoot = path.resolve(import.meta.dirname, "..")
 const repoRoot = path.resolve(projectRoot, "..")
 const distDir = path.join(projectRoot, "dist")
-const contentDir = path.join(projectRoot, "content", "blog")
 
 dotenv.config({ path: path.join(repoRoot, ".env") })
 
@@ -106,27 +105,6 @@ const renderBlogPostRoot = (post: BlogPost) => {
     </main>`
 }
 
-const loadBlogModules = async () => {
-  const entries = await readdir(contentDir)
-  const modules: Record<string, string> = {}
-
-  for (const entry of entries) {
-    if (!entry.endsWith(".md")) {
-      continue
-    }
-
-    const filePath = path.join(contentDir, entry)
-    const fileStats = await stat(filePath)
-    if (!fileStats.isFile()) {
-      continue
-    }
-
-    modules[filePath] = await readFile(filePath, "utf8")
-  }
-
-  return modules
-}
-
 const buildSitemap = (posts: BlogPost[]) => {
   const urls = [
     `${siteUrl}/`,
@@ -166,11 +144,8 @@ const writePrerenderedPage = async (
 }
 
 const main = async () => {
-  const [baseHtml, modules] = await Promise.all([
-    readFile(path.join(distDir, "index.html"), "utf8"),
-    loadBlogModules(),
-  ])
-  const posts = parseBlogPostModules(modules, { siteUrl })
+  const baseHtml = await readFile(path.join(distDir, "index.html"), "utf8")
+  const posts = getAllBlogPosts()
   const blogIndexSeo = buildBlogIndexSeo(posts, siteUrl)
 
   await writeFile(path.join(distDir, "robots.txt"), buildRobots(), "utf8")

@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class RateLimitAlgorithm(str, Enum):
+class RateLimitAlgorithm(StrEnum):
     TOKEN_BUCKET = "token_bucket"
     SLIDING_WINDOW = "sliding_window"
 
 
-class RateLimitSubjectKind(str, Enum):
+class RateLimitSubjectKind(StrEnum):
     IP = "ip"
     USER_ID = "user_id"
     EMAIL = "email"

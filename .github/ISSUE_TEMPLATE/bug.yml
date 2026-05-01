@@ -37,7 +37,7 @@ body:
     attributes:
       label: Environment
       description: Include OS, browser/version, Python/Node versions, and deployment target if relevant.
-      placeholder: macOS 14, Python 3.10, Node 20, Chrome 123, Fly.io
+      placeholder: macOS 14, Python 3.12, Node 20, Chrome 123, Fly.io
     validations:
       required: true
   - type: textarea

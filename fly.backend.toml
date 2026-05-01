@@ -5,18 +5,25 @@ primary_region = "dfw"
 # packages/ and backend/... paths with the root directory as build context:
 # fly deploy . --config fly.backend.toml
 #
-# Required Fly secrets for this app include:
-# SECRET DATABASE_URL
-# SECRET SECRET_KEY
-# SECRET SECRET_KEY_IG_CREDENTIALS
-# SECRET FIRST_SUPERUSER_PASSWORD
-# SECRET OPENAI_API_KEY
-# SECRET STRIPE_SECRET_KEY
-# SECRET STRIPE_WEBHOOK_SECRET
-# SECRET STRIPE_BASE_PRICE_ID
-# SECRET APIFY_API_TOKEN
-# SECRET RESEND_API_KEY
-# SECRET FLY_REDIS_URL
+# Required Fly secrets/private deploy config for this app include:
+# #secret DATABASE_URL or DATABASE_URL_PRODUCTION_INTERNAL
+# #secret SECRET_KEY
+# #secret SECRET_KEY_IG_CREDENTIALS
+# #secret FIRST_SUPERUSER
+# #secret FIRST_SUPERUSER_PASSWORD
+# #secret SYSTEM_ADMIN_EMAIL
+# #secret SYSTEM_ADMIN_PASSWORD
+# #secret SENTRY_DSN
+# #secret OPENAI_API_KEY
+# #secret STRIPE_BASE_PRICE_ID
+# #secret STRIPE_SECRET_KEY
+# #secret STRIPE_WEBHOOK_SECRET
+# #secret APIFY_API_TOKEN
+# #secret RESEND_API_KEY
+# #secret FLY_REDIS_URL
+#
+# STRIPE_BASE_PRICE_ID is not security-sensitive, but configure it through
+# Fly secrets if you prefer not to commit the live Stripe price ID into git.
 
 [build]
   dockerfile = "backend/Dockerfile"
@@ -40,12 +47,14 @@ primary_region = "dfw"
   IG_SCRAPER_APIFY_MAX_CONCURRENT_JOBS = "4"
   JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS = "86400"
   JOB_CONTROL_QUEUE_MAXLEN = "10000"
-  USER_EVENTS_STREAM_MAXLEN = "100"
+  USER_EVENTS_STREAM_MAXLEN = "25"
+  USER_EVENTS_STREAM_TTL_SECONDS = "604800"
   USER_EVENTS_SSE_READ_BLOCK_MS = "10000"
   EMAILS_FROM_EMAIL = "noreply@mail.kiizama.com"
   EMAILS_FROM_NAME = "Kiizama"
   BILLING_TRIAL_DAYS = "7"
   STRIPE_CUSTOMER_SYNC_POLL_SECONDS = "60"
+  STRIPE_CUSTOMER_SYNC_STALE_PROCESSING_SECONDS = "300"
 
 [processes]
   app = "fastapi run --host 0.0.0.0 --port 8000 --workers 2 app/main.py"

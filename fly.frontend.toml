@@ -5,12 +5,17 @@ primary_region = "dfw"
 # frontend/ as the Docker build context:
 # fly deploy ./frontend --config ../fly.frontend.toml
 #
-# This app only needs the public backend origin at build time.
+# This app only needs public build-time values.
 # Stripe billing secrets stay in the backend app. The frontend only calls
 # backend billing endpoints and never uses Stripe secret/webhook config.
+# Required public build args:
+# VITE_API_URL
+# VITE_SITE_URL
+# Required Fly secrets: none.
 
 [build.args]
   VITE_API_URL = "https://api.kiizama.com"
+  VITE_SITE_URL = "https://kiizama.com"
 
 [http_service]
   internal_port = 80

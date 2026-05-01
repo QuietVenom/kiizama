@@ -16,7 +16,7 @@ from app.features.billing import (
     publish_billing_event,
     verify_stripe_signature,
 )
-from app.features.billing.models import (
+from app.features.billing.schemas import (
     BillingNoticeCollectionPublic,
     BillingNoticePublic,
     BillingSessionPublic,

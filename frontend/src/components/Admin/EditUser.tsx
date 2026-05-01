@@ -106,7 +106,11 @@ const EditUser = ({ user }: EditUserProps) => {
       ...rest,
       password: rest.password || undefined,
     }
-    await mutation.mutateAsync(payload)
+    try {
+      await mutation.mutateAsync(payload)
+    } catch {
+      // onError owns user-facing error handling; avoid leaking rejected submits.
+    }
   }
 
   return (

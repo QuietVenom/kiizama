@@ -9,11 +9,11 @@ const USER_EVENTS_STREAM_PATH = "/api/v1/events/stream"
 const BASE_RECONNECT_DELAY_MS = 1000
 const MAX_RECONNECT_DELAY_MS = 30000
 
-type UserEventsConnectionSession = {
+export type UserEventsConnectionSession = {
   userId: string
 }
 
-type ParsedSseEvent = {
+export type ParsedSseEvent = {
   data: string | null
   event: string | null
   id: string | null
@@ -54,36 +54,78 @@ const splitLine = (line: string) => {
   }
 }
 
+const createEmptyParsedSseEvent = (): ParsedSseEvent => ({
+  data: null,
+  event: null,
+  id: null,
+  retry: null,
+})
+
+const appendSseField = (event: ParsedSseEvent, line: string) => {
+  if (line === "" || line.startsWith(":")) {
+    return
+  }
+
+  const { field, value } = splitLine(line)
+  if (field === "data") {
+    event.data = event.data === null ? value : `${event.data}\n${value}`
+  } else if (field === "event") {
+    event.event = value
+  } else if (field === "id") {
+    event.id = value
+  } else if (field === "retry") {
+    const retryValue = Number.parseInt(value, 10)
+    if (Number.isFinite(retryValue) && retryValue >= 0) {
+      event.retry = retryValue
+    }
+  }
+}
+
+const isEmptyParsedSseEvent = (event: ParsedSseEvent) =>
+  event.data === null &&
+  event.event === null &&
+  event.id === null &&
+  event.retry === null
+
+export const parseSseText = (text: string): ParsedSseEvent[] => {
+  const events: ParsedSseEvent[] = []
+  let currentEvent = createEmptyParsedSseEvent()
+
+  for (const rawLine of text.split(/\n/)) {
+    const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine
+    if (line === "") {
+      if (!isEmptyParsedSseEvent(currentEvent)) {
+        events.push(currentEvent)
+        currentEvent = createEmptyParsedSseEvent()
+      }
+      continue
+    }
+
+    appendSseField(currentEvent, line)
+  }
+
+  if (!isEmptyParsedSseEvent(currentEvent)) {
+    events.push(currentEvent)
+  }
+
+  return events
+}
+
 async function* parseSseStream(
   stream: ReadableStream<Uint8Array>,
 ): AsyncGenerator<ParsedSseEvent> {
   const reader = stream.getReader()
   const decoder = new TextDecoder()
   let buffer = ""
-  let currentEvent: ParsedSseEvent = {
-    data: null,
-    event: null,
-    id: null,
-    retry: null,
-  }
+  let currentEvent = createEmptyParsedSseEvent()
 
   const flushEvent = () => {
-    if (
-      currentEvent.data === null &&
-      currentEvent.event === null &&
-      currentEvent.id === null &&
-      currentEvent.retry === null
-    ) {
+    if (isEmptyParsedSseEvent(currentEvent)) {
       return null
     }
 
     const completedEvent = currentEvent
-    currentEvent = {
-      data: null,
-      event: null,
-      id: null,
-      retry: null,
-    }
+    currentEvent = createEmptyParsedSseEvent()
     return completedEvent
   }
 
@@ -114,50 +156,14 @@ async function* parseSseStream(
           continue
         }
 
-        if (line.startsWith(":")) {
-          continue
-        }
-
-        const { field, value: fieldValue } = splitLine(line)
-        if (field === "data") {
-          currentEvent.data =
-            currentEvent.data === null
-              ? fieldValue
-              : `${currentEvent.data}\n${fieldValue}`
-        } else if (field === "event") {
-          currentEvent.event = fieldValue
-        } else if (field === "id") {
-          currentEvent.id = fieldValue
-        } else if (field === "retry") {
-          const retryValue = Number.parseInt(fieldValue, 10)
-          if (Number.isFinite(retryValue) && retryValue >= 0) {
-            currentEvent.retry = retryValue
-          }
-        }
+        appendSseField(currentEvent, line)
       }
     }
 
     buffer += decoder.decode()
     if (buffer.length > 0) {
       const line = buffer.endsWith("\r") ? buffer.slice(0, -1) : buffer
-      if (!line.startsWith(":")) {
-        const { field, value } = splitLine(line)
-        if (field === "data") {
-          currentEvent.data =
-            currentEvent.data === null
-              ? value
-              : `${currentEvent.data}\n${value}`
-        } else if (field === "event") {
-          currentEvent.event = value
-        } else if (field === "id") {
-          currentEvent.id = value
-        } else if (field === "retry") {
-          const retryValue = Number.parseInt(value, 10)
-          if (Number.isFinite(retryValue) && retryValue >= 0) {
-            currentEvent.retry = retryValue
-          }
-        }
-      }
+      appendSseField(currentEvent, line)
     }
 
     const completedEvent = flushEvent()
@@ -169,7 +175,7 @@ async function* parseSseStream(
   }
 }
 
-class UserEventsConnection {
+export class UserEventsConnection {
   private abortController: AbortController | null = null
   private listeners = new Set<UserEventListener>()
   private reconnectAttempts = 0

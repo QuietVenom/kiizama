@@ -91,7 +91,11 @@ const AddUser = () => {
   }, [currentAccessProfile, currentIsSuperuser, setValue])
 
   const onSubmit: SubmitHandler<UserCreateForm> = async (data) => {
-    await mutation.mutateAsync(data)
+    try {
+      await mutation.mutateAsync(data)
+    } catch {
+      // onError owns user-facing error handling; avoid leaking rejected submits.
+    }
   }
 
   return (

@@ -43,6 +43,16 @@ def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
 
 
+def build_docs_config(
+    *,
+    environment: str,
+    api_v1_str: str,
+) -> tuple[str | None, str | None, str | None]:
+    if environment == "production":
+        return None, None, None
+    return "/docs", "/redoc", f"{api_v1_str}/openapi.json"
+
+
 @retry(stop=stop_after_attempt(30), wait=wait_fixed(1), reraise=True)
 def ensure_postgres_connection() -> None:
     ping_postgres()
@@ -122,7 +132,7 @@ class ApifyRunnerSupervisor:
                         self._stop_event.wait(),
                         timeout=APIFY_RUNNER_SUPERVISOR_RETRY_SECONDS,
                     )
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     continue
 
 
@@ -162,7 +172,7 @@ class StripeCustomerSyncSupervisor:
                             self._stop_event.wait(),
                             timeout=settings.STRIPE_CUSTOMER_SYNC_POLL_SECONDS,
                         )
-                    except asyncio.TimeoutError:
+                    except TimeoutError:
                         continue
                     return
                 continue
@@ -179,7 +189,7 @@ class StripeCustomerSyncSupervisor:
                         self._stop_event.wait(),
                         timeout=STRIPE_CUSTOMER_SYNC_SUPERVISOR_RETRY_SECONDS,
                     )
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     continue
 
 
@@ -263,9 +273,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
     sentry_sdk.init(dsn=str(settings.SENTRY_DSN), enable_tracing=True)
 
+docs_url, redoc_url, openapi_url = build_docs_config(
+    environment=settings.ENVIRONMENT,
+    api_v1_str=settings.API_V1_STR,
+)
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    docs_url=docs_url,
+    redoc_url=redoc_url,
+    openapi_url=openapi_url,
     generate_unique_id_function=custom_generate_unique_id,
     lifespan=lifespan,
 )

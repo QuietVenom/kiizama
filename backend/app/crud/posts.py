@@ -25,7 +25,7 @@ def _serialize_post(record: IgPostsDocument) -> Document:
     }
 
 
-async def create_post(collection: Any, post: Post) -> Document | None:
+def create_post(collection: Any, post: Post) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     record = IgPostsDocument(
@@ -39,7 +39,7 @@ async def create_post(collection: Any, post: Post) -> Document | None:
     return _serialize_post(record)
 
 
-async def get_post(collection: Any, post_id: str) -> Document | None:
+def get_post(collection: Any, post_id: str) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     parsed_id = _parse_post_id(post_id)
@@ -49,9 +49,7 @@ async def get_post(collection: Any, post_id: str) -> Document | None:
     return _serialize_post(record) if record else None
 
 
-async def list_posts(
-    collection: Any, skip: int = 0, limit: int = 100
-) -> list[Document]:
+def list_posts(collection: Any, skip: int = 0, limit: int = 100) -> list[Document]:
     session = collection
     assert isinstance(session, Session)
     updated_at = cast(Any, IgPostsDocument.updated_at)
@@ -61,9 +59,7 @@ async def list_posts(
     return [_serialize_post(record) for record in session.exec(statement).all()]
 
 
-async def update_post(
-    collection: Any, post_id: str, patch: UpdatePost
-) -> Document | None:
+def update_post(collection: Any, post_id: str, patch: UpdatePost) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     parsed_id = _parse_post_id(post_id)
@@ -85,7 +81,7 @@ async def update_post(
     return _serialize_post(record)
 
 
-async def replace_post(collection: Any, post_id: str, post: Post) -> Document | None:
+def replace_post(collection: Any, post_id: str, post: Post) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     parsed_id = _parse_post_id(post_id)
@@ -105,7 +101,7 @@ async def replace_post(collection: Any, post_id: str, post: Post) -> Document | 
     return _serialize_post(record)
 
 
-async def delete_post(collection: Any, post_id: str) -> Document | None:
+def delete_post(collection: Any, post_id: str) -> Document | None:
     session = collection
     assert isinstance(session, Session)
     parsed_id = _parse_post_id(post_id)

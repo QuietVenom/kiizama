@@ -47,9 +47,14 @@ From `frontend/`:
 npm run dev
 npm run build
 npm run lint
+npm run test
+npm run test:e2e
 npm run preview
 npm run generate-client
 ```
+
+`npm run test` runs Vitest for unit, component, and frontend contract tests.
+Do not add new `node:test` coverage.
 
 ## Generate API Client
 
@@ -87,6 +92,36 @@ does not use `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, or
 `STRIPE_BASE_PRICE_ID`; it only calls backend billing endpoints exposed by the
 API origin in `VITE_API_URL`.
 
+## Testing Structure
+
+```text
+frontend/
+├── tests/
+│   ├── e2e/          # Playwright browser/app flows only
+│   │   ├── auth.setup.ts
+│   │   ├── *.spec.ts
+│   │   └── utils/
+│   ├── unit/         # Vitest pure logic tests
+│   ├── component/    # Vitest + React Testing Library tests
+│   ├── contract/     # Frontend contract expectations
+│   └── setup/        # Vitest setup files
+└── vitest.config.ts
+```
+
+## Non-E2E Testing (Vitest)
+
+Run non-E2E tests from `frontend/`:
+
+```bash
+npm run test
+```
+
+Watch mode:
+
+```bash
+npm run test:watch
+```
+
 ## End-to-End Testing (Playwright)
 
 Start required services:
@@ -95,10 +130,16 @@ Start required services:
 docker compose up -d --wait backend
 ```
 
-Run tests:
+Run tests through the repo harness from the repository root:
 
 ```bash
-npx playwright test
+bash scripts/test-local.sh playwright
+```
+
+Run Playwright directly only when the required stack is already running:
+
+```bash
+npm run test:e2e
 ```
 
 UI mode:

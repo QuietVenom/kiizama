@@ -18,7 +18,10 @@ import { FiCheck } from "react-icons/fi"
 type PricingPlan = {
   name: string
   price: string
+  priceSuffix: string
   description: string
+  badge?: string
+  ctaLabel: string
   features: string[]
   highlighted?: boolean
 }
@@ -36,26 +39,34 @@ const fadeInUp = keyframes`
 
 const plans: PricingPlan[] = [
   {
-    name: "Pilot Access",
-    price: "TBD",
-    description: "Placeholder plan details for early-stage rollout.",
+    name: "Free Trial",
+    price: "$0",
+    priceSuffix: "for 7 days",
+    badge: "No card required",
+    ctaLabel: "Start free trial",
+    description:
+      "Explore Kiizama with a 7-day trial before choosing a paid plan.",
     features: [
-      "Scoped onboarding and setup",
-      "Limited workflow volume",
-      "Standard report generation access",
-      "Email support within 24h",
+      "No credit or debit card to start",
+      "Access to creator search workflows",
+      "Profile snapshots and saved metrics",
+      "AI-assisted strategy outputs",
     ],
   },
   {
-    name: "Enterprise",
-    price: "TBD",
-    description: "Placeholder plan details for custom enterprise deployments.",
+    name: "Base",
+    price: "$389 MXN",
+    priceSuffix: "per month (IVA included)",
+    badge: "Monthly subscription",
+    ctaLabel: "Start base plan",
+    description:
+      "The current monthly plan for teams that need ongoing creator intelligence.",
     features: [
-      "Custom operational limits",
-      "Advanced strategy workflows",
-      "Integrations and governance controls",
-      "Priority support",
-      "Dedicated onboarding",
+      "Monthly subscription in Mexican pesos",
+      "Creator discovery and validation tools",
+      "Social performance reports",
+      "Reputation strategy workflows",
+      "Cancel when you want",
     ],
     highlighted: true,
   },
@@ -69,9 +80,9 @@ type PricingProps = {
 const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
   const loginUrl = "/login"
 
-  const getPrimaryLabel = (highlighted?: boolean) => {
+  const getPrimaryLabel = (plan: PricingPlan) => {
     if (isWaitingListEnabled) return "Join waiting list"
-    return highlighted ? "Request access" : "Create account"
+    return plan.ctaLabel
   }
 
   return (
@@ -98,7 +109,7 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
             gap={3}
           >
             <Box as="span" h="1px" w="8" bg="ui.mainHover" />
-            Flexible Plans
+            Current Packages
             <Box as="span" h="1px" w="8" bg="ui.mainHover" />
           </Text>
           <Heading
@@ -108,11 +119,11 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
             lineHeight={1.15}
             fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
           >
-            Placeholder pricing while we finalize packaging
+            Start free, then continue with the base monthly plan
           </Heading>
           <Text color="ui.secondaryText" fontSize={{ base: "md", md: "lg" }}>
-            Final plan structure and billing details will be published after
-            pilot validation.
+            Try Kiizama for 7 days without adding a card. When you are ready,
+            the Base plan is $389 MXN per month (IVA included).
           </Text>
         </Stack>
 
@@ -145,6 +156,23 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
                   textTransform="uppercase"
                 >
                   Recommended
+                </Box>
+              )}
+
+              {plan.badge && (
+                <Box
+                  w="fit-content"
+                  mb={5}
+                  rounded="full"
+                  px={3.5}
+                  py={1.5}
+                  fontSize="xs"
+                  fontWeight="bold"
+                  letterSpacing="0.04em"
+                  bg={plan.highlighted ? "ui.inverseSoft" : "ui.panelAlt"}
+                  color={plan.highlighted ? "ui.main" : "ui.neutralText"}
+                >
+                  {plan.badge}
                 </Box>
               )}
 
@@ -186,7 +214,7 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
                   }
                   fontWeight="medium"
                 >
-                  / placeholder
+                  {plan.priceSuffix}
                 </Text>
               </HStack>
 
@@ -240,7 +268,7 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
                   }
                   transition={plan.highlighted ? undefined : "all 220ms ease"}
                 >
-                  {getPrimaryLabel(plan.highlighted)}
+                  {getPrimaryLabel(plan)}
                 </Button>
               </Link>
             </Box>
@@ -259,7 +287,7 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
             fontWeight="semibold"
             mb={6}
           >
-            Need early access details for your team?
+            Ready to turn creator data into clearer decisions?
           </Text>
           <HStack justify="center" gap={4} flexWrap="wrap">
             <Link to={isWaitingListEnabled ? "/waiting-list" : "/signup"}>
@@ -269,7 +297,9 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
                 rounded="xl"
                 layerStyle="brandGradientButton"
               >
-                {isWaitingListEnabled ? "Join waiting list" : "Create account"}
+                {isWaitingListEnabled
+                  ? "Join waiting list"
+                  : "Start free trial"}
               </Button>
             </Link>
             <ChakraLink href={loginUrl} _hover={{ textDecoration: "none" }}>

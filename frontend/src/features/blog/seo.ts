@@ -1,4 +1,4 @@
-import type { BlogPost } from "./parser"
+import type { BlogPost } from "./types"
 
 export type BlogSeoAsset = {
   jsonLd: Record<string, unknown>
