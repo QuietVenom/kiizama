@@ -41,6 +41,6 @@ export type ParseBlogPostOptions = {
   siteUrl?: string
 }
 
-export const DEFAULT_SITE_URL = "https://kiizama.com"
+export const DEFAULT_SITE_URL = "https://www.kiizama.com"
 
 export const normalizeSiteUrl = (siteUrl: string) => siteUrl.replace(/\/+$/, "")

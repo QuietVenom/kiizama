@@ -10,7 +10,7 @@ primary_region = 'iad'
 
 [build.args]
   VITE_API_URL = "https://api.kiizama.com"
-  VITE_SITE_URL = "https://kiizama.com"
+  VITE_SITE_URL = "https://www.kiizama.com"
 
 [http_service]
   internal_port = 80

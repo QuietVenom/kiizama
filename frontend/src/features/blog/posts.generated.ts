@@ -28,7 +28,7 @@ export const blogPosts: BlogPost[] = [
     metaDescription:
       "Conoce Kiizama, una plataforma de inteligencia que transforma datos de redes sociales en análisis, reportes y estrategias accionables para tomar mejores decisiones.",
     canonicalUrl:
-      "https://kiizama.com/blog/kiizama-inteligencia-creators-marcas-equipos-comunicacion",
+      "https://www.kiizama.com/blog/kiizama-inteligencia-creators-marcas-equipos-comunicacion",
     ogTitle:
       "Kiizama: de datos a decisiones para creators, marcas y comunicación",
     ogDescription:
