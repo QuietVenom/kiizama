@@ -1,5 +1,5 @@
 app = "kiizama-backend"
-primary_region = "dfw"
+primary_region = "iad"
 
 # Deploy from the repository root so backend/Dockerfile can keep copying
 # packages/ and backend/... paths with the root directory as build context:
