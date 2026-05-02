@@ -1,37 +1,29 @@
-app = "kiizama-frontend"
-primary_region = "iad"
-
-# Deploy from the frontend directory so this Dockerfile keeps using
-# frontend/ as the Docker build context:
-# fly deploy ./frontend --config ../fly.frontend.toml
+# fly.toml app configuration file generated for kiizama-frontend on 2026-05-02T02:53:35Z
 #
-# This app only needs public build-time values.
-# Stripe billing secrets stay in the backend app. The frontend only calls
-# backend billing endpoints and never uses Stripe secret/webhook config.
-# Required public build args:
-# VITE_API_URL
-# VITE_SITE_URL
-# Required Fly secrets: none.
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
-[build.args]
-  VITE_API_URL = "https://api.kiizama.com"
-  VITE_SITE_URL = "https://kiizama.com"
+app = 'kiizama-frontend'
+primary_region = 'iad'
+
+[build]
 
 [http_service]
   internal_port = 80
   force_https = true
+  auto_stop_machines = 'off'
   auto_start_machines = true
-  auto_stop_machines = "off"
   min_machines_running = 1
 
   [[http_service.checks]]
-    grace_period = "10s"
-    interval = "15s"
-    method = "GET"
-    timeout = "5s"
-    path = "/"
+    interval = '15s'
+    timeout = '5s'
+    grace_period = '10s'
+    method = 'GET'
+    path = '/'
 
 [[vm]]
-  cpu_kind = "shared"
+  memory = '512mb'
+  cpu_kind = 'shared'
   cpus = 1
-  memory = "512mb"
+  memory_mb = 512
