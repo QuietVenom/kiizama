@@ -1,86 +1,68 @@
-app = "kiizama-backend"
-primary_region = "iad"
+# fly.toml app configuration file generated for kiizama-backend on 2026-05-02T02:21:45Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
-# Deploy from the repository root so backend/Dockerfile can keep copying
-# packages/ and backend/... paths with the root directory as build context:
-# fly deploy . --config fly.backend.toml
-#
-# Required Fly secrets/private deploy config for this app include:
-# #secret DATABASE_URL or DATABASE_URL_PRODUCTION_INTERNAL
-# #secret SECRET_KEY
-# #secret SECRET_KEY_IG_CREDENTIALS
-# #secret FIRST_SUPERUSER
-# #secret FIRST_SUPERUSER_PASSWORD
-# #secret SYSTEM_ADMIN_EMAIL
-# #secret SYSTEM_ADMIN_PASSWORD
-# #secret SENTRY_DSN
-# #secret OPENAI_API_KEY
-# #secret STRIPE_BASE_PRICE_ID
-# #secret STRIPE_SECRET_KEY
-# #secret STRIPE_WEBHOOK_SECRET
-# #secret APIFY_API_TOKEN
-# #secret RESEND_API_KEY
-# #secret FLY_REDIS_URL
-#
-# STRIPE_BASE_PRICE_ID is not security-sensitive, but configure it through
-# Fly secrets if you prefer not to commit the live Stripe price ID into git.
+app = 'kiizama-backend'
+primary_region = 'iad'
 
 [build]
-  dockerfile = "backend/Dockerfile"
+  dockerfile = 'backend/Dockerfile'
 
 [deploy]
-  release_command = "bash scripts/prestart.sh"
+  release_command = 'bash scripts/prestart.sh'
 
 [env]
-  ENVIRONMENT = "production"
-  PROJECT_NAME = "Kiizama API"
-  FRONTEND_HOST = "https://app.kiizama.com"
-  BACKEND_CORS_ORIGINS = "https://www.kiizama.com,https://app.kiizama.com"
-  IG_SCRAPER_MAX_CONCURRENT = "2"
-  IG_SCRAPER_WORKER_JOBS_ENABLED = "false"
-  IG_SCRAPER_APIFY_JOBS_ENABLED = "true"
-  IG_SCRAPER_APIFY_WORKER_ID = "backend-apify"
-  IG_SCRAPER_APIFY_LEASE_SECONDS = "90"
-  IG_SCRAPER_APIFY_HEARTBEAT_SECONDS = "30"
-  IG_SCRAPER_APIFY_POLL_SECONDS = "2"
-  IG_SCRAPER_APIFY_MAX_ATTEMPTS = "3"
-  IG_SCRAPER_APIFY_MAX_CONCURRENT_JOBS = "4"
-  JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS = "86400"
-  JOB_CONTROL_QUEUE_MAXLEN = "10000"
-  USER_EVENTS_STREAM_MAXLEN = "25"
-  USER_EVENTS_STREAM_TTL_SECONDS = "604800"
-  USER_EVENTS_SSE_READ_BLOCK_MS = "10000"
-  EMAILS_FROM_EMAIL = "noreply@mail.kiizama.com"
-  EMAILS_FROM_NAME = "Kiizama"
-  BILLING_TRIAL_DAYS = "7"
-  STRIPE_CUSTOMER_SYNC_POLL_SECONDS = "60"
-  STRIPE_CUSTOMER_SYNC_STALE_PROCESSING_SECONDS = "300"
+  BACKEND_CORS_ORIGINS = 'https://www.kiizama.com,https://app.kiizama.com'
+  BILLING_TRIAL_DAYS = '7'
+  EMAILS_FROM_EMAIL = 'noreply@mail.kiizama.com'
+  EMAILS_FROM_NAME = 'Kiizama'
+  ENVIRONMENT = 'production'
+  FRONTEND_HOST = 'https://app.kiizama.com'
+  IG_SCRAPER_APIFY_HEARTBEAT_SECONDS = '30'
+  IG_SCRAPER_APIFY_JOBS_ENABLED = 'true'
+  IG_SCRAPER_APIFY_LEASE_SECONDS = '90'
+  IG_SCRAPER_APIFY_MAX_ATTEMPTS = '3'
+  IG_SCRAPER_APIFY_MAX_CONCURRENT_JOBS = '4'
+  IG_SCRAPER_APIFY_POLL_SECONDS = '2'
+  IG_SCRAPER_APIFY_WORKER_ID = 'backend-apify'
+  IG_SCRAPER_MAX_CONCURRENT = '2'
+  IG_SCRAPER_WORKER_JOBS_ENABLED = 'false'
+  JOB_CONTROL_QUEUE_MAXLEN = '10000'
+  JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS = '86400'
+  PROJECT_NAME = 'Kiizama API'
+  STRIPE_CUSTOMER_SYNC_POLL_SECONDS = '60'
+  STRIPE_CUSTOMER_SYNC_STALE_PROCESSING_SECONDS = '300'
+  USER_EVENTS_SSE_READ_BLOCK_MS = '10000'
+  USER_EVENTS_STREAM_MAXLEN = '25'
+  USER_EVENTS_STREAM_TTL_SECONDS = '604800'
 
 [processes]
-  app = "fastapi run --host 0.0.0.0 --port 8000 --workers 2 app/main.py"
+  app = 'fastapi run --host 0.0.0.0 --port 8000 --workers 2 app/main.py'
 
 [http_service]
-  processes = ["app"]
   internal_port = 8000
   force_https = true
+  auto_stop_machines = 'off'
   auto_start_machines = true
-  auto_stop_machines = "off"
   min_machines_running = 1
+  processes = ['app']
 
   [http_service.concurrency]
-    type = "requests"
-    soft_limit = 20
+    type = 'requests'
     hard_limit = 25
+    soft_limit = 20
 
   [[http_service.checks]]
-    grace_period = "20s"
-    interval = "15s"
-    method = "GET"
-    timeout = "5s"
-    path = "/api/v1/health-check/"
+    interval = '15s'
+    timeout = '5s'
+    grace_period = '20s'
+    method = 'GET'
+    path = '/api/v1/health-check/'
 
 [[vm]]
-  cpu_kind = "shared"
+  memory = '4096mb'
+  cpu_kind = 'shared'
   cpus = 2
-  memory = "4096mb"
-  processes = ["app"]
+  memory_mb = 4096
+  processes = ['app']
