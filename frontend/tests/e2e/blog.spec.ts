@@ -67,7 +67,7 @@ test.describe("Blog routes", () => {
     )
     await expect(page.locator('head link[rel="canonical"]')).toHaveAttribute(
       "href",
-      "https://kiizama.com/blog/kiizama-inteligencia-creators-marcas-equipos-comunicacion",
+      "https://www.kiizama.com/blog/kiizama-inteligencia-creators-marcas-equipos-comunicacion",
     )
     await expect(
       page.getByTestId("blog-post-content").getByRole("heading", {

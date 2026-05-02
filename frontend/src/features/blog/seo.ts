@@ -12,7 +12,7 @@ export type BlogSeoAsset = {
 const buildOrganization = () => ({
   "@type": "Organization",
   name: "Kiizama",
-  url: "https://kiizama.com",
+  url: "https://www.kiizama.com",
 })
 
 export const buildBlogIndexSeo = (
