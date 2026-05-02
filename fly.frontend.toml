@@ -1,5 +1,5 @@
 app = "kiizama-frontend"
-primary_region = "dfw"
+primary_region = "iad"
 
 # Deploy from the frontend directory so this Dockerfile keeps using
 # frontend/ as the Docker build context:
