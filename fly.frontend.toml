@@ -8,6 +8,10 @@ primary_region = 'iad'
 
 [build]
 
+[build.args]
+  VITE_API_URL = "https://api.kiizama.com"
+  VITE_SITE_URL = "https://kiizama.com"
+
 [http_service]
   internal_port = 80
   force_https = true
