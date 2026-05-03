@@ -13,7 +13,8 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Link } from "@tanstack/react-router"
-import { FaLanguage, FaLinkedin } from "react-icons/fa"
+import { useTranslation } from "react-i18next"
+import { FaLinkedin } from "react-icons/fa"
 import {
   cookieBackdropFadeIn,
   cookieBackdropFadeOut,
@@ -41,6 +42,7 @@ const footerLinkStyles = {
 }
 
 const Footer = (_props: FooterProps) => {
+  const { t } = useTranslation("landing")
   const {
     cookiePreferences,
     isCookiePanelMounted,
@@ -100,8 +102,7 @@ const Footer = (_props: FooterProps) => {
               </HStack>
 
               <Text color="ui.inverseMutedText" maxW="xs" lineHeight="1.8">
-                Advanced reputation intelligence and strategic workflows for
-                modern brand and creator teams.
+                {t("footer.tagline")}
               </Text>
 
               <HStack gap={3}>
@@ -147,19 +148,19 @@ const Footer = (_props: FooterProps) => {
                 textTransform="uppercase"
                 letterSpacing="0.08em"
               >
-                Product
+                {t("footer.sections.product")}
               </Text>
               <ChakraLink href="/#capabilities" {...footerLinkStyles}>
-                Capabilities
+                {t("footer.links.capabilities")}
               </ChakraLink>
               <ChakraLink href="/#plans" {...footerLinkStyles}>
-                Pricing
+                {t("footer.links.pricing")}
               </ChakraLink>
               <ChakraLink href="/" {...footerLinkStyles}>
-                API Documentation
+                {t("footer.links.apiDocs")}
               </ChakraLink>
               <ChakraLink href="/#faq" {...footerLinkStyles}>
-                FAQ
+                {t("footer.links.faq")}
               </ChakraLink>
             </Stack>
 
@@ -170,7 +171,7 @@ const Footer = (_props: FooterProps) => {
                 textTransform="uppercase"
                 letterSpacing="0.08em"
               >
-                Company
+                {t("footer.sections.company")}
               </Text>
               <Link to="/about-us">
                 <Text
@@ -178,14 +179,14 @@ const Footer = (_props: FooterProps) => {
                   fontWeight="medium"
                   _hover={{ color: "ui.main" }}
                 >
-                  About Us
+                  {t("footer.links.aboutUs")}
                 </Text>
               </Link>
               <ChakraLink href="/" {...footerLinkStyles}>
-                Careers
+                {t("footer.links.careers")}
               </ChakraLink>
               <ChakraLink href="/" {...footerLinkStyles}>
-                Contact
+                {t("footer.links.contact")}
               </ChakraLink>
             </Stack>
 
@@ -196,7 +197,7 @@ const Footer = (_props: FooterProps) => {
                 textTransform="uppercase"
                 letterSpacing="0.08em"
               >
-                Legal
+                {t("footer.sections.legal")}
               </Text>
               <Link to="/security">
                 <Text
@@ -204,7 +205,7 @@ const Footer = (_props: FooterProps) => {
                   fontWeight="medium"
                   _hover={{ color: "ui.main" }}
                 >
-                  Security
+                  {t("footer.links.security")}
                 </Text>
               </Link>
               <Link to="/privacy">
@@ -213,7 +214,7 @@ const Footer = (_props: FooterProps) => {
                   fontWeight="medium"
                   _hover={{ color: "ui.main" }}
                 >
-                  Privacy Policy
+                  {t("footer.links.privacyPolicy")}
                 </Text>
               </Link>
               <Link to="/terms-conditions">
@@ -222,7 +223,7 @@ const Footer = (_props: FooterProps) => {
                   fontWeight="medium"
                   _hover={{ color: "ui.main" }}
                 >
-                  Terms of Service
+                  {t("footer.links.termsOfService")}
                 </Text>
               </Link>
               <Link to="/providers">
@@ -231,38 +232,9 @@ const Footer = (_props: FooterProps) => {
                   fontWeight="medium"
                   _hover={{ color: "ui.main" }}
                 >
-                  Providers
+                  {t("footer.links.providers")}
                 </Text>
               </Link>
-
-              <HStack
-                mt={2}
-                borderWidth="1px"
-                borderColor="ui.inverseBorderSoft"
-                rounded="xl"
-                h="9"
-                px={3}
-                bg="ui.inverseSoft"
-                color="ui.textInverse"
-                gap={2}
-              >
-                <Icon as={FaLanguage} color="ui.inverseMutedText" boxSize={4} />
-                <chakra.select
-                  defaultValue="english"
-                  bg="transparent"
-                  border="none"
-                  outline="none"
-                  color="ui.textInverse"
-                  _focus={{ outline: "none", boxShadow: "none" }}
-                  fontSize="sm"
-                  pr={6}
-                  cursor="pointer"
-                >
-                  <option value="english">English</option>
-                  <option value="spanish">Spanish</option>
-                  <option value="portuguese">Portuguese</option>
-                </chakra.select>
-              </HStack>
             </Stack>
           </Grid>
 
@@ -276,7 +248,7 @@ const Footer = (_props: FooterProps) => {
             gap={4}
           >
             <Text color="ui.inverseMutedText" fontSize="sm">
-              © {new Date().getFullYear()} Kiizama Inc. All rights reserved.
+              {t("footer.copyright", { year: new Date().getFullYear() })}
             </Text>
             <Button
               variant="ghost"
@@ -286,7 +258,7 @@ const Footer = (_props: FooterProps) => {
               _hover={{ bg: "transparent", color: "ui.textInverse" }}
               onClick={openCookiePanel}
             >
-              Cookie Settings
+              {t("footer.cookieSettings")}
             </Button>
           </Flex>
         </Container>
@@ -318,13 +290,13 @@ const Footer = (_props: FooterProps) => {
             <Stack gap={4}>
               <Flex justify="flex-end">
                 <Button size="sm" onClick={savePreferencesAndClose}>
-                  Done
+                  {t("footer.cookiePanel.done")}
                 </Button>
               </Flex>
 
               <Stack gap={1} align="center">
                 <Text textAlign="center" fontSize={{ base: "md", md: "lg" }}>
-                  Kiizama uses cookies to offer you a better experience.
+                  {t("footer.cookiePanel.title")}
                 </Text>
                 <Text
                   textAlign="center"
@@ -332,9 +304,7 @@ const Footer = (_props: FooterProps) => {
                   fontSize={{ base: "sm", md: "md" }}
                   maxW="4xl"
                 >
-                  By clicking “Accept all”, you agree to the storing of cookies
-                  on your device for functional, analytics, and advertising
-                  purposes.
+                  {t("footer.cookiePanel.description")}
                 </Text>
               </Stack>
 
@@ -350,12 +320,14 @@ const Footer = (_props: FooterProps) => {
                     py={3}
                   >
                     <Text color="ui.text" fontWeight="medium">
-                      {option.label}
+                      {t(`footer.cookiePanel.options.${option.key}`)}
                     </Text>
                     <Checkbox
                       checked={cookiePreferences[option.key]}
                       disabled={!option.editable}
-                      aria-label={`${option.label} cookies`}
+                      aria-label={t("footer.cookiePanel.aria.cookies", {
+                        label: t(`footer.cookiePanel.options.${option.key}`),
+                      })}
                       onCheckedChange={({ checked }) => {
                         if (option.key === "strictlyNecessary") {
                           return
@@ -369,10 +341,10 @@ const Footer = (_props: FooterProps) => {
 
               <Stack gap={1} align="center">
                 <Button variant="outline" onClick={acceptAllCookies}>
-                  Accept All
+                  {t("footer.cookiePanel.acceptAll")}
                 </Button>
                 <Link to="/cookie-notice" className="legal-link">
-                  See Cookie Notice for details.
+                  {t("footer.cookiePanel.details")}
                 </Link>
               </Stack>
             </Stack>

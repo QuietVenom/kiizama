@@ -1,0 +1,417 @@
+{
+  "shell": {
+    "navigation": {
+      "title": "Inteligência de marca",
+      "reputationStrategy": "Estratégia reputacional"
+    }
+  },
+  "page": {
+    "eyebrow": "Inteligência de marca",
+    "title": "Monte relatórios modulares de estratégia reputacional.",
+    "description": "Comece com usernames de criadores, valide-os contra o conjunto salvo de perfis e depois gere a estratégia reputacional selecionada como relatório em PDF.",
+    "badges": {
+      "validationFirst": "Validação de perfis primeiro",
+      "pdfOnly": "Somente PDF",
+      "localReportsSynced": "Relatórios locais sincronizados"
+    },
+    "strategyOptions": {
+      "campaign": {
+        "title": "Estratégia reputacional de campanha",
+        "description": "Primeiro valide uma lista de criadores e depois gere uma estratégia reputacional de campanha em torno do modelo de campanha selecionado."
+      },
+      "creator": {
+        "title": "Estratégia reputacional de criador",
+        "description": "Primeiro valide o perfil do criador e depois gere uma estratégia reputacional centrada no criador com sinais, plataformas e colaboradores."
+      }
+    },
+    "mandatoryGate": {
+      "title": "A validação é obrigatória",
+      "description": "Antes de qualquer relatório ser gerado, o fluxo sempre executa novamente <strong>a validação de existência de perfis</strong>. Usernames ausentes bloqueiam a geração do relatório, perfis com necessidade de atualização podem continuar com um aviso visível e PDFs bem-sucedidos são salvos no local storage para o dashboard."
+    }
+  },
+  "summary": {
+    "eyebrow": "Resumo ao vivo",
+    "description": "Revise as informações capturadas antes de gerar o relatório em PDF.",
+    "empty": {
+      "title": "Nada foi capturado ainda.",
+      "description": "Comece pelos usernames dos criadores e o resumo será atualizado conforme o formulário for preenchido."
+    },
+    "campaignTitle": "Estratégia de campanha",
+    "creatorTitle": "Estratégia do criador",
+    "sections": {
+      "creatorsGate": "Porta de criadores",
+      "brandBrief": "Briefing da marca",
+      "campaignSetup": "Configuração da campanha",
+      "profileGate": "Porta do perfil",
+      "creatorBrief": "Briefing do criador",
+      "strategyInputs": "Entradas da estratégia"
+    },
+    "items": {
+      "creatorUsage": "Uso de criadores",
+      "creatorUsernames": "Usernames de criadores",
+      "expiredProfiles": "Perfis expirados",
+      "brandName": "Nome da marca",
+      "brandContext": "Contexto da marca",
+      "brandUrls": "URLs da marca",
+      "brandGoal": "Objetivo da marca",
+      "goalContext": "Contexto do objetivo",
+      "audience": "Audiência",
+      "timeframe": "Prazo",
+      "campaignType": "Tipo de campanha",
+      "campaignTypeContext": "Contexto do tipo de campanha",
+      "creatorUsername": "Username do criador",
+      "creatorContext": "Contexto do criador",
+      "creatorUrls": "URLs do criador",
+      "goalType": "Tipo de objetivo",
+      "primaryPlatforms": "Plataformas principais",
+      "collaborators": "Colaboradores",
+      "strengths": "Forças",
+      "weaknesses": "Fraquezas",
+      "incidents": "Incidentes",
+      "concerns": "Preocupações"
+    },
+    "values": {
+      "notUsingCreators": "Não estamos usando criadores nesta campanha."
+    }
+  },
+  "validationPanel": {
+    "title": "Porta de validação de perfis",
+    "initialDescription": "Adicione primeiro os usernames obrigatórios dos criadores para habilitar a validação e o restante do fluxo.",
+    "loadingTitle": "Validando perfis",
+    "loadingDescription": "Verificando se esses usernames já existem no conjunto salvo de perfis.",
+    "errorTitle": "A validação falhou",
+    "staleTitle": "A validação está desatualizada",
+    "staleDescription": "Os usernames mudaram após a última verificação. Valide novamente antes de gerar o relatório.",
+    "readyDescription": "Perfis existentes podem continuar. Perfis marcados como atualização necessária também podem continuar, mas usernames ausentes bloqueiam a geração do relatório.",
+    "preValidationDescription": "Execute a validação de perfis antes de gerar o relatório. Esta etapa é sempre obrigatória antes de qualquer endpoint de estratégia.",
+    "refreshing": "Atualizando",
+    "checkedCount": "{{count}} verificados",
+    "status": {
+      "ready": "Pronto",
+      "updateNeeded": "Atualização necessária",
+      "missing": "Ausente"
+    },
+    "refreshFailed": "A atualização da validação falhou",
+    "missingBlock": "Revise os perfis validados e tente novamente.",
+    "countCards": {
+      "ready": "Pronto",
+      "updateNeeded": "Atualização necessária",
+      "missing": "Ausente"
+    }
+  },
+  "tooltips": {
+    "helpButton": "Ajuda de {{label}}"
+  },
+  "campaign": {
+    "submitPanel": {
+      "title": "Gerar PDF da estratégia de campanha",
+      "description": "O PDF baixado também é salvo no local storage para o dashboard.",
+      "button": "Gerar relatório em PDF"
+    },
+    "step1": {
+      "eyebrow": "Etapa 1",
+      "title": "Defina o objetivo da marca e os criadores",
+      "description": "Escolha primeiro o objetivo da marca. Se esta for uma campanha de Crise, você pode decidir explicitamente não usar criadores; caso contrário, adicione usernames de criadores para desbloquear o restante do formulário de estratégia de campanha."
+    },
+    "step2": {
+      "eyebrow": "Etapa 2",
+      "title": "Briefing da marca",
+      "description": "Capture o contexto da marca e os insumos de apoio que devem orientar a recomendação estratégica."
+    },
+    "step3": {
+      "eyebrow": "Etapa 3",
+      "title": "Configuração da estratégia de campanha",
+      "description": "Escolha a audiência, o prazo e o modelo de campanha que melhor combinam com o relatório que você quer gerar."
+    },
+    "fields": {
+      "brandGoal": "Objetivo da marca",
+      "creatorUsernames": "Usernames de criadores",
+      "notUsingCreators": "Não usar creator(s)",
+      "brandName": "Nome da marca",
+      "brandContext": "Contexto da marca",
+      "goalContext": "Contexto do objetivo",
+      "brandUrls": "URLs da marca",
+      "timeframe": "Prazo",
+      "campaignType": "Tipo de campanha",
+      "audience": "Audiência"
+    },
+    "fieldHelp": {
+      "brandGoal": "Objetivo principal da marca.",
+      "creatorUsernames": "Lista de usernames de criadores (máximo de 15).",
+      "brandName": "Nome da marca.",
+      "brandContext": "Contexto geral da marca.",
+      "goalContext": "Contexto adicional para o objetivo da marca.",
+      "brandUrls": "Lista de URLs da marca (máximo de 3).",
+      "timeframe": "Prazo da campanha.",
+      "campaignType": "Estratégia de campanha selecionada.",
+      "audience": "Audiências-alvo."
+    },
+    "placeholders": {
+      "creatorUsernames": "creator_one, creator.two, another_creator",
+      "brandName": "Acme Skincare",
+      "brandContext": "Compartilhe o contexto atual do negócio, o posicionamento e o que está acontecendo em torno da marca.",
+      "goalContext": "Adicione contexto ao objetivo para que a recomendação possa ponderar os trade-offs corretos.",
+      "brandUrls": "https://brand.com, https://instagram.com/brand"
+    },
+    "select": {
+      "goal": "Selecione um objetivo",
+      "timeframe": "Selecione um prazo",
+      "campaignModel": "Selecione um modelo de campanha"
+    },
+    "helperText": {
+      "creatorsDisabled": "Os criadores estão desativados para esta campanha de Crise enquanto esta opção estiver ativa.",
+      "creatorUsernames": "Cole uma lista, pressione Enter ou separe os usernames com vírgulas.",
+      "crisisOnly": "Disponível para campanhas de Crise. Quando habilitado, o relatório será gerado sem usernames de criadores nem validação de perfis.",
+      "enableCrisisOnly": "Selecione Objetivo da marca = Crise para habilitar esta opção.",
+      "brandUrls": "Opcional. Adicione até 3 URLs relevantes da marca.",
+      "audience": "Selecione até 5 segmentos de audiência."
+    },
+    "badges": {
+      "creatorsNotRequired": "Criadores não são obrigatórios para Crise",
+      "creatorUsernamesCount": "{{count}} / {{limit}} usernames de criadores",
+      "workflowUnlocked": "Fluxo desbloqueado"
+    },
+    "actions": {
+      "validateProfiles": "Validar perfis"
+    },
+    "skippedValidation": {
+      "title": "Validação de criadores ignorada",
+      "description": "Esta campanha de Crise está configurada para não usar criadores, então a validação de usernames de criadores não é necessária e o relatório será gerado com uma lista vazia de criadores."
+    },
+    "submitDisabledReason": {
+      "missingUsernames": "Adicione pelo menos 1 username de criador para desbloquear o fluxo.",
+      "invalidUsernames": "Corrija os usernames inválidos antes de continuar.",
+      "invalidUrls": "Use URLs válidas com http ou https.",
+      "requiredFields": "Preencha os campos obrigatórios para habilitar a geração do relatório.",
+      "validationPending": "A validação de perfis ainda está em andamento.",
+      "validationRequired": "Valide os perfis antes de gerar o relatório.",
+      "missingProfiles": "Revise os perfis validados e tente novamente."
+    },
+    "validation": {
+      "selectBrandGoal": "Selecione o objetivo principal da marca.",
+      "addCreatorUsername": "Adicione pelo menos 1 username de criador.",
+      "creatorUsernamesLimit": "Você pode incluir até 15 usernames de criadores.",
+      "instagramUsername": "Use letras minúsculas, números, pontos ou sublinhados, com no máximo 30 caracteres.",
+      "brandNameRequired": "O nome da marca é obrigatório.",
+      "brandContextRequired": "O contexto da marca é obrigatório.",
+      "goalContextRequired": "O contexto do objetivo é obrigatório.",
+      "maxCharacters": "Use {{count}} caracteres ou menos.",
+      "brandUrlsLimit": "Adicione até 3 URLs da marca.",
+      "selectTimeframe": "Selecione o prazo.",
+      "selectCampaignType": "Selecione o tipo de campanha.",
+      "selectAudience": "Selecione pelo menos 1 audiência.",
+      "audienceLimit": "Selecione até 5 audiências."
+    },
+    "preview": {
+      "title": "{{title}}"
+    },
+    "success": {
+      "statusTitle": "Relatório de campanha gerado",
+      "reportReady": "Relatório pronto: {{filename}}",
+      "downloadedAndSaved": "O PDF da estratégia de campanha foi baixado e salvo localmente.",
+      "downloadedOnly": "O PDF da estratégia de campanha foi baixado, mas não pôde ser salvo localmente."
+    },
+    "errors": {
+      "reportFailedTitle": "A geração do relatório falhou",
+      "reportFailedFallback": "Não foi possível gerar o relatório."
+    }
+  },
+  "creator": {
+    "submitPanel": {
+      "title": "Gerar PDF da estratégia do criador",
+      "description": "O PDF baixado também é salvo no local storage para o dashboard.",
+      "button": "Gerar relatório em PDF"
+    },
+    "step1": {
+      "eyebrow": "Etapa 1",
+      "title": "Adicione o username do criador",
+      "description": "O username do criador é a primeira entrada obrigatória. Ele desbloqueia o restante do fluxo e deve ser validado antes da geração do relatório."
+    },
+    "step2": {
+      "eyebrow": "Etapa 2",
+      "title": "Briefing do criador e da reputação",
+      "description": "Capture o contexto do criador, o objetivo reputacional e as URLs de apoio que devem moldar a estratégia."
+    },
+    "step3": {
+      "eyebrow": "Etapa 3",
+      "title": "Entradas da estratégia",
+      "description": "Adicione a audiência, plataformas-chave, sinais reputacionais e colaboradores que devem informar o relatório de estratégia do criador."
+    },
+    "fields": {
+      "creatorUsername": "Username do criador",
+      "goalType": "Tipo de objetivo",
+      "timeframe": "Prazo",
+      "creatorContext": "Contexto do criador",
+      "goalContext": "Contexto do objetivo",
+      "creatorUrls": "URLs do criador",
+      "audience": "Audiência",
+      "primaryPlatforms": "Plataformas principais",
+      "collaborators": "Colaboradores",
+      "strengths": "Forças",
+      "weaknesses": "Fraquezas",
+      "incidents": "Incidentes",
+      "concerns": "Preocupações"
+    },
+    "fieldHelp": {
+      "creatorUsername": "Username do criador.",
+      "goalType": "Objetivo reputacional principal para a estratégia do criador.",
+      "timeframe": "Prazo da estratégia.",
+      "creatorContext": "Contexto geral do criador.",
+      "goalContext": "Contexto adicional para o objetivo reputacional.",
+      "creatorUrls": "Lista de URLs do criador (máximo de 3).",
+      "audience": "Audiências-alvo.",
+      "primaryPlatforms": "Plataformas principais do criador.",
+      "collaborators": "Lista de colaboradores relevantes (máximo de 10).",
+      "strengths": "Forças dentro dos sinais reputacionais para destacar ativos reputacionais.",
+      "weaknesses": "Fraquezas dentro dos sinais reputacionais para registrar atritos ou pontos vulneráveis.",
+      "incidents": "Incidentes dentro dos sinais reputacionais para registrar fatos ou episódios relevantes.",
+      "concerns": "Preocupações dentro dos sinais reputacionais para destacar riscos ou tensões ativas."
+    },
+    "placeholders": {
+      "creatorUsername": "creator_one",
+      "creatorContext": "Descreva a narrativa atual do criador, seu posicionamento e a percepção pública em torno dele.",
+      "goalContext": "Explique o que deve mudar na reputação do criador durante o prazo selecionado.",
+      "creatorUrls": "https://instagram.com/creator, https://youtube.com/@creator",
+      "primaryPlatforms": "Instagram\nYouTube\nTikTok",
+      "collaborators": "Brand One\nBrand Two\nManagement Partner",
+      "strengths": "Transparência\nConsistência\nVoz clara",
+      "weaknesses": "Superexposição\nBaixa clareza de mensagem",
+      "incidents": "Reação negativa a conteúdo\nPedido público de desculpas",
+      "concerns": "Fadiga de colaborações\nLimites pouco claros"
+    },
+    "select": {
+      "goal": "Selecione um objetivo",
+      "timeframe": "Selecione um prazo"
+    },
+    "helperText": {
+      "audience": "Selecione até 5 segmentos de audiência.",
+      "creatorUrls": "Opcional. Adicione até 3 URLs relevantes do criador.",
+      "primaryPlatforms": "Use uma plataforma por linha, até 6.",
+      "collaborators": "Opcional. Use um colaborador por linha, até 10.",
+      "perLine": "Por linha"
+    },
+    "badges": {
+      "usernameCount_one": "{{count}} / 1 username",
+      "usernameCount_other": "{{count}} / 1 usernames"
+    },
+    "actions": {
+      "validateProfile": "Validar perfil"
+    },
+    "submitDisabledReason": {
+      "missingUsername": "Adicione o username do criador para desbloquear o fluxo.",
+      "invalidUsername": "Corrija o username do criador antes de continuar.",
+      "invalidUrls": "Use URLs válidas com http ou https.",
+      "requiredFields": "Preencha os campos obrigatórios para habilitar a geração do relatório.",
+      "validationPending": "A validação de perfis ainda está em andamento.",
+      "validationRequired": "Valide o perfil do criador antes de gerar o relatório.",
+      "missingProfiles": "Revise os perfis validados e tente novamente."
+    },
+    "validation": {
+      "addCreatorUsername": "Adicione o username do criador.",
+      "selectGoalType": "Selecione o objetivo reputacional principal.",
+      "selectTimeframe": "Selecione o prazo.",
+      "creatorContextRequired": "O contexto do criador é obrigatório.",
+      "goalContextRequired": "O contexto do objetivo é obrigatório.",
+      "creatorUrlsLimit": "Adicione até 3 URLs do criador.",
+      "selectAudience": "Selecione pelo menos 1 audiência.",
+      "audienceLimit": "Selecione até 5 audiências.",
+      "primaryPlatformsRequired": "Adicione pelo menos 1 plataforma principal.",
+      "primaryPlatformsLimit": "Adicione até 6 plataformas principais.",
+      "collaboratorsLimit": "Adicione até 10 colaboradores.",
+      "reputationSignalLineLimit": "As entradas de {{label}} devem usar {{count}} caracteres ou menos.",
+      "maxCharacters": "Use {{count}} caracteres ou menos."
+    },
+    "success": {
+      "statusTitle": "Relatório do criador gerado",
+      "reportReady": "Relatório pronto: {{filename}}",
+      "downloadedAndSaved": "O PDF da estratégia do criador foi baixado e salvo localmente.",
+      "downloadedOnly": "O PDF da estratégia do criador foi baixado, mas não pôde ser salvo localmente."
+    },
+    "errors": {
+      "reportFailedTitle": "A geração do relatório falhou",
+      "reportFailedFallback": "Não foi possível gerar o relatório."
+    }
+  },
+  "catalogs": {
+    "brandGoals": {
+      "trustCredibilityAcceleration": "Aceleração de confiança e credibilidade",
+      "repositioning": "Reposicionamento",
+      "crisis": "Crise"
+    },
+    "creatorGoals": {
+      "communityTrust": "Confiança da comunidade",
+      "resilience": "Resiliência",
+      "pivot": "Pivot"
+    },
+    "audiences": {
+      "genZ": "Geração Z",
+      "zillennials": "Zillennials",
+      "millennials": "Millennials",
+      "genX": "Geração X",
+      "boomers": "Boomers"
+    },
+    "timeframes": {
+      "threeMonths": "3 meses",
+      "sixMonths": "6 meses",
+      "twelveMonths": "12 meses"
+    },
+    "campaignTypes": {
+      "all_nano_seeding_ugc_flood": {
+        "title": "All Nano \"Seeding / UGC flood\"",
+        "description": "Mix: 20-200 nanos (1k-10k). Objetivo: UGC, avaliações reais, volume de menções, prova social e conteúdo pronto para repost. Ideal para: lançamentos, e-commerce, CPG, restaurantes e apps em estágio inicial. Chave: compensação híbrida (produto/experiência + comissão) e um briefing muito simples."
+      },
+      "all_micro_performance_community_trust": {
+        "title": "All Micro \"Performance + community trust\"",
+        "description": "Mix: 10-80 micros (10k-100k). Objetivo: conversões, cliques, cadastros e vendas com confiança gerada pela proximidade. Ideal para: marketing de performance, fintech, cursos, beauty e DTC. Chave: códigos/UTMs com bônus por resultado."
+      },
+      "micro_city_blitz": {
+        "title": "Micro \"City Blitz\" (por praça)",
+        "description": "Mix: 5-20 micros por cidade. Objetivo: awareness local e tráfego para loja ou evento. Ideal para: varejo, inaugurações, eventos e food delivery. Chave: janelas curtas e ganchos locais."
+      },
+      "all_mid_tier_reach_eficiente": {
+        "title": "All Mid-tier \"Alcance eficiente\"",
+        "description": "Mix: 5-20 mids (100k-500k). Objetivo: awareness forte sem pagar taxas de macro ou mega e com CPM real sólido. Ideal para: marcas com orçamento médio que precisam de escala. Chave: alta criatividade e exclusividade/direitos limitados."
+      },
+      "macro_plus_micro_swarm_hero_halo": {
+        "title": "\"1-3 Macro + Micro swarm\" (Hero + halo)",
+        "description": "Mix: 1-3 macros (500k-1M) mais 20-100 micros. Objetivo: a camada macro abre a conversa e a camada micro a sustenta e converte. Ideal para: grandes lançamentos e campanhas sazonais. Chave: macro com a mensagem central e micros com ângulos distintos como benefícios, reviews ou tutoriais."
+      },
+      "mega_plus_mid_support": {
+        "title": "\"Mega + Mid support\" (Topo de funil + profundidade)",
+        "description": "Mix: 1 mega (1M+) mais 10-30 mids. Objetivo: alcance massivo com credibilidade e repetição. Ideal para: awareness nacional, branding e momentos de PR. Chave: mids com conteúdo educativo ou demonstrativo, não apenas hype."
+      },
+      "mid_plus_micro_always_on": {
+        "title": "\"2-5 Mid + Micro always-on\"",
+        "description": "Mix: 2-5 mids como âncoras mais 10-30 micros mensais. Objetivo: presença constante e construção de marca. Ideal para: categorias competitivas como beauty, fitness e fintech. Chave: contratos de 3-6 meses e rotação de micros para evitar fadiga."
+      },
+      "celebrity_plus_community_creators": {
+        "title": "\"Celebrity + Community creators\" (impacto de PR + autenticidade)",
+        "description": "Mix: 1 celebrity mais 20-60 nanos ou micros. Objetivo: PR ou earned media com legitimidade da comunidade. Ideal para: reposicionamento, causas e campanhas culturais. Chave: celebrity para manchetes e comunidade para conversa orgânica."
+      },
+      "vertical_experts_authority": {
+        "title": "\"Vertical experts\" (Autoridade)",
+        "description": "Mix: 5-15 criadores especialistas (micro ou mid). Objetivo: consideração, confiança e educação em finanças, saúde ou tecnologia. Ideal para: fintech, B2B, educação e health/wellness. Chave: formatos longos como YouTube ou podcasts com recortes curtos."
+      },
+      "ugc_creators": {
+        "title": "\"UGC creators\" (o número de seguidores não importa)",
+        "description": "Mix: 10-50 criadores UGC, às vezes abaixo de 10k. Objetivo: produzir anúncios ou conteúdo pago sem pagar taxas de alcance de creator. Ideal para: performance ads em Meta ou TikTok. Chave: pagar produção e direitos de uso, não alcance."
+      },
+      "event_amplification": {
+        "title": "\"Event amplification\"",
+        "description": "Mix: 1-2 macros ou mega mais 10-30 micros ou nanos no evento. Objetivo: cobertura ao vivo, FOMO, presença e PR social. Ideal para: lançamentos, pop-ups, festivais e press trips. Chave: definir momentos e entregáveis claros."
+      },
+      "challenge_trend_wave": {
+        "title": "\"Challenge / Trend wave\"",
+        "description": "Mix: 1 criador mid ou macro para iniciar mais 30-150 micros ou nanos para replicar. Objetivo: viralidade e repetição do conceito. Ideal para: TikTok, música e consumo de massa. Chave: mecânica muito simples com incentivos."
+      },
+      "creator_squad_ambassadors": {
+        "title": "\"Creator squad\" (embaixadores)",
+        "description": "Mix: 6-20 criadores (micro ou mid) por 6-12 meses. Objetivo: consistência e associação de marca. Ideal para: lifestyle, sports, beauty e marcas fintech-friendly. Chave: contratos com exclusividade razoável, perks e conteúdo mensal."
+      },
+      "retargeting_booster_paid_whitelisting": {
+        "title": "\"Retargeting booster\" (paid + whitelisting)",
+        "description": "Mix: 5-15 micros ou mids com aprovação de whitelisting. Objetivo: veicular anúncios a partir da conta do criador para melhorar o CTR e reforçar o retargeting. Ideal para: performance pura. Chave: negociar direitos e duração de uso por 30, 60 ou 90 dias."
+      }
+    }
+  }
+}

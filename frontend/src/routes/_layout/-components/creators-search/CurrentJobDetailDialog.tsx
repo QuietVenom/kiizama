@@ -1,4 +1,5 @@
 import { Badge, Box, Flex, SimpleGrid, Text } from "@chakra-ui/react"
+import { useTranslation } from "react-i18next"
 import { FiSearch } from "react-icons/fi"
 
 import { Button } from "@/components/ui/button"
@@ -28,6 +29,7 @@ export const CurrentJobDetailDialog = ({
   onOpenChange: (open: boolean) => void
   onReuseReadyUsernames: (usernames: string[]) => void
 }) => {
+  const { i18n, t } = useTranslation(["creatorsSearch", "common"])
   const terminalPayload = job?.terminalPayload
   const requestedUsernames =
     terminalPayload?.requested_usernames ?? job?.requestedUsernames ?? []
@@ -74,7 +76,7 @@ export const CurrentJobDetailDialog = ({
                 fontWeight="bold"
                 letterSpacing="0.08em"
               >
-                CURRENT JOB DETAIL
+                {t("creatorsSearch:jobDetail.eyebrow")}
               </Text>
               <Text
                 mt={2}
@@ -83,7 +85,7 @@ export const CurrentJobDetailDialog = ({
                 lineHeight="1.2"
                 wordBreak="break-word"
               >
-                {job?.jobId ?? "Job detail"}
+                {job?.jobId ?? t("creatorsSearch:jobDetail.fallbackTitle")}
               </Text>
             </Box>
             {job ? (
@@ -96,16 +98,27 @@ export const CurrentJobDetailDialog = ({
                 px={3}
                 py={1.5}
               >
-                {getCreatorsSearchJobStatusLabel(job.status)}
+                {getCreatorsSearchJobStatusLabel(job.status, (key) =>
+                  t(`creatorsSearch:${key}`),
+                )}
               </Badge>
             ) : null}
           </DialogTitle>
           {job ? (
             <Text mt={2} color="ui.secondaryText">
               {job.sourceBox === "expired"
-                ? "Profiles need updates"
-                : "Usernames not found"}{" "}
-              batch updated {formatJobTimestamp(job.updatedAt)}.
+                ? t("creatorsSearch:jobDetail.subtitle.expired", {
+                    date: formatJobTimestamp(
+                      job.updatedAt,
+                      i18n.resolvedLanguage ?? i18n.language,
+                    ),
+                  })
+                : t("creatorsSearch:jobDetail.subtitle.missing", {
+                    date: formatJobTimestamp(
+                      job.updatedAt,
+                      i18n.resolvedLanguage ?? i18n.language,
+                    ),
+                  })}
             </Text>
           ) : null}
         </DialogHeader>
@@ -119,7 +132,7 @@ export const CurrentJobDetailDialog = ({
             <Flex direction="column" gap={4}>
               <SimpleGrid columns={{ base: 1, sm: 2, xl: 4 }} gap={3}>
                 <SearchOverviewCard
-                  label="Requested"
+                  label={t("creatorsSearch:jobDetail.overview.requested")}
                   tone="brand"
                   value={String(
                     terminalPayload?.counters.requested ??
@@ -127,19 +140,19 @@ export const CurrentJobDetailDialog = ({
                   )}
                 />
                 <SearchOverviewCard
-                  label="Ready"
+                  label={t("creatorsSearch:jobDetail.overview.ready")}
                   tone="success"
                   value={String(readyUsernames.length)}
                 />
                 <SearchOverviewCard
-                  label="Failed"
+                  label={t("creatorsSearch:jobDetail.overview.failed")}
                   tone="danger"
                   value={String(
                     terminalPayload?.counters.failed ?? failedUsernames.length,
                   )}
                 />
                 <SearchOverviewCard
-                  label="Not found"
+                  label={t("creatorsSearch:jobDetail.overview.notFound")}
                   tone="warning"
                   value={String(
                     terminalPayload?.counters.not_found ??
@@ -149,32 +162,32 @@ export const CurrentJobDetailDialog = ({
               </SimpleGrid>
 
               <UsernameGroup
-                title="Requested usernames"
+                title={t("creatorsSearch:jobDetail.groups.requested")}
                 tone="neutral"
                 usernames={requestedUsernames}
               />
               <UsernameGroup
-                title="Ready usernames"
+                title={t("creatorsSearch:jobDetail.groups.ready")}
                 tone="success"
                 usernames={readyUsernames}
               />
               <UsernameGroup
-                title="Successful usernames"
+                title={t("creatorsSearch:jobDetail.groups.successful")}
                 tone="success"
                 usernames={successfulUsernames}
               />
               <UsernameGroup
-                title="Skipped usernames"
+                title={t("creatorsSearch:jobDetail.groups.skipped")}
                 tone="warning"
                 usernames={skippedUsernames}
               />
               <UsernameGroup
-                title="Failed usernames"
+                title={t("creatorsSearch:jobDetail.groups.failed")}
                 tone="danger"
                 usernames={failedUsernames}
               />
               <UsernameGroup
-                title="Not found usernames"
+                title={t("creatorsSearch:jobDetail.groups.notFound")}
                 tone="warning"
                 usernames={notFoundUsernames}
               />
@@ -189,7 +202,7 @@ export const CurrentJobDetailDialog = ({
                   py={4}
                 >
                   <Text color="ui.dangerText" fontWeight="black">
-                    Worker error
+                    {t("creatorsSearch:jobDetail.workerError")}
                   </Text>
                   <Text mt={2} color="ui.secondaryText" fontSize="sm">
                     {job.error}
@@ -211,7 +224,7 @@ export const CurrentJobDetailDialog = ({
           flexDirection={{ base: "column-reverse", md: "row" }}
         >
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
+            {t("common:actions.close")}
           </Button>
           {job && readyUsernames.length > 0 ? (
             <Button
@@ -219,7 +232,7 @@ export const CurrentJobDetailDialog = ({
               onClick={() => onReuseReadyUsernames(readyUsernames)}
             >
               <FiSearch />
-              Search
+              {t("common:actions.search")}
             </Button>
           ) : null}
         </DialogFooter>

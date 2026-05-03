@@ -1,6 +1,7 @@
 import { Badge, Box, Flex, Heading, SimpleGrid, Text } from "@chakra-ui/react"
 import { useMemo, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
+import { Trans, useTranslation } from "react-i18next"
 import { FiTarget, FiUserCheck } from "react-icons/fi"
 import { ImBlocked } from "react-icons/im"
 
@@ -25,6 +26,7 @@ type StrategyType =
 const EMPTY_USERNAMES: string[] = []
 
 export function ReputationStrategyPage() {
+  const { t } = useTranslation("brandIntelligence")
   const [selectedStrategy, setSelectedStrategy] = useState<StrategyType>(
     "reputation-campaign-strategy",
   )
@@ -88,7 +90,7 @@ export function ReputationStrategyPage() {
           direction={{ base: "column", lg: "row" }}
         >
           <Box flex="1" minW={0}>
-            <Text textStyle="eyebrow">Brand Intelligence</Text>
+            <Text textStyle="eyebrow">{t("page.eyebrow")}</Text>
             <Heading
               mt={3}
               textStyle="pageTitle"
@@ -97,7 +99,7 @@ export function ReputationStrategyPage() {
               lineHeight="1.05"
               maxW="18ch"
             >
-              Build modular reputation strategy reports.
+              {t("page.title")}
             </Heading>
             <Text
               mt={3}
@@ -105,9 +107,7 @@ export function ReputationStrategyPage() {
               fontSize={{ base: "md", lg: "lg" }}
               maxW="70ch"
             >
-              Start with creator usernames, validate them against the saved
-              profile dataset, and then generate the selected reputation
-              strategy as a PDF report.
+              {t("page.description")}
             </Text>
           </Box>
 
@@ -123,7 +123,7 @@ export function ReputationStrategyPage() {
               px={3}
               py={1.5}
             >
-              Profile validation first
+              {t("page.badges.validationFirst")}
             </Badge>
             <Badge
               rounded="full"
@@ -132,7 +132,7 @@ export function ReputationStrategyPage() {
               px={3}
               py={1.5}
             >
-              PDF only
+              {t("page.badges.pdfOnly")}
             </Badge>
             <Badge
               rounded="full"
@@ -141,7 +141,7 @@ export function ReputationStrategyPage() {
               px={3}
               py={1.5}
             >
-              Local reports synced
+              {t("page.badges.localReportsSynced")}
             </Badge>
           </Flex>
         </Flex>
@@ -152,18 +152,18 @@ export function ReputationStrategyPage() {
           mb={{ base: 7, lg: 8 }}
         >
           <StrategyOptionCard
-            description="Validate a list of creators first, then generate a reputation campaign strategy around the selected campaign model."
+            description={t("page.strategyOptions.campaign.description")}
             icon={FiTarget}
             isActive={selectedStrategy === "reputation-campaign-strategy"}
             onClick={() => setSelectedStrategy("reputation-campaign-strategy")}
-            title="Reputation Campaign Strategy"
+            title={t("page.strategyOptions.campaign.title")}
           />
           <StrategyOptionCard
-            description="Validate the creator profile first, then generate a creator-centered reputation strategy with signals, platforms, and collaborators."
+            description={t("page.strategyOptions.creator.description")}
             icon={FiUserCheck}
             isActive={selectedStrategy === "reputation-creator-strategy"}
             onClick={() => setSelectedStrategy("reputation-creator-strategy")}
-            title="Reputation Creator Strategy"
+            title={t("page.strategyOptions.creator.title")}
           />
         </SimpleGrid>
 
@@ -189,15 +189,17 @@ export function ReputationStrategyPage() {
               <ImBlocked />
             </Flex>
             <Box>
-              <Text fontWeight="black">Validation gate is mandatory</Text>
+              <Text fontWeight="black">{t("page.mandatoryGate.title")}</Text>
               <Text mt={1} color="ui.secondaryText">
-                Before any report is generated, the flow always re-runs{" "}
-                <Text as="span" fontWeight="bold" color="inherit">
-                  the profiles existence
-                </Text>
-                . Missing usernames block report generation, profiles with
-                update needed are allowed with a visible warning, and successful
-                PDFs are stored in local storage for the dashboard.
+                <Trans
+                  i18nKey="page.mandatoryGate.description"
+                  ns="brandIntelligence"
+                  components={{
+                    strong: (
+                      <Text as="span" fontWeight="bold" color="inherit" />
+                    ),
+                  }}
+                />
               </Text>
             </Box>
           </Flex>

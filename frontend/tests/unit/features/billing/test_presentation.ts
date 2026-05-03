@@ -136,7 +136,7 @@ describe("billing presentation", () => {
     })
 
     // Act
-    const result = getBillingPeriodPresentation(summary)
+    const result = getBillingPeriodPresentation(summary, { language: "es" })
 
     // Assert
     expect(result.label).toBe("Usage Resets On")
@@ -152,7 +152,7 @@ describe("billing presentation", () => {
     })
 
     // Act
-    const result = getBillingPeriodPresentation(summary)
+    const result = getBillingPeriodPresentation(summary, { language: "es" })
 
     // Assert
     expect(result.label).toBe("Cancels On")
@@ -170,7 +170,7 @@ describe("billing presentation", () => {
     })
 
     // Act
-    const result = getBillingPeriodPresentation(summary)
+    const result = getBillingPeriodPresentation(summary, { language: "es" })
 
     // Assert
     expect(result).toEqual({
@@ -182,7 +182,9 @@ describe("billing presentation", () => {
 
   test("billing_period_missing_renewal_date_returns_not_available", () => {
     // Arrange / Act
-    const result = getBillingPeriodPresentation(createBillingSummary())
+    const result = getBillingPeriodPresentation(createBillingSummary(), {
+      language: "es",
+    })
 
     // Assert
     expect(result).toEqual({

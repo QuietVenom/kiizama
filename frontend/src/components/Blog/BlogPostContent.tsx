@@ -45,8 +45,18 @@ const BlogPostContent = ({ html }: BlogPostContentProps) => {
         },
         "& ul, & ol": {
           color: "ui.secondaryText",
+          listStylePosition: "outside",
           pl: 6,
           mb: 5,
+        },
+        "& ul": {
+          listStyleType: "disc",
+        },
+        "& ol": {
+          listStyleType: "decimal",
+        },
+        "& li::marker": {
+          color: "ui.secondaryText",
         },
         "& li": {
           mb: 2,

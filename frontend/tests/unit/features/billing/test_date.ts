@@ -2,10 +2,11 @@ import { describe, expect, test } from "vitest"
 
 import { formatBillingDateOnly } from "../../../../src/features/billing/date"
 
-const billingDateFormatter = new Intl.DateTimeFormat("es-MX", {
+const billingDateFormatter = new Intl.DateTimeFormat("es", {
   day: "2-digit",
   month: "long",
   year: "numeric",
+  timeZone: "UTC",
 })
 
 describe("billing date formatting", () => {
@@ -20,7 +21,7 @@ describe("billing date formatting", () => {
     const expected = billingDateFormatter.format(new Date(2026, 0, 31))
 
     // Act
-    const result = formatBillingDateOnly("2026-01-31")
+    const result = formatBillingDateOnly("2026-01-31", "es")
 
     // Assert
     expect(result).toBe(expected)
@@ -29,10 +30,14 @@ describe("billing date formatting", () => {
   test("billing_date_iso_datetime_formats_valid_date", () => {
     // Arrange
     const isoDate = "2026-02-03T12:00:00.000Z"
-    const expected = billingDateFormatter.format(new Date(isoDate))
+    const expected = new Intl.DateTimeFormat("es", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    }).format(new Date(isoDate))
 
     // Act
-    const result = formatBillingDateOnly(isoDate)
+    const result = formatBillingDateOnly(isoDate, "es")
 
     // Assert
     expect(result).toBe(expected)

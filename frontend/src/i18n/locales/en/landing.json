@@ -1,0 +1,174 @@
+{
+  "navbar": {
+    "home": "Home",
+    "capabilities": "Capabilities",
+    "plans": "Plans",
+    "faq": "FAQ",
+    "waitingList": "Waiting List"
+  },
+  "hero": {
+    "badge": "Instagram Reputation Intelligence",
+    "title": {
+      "prefix": "Turn social media data into",
+      "highlight": "reputation strategy"
+    },
+    "description": "Built for Public Relations, Marketing, Creators, and Talent teams. Analyze profiles, classify with AI, and generate strategic outputs in minutes.",
+    "joinWaitingList": "Join waiting list",
+    "alreadyHaveAccount": "I already have an account",
+    "trustSignals": {
+      "profileSnapshots": "Profile snapshots and engagement metrics",
+      "classification": "AI-powered classification workflows",
+      "reports": "Strategic PDF reports",
+      "storage": "Durable storage and async pipelines"
+    },
+    "cards": {
+      "creatorPerformanceReport": "Creator Performance Report",
+      "brandReputation": "Brand Reputation",
+      "creatorReputation": "Creator Reputation",
+      "high": "High"
+    }
+  },
+  "features": {
+    "eyebrow": "Core Capabilities",
+    "title": "Workflows designed for intelligence at scale",
+    "description": "Designed for teams that need operational social data, AI enrichment, and strategy-ready outputs in one unified platform.",
+    "items": {
+      "instagramDataCapture": {
+        "title": "Instagram Data Capture",
+        "description": "Collect profile snapshots, posts, reels, and key engagement fields seamlessly in one automated workflow."
+      },
+      "aiProfileClassification": {
+        "title": "AI Profile Classification",
+        "description": "Classify creators by nuanced categories and roles to accelerate shortlist quality and targeting precision."
+      },
+      "performanceReports": {
+        "title": "Performance Reports",
+        "description": "Generate downloadable PDF outputs from stored Instagram snapshots and historical metrics."
+      },
+      "campaignStrategy": {
+        "title": "Campaign Strategy",
+        "description": "Build brand-level strategy inputs leveraging audience demographics, goals, and custom creator sets."
+      },
+      "creatorStrategy": {
+        "title": "Creator Strategy",
+        "description": "Generate creator-specific strategy outputs grounded on profile context, performance, and reputation signals."
+      },
+      "asyncJobsPersistence": {
+        "title": "Async Jobs & Persistence",
+        "description": "Run heavy scrape jobs with status tracking, retries, and durable storage across profile collections."
+      }
+    }
+  },
+  "pricing": {
+    "eyebrow": "Current Packages",
+    "title": "Start free, then continue with the base monthly plan",
+    "description": "Try Kiizama for 7 days without adding a card. When you are ready, the Base plan is $389 MXN per month (IVA included).",
+    "recommended": "Recommended",
+    "ready": "Ready to turn creator data into clearer decisions?",
+    "joinWaitingList": "Join waiting list",
+    "logIn": "Log in",
+    "plans": {
+      "trial": {
+        "name": "Free Trial",
+        "price": "$0",
+        "priceSuffix": "for 7 days",
+        "badge": "No card required",
+        "cta": "Start free trial",
+        "description": "Explore Kiizama with a 7-day trial before choosing a paid plan.",
+        "features": {
+          "noCard": "No credit or debit card to start",
+          "search": "Access to creator search workflows",
+          "snapshots": "Profile snapshots and saved metrics",
+          "strategy": "AI-assisted strategy outputs"
+        }
+      },
+      "base": {
+        "name": "Base",
+        "price": "$389 MXN",
+        "priceSuffix": "per month (IVA included)",
+        "badge": "Monthly subscription",
+        "cta": "Start base plan",
+        "description": "The current monthly plan for teams that need ongoing creator intelligence.",
+        "features": {
+          "mxn": "Monthly subscription in Mexican pesos",
+          "discovery": "Creator discovery and validation tools",
+          "reports": "Social performance reports",
+          "reputation": "Reputation strategy workflows",
+          "cancel": "Cancel when you want"
+        }
+      }
+    }
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "title": "Answers to key questions",
+    "items": {
+      "platformSupport": {
+        "question": "Which social platform is supported today?",
+        "answer": "Kiizama currently focuses on Instagram workflows, including profile snapshots, report generation, and reputation strategy outputs."
+      },
+      "reportOutputs": {
+        "question": "What outputs does the platform generate?",
+        "answer": "You can generate PDF reports. Multi-profile requests can be delivered as a ZIP file containing each output."
+      },
+      "aiEnrichment": {
+        "question": "Do you use AI in the analysis flow?",
+        "answer": "Yes. The platform enriches profiles with AI categories and roles, and powers campaign and creator reputation strategy generation."
+      },
+      "requestLimits": {
+        "question": "Are there operational limits per request?",
+        "answer": "Yes. The Base plan currently includes 50 profile lookups, 20 social media reports, and 5 reputation strategy requests per monthly cycle. Per-request caps still apply: up to 10 usernames per scrape job, up to 20 usernames per Instagram report request, and up to 15 profiles per campaign strategy request. We will add new plans or adjust limits as demand grows."
+      }
+    }
+  },
+  "blog": {
+    "journal": "Kiizama Journal",
+    "backToBlog": "Back to Blog",
+    "readMore": "Read More",
+    "readingTime_one": "{{count}} min read",
+    "readingTime_other": "{{count}} min read",
+    "index": {
+      "title": "The latest Kiizama insights",
+      "description": "Product thinking, workflow notes, and reputation intelligence perspectives from Kiizama."
+    }
+  },
+  "footer": {
+    "tagline": "Advanced reputation intelligence and strategic workflows for modern brand and creator teams.",
+    "sections": {
+      "product": "Product",
+      "company": "Company",
+      "legal": "Legal"
+    },
+    "links": {
+      "capabilities": "Capabilities",
+      "pricing": "Pricing",
+      "apiDocs": "API Documentation",
+      "faq": "FAQ",
+      "aboutUs": "About Us",
+      "careers": "Careers",
+      "contact": "Contact",
+      "security": "Security",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "providers": "Providers"
+    },
+    "copyright": "© {{year}} Kiizama Inc. All rights reserved.",
+    "cookieSettings": "Cookie Settings",
+    "cookiePanel": {
+      "done": "Done",
+      "title": "Kiizama uses cookies to offer you a better experience.",
+      "description": "By clicking \"Accept all\", you agree to the storing of cookies on your device for functional, analytics, and advertising purposes.",
+      "acceptAll": "Accept All",
+      "details": "See Cookie Notice for details.",
+      "options": {
+        "strictlyNecessary": "Strictly Necessary",
+        "functional": "Functional",
+        "analytics": "Analytics",
+        "marketing": "Marketing"
+      },
+      "aria": {
+        "cookies": "{{label}} cookies"
+      }
+    }
+  }
+}

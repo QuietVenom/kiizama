@@ -1,0 +1,47 @@
+{
+  "overview": {
+    "fallbackName": "por aí",
+    "greeting": "Olá, {{name}}",
+    "subtitle": "Bom ter você de volta. Isto é o que está acontecendo hoje.",
+    "paymentsCta": "Pagamentos",
+    "activateSubscription": "Ative sua assinatura",
+    "metrics": {
+      "profiles": "Perfis: créditos atuais",
+      "socialMediaReports": "Relatórios de social media: créditos atuais",
+      "reputationStrategy": "Estratégia reputacional: créditos atuais"
+    },
+    "strategic": {
+      "news": "Notícias",
+      "noPosts": "Ainda não há posts de blog publicados.",
+      "planStatus": "Status do plano",
+      "planType": "Tipo de plano"
+    }
+  },
+  "recentReports": {
+    "title": "Relatórios disponíveis - armazenamento local",
+    "subtitle": "Lista de relatórios disponíveis",
+    "empty": "Não há relatórios disponíveis no armazenamento local.",
+    "savedOn": "Salvo em {{date}}",
+    "actions": {
+      "downloadAria": "Baixar relatório {{name}}",
+      "deleteAria": "Excluir relatório {{name}}"
+    },
+    "deleteAllDialog": {
+      "title": "Tem certeza?",
+      "description": "Todos os relatórios disponíveis no armazenamento local serão excluídos.",
+      "cancel": "Não",
+      "confirm": "Sim"
+    },
+    "deleteItemDialog": {
+      "title": "Tem certeza?",
+      "descriptionPrefix": "O seguinte relatório será excluído",
+      "cancel": "Não",
+      "confirm": "Sim"
+    }
+  },
+  "shell": {
+    "navigation": {
+      "overview": "Visão geral"
+    }
+  }
+}

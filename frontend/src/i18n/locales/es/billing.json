@@ -1,0 +1,58 @@
+{
+  "title": "Pagos",
+  "loading": "Cargando detalles de facturación...",
+  "actions": {
+    "startTrial": "Iniciar prueba",
+    "startBasePlan": "Iniciar plan Base",
+    "addPaymentMethod": "Agregar método de pago",
+    "manageBilling": "Administrar pagos"
+  },
+  "errors": {
+    "unableToStartCheckout": "No se pudo iniciar el checkout.",
+    "unableToOpenBillingManagement": "No se pudo abrir la administración de pagos."
+  },
+  "features": {
+    "profiles": "Perfiles",
+    "socialMediaReports": "Reportes de social media",
+    "reputationStrategy": "Estrategia reputacional"
+  },
+  "messages": {
+    "pendingAmbassadorActivation": "El acceso de ambassador está programado para activarse al final del periodo de facturación actual.",
+    "accessRevokedReason": "Motivo de acceso revocado"
+  },
+  "notices": {
+    "title": "Avisos de facturación"
+  },
+  "noticeStatus": {
+    "read": "Leído",
+    "unread": "No leído"
+  },
+  "usage": {
+    "unlimited": "Ilimitado"
+  },
+  "plan": {
+    "admin": "Admin",
+    "ambassador": "Ambassador",
+    "base": "Base",
+    "none": "Sin plan",
+    "trial": "Prueba"
+  },
+  "status": {
+    "active": "Activo",
+    "canceled": "Cancelado",
+    "incomplete": "Incompleto",
+    "incomplete_expired": "Incompleto expirado",
+    "past_due": "Vencido",
+    "paused": "Pausado",
+    "trialing": "En prueba",
+    "unpaid": "No pagado"
+  },
+  "period": {
+    "usageResetsOn": "Uso se reinicia el",
+    "renewalDay": "Día de renovación",
+    "cancelsOn": "Cancela el",
+    "notAvailable": "No disponible",
+    "managedHelper": "El acceso se administra internamente. El uso se reinicia al inicio de cada mes UTC.",
+    "cancellationHelper": "El acceso permanece disponible hasta el final del periodo de facturación actual."
+  }
+}

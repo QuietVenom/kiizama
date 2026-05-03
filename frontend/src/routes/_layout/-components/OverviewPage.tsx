@@ -1,6 +1,7 @@
 import { Box, Button, Flex, Grid, Text } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
+import { useTranslation } from "react-i18next"
 import { FiFileText, FiShield, FiUserCheck } from "react-icons/fi"
 
 import DashboardPageShell from "@/components/Dashboard/DashboardPageShell"
@@ -21,21 +22,27 @@ import {
 import useAuth from "@/hooks/useAuth"
 
 export function OverviewPage() {
+  const { i18n, t } = useTranslation("dashboard")
+  const { t: tBilling } = useTranslation("billing")
   const { user: currentUser } = useAuth()
   const navigate = useNavigate()
-  const displayName = currentUser?.full_name || currentUser?.email || "there"
+  const displayName =
+    currentUser?.full_name || currentUser?.email || t("overview.fallbackName")
   const { data: billing } = useQuery(billingSummaryQueryOptions)
 
   const profilesUsage = getFeatureUsage(billing, "ig_scraper")
   const reportsUsage = getFeatureUsage(billing, "social_media_report")
   const reputationUsage = getFeatureUsage(billing, "reputation_strategy")
   const isManagedAccess = hasManagedAccess(billing)
-  const planLabel = getBillingPlanLabel(billing)
-  const periodPresentation = getBillingPeriodPresentation(billing)
+  const planLabel = getBillingPlanLabel(billing, (key) => tBilling(key))
+  const periodPresentation = getBillingPeriodPresentation(billing, {
+    language: i18n.resolvedLanguage ?? i18n.language,
+    t: (key) => tBilling(key),
+  })
   const hasActivePlan = hasUsablePlan(billing)
   const paymentsCtaLabel = hasActivePlan
-    ? "Payments"
-    : "Activate Your Subscription"
+    ? t("overview.paymentsCta")
+    : t("overview.activateSubscription")
 
   return (
     <DashboardPageShell>
@@ -56,7 +63,7 @@ export function OverviewPage() {
               truncate
               maxW="32ch"
             >
-              Hi, {displayName} 👋
+              {t("overview.greeting", { name: displayName })} 👋
             </Text>
             <Text
               mt={3}
@@ -65,8 +72,7 @@ export function OverviewPage() {
               fontWeight="medium"
               maxW="50ch"
             >
-              Welcome back, nice to see you again! Here's what's happening
-              today.
+              {t("overview.subtitle")}
             </Text>
           </Box>
           {isManagedAccess ? null : (
@@ -97,20 +103,29 @@ export function OverviewPage() {
         >
           <MetricCard
             icon={FiUserCheck}
-            label="Profiles: Current Credits"
-            value={renderFeatureUsageValue(profilesUsage)}
+            label={t("overview.metrics.profiles")}
+            value={renderFeatureUsageValue(
+              profilesUsage,
+              tBilling("usage.unlimited"),
+            )}
             tone="info"
           />
           <MetricCard
             icon={FiFileText}
-            label="Social Media Reports: Current Credits"
-            value={renderFeatureUsageValue(reportsUsage)}
+            label={t("overview.metrics.socialMediaReports")}
+            value={renderFeatureUsageValue(
+              reportsUsage,
+              tBilling("usage.unlimited"),
+            )}
             tone="accent"
           />
           <MetricCard
             icon={FiShield}
-            label="Reputation Strategy: Current Credits"
-            value={renderFeatureUsageValue(reputationUsage)}
+            label={t("overview.metrics.reputationStrategy")}
+            value={renderFeatureUsageValue(
+              reputationUsage,
+              tBilling("usage.unlimited"),
+            )}
             tone="positive"
           />
         </Grid>

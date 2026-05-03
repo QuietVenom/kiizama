@@ -40,7 +40,9 @@ const createPost = (overrides: Partial<BlogPost> = {}): BlogPost => ({
 describe("blog post card", () => {
   test("blog_post_card_with_tags_renders_summary_metadata_and_link", () => {
     // Arrange / Act
-    renderWithProviders(<BlogPostCard post={createPost()} />)
+    renderWithProviders(<BlogPostCard post={createPost()} />, {
+      language: "en",
+    })
 
     // Assert
     expect(screen.getByRole("heading", { name: "Alpha post" })).toBeVisible()
@@ -59,11 +61,31 @@ describe("blog post card", () => {
 
   test("blog_post_card_without_tags_omits_tag_badges", () => {
     // Arrange / Act
-    renderWithProviders(<BlogPostCard post={createPost({ tags: [] })} />)
+    renderWithProviders(<BlogPostCard post={createPost({ tags: [] })} />, {
+      language: "en",
+    })
 
     // Assert
     expect(screen.getByRole("heading", { name: "Alpha post" })).toBeVisible()
     expect(screen.queryByText("Strategy")).not.toBeInTheDocument()
     expect(screen.queryByText("Creators")).not.toBeInTheDocument()
+  })
+
+  test("blog_post_card_uses_translated_read_more_and_reading_time", () => {
+    renderWithProviders(
+      <BlogPostCard
+        post={createPost({ publishedAt: "2026-04-05", readingTime: 1 })}
+      />,
+      {
+        language: "es",
+      },
+    )
+
+    expect(screen.getByText("5 de abril de 2026")).toBeVisible()
+    expect(screen.getByText("1 min de lectura")).toBeVisible()
+    expect(screen.getByRole("link", { name: "Leer más" })).toHaveAttribute(
+      "href",
+      "/blog/alpha",
+    )
   })
 })

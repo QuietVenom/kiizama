@@ -102,7 +102,7 @@ describe("creator snapshot detail dialog", () => {
 
     // Assert
     expect(
-      screen.queryByText("Creator snapshot detail"),
+      screen.queryByText("Detalle del snapshot del creador"),
     ).not.toBeInTheDocument()
   })
 
@@ -118,14 +118,14 @@ describe("creator snapshot detail dialog", () => {
     // Assert
     expect(screen.getAllByText("Creator One")[0]).toBeVisible()
     expect(screen.getAllByText(/@creator_one/)[0]).toBeVisible()
-    expect(screen.getByText("AI analysis")).toBeVisible()
-    expect(screen.getByText("Metrics")).toBeVisible()
+    expect(screen.getByText("Análisis de IA")).toBeVisible()
+    expect(screen.getByText("Métricas")).toBeVisible()
     expect(screen.getByText("Posts (1)")).toBeVisible()
     expect(screen.getByText("Reels (1)")).toBeVisible()
     expect(screen.getByText("Fitness")).toBeVisible()
     expect(screen.getByText("Coach")).toBeVisible()
-    expect(screen.getByText("Total posts")).toBeVisible()
-    expect(screen.getByText("Total reels")).toBeVisible()
+    expect(screen.getByText("Posts totales")).toBeVisible()
+    expect(screen.getByText("Reels totales")).toBeVisible()
   })
 
   test("creator_snapshot_detail_dialog_empty_posts_reels_and_metrics_render_empty_copy", () => {
@@ -143,7 +143,7 @@ describe("creator snapshot detail dialog", () => {
 
     // Assert
     expect(
-      screen.getByText("No metrics were saved for this creator yet."),
+      screen.getByText("Todavía no se guardaron métricas para este creador."),
     ).toBeVisible()
     expect(screen.queryByText(/^Posts \(/)).not.toBeInTheDocument()
     expect(screen.queryByText(/^Reels \(/)).not.toBeInTheDocument()
@@ -158,6 +158,7 @@ describe("creator snapshot detail dialog", () => {
         onOpenChange={onOpenChange}
         snapshot={createSnapshot()}
       />,
+      { language: "en" },
     )
 
     // Act

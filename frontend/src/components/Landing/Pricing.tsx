@@ -13,6 +13,7 @@ import {
 import { keyframes } from "@emotion/react"
 import { Link } from "@tanstack/react-router"
 import type { RefObject } from "react"
+import { useTranslation } from "react-i18next"
 import { FiCheck } from "react-icons/fi"
 
 type PricingPlan = {
@@ -37,51 +38,49 @@ const fadeInUp = keyframes`
   }
 `
 
-const plans: PricingPlan[] = [
-  {
-    name: "Free Trial",
-    price: "$0",
-    priceSuffix: "for 7 days",
-    badge: "No card required",
-    ctaLabel: "Start free trial",
-    description:
-      "Explore Kiizama with a 7-day trial before choosing a paid plan.",
-    features: [
-      "No credit or debit card to start",
-      "Access to creator search workflows",
-      "Profile snapshots and saved metrics",
-      "AI-assisted strategy outputs",
-    ],
-  },
-  {
-    name: "Base",
-    price: "$389 MXN",
-    priceSuffix: "per month (IVA included)",
-    badge: "Monthly subscription",
-    ctaLabel: "Start base plan",
-    description:
-      "The current monthly plan for teams that need ongoing creator intelligence.",
-    features: [
-      "Monthly subscription in Mexican pesos",
-      "Creator discovery and validation tools",
-      "Social performance reports",
-      "Reputation strategy workflows",
-      "Cancel when you want",
-    ],
-    highlighted: true,
-  },
-]
-
 type PricingProps = {
   isWaitingListEnabled: boolean
   sectionRef: RefObject<HTMLElement | null>
 }
 
 const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
+  const { t } = useTranslation("landing")
   const loginUrl = "/login"
+  const plans: PricingPlan[] = [
+    {
+      name: t("pricing.plans.trial.name"),
+      price: t("pricing.plans.trial.price"),
+      priceSuffix: t("pricing.plans.trial.priceSuffix"),
+      badge: t("pricing.plans.trial.badge"),
+      ctaLabel: t("pricing.plans.trial.cta"),
+      description: t("pricing.plans.trial.description"),
+      features: [
+        t("pricing.plans.trial.features.noCard"),
+        t("pricing.plans.trial.features.search"),
+        t("pricing.plans.trial.features.snapshots"),
+        t("pricing.plans.trial.features.strategy"),
+      ],
+    },
+    {
+      name: t("pricing.plans.base.name"),
+      price: t("pricing.plans.base.price"),
+      priceSuffix: t("pricing.plans.base.priceSuffix"),
+      badge: t("pricing.plans.base.badge"),
+      ctaLabel: t("pricing.plans.base.cta"),
+      description: t("pricing.plans.base.description"),
+      features: [
+        t("pricing.plans.base.features.mxn"),
+        t("pricing.plans.base.features.discovery"),
+        t("pricing.plans.base.features.reports"),
+        t("pricing.plans.base.features.reputation"),
+        t("pricing.plans.base.features.cancel"),
+      ],
+      highlighted: true,
+    },
+  ]
 
   const getPrimaryLabel = (plan: PricingPlan) => {
-    if (isWaitingListEnabled) return "Join waiting list"
+    if (isWaitingListEnabled) return t("pricing.joinWaitingList")
     return plan.ctaLabel
   }
 
@@ -109,7 +108,7 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
             gap={3}
           >
             <Box as="span" h="1px" w="8" bg="ui.mainHover" />
-            Current Packages
+            {t("pricing.eyebrow")}
             <Box as="span" h="1px" w="8" bg="ui.mainHover" />
           </Text>
           <Heading
@@ -119,11 +118,10 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
             lineHeight={1.15}
             fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
           >
-            Start free, then continue with the base monthly plan
+            {t("pricing.title")}
           </Heading>
           <Text color="ui.secondaryText" fontSize={{ base: "md", md: "lg" }}>
-            Try Kiizama for 7 days without adding a card. When you are ready,
-            the Base plan is $389 MXN per month (IVA included).
+            {t("pricing.description")}
           </Text>
         </Stack>
 
@@ -155,7 +153,7 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
                   letterSpacing="0.08em"
                   textTransform="uppercase"
                 >
-                  Recommended
+                  {t("pricing.recommended")}
                 </Box>
               )}
 
@@ -287,7 +285,7 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
             fontWeight="semibold"
             mb={6}
           >
-            Ready to turn creator data into clearer decisions?
+            {t("pricing.ready")}
           </Text>
           <HStack justify="center" gap={4} flexWrap="wrap">
             <Link to={isWaitingListEnabled ? "/waiting-list" : "/signup"}>
@@ -298,8 +296,8 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
                 layerStyle="brandGradientButton"
               >
                 {isWaitingListEnabled
-                  ? "Join waiting list"
-                  : "Start free trial"}
+                  ? t("pricing.joinWaitingList")
+                  : t("pricing.plans.trial.cta")}
               </Button>
             </Link>
             <ChakraLink href={loginUrl} _hover={{ textDecoration: "none" }}>
@@ -317,7 +315,7 @@ const Pricing = ({ isWaitingListEnabled, sectionRef }: PricingProps) => {
                 }}
                 transition="all 220ms ease"
               >
-                Log in
+                {t("pricing.logIn")}
               </Button>
             </ChakraLink>
           </HStack>

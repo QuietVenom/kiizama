@@ -1,0 +1,47 @@
+{
+  "overview": {
+    "fallbackName": "there",
+    "greeting": "Hi, {{name}}",
+    "subtitle": "Welcome back, nice to see you again! Here's what's happening today.",
+    "paymentsCta": "Payments",
+    "activateSubscription": "Activate Your Subscription",
+    "metrics": {
+      "profiles": "Profiles: Current Credits",
+      "socialMediaReports": "Social Media Reports: Current Credits",
+      "reputationStrategy": "Reputation Strategy: Current Credits"
+    },
+    "strategic": {
+      "news": "News",
+      "noPosts": "No published blog posts yet.",
+      "planStatus": "Plan Status",
+      "planType": "Plan Type"
+    }
+  },
+  "recentReports": {
+    "title": "Available Reports - Local Storage",
+    "subtitle": "List of available reports",
+    "empty": "No reports available in local storage.",
+    "savedOn": "Saved on {{date}}",
+    "actions": {
+      "downloadAria": "Download report {{name}}",
+      "deleteAria": "Delete report {{name}}"
+    },
+    "deleteAllDialog": {
+      "title": "Are you sure?",
+      "description": "All reports available in local storage will be deleted.",
+      "cancel": "No",
+      "confirm": "Yes"
+    },
+    "deleteItemDialog": {
+      "title": "Are you sure?",
+      "descriptionPrefix": "The following report will be deleted",
+      "cancel": "No",
+      "confirm": "Yes"
+    }
+  },
+  "shell": {
+    "navigation": {
+      "overview": "Overview"
+    }
+  }
+}

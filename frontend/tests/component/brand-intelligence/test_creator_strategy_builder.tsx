@@ -172,6 +172,7 @@ describe("creator strategy builder", () => {
         validation={createValidation({ username: "" })}
         values={creatorFormDefaultValues}
       />,
+      { language: "en" },
     )
 
     // Assert
@@ -187,7 +188,7 @@ describe("creator strategy builder", () => {
     // Arrange
     const user = userEvent.setup()
     const values = createCreatorValues()
-    renderWithProviders(<CreatorHarness values={values} />)
+    renderWithProviders(<CreatorHarness values={values} />, { language: "en" })
 
     // Act
     await user.click(
@@ -223,7 +224,7 @@ describe("creator strategy builder", () => {
       contentType: "application/zip",
       filename: "creator.zip",
     })
-    renderWithProviders(<CreatorHarness />)
+    renderWithProviders(<CreatorHarness />, { language: "en" })
 
     // Act
     await user.click(
@@ -242,14 +243,16 @@ describe("creator strategy builder", () => {
   test("creator_strategy_missing_profile_blocks_submit_before_report_boundary", () => {
     // Arrange
     const validation = createValidation({ missing: true })
-    renderWithProviders(<CreatorHarness validation={validation} />)
+    renderWithProviders(<CreatorHarness validation={validation} />, {
+      language: "en",
+    })
 
     // Assert
     expect(
       screen.getByRole("button", { name: "Generate PDF report" }),
     ).toBeDisabled()
     expect(
-      screen.getAllByText("consulte los perfiles validados y vuelva a intentar")
+      screen.getAllByText("Review the validated profiles and try again.")
         .length,
     ).toBeGreaterThan(0)
     expect(brandApi.generateBrandIntelligenceReport).not.toHaveBeenCalled()
@@ -261,7 +264,7 @@ describe("creator strategy builder", () => {
     brandApi.generateBrandIntelligenceReport.mockRejectedValue(
       new Error("OpenAI is unavailable."),
     )
-    renderWithProviders(<CreatorHarness />)
+    renderWithProviders(<CreatorHarness />, { language: "en" })
 
     // Act
     await user.click(

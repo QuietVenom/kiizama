@@ -53,12 +53,12 @@ describe("login form", () => {
     renderWithProviders(<LoginPage />)
 
     // Assert
-    expect(screen.getByPlaceholderText("Email")).toBeVisible()
-    expect(screen.getByPlaceholderText("Password")).toBeVisible()
+    expect(screen.getByPlaceholderText("Correo electrónico")).toBeVisible()
+    expect(screen.getByPlaceholderText("Contraseña")).toBeVisible()
     expect(
-      screen.getByRole("link", { name: "Forgot Password?" }),
+      screen.getByRole("link", { name: "¿Olvidaste tu contraseña?" }),
     ).toHaveAttribute("href", "/recover-password")
-    expect(screen.getByRole("link", { name: "Sign Up" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Crear cuenta" })).toHaveAttribute(
       "href",
       "/signup",
     )
@@ -70,11 +70,14 @@ describe("login form", () => {
     renderWithProviders(<LoginPage />)
 
     // Act
-    await user.type(screen.getByPlaceholderText("Email"), "not-an-email")
-    await user.click(screen.getByRole("button", { name: "Log In" }))
+    await user.type(
+      screen.getByPlaceholderText("Correo electrónico"),
+      "not-an-email",
+    )
+    await user.click(screen.getByRole("button", { name: "Iniciar sesión" }))
 
     // Assert
-    expect(await screen.findByText("Invalid email address")).toBeVisible()
+    expect(await screen.findByText("Correo electrónico inválido")).toBeVisible()
     expect(authState.loginMutation.mutateAsync).not.toHaveBeenCalled()
   })
 
@@ -84,11 +87,15 @@ describe("login form", () => {
     renderWithProviders(<LoginPage />)
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Log In" }))
+    await user.click(screen.getByRole("button", { name: "Iniciar sesión" }))
 
     // Assert
-    expect(await screen.findByText("Username is required")).toBeVisible()
-    expect(await screen.findByText("Password is required")).toBeVisible()
+    expect(
+      await screen.findByText("El correo electrónico es obligatorio"),
+    ).toBeVisible()
+    expect(
+      await screen.findByText("La contraseña es obligatoria"),
+    ).toBeVisible()
     expect(authState.loginMutation.mutateAsync).not.toHaveBeenCalled()
   })
 
@@ -110,9 +117,15 @@ describe("login form", () => {
     renderWithProviders(<LoginPage />)
 
     // Act
-    await user.type(screen.getByPlaceholderText("Email"), "user@example.com")
-    await user.type(screen.getByPlaceholderText("Password"), "secret-password")
-    await user.click(screen.getByRole("button", { name: "Log In" }))
+    await user.type(
+      screen.getByPlaceholderText("Correo electrónico"),
+      "user@example.com",
+    )
+    await user.type(
+      screen.getByPlaceholderText("Contraseña"),
+      "secret-password",
+    )
+    await user.click(screen.getByRole("button", { name: "Iniciar sesión" }))
 
     // Assert
     await waitFor(() => {

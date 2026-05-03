@@ -1,4 +1,5 @@
 import { Badge, Box, Flex, Text } from "@chakra-ui/react"
+import { useTranslation } from "react-i18next"
 
 export const UsernameGroup = ({
   title,
@@ -9,6 +10,7 @@ export const UsernameGroup = ({
   tone: "success" | "danger" | "warning" | "neutral"
   usernames: string[]
 }) => {
+  const { t } = useTranslation("creatorsSearch")
   const toneStyles =
     tone === "success"
       ? {
@@ -62,7 +64,7 @@ export const UsernameGroup = ({
 
       {usernames.length === 0 ? (
         <Text mt={3} color="ui.secondaryText" fontSize="sm">
-          No usernames in this group.
+          {t("jobDetail.groups.empty")}
         </Text>
       ) : (
         <Flex mt={3} gap={2} wrap="wrap">

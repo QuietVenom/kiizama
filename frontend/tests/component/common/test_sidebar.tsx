@@ -63,7 +63,7 @@ describe("sidebar navigation", () => {
 
   test("sidebar_regular_user_renders_primary_routes_and_hides_admin", () => {
     // Arrange / Act
-    renderWithProviders(<Sidebar />)
+    renderWithProviders(<Sidebar />, { language: "en" })
 
     // Assert
     expect(screen.getAllByText("Overview").length).toBeGreaterThan(0)
@@ -83,7 +83,7 @@ describe("sidebar navigation", () => {
     }
 
     // Act
-    renderWithProviders(<Sidebar />)
+    renderWithProviders(<Sidebar />, { language: "en" })
 
     // Assert
     expect(screen.getAllByText("Admin").length).toBeGreaterThan(0)
@@ -95,16 +95,28 @@ describe("sidebar navigation", () => {
     routeState.pathname = "/brand-intelligence/reputation-strategy"
 
     // Act
-    renderWithProviders(<Sidebar />)
+    renderWithProviders(<Sidebar />, { language: "en" })
 
     // Assert
     expect(screen.getAllByText("Reputation Strategy").length).toBeGreaterThan(0)
   })
 
+  test("sidebar_translates_domain_navigation_labels", () => {
+    renderWithProviders(<Sidebar />, { language: "es" })
+
+    expect(screen.getAllByText("Resumen").length).toBeGreaterThan(0)
+    expect(screen.getAllByText("Búsqueda de creadores").length).toBeGreaterThan(
+      0,
+    )
+    expect(screen.getAllByText("Inteligencia de marca").length).toBeGreaterThan(
+      0,
+    )
+  })
+
   test("sidebar_logout_calls_auth_logout", async () => {
     // Arrange
     const user = userEvent.setup()
-    renderWithProviders(<Sidebar />)
+    renderWithProviders(<Sidebar />, { language: "en" })
 
     // Act
     await user.click(screen.getAllByText("Log Out")[0])
@@ -116,7 +128,7 @@ describe("sidebar navigation", () => {
   test("sidebar_mobile_menu_button_opens_drawer_navigation", async () => {
     // Arrange
     const user = userEvent.setup()
-    renderWithProviders(<Sidebar />)
+    renderWithProviders(<Sidebar />, { language: "en" })
 
     // Act
     await user.click(screen.getByRole("button", { name: "Open menu" }))

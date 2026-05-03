@@ -52,7 +52,7 @@ test.describe("Blog routes", () => {
       .getByTestId(
         "blog-card-kiizama-inteligencia-creators-marcas-equipos-comunicacion",
       )
-      .getByRole("button", { name: "Read More" })
+      .getByRole("button", { name: "Leer más" })
       .click()
 
     await expect(page).toHaveURL(

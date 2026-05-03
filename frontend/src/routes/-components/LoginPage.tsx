@@ -9,6 +9,7 @@ import {
 } from "@chakra-ui/react"
 import { Link as RouterLink } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { FiLock, FiMail } from "react-icons/fi"
 
 import type { Body_login_login_access_token as AccessToken } from "@/client"
@@ -20,7 +21,7 @@ import { InputGroup } from "@/components/ui/input-group"
 import { PasswordInput } from "@/components/ui/password-input"
 import { getReturnToFromHref } from "@/features/errors/navigation"
 import useAuth from "@/hooks/useAuth"
-import { emailPattern, passwordRules } from "@/utils"
+import { buildEmailPattern, passwordRules } from "@/utils"
 import SymbolLogo from "/assets/images/symbol.svg"
 
 const FORM_CONTAINER_MAX_W = { base: "md", md: "3xl" } as const
@@ -28,6 +29,7 @@ const FORM_CARD_MIN_H = { base: "auto", md: "560px" } as const
 const FORM_CONTROL_MAX_W = { base: "full", md: "50%" } as const
 
 export function LoginPage() {
+  const { t } = useTranslation("auth")
   const redirect =
     typeof window === "undefined"
       ? undefined
@@ -90,7 +92,7 @@ export function LoginPage() {
       <Box position="fixed" top="1rem" right="1rem" zIndex={20}>
         <ChakraLink href={landingUrl}>
           <IconButton
-            aria-label="Go to landing page"
+            aria-label={t("shared.homeAriaLabel")}
             bg="ui.panel"
             color="ui.brandText"
             borderWidth="1px"
@@ -99,7 +101,11 @@ export function LoginPage() {
             boxShadow="ui.panelSm"
             _hover={{ bg: "ui.brandSoft" }}
           >
-            <Image src={SymbolLogo} alt="Kiizama symbol" boxSize="5" />
+            <Image
+              src={SymbolLogo}
+              alt={t("shared.homeImageAlt")}
+              boxSize="5"
+            />
           </IconButton>
         </ChakraLink>
       </Box>
@@ -141,10 +147,10 @@ export function LoginPage() {
             <InputGroup w="100%" startElement={<FiMail />}>
               <Input
                 {...register("username", {
-                  required: "Username is required",
-                  pattern: emailPattern,
+                  required: t("validation.emailRequired"),
+                  pattern: buildEmailPattern(t("validation.invalidEmail")),
                 })}
-                placeholder="Email"
+                placeholder={t("shared.emailPlaceholder")}
                 type="email"
               />
             </InputGroup>
@@ -153,15 +159,21 @@ export function LoginPage() {
             <PasswordInput
               type="password"
               startElement={<FiLock />}
-              {...register("password", passwordRules())}
-              placeholder="Password"
+              {...register(
+                "password",
+                passwordRules(true, {
+                  minLength: t("validation.passwordMinLength"),
+                  required: t("validation.passwordRequired"),
+                }),
+              )}
+              placeholder={t("password.placeholder")}
               errors={errors}
               showError={showPasswordError}
             />
           </Box>
           <Box w={FORM_CONTROL_MAX_W} textAlign="center">
             <RouterLink to="/recover-password" className="main-link">
-              Forgot Password?
+              {t("login.forgotPassword")}
             </RouterLink>
           </Box>
           <Button
@@ -171,12 +183,12 @@ export function LoginPage() {
             loading={isSubmitting}
             size="md"
           >
-            Log In
+            {t("login.submit")}
           </Button>
           <Text w={FORM_CONTROL_MAX_W} textAlign="center">
-            Don't have an account?{" "}
+            {t("login.noAccount")}{" "}
             <RouterLink to="/signup" className="main-link">
-              Sign Up
+              {t("login.signUpLink")}
             </RouterLink>
           </Text>
         </InsightCard>

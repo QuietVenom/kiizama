@@ -21,6 +21,10 @@ vi.mock("@/hooks/useCustomToast", () => ({
   default: () => toast,
 }))
 
+vi.mock("@/components/Common/ThemeLogo", () => ({
+  default: () => <span>Kiizama</span>,
+}))
+
 const { RecoverPasswordPage } = await import(
   "../../../src/routes/-components/RecoverPasswordPage"
 )
@@ -43,10 +47,12 @@ describe("recover and reset password forms", () => {
     renderWithProviders(<RecoverPasswordPage />)
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Continue" }))
+    await user.click(screen.getByRole("button", { name: "Continuar" }))
 
     // Assert
-    expect(await screen.findByText("Email is required")).toBeVisible()
+    expect(
+      await screen.findByText("El correo electrónico es obligatorio"),
+    ).toBeVisible()
   })
 
   test("recover_password_valid_email_calls_recovery_and_shows_success", async () => {
@@ -58,8 +64,11 @@ describe("recover and reset password forms", () => {
     renderWithProviders(<RecoverPasswordPage />)
 
     // Act
-    await user.type(screen.getByPlaceholderText("Email"), "user@example.com")
-    await user.click(screen.getByRole("button", { name: "Continue" }))
+    await user.type(
+      screen.getByPlaceholderText("Correo electrónico"),
+      "user@example.com",
+    )
+    await user.click(screen.getByRole("button", { name: "Continuar" }))
 
     // Assert
     await waitFor(() => {
@@ -68,7 +77,7 @@ describe("recover and reset password forms", () => {
       })
     })
     expect(toast.showSuccessToast).toHaveBeenCalledWith(
-      "Password recovery email sent successfully.",
+      "El correo de recuperación de contraseña se envió correctamente.",
     )
   })
 
@@ -81,12 +90,17 @@ describe("recover and reset password forms", () => {
     renderWithProviders(<ResetPasswordPage />)
 
     // Act
-    await user.type(screen.getByPlaceholderText("New Password"), "Aa1!valid")
     await user.type(
-      screen.getByPlaceholderText("Confirm Password"),
+      screen.getByPlaceholderText("Nueva contraseña"),
       "Aa1!valid",
     )
-    await user.click(screen.getByRole("button", { name: "Reset Password" }))
+    await user.type(
+      screen.getByPlaceholderText("Confirmar contraseña"),
+      "Aa1!valid",
+    )
+    await user.click(
+      screen.getByRole("button", { name: "Restablecer contraseña" }),
+    )
 
     // Assert
     await waitFor(() => {
@@ -100,18 +114,24 @@ describe("recover and reset password forms", () => {
     renderWithProviders(<ResetPasswordPage />)
 
     // Act
-    await user.type(screen.getByPlaceholderText("New Password"), "weak")
+    await user.type(screen.getByPlaceholderText("Nueva contraseña"), "weak")
     await user.type(
-      screen.getByPlaceholderText("Confirm Password"),
+      screen.getByPlaceholderText("Confirmar contraseña"),
       "different",
     )
-    await user.click(screen.getByRole("button", { name: "Reset Password" }))
+    await user.click(
+      screen.getByRole("button", { name: "Restablecer contraseña" }),
+    )
 
     // Assert
     expect(
-      await screen.findByText("Password must be between 8 and 25 characters"),
+      await screen.findByText(
+        "La contraseña debe tener entre 8 y 25 caracteres",
+      ),
     ).toBeVisible()
-    expect(await screen.findByText("The passwords do not match")).toBeVisible()
+    expect(
+      await screen.findByText("Las contraseñas no coinciden"),
+    ).toBeVisible()
   })
 
   test("reset_password_valid_token_calls_api_and_navigates_to_login", async () => {
@@ -124,12 +144,17 @@ describe("recover and reset password forms", () => {
     renderWithProviders(<ResetPasswordPage />)
 
     // Act
-    await user.type(screen.getByPlaceholderText("New Password"), "Aa1!valid")
     await user.type(
-      screen.getByPlaceholderText("Confirm Password"),
+      screen.getByPlaceholderText("Nueva contraseña"),
       "Aa1!valid",
     )
-    await user.click(screen.getByRole("button", { name: "Reset Password" }))
+    await user.type(
+      screen.getByPlaceholderText("Confirmar contraseña"),
+      "Aa1!valid",
+    )
+    await user.click(
+      screen.getByRole("button", { name: "Restablecer contraseña" }),
+    )
 
     // Assert
     await waitFor(() => {
@@ -141,5 +166,8 @@ describe("recover and reset password forms", () => {
       })
     })
     expect(navigate).toHaveBeenCalledWith({ to: "/login" })
+    expect(toast.showSuccessToast).toHaveBeenCalledWith(
+      "La contraseña se actualizó correctamente.",
+    )
   })
 })

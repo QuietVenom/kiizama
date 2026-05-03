@@ -1,6 +1,7 @@
 import { Box, Grid } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import {
   IgProfileSnapshotsService,
@@ -36,6 +37,7 @@ import { useCreatorsSearchHistory } from "./useCreatorsSearchHistory"
 import { useCreatorsSearchJobs } from "./useCreatorsSearchJobs"
 
 export function CreatorsSearchPage() {
+  const { t } = useTranslation("creatorsSearch")
   const queryClient = useQueryClient()
   const [isGuideOpen, setIsGuideOpen] = useState(false)
   const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false)
@@ -113,6 +115,7 @@ export function CreatorsSearchPage() {
   const validationMessage = getValidationMessage(
     invalidUsernames,
     overflowAttempted,
+    (key, options) => t(key, options),
   )
   const hasValidationIssue = Boolean(validationMessage)
   const hasSearched =
@@ -148,9 +151,7 @@ export function CreatorsSearchPage() {
       }
     },
     onError: (error) => {
-      setSearchError(
-        extractApiErrorMessage(error, "Unable to complete the search."),
-      )
+      setSearchError(extractApiErrorMessage(error, t("alerts.searchFailed")))
     },
   })
 

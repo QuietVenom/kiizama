@@ -1,4 +1,5 @@
 import { Badge, Box, Flex, Text } from "@chakra-ui/react"
+import { useTranslation } from "react-i18next"
 
 type StrategySummaryValue = string | string[] | null | undefined
 
@@ -24,6 +25,7 @@ const hasRenderableValue = (value: StrategySummaryValue) => {
 }
 
 const StrategySummaryCard = ({ sections, title }: StrategySummaryCardProps) => {
+  const { t } = useTranslation("brandIntelligence")
   const visibleSections = sections
     .map((section) => ({
       ...section,
@@ -38,12 +40,12 @@ const StrategySummaryCard = ({ sections, title }: StrategySummaryCardProps) => {
       position={{ xl: "sticky" }}
       top={{ xl: 24 }}
     >
-      <Text textStyle="eyebrow">Live Summary</Text>
+      <Text textStyle="eyebrow">{t("summary.eyebrow")}</Text>
       <Text mt={2} fontSize={{ base: "xl", lg: "2xl" }} fontWeight="black">
         {title}
       </Text>
       <Text mt={2} color="ui.secondaryText">
-        Review the captured information before generating the PDF report.
+        {t("summary.description")}
       </Text>
 
       {visibleSections.length === 0 ? (
@@ -56,10 +58,9 @@ const StrategySummaryCard = ({ sections, title }: StrategySummaryCardProps) => {
           px={4}
           py={5}
         >
-          <Text fontWeight="bold">Nothing captured yet.</Text>
+          <Text fontWeight="bold">{t("summary.empty.title")}</Text>
           <Text mt={1.5} color="ui.secondaryText">
-            Start with creator usernames and the summary will update as the form
-            fills in.
+            {t("summary.empty.description")}
           </Text>
         </Box>
       ) : (

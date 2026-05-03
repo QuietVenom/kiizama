@@ -126,7 +126,9 @@ describe("payments settings", () => {
     renderWithProviders(<Payments />)
 
     // Assert
-    expect(await screen.findByText("Loading billing details...")).toBeVisible()
+    expect(
+      await screen.findByText("Cargando detalles de facturación..."),
+    ).toBeVisible()
   })
 
   test("payments_no_plan_trial_eligible_shows_start_trial_cta", async () => {
@@ -138,9 +140,9 @@ describe("payments settings", () => {
 
     // Assert
     expect(
-      await screen.findByRole("button", { name: "Start Trial" }),
+      await screen.findByRole("button", { name: "Iniciar prueba" }),
     ).toBeVisible()
-    expect(screen.getByText("None")).toBeVisible()
+    expect(screen.getByText("Sin plan")).toBeVisible()
   })
 
   test("payments_no_plan_without_trial_shows_start_base_plan_cta", async () => {
@@ -154,7 +156,7 @@ describe("payments settings", () => {
 
     // Assert
     expect(
-      await screen.findByRole("button", { name: "Start Base Plan" }),
+      await screen.findByRole("button", { name: "Iniciar plan Base" }),
     ).toBeVisible()
   })
 
@@ -173,10 +175,12 @@ describe("payments settings", () => {
 
     // Assert
     expect(await screen.findByText("Base")).toBeVisible()
-    expect(screen.getByText("Active")).toBeVisible()
-    expect(screen.getByRole("button", { name: "Manage Billing" })).toBeVisible()
+    expect(screen.getByText("Activo")).toBeVisible()
     expect(
-      screen.queryByRole("button", { name: "Start Trial" }),
+      screen.getByRole("button", { name: "Administrar pagos" }),
+    ).toBeVisible()
+    expect(
+      screen.queryByRole("button", { name: "Iniciar prueba" }),
     ).not.toBeInTheDocument()
   })
 
@@ -194,7 +198,7 @@ describe("payments settings", () => {
 
     // Assert
     expect(
-      await screen.findByRole("button", { name: "Add Payment Method" }),
+      await screen.findByRole("button", { name: "Agregar método de pago" }),
     ).toBeVisible()
   })
 
@@ -215,10 +219,10 @@ describe("payments settings", () => {
     // Assert
     expect(await screen.findByText("Admin")).toBeVisible()
     expect(
-      screen.queryByRole("button", { name: "Start Trial" }),
+      screen.queryByRole("button", { name: "Iniciar prueba" }),
     ).not.toBeInTheDocument()
     expect(
-      screen.queryByRole("button", { name: "Manage Billing" }),
+      screen.queryByRole("button", { name: "Administrar pagos" }),
     ).not.toBeInTheDocument()
   })
 
@@ -232,7 +236,9 @@ describe("payments settings", () => {
     renderWithProviders(<Payments />)
 
     // Act
-    await user.click(await screen.findByRole("button", { name: "Start Trial" }))
+    await user.click(
+      await screen.findByRole("button", { name: "Iniciar prueba" }),
+    )
 
     // Assert
     await waitFor(() => {
@@ -257,7 +263,7 @@ describe("payments settings", () => {
 
     // Act
     await user.click(
-      await screen.findByRole("button", { name: "Manage Billing" }),
+      await screen.findByRole("button", { name: "Administrar pagos" }),
     )
 
     // Assert
@@ -290,9 +296,9 @@ describe("payments settings", () => {
     renderWithProviders(<Payments />)
 
     // Assert
-    expect(await screen.findByText("Billing notices")).toBeVisible()
+    expect(await screen.findByText("Avisos de facturación")).toBeVisible()
     expect(screen.getByText("Upcoming invoice")).toBeVisible()
-    expect(screen.getByText("unread")).toBeVisible()
+    expect(screen.getByText("No leído")).toBeVisible()
     expect(screen.getByText("Your invoice will be charged soon.")).toBeVisible()
   })
 })

@@ -1,0 +1,58 @@
+{
+  "title": "Payments",
+  "loading": "Loading billing details...",
+  "actions": {
+    "startTrial": "Start Trial",
+    "startBasePlan": "Start Base Plan",
+    "addPaymentMethod": "Add Payment Method",
+    "manageBilling": "Manage Billing"
+  },
+  "errors": {
+    "unableToStartCheckout": "Unable to start checkout.",
+    "unableToOpenBillingManagement": "Unable to open billing management."
+  },
+  "features": {
+    "profiles": "Profiles",
+    "socialMediaReports": "Social Media Reports",
+    "reputationStrategy": "Reputation Strategy"
+  },
+  "messages": {
+    "pendingAmbassadorActivation": "Ambassador access is scheduled to activate at the end of the current billing period.",
+    "accessRevokedReason": "Access revoked reason"
+  },
+  "notices": {
+    "title": "Billing notices"
+  },
+  "noticeStatus": {
+    "read": "Read",
+    "unread": "Unread"
+  },
+  "usage": {
+    "unlimited": "Unlimited"
+  },
+  "plan": {
+    "admin": "Admin",
+    "ambassador": "Ambassador",
+    "base": "Base",
+    "none": "None",
+    "trial": "Trial"
+  },
+  "status": {
+    "active": "Active",
+    "canceled": "Canceled",
+    "incomplete": "Incomplete",
+    "incomplete_expired": "Incomplete expired",
+    "past_due": "Past due",
+    "paused": "Paused",
+    "trialing": "Trialing",
+    "unpaid": "Unpaid"
+  },
+  "period": {
+    "usageResetsOn": "Usage Resets On",
+    "renewalDay": "Renewal Day",
+    "cancelsOn": "Cancels On",
+    "notAvailable": "Not available",
+    "managedHelper": "Access is managed internally. Usage resets at the start of each UTC month.",
+    "cancellationHelper": "Access remains available until the end of the current billing period."
+  }
+}

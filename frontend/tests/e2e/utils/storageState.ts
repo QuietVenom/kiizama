@@ -2,6 +2,8 @@ import type { BrowserContext, Page } from "@playwright/test"
 
 const oneYearInSeconds = 60 * 60 * 24 * 365
 const cookieConsentHosts = ["localhost", "127.0.0.1"]
+const languageStorageKey = "kiizama.language"
+const e2eLanguage = "es"
 
 const cookieConsentPreferences = encodeURIComponent(
   JSON.stringify({
@@ -25,7 +27,17 @@ const cookieConsentCookies = cookieConsentHosts.map((domain) => ({
 
 export const anonymousStorageState = {
   cookies: cookieConsentCookies,
-  origins: [],
+  origins: [
+    {
+      origin: "http://localhost:5173",
+      localStorage: [
+        {
+          name: languageStorageKey,
+          value: e2eLanguage,
+        },
+      ],
+    },
+  ],
 }
 
 export async function ensureCookieConsent(
@@ -35,4 +47,14 @@ export async function ensureCookieConsent(
     "context" in pageOrContext ? pageOrContext.context() : pageOrContext
 
   await context.addCookies(cookieConsentCookies)
+  await context.addInitScript(
+    ({ key, value }) => {
+      window.localStorage.setItem(key, value)
+      document.documentElement.lang = value
+    },
+    {
+      key: languageStorageKey,
+      value: e2eLanguage,
+    },
+  )
 }

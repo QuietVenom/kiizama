@@ -332,23 +332,30 @@ export const syncLocalJobWithStatusResponse = (
 
 export const getCreatorsSearchJobStatusLabel = (
   status: CreatorsSearchJobStatus,
+  t?: (key: string) => string,
 ) => {
   if (status === "done") {
-    return "Done"
+    return t ? t("jobs.status.done") : "Done"
   }
 
   if (status === "failed") {
-    return "Failed"
+    return t ? t("jobs.status.failed") : "Failed"
   }
 
-  return "Queued"
+  return t ? t("jobs.status.queued") : "Queued"
 }
 
 export const getCreatorsSearchJobProgressText = ({
   canOpenDetail,
+  t,
 }: {
   canOpenDetail: boolean
+  t?: (key: string) => string
 }) =>
   canOpenDetail
-    ? "Click to review the terminal result."
-    : "Waiting for completion."
+    ? t
+      ? t("jobs.progress.review")
+      : "Click to review the terminal result."
+    : t
+      ? t("jobs.progress.waiting")
+      : "Waiting for completion."

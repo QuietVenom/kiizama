@@ -46,15 +46,15 @@ describe("user menu", () => {
   test("user_menu_renders_current_user_and_settings_link", async () => {
     // Arrange
     const user = userEvent.setup()
-    renderWithProviders(<UserMenu />)
+    renderWithProviders(<UserMenu />, { language: "en" })
 
     // Act
     await user.click(screen.getByTestId("user-menu"))
 
     // Assert
     expect(screen.getByText("Test User")).toBeVisible()
-    expect(await screen.findByText("My Profile")).toBeVisible()
-    expect(screen.getByRole("link", { name: /My Profile/i })).toHaveAttribute(
+    expect(await screen.findByText("My profile")).toBeVisible()
+    expect(screen.getByRole("link", { name: /My profile/i })).toHaveAttribute(
       "href",
       "/settings",
     )
@@ -68,7 +68,7 @@ describe("user menu", () => {
     }
 
     // Act
-    renderWithProviders(<UserMenu />)
+    renderWithProviders(<UserMenu />, { language: "en" })
 
     // Assert
     expect(screen.getByText("User")).toBeVisible()
@@ -77,7 +77,7 @@ describe("user menu", () => {
   test("user_menu_logout_calls_auth_logout", async () => {
     // Arrange
     const user = userEvent.setup()
-    renderWithProviders(<UserMenu />)
+    renderWithProviders(<UserMenu />, { language: "en" })
 
     // Act
     await user.click(screen.getByTestId("user-menu"))

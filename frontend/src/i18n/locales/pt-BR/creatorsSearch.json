@@ -1,0 +1,242 @@
+{
+  "shell": {
+    "navigation": {
+      "title": "Busca de criadores"
+    }
+  },
+  "header": {
+    "eyebrow": "Busca de criadores",
+    "title": "Busque perfis de criadores salvos em uma única solicitação.",
+    "description": "Adicione vários usernames do Instagram, revise quais criadores já estão armazenados na plataforma e abra uma visão completa para cada correspondência.",
+    "guideButton": "Guia de busca"
+  },
+  "input": {
+    "eyebrow": "BUSCA MULTI-USERNAME",
+    "title": "Buscar criadores por username",
+    "helpAria": "Ajuda da busca",
+    "tooltip": "Cole uma lista, pressione Enter ou separe os usernames com vírgulas. Os usernames são normalizados para minúsculas e qualquer @ inicial é removido automaticamente antes de executar a busca.",
+    "label": "Usernames do Instagram",
+    "helper": "Até 50 usernames por solicitação.",
+    "placeholder": "creator_one, brand.partner, another_creator",
+    "staleBadge": "A entrada mudou. Busque novamente para atualizar",
+    "searchButton": "Buscar criadores",
+    "count_one": "{{count}} / {{max}} username",
+    "count_other": "{{count}} / {{max}} usernames"
+  },
+  "validation": {
+    "invalidPrefix": "Usernames inválidos",
+    "invalidRule": "Use letras minúsculas, números, pontos ou sublinhados, com até 30 caracteres.",
+    "overflow": "Você pode buscar até 50 usernames por solicitação."
+  },
+  "results": {
+    "overview": {
+      "requested": "Usernames solicitados",
+      "found_one": "Perfil encontrado",
+      "found_other": "Perfis encontrados",
+      "updateNeeded": "Atualização necessária",
+      "notFound": "Usernames não encontrados"
+    },
+    "empty": {
+      "eyebrow": "RESULTADO VAZIO",
+      "title": "Nenhum snapshot de criador correspondeu a esta busca.",
+      "description": "Tente outro conjunto de usernames ou verifique se esses criadores já estão disponíveis nos dados salvos."
+    }
+  },
+  "alerts": {
+    "searchFailed": "A busca falhou",
+    "reportFailed": "A geração do relatório falhou",
+    "expired": {
+      "title": "Os perfis precisam de atualização",
+      "description": "Esses criadores existem nos dados salvos, mas as informações de perfil armazenadas precisam ser atualizadas. Eles aparecem destacados em amarelo acima e na lista de resultados para que você identifique quais perfis salvos precisam ser atualizados."
+    },
+    "missing": {
+      "title": "Usernames não encontrados",
+      "description": "Esses usernames não foram encontrados nos dados salvos de criadores. Eles também aparecem destacados em vermelho acima."
+    }
+  },
+  "jobs": {
+    "eyebrow": "JOBS ATUAIS",
+    "title": "Minerando criadores.",
+    "description": "Jobs de scraping ativos e recentes são mantidos localmente neste navegador.",
+    "empty": "Ainda não há jobs de scraping.",
+    "count_one": "{{count}} / {{max}} trabalho",
+    "count_other": "{{count}} / {{max}} trabalhos",
+    "status": {
+      "queued": "Na fila",
+      "done": "Concluído",
+      "failed": "Falhou"
+    },
+    "errors": {
+      "duplicateActiveJob": "Já existe um job de scraping ativo para esses usernames.",
+      "unableToCreate": "Não foi possível criar os jobs de scraping."
+    },
+    "progress": {
+      "review": "Clique para revisar o resultado final.",
+      "waiting": "Aguardando conclusão."
+    }
+  },
+  "jobDetail": {
+    "eyebrow": "DETALHE DO JOB ATUAL",
+    "fallbackTitle": "Detalhe do job",
+    "subtitle": {
+      "expired": "O lote de perfis que precisam de atualização foi atualizado em {{date}}.",
+      "missing": "O lote de usernames não encontrados foi atualizado em {{date}}."
+    },
+    "overview": {
+      "requested": "Solicitados",
+      "ready": "Prontos",
+      "failed": "Falhos",
+      "notFound": "Não encontrados"
+    },
+    "groups": {
+      "requested": "Usernames solicitados",
+      "ready": "Usernames prontos",
+      "successful": "Usernames bem-sucedidos",
+      "skipped": "Usernames ignorados",
+      "failed": "Usernames com falha",
+      "notFound": "Usernames não encontrados",
+      "empty": "Não há usernames neste grupo."
+    },
+    "workerError": "Erro do worker"
+  },
+  "history": {
+    "eyebrow": "HISTÓRICO DE BUSCA",
+    "title": "Histórico de busca",
+    "description": "Mantenha as últimas listas de usernames prontos a um clique de distância.",
+    "viewAll": "Ver tudo",
+    "unavailable": "O histórico de busca está temporariamente indisponível.",
+    "empty": "Ainda não há histórico de busca.",
+    "dialog": {
+      "title": "Histórico de busca",
+      "description": "Reutilize qualquer uma das últimas 20 listas bem-sucedidas de usernames prontos."
+    },
+    "card": {
+      "directSearch": "Busca direta",
+      "fromJob": "Usernames prontos de um job de scraping",
+      "fromDirect": "Usernames prontos de uma busca direta"
+    }
+  },
+  "guide": {
+    "title": "Guia de busca",
+    "description": "Orientação rápida sobre como a busca de criadores funciona e como os resultados são apresentados.",
+    "items": {
+      "multiCreator": {
+        "title": "Busca multi-criador",
+        "description": "Busque nos registros salvos de criadores os usernames informados, até 50 por vez."
+      },
+      "savedDetails": {
+        "title": "Detalhes de perfil salvos",
+        "description": "Cada cartão de resultado abre uma visão detalhada com informações do perfil, métricas, posts e reels quando estiverem disponíveis."
+      },
+      "issueHighlighting": {
+        "title": "Sinalização imediata de problemas",
+        "description": "Usernames inválidos e nomes não encontrados são destacados diretamente no campo de tags e listados em um bloco dedicado abaixo."
+      }
+    }
+  },
+  "card": {
+    "fallbackName": "Perfil resolvido",
+    "updateNeeded": "Atualização necessária",
+    "verified": "Verificado",
+    "private": "Privado",
+    "noBiography": "Não há biografia disponível para este criador.",
+    "followers": "Seguidores",
+    "following": "Seguindo",
+    "media": "Mídia",
+    "snapshotCaptured": "Snapshot capturado",
+    "noSnapshotDate": "Sem data do snapshot",
+    "report": "Relatório",
+    "externalUrl": "URL externa",
+    "viewDetail": "Ver detalhe"
+  },
+  "detail": {
+    "fallbackTitle": "Detalhe do snapshot do criador",
+    "unknown": "desconhecido",
+    "snapshotCaptured": "Snapshot capturado {{date}}",
+    "notAvailable": "N/D",
+    "avatarAlt": "Avatar do criador",
+    "noFullName": "Sem nome completo",
+    "noBiography": "Não há biografia disponível.",
+    "followers": "Seguidores",
+    "following": "Seguindo",
+    "media": "Mídia",
+    "analysis": {
+      "title": "Análise de IA",
+      "description": "Categorias de conteúdo salvas e papéis do criador associados a este perfil.",
+      "categories": "Categorias",
+      "roles": "Papéis",
+      "noCategories": "Não há categorias disponíveis.",
+      "noRoles": "Não há papéis disponíveis."
+    },
+    "metrics": {
+      "title": "Métricas",
+      "description": "Métricas salvas do criador organizadas para corresponder à visão de relatório usada no produto.",
+      "empty": "Ainda não foram salvas métricas para este criador.",
+      "postsTitle": "Posts",
+      "postsDescription_one": "Métricas baseadas em {{count}} post salvo.",
+      "postsDescription_other": "Métricas baseadas em {{count}} posts salvos.",
+      "reelsTitle": "Reels",
+      "reelsDescription_one": "Métricas baseadas em {{count}} reel salvo.",
+      "reelsDescription_other": "Métricas baseadas em {{count}} reels salvos.",
+      "tiles": {
+        "totalPosts": "Total de posts",
+        "overallPostEr": "ER geral dos posts",
+        "totalPostLikes": "Total de likes dos posts",
+        "totalPostComments": "Total de comentários dos posts",
+        "avgPostLikes": "Média de likes por post",
+        "avgPostComments": "Média de comentários por post",
+        "avgPostEr": "ER médio por post",
+        "hashtagsPerPost": "Hashtags por post",
+        "mentionsPerPost": "Menções por post",
+        "totalReels": "Total de reels",
+        "reelErOnPlays": "ER dos reels sobre plays",
+        "totalPlays": "Total de plays",
+        "avgReelPlays": "Média de plays por reel",
+        "avgReelLikes": "Média de likes por reel",
+        "avgReelComments": "Média de comentários por reel"
+      }
+    },
+    "posts": {
+      "title_one": "Posts ({{count}})",
+      "title_other": "Posts ({{count}})",
+      "description_one": "Posts salvos de {{count}} atualização, a mais recente em {{date}}.",
+      "description_other": "Posts salvos de {{count}} atualizações, a mais recente em {{date}}.",
+      "table": {
+        "post": "Post",
+        "likes": "Likes",
+        "comments": "Comentários",
+        "engagement": "Engajamento",
+        "erFollowers": "ER (seguidores)",
+        "colabs": "Colabs",
+        "usertags": "Usertags",
+        "type": "Tipo"
+      },
+      "fallbackTitle": "Post do Instagram {{count}}",
+      "updatedCode": "Atualizado {{date}} • Código {{code}}",
+      "paidPartnership": "Parceria paga"
+    },
+    "reels": {
+      "title_one": "Reels ({{count}})",
+      "title_other": "Reels ({{count}})",
+      "description_one": "Reels salvos de {{count}} atualização, a mais recente em {{date}}.",
+      "description_other": "Reels salvos de {{count}} atualizações, a mais recente em {{date}}.",
+      "table": {
+        "reel": "Reel",
+        "plays": "Plays",
+        "likes": "Likes",
+        "comments": "Comentários",
+        "engagement": "Engajamento",
+        "erPlays": "ER (plays)",
+        "type": "Tipo"
+      },
+      "fallbackTitle": "Reel do Instagram {{count}}",
+      "updatedCode": "Atualizado {{date}} • Código {{code}}"
+    },
+    "types": {
+      "reel": "Reel",
+      "carousel": "Carrossel",
+      "video": "Vídeo",
+      "post": "Post"
+    }
+  }
+}

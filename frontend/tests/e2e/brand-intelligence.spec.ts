@@ -130,55 +130,57 @@ const mockReportDownload = async ({
 
 const fillCampaignStrategyForm = async (page: Page) => {
   await page
-    .getByRole("combobox", { name: /Brand goal/i })
+    .getByRole("combobox", { name: /Goal de marca/i })
     .selectOption("Trust & Credibility Acceleration")
   await page
     .getByPlaceholder("creator_one, creator.two, another_creator")
     .fill(creatorUsername)
   await page.keyboard.press("Enter")
-  await page.getByRole("button", { name: "Validate profiles" }).click()
-  await expect(page.getByText("1 checked")).toBeVisible()
+  await page.getByRole("button", { name: "Validar perfiles" }).click()
+  await expect(page.getByText("1 revisados")).toBeVisible()
 
-  await page.getByRole("textbox", { name: /Brand name/i }).fill("Kiizama")
   await page
-    .getByRole("textbox", { name: /Brand context/i })
+    .getByRole("textbox", { name: /Nombre de la marca/i })
+    .fill("Kiizama")
+  await page
+    .getByRole("textbox", { name: /Contexto de marca/i })
     .fill("Lifestyle brand context.")
   await page
-    .getByRole("textbox", { name: /Goal context/i })
+    .getByRole("textbox", { name: /Contexto del goal/i })
     .fill("Launch a high-trust creator campaign.")
   await page
-    .getByRole("combobox", { name: /Timeframe/i })
+    .getByRole("combobox", { name: /^Timeframe/i })
     .selectOption("3 months")
   await page
-    .getByRole("combobox", { name: /Campaign type/i })
+    .getByRole("combobox", { name: /Tipo de campaña/i })
     .selectOption("all_nano_seeding_ugc_flood")
   await page.getByRole("button", { name: "Gen Z" }).click()
 }
 
 const fillCreatorStrategyForm = async (page: Page) => {
   await page
-    .getByRole("button", { name: /Reputation Creator Strategy/i })
+    .getByRole("button", { name: /Estrategia reputacional de creador/i })
     .click()
   await page.getByPlaceholder("creator_one").fill(creatorUsername)
   await page.keyboard.press("Enter")
-  await page.getByRole("button", { name: "Validate profile" }).click()
-  await expect(page.getByText("1 checked")).toBeVisible()
+  await page.getByRole("button", { name: "Validar perfil" }).click()
+  await expect(page.getByText("1 revisados")).toBeVisible()
 
   await page
-    .getByRole("combobox", { name: /Goal type/i })
+    .getByRole("combobox", { name: /Tipo de goal/i })
     .selectOption("Community Trust")
   await page
-    .getByRole("combobox", { name: /Timeframe/i })
+    .getByRole("combobox", { name: /^Timeframe/i })
     .selectOption("6 months")
   await page
-    .getByRole("textbox", { name: /Creator context/i })
+    .getByRole("textbox", { name: /Contexto del creador/i })
     .fill("Creator reputation context.")
   await page
-    .getByRole("textbox", { name: /Goal context/i })
+    .getByRole("textbox", { name: /Contexto del goal/i })
     .fill("Improve trust and brand readiness.")
   await page.getByRole("button", { name: "Gen Z" }).click()
   await page
-    .getByRole("textbox", { name: /Primary platforms/i })
+    .getByRole("textbox", { name: /Plataformas principales/i })
     .fill("Instagram")
 }
 
@@ -212,18 +214,18 @@ test.describe("Brand Intelligence report generation", () => {
     await page.goto("/brand-intelligence/reputation-strategy")
     await expect(
       page.getByRole("heading", {
-        name: "Build modular reputation strategy reports.",
+        name: "Construye reportes modulares de estrategia reputacional.",
       }),
     ).toBeVisible()
     await fillCampaignStrategyForm(page)
     const downloadPromise = page.waitForEvent("download")
-    await page.getByRole("button", { name: "Generate PDF report" }).click()
+    await page.getByRole("button", { name: "Generar reporte PDF" }).click()
     const download = await downloadPromise
 
     // Assert
     expect(download.suggestedFilename()).toBe("campaign-strategy.pdf")
     await expect(
-      page.getByText("Report ready: campaign-strategy.pdf"),
+      page.getByText("Reporte listo: campaign-strategy.pdf"),
     ).toBeVisible()
   })
 
@@ -252,18 +254,18 @@ test.describe("Brand Intelligence report generation", () => {
     await page.goto("/brand-intelligence/reputation-strategy")
     await expect(
       page.getByRole("heading", {
-        name: "Build modular reputation strategy reports.",
+        name: "Construye reportes modulares de estrategia reputacional.",
       }),
     ).toBeVisible()
     await fillCreatorStrategyForm(page)
     const downloadPromise = page.waitForEvent("download")
-    await page.getByRole("button", { name: "Generate PDF report" }).click()
+    await page.getByRole("button", { name: "Generar reporte PDF" }).click()
     const download = await downloadPromise
 
     // Assert
     expect(download.suggestedFilename()).toBe("creator-strategy.zip")
     await expect(
-      page.getByText("Report ready: creator-strategy.zip"),
+      page.getByText("Reporte listo: creator-strategy.zip"),
     ).toBeVisible()
   })
 })

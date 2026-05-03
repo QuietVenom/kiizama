@@ -31,10 +31,14 @@ describe("search history panel", () => {
     )
 
     // Assert
-    expect(screen.getByText("Search history")).toBeVisible()
-    expect(screen.queryByText("No search history available yet.")).toBeNull()
+    expect(screen.getByText("Historial de búsqueda")).toBeVisible()
     expect(
-      screen.queryByText("Search history is temporarily unavailable."),
+      screen.queryByText("Todavía no hay historial de búsqueda."),
+    ).toBeNull()
+    expect(
+      screen.queryByText(
+        "El historial de búsqueda no está disponible temporalmente.",
+      ),
     ).toBeNull()
   })
 
@@ -52,7 +56,9 @@ describe("search history panel", () => {
 
     // Assert
     expect(
-      screen.getByText("Search history is temporarily unavailable."),
+      screen.getByText(
+        "El historial de búsqueda no está disponible temporalmente.",
+      ),
     ).toBeVisible()
   })
 
@@ -69,7 +75,9 @@ describe("search history panel", () => {
     )
 
     // Assert
-    expect(screen.getByText("No search history available yet.")).toBeVisible()
+    expect(
+      screen.getByText("Todavía no hay historial de búsqueda."),
+    ).toBeVisible()
   })
 
   test("search_history_panel_populated_preview_reuses_ready_usernames", async () => {
@@ -89,7 +97,7 @@ describe("search history panel", () => {
 
     // Act
     await user.click(screen.getByRole("button", { name: /job_123/i }))
-    await user.click(screen.getByRole("button", { name: "View all" }))
+    await user.click(screen.getByRole("button", { name: "Ver todo" }))
 
     // Assert
     expect(onReuseReadyUsernames).toHaveBeenCalledWith(["alpha", "beta"])

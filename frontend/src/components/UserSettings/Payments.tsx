@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import {
   billingNoticesQueryOptions,
   billingSummaryQueryOptions,
@@ -66,6 +67,7 @@ const Payments = ({
   billingReturn,
   onBillingReturnConsumed,
 }: PaymentsProps = {}) => {
+  const { i18n, t } = useTranslation("billing")
   const { showErrorToast } = useCustomToast()
   const queryClient = useQueryClient()
   const consumedBillingReturnRef = useRef<number | undefined>(undefined)
@@ -99,7 +101,9 @@ const Payments = ({
     },
     onError: (error) => {
       showErrorToast(
-        error instanceof Error ? error.message : "Unable to start checkout.",
+        error instanceof Error
+          ? error.message
+          : t("errors.unableToStartCheckout"),
       )
     },
   })
@@ -113,7 +117,7 @@ const Payments = ({
       showErrorToast(
         error instanceof Error
           ? error.message
-          : "Unable to open billing management.",
+          : t("errors.unableToOpenBillingManagement"),
       )
     },
   })
@@ -125,25 +129,30 @@ const Payments = ({
     (data.subscription_status == null ||
       ["canceled", "incomplete_expired"].includes(data.subscription_status))
 
-  const checkoutLabel = data?.trial_eligible ? "Start Trial" : "Start Base Plan"
+  const checkoutLabel = data?.trial_eligible
+    ? t("actions.startTrial")
+    : t("actions.startBasePlan")
   const isManagedAccess = hasManagedAccess(data)
-  const periodPresentation = getBillingPeriodPresentation(data)
+  const periodPresentation = getBillingPeriodPresentation(data, {
+    language: i18n.resolvedLanguage ?? i18n.language,
+    t: (key) => t(key),
+  })
   const portalLabel =
     data?.subscription_status === "paused"
-      ? "Add Payment Method"
-      : "Manage Billing"
+      ? t("actions.addPaymentMethod")
+      : t("actions.manageBilling")
 
   const featureCards = [
     {
-      label: "Profiles",
+      label: t("features.profiles"),
       value: getFeatureUsage(data, "ig_scraper"),
     },
     {
-      label: "Social Media Reports",
+      label: t("features.socialMediaReports"),
       value: getFeatureUsage(data, "social_media_report"),
     },
     {
-      label: "Reputation Strategy",
+      label: t("features.reputationStrategy"),
       value: getFeatureUsage(data, "reputation_strategy"),
     },
   ]
@@ -151,7 +160,7 @@ const Payments = ({
   return (
     <Container maxW="full">
       <Heading size="sm" py={4}>
-        Payments
+        {t("title")}
       </Heading>
 
       <Box layerStyle="dashboardCard" p={{ base: 5, md: 6 }}>
@@ -163,7 +172,7 @@ const Payments = ({
           <Box>
             <Flex alignItems="center" gap={3} wrap="wrap">
               <Text fontWeight="black" fontSize={{ base: "xl", md: "2xl" }}>
-                {getBillingPlanLabel(data)}
+                {getBillingPlanLabel(data, (key) => t(key))}
               </Text>
               {data?.subscription_status ? (
                 <Badge
@@ -174,7 +183,8 @@ const Payments = ({
                   px={3}
                   py={1}
                 >
-                  {subscriptionLabelMap[data.subscription_status] ??
+                  {t(`status.${data.subscription_status}`) ??
+                    subscriptionLabelMap[data.subscription_status] ??
                     data.subscription_status}
                 </Badge>
               ) : null}
@@ -192,13 +202,13 @@ const Payments = ({
             ) : null}
             {data?.pending_ambassador_activation ? (
               <Text mt={3} color="ui.secondaryText">
-                Ambassador access is scheduled to activate at the end of the
-                current billing period.
+                {t("messages.pendingAmbassadorActivation")}
               </Text>
             ) : null}
             {data?.access_revoked_reason ? (
               <Text mt={3} color="ui.dangerText">
-                Access revoked reason: {data.access_revoked_reason}
+                {t("messages.accessRevokedReason")}:{" "}
+                {data.access_revoked_reason}
               </Text>
             ) : null}
           </Box>
@@ -254,7 +264,7 @@ const Payments = ({
                 {item.label}
               </Text>
               <Text mt={3} fontSize="2xl" fontWeight="black">
-                {renderFeatureUsageValue(item.value)}
+                {renderFeatureUsageValue(item.value, t("usage.unlimited"))}
               </Text>
             </Box>
           ))}
@@ -262,14 +272,14 @@ const Payments = ({
 
         {isLoading ? (
           <Text mt={4} color="ui.secondaryText">
-            Loading billing details...
+            {t("loading")}
           </Text>
         ) : null}
 
         {data?.notices?.length ? (
           <Box mt={6}>
             <Text fontWeight="black" mb={3}>
-              Billing notices
+              {t("notices.title")}
             </Text>
             <Grid gap={3}>
               {data.notices.map((notice) => (
@@ -285,7 +295,7 @@ const Payments = ({
                   <Flex align="center" justify="space-between" gap={3}>
                     <Text fontWeight="bold">{notice.title}</Text>
                     <Badge colorPalette={noticeToneMap[notice.notice_type]}>
-                      {notice.status}
+                      {t(`noticeStatus.${notice.status}`)}
                     </Badge>
                   </Flex>
                   <Text mt={2} color="ui.secondaryText" fontSize="sm">

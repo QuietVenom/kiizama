@@ -1,0 +1,417 @@
+{
+  "shell": {
+    "navigation": {
+      "title": "Brand Intelligence",
+      "reputationStrategy": "Reputation Strategy"
+    }
+  },
+  "page": {
+    "eyebrow": "Brand Intelligence",
+    "title": "Build modular reputation strategy reports.",
+    "description": "Start with creator usernames, validate them against the saved profile dataset, and then generate the selected reputation strategy as a PDF report.",
+    "badges": {
+      "validationFirst": "Profile validation first",
+      "pdfOnly": "PDF only",
+      "localReportsSynced": "Local reports synced"
+    },
+    "strategyOptions": {
+      "campaign": {
+        "title": "Reputation Campaign Strategy",
+        "description": "Validate a list of creators first, then generate a reputation campaign strategy around the selected campaign model."
+      },
+      "creator": {
+        "title": "Reputation Creator Strategy",
+        "description": "Validate the creator profile first, then generate a creator-centered reputation strategy with signals, platforms, and collaborators."
+      }
+    },
+    "mandatoryGate": {
+      "title": "Validation gate is mandatory",
+      "description": "Before any report is generated, the flow always re-runs <strong>profile existence validation</strong>. Missing usernames block report generation, profiles with update needed are allowed with a visible warning, and successful PDFs are stored in local storage for the dashboard."
+    }
+  },
+  "summary": {
+    "eyebrow": "Live Summary",
+    "description": "Review the captured information before generating the PDF report.",
+    "empty": {
+      "title": "Nothing captured yet.",
+      "description": "Start with creator usernames and the summary will update as the form fills in."
+    },
+    "campaignTitle": "Campaign Strategy",
+    "creatorTitle": "Creator Strategy",
+    "sections": {
+      "creatorsGate": "Creators gate",
+      "brandBrief": "Brand brief",
+      "campaignSetup": "Campaign setup",
+      "profileGate": "Profile gate",
+      "creatorBrief": "Creator brief",
+      "strategyInputs": "Strategy inputs"
+    },
+    "items": {
+      "creatorUsage": "Creator usage",
+      "creatorUsernames": "Creator usernames",
+      "expiredProfiles": "Expired profiles",
+      "brandName": "Brand name",
+      "brandContext": "Brand context",
+      "brandUrls": "Brand URLs",
+      "brandGoal": "Brand goal",
+      "goalContext": "Goal context",
+      "audience": "Audience",
+      "timeframe": "Timeframe",
+      "campaignType": "Campaign type",
+      "campaignTypeContext": "Campaign type context",
+      "creatorUsername": "Creator username",
+      "creatorContext": "Creator context",
+      "creatorUrls": "Creator URLs",
+      "goalType": "Goal type",
+      "primaryPlatforms": "Primary platforms",
+      "collaborators": "Collaborators",
+      "strengths": "Strengths",
+      "weaknesses": "Weaknesses",
+      "incidents": "Incidents",
+      "concerns": "Concerns"
+    },
+    "values": {
+      "notUsingCreators": "Not using creators for this campaign."
+    }
+  },
+  "validationPanel": {
+    "title": "Profile validation gate",
+    "initialDescription": "Add the required creator usernames first to enable validation and the rest of the workflow.",
+    "loadingTitle": "Validating profiles",
+    "loadingDescription": "Checking whether these usernames already exist in the saved profile dataset.",
+    "errorTitle": "Validation failed",
+    "staleTitle": "Validation is outdated",
+    "staleDescription": "Usernames changed after the last check. Validate again before generating the report.",
+    "readyDescription": "Existing profiles can continue. Profiles marked as update needed can also continue, but missing usernames block report generation.",
+    "preValidationDescription": "Run profile validation before report generation. This step is always required before any strategy endpoint.",
+    "refreshing": "Refreshing",
+    "checkedCount": "{{count}} checked",
+    "status": {
+      "ready": "Ready",
+      "updateNeeded": "Update Needed",
+      "missing": "Missing"
+    },
+    "refreshFailed": "Validation refresh failed",
+    "missingBlock": "Review the validated profiles and try again.",
+    "countCards": {
+      "ready": "Ready",
+      "updateNeeded": "Update Needed",
+      "missing": "Missing"
+    }
+  },
+  "tooltips": {
+    "helpButton": "{{label}} help"
+  },
+  "campaign": {
+    "submitPanel": {
+      "title": "Generate campaign strategy PDF",
+      "description": "The downloaded PDF is also saved into local storage for the dashboard.",
+      "button": "Generate PDF report"
+    },
+    "step1": {
+      "eyebrow": "Step 1",
+      "title": "Set the brand goal and creators",
+      "description": "Choose the brand goal first. If this is a Crisis campaign, you can explicitly decide not to use creators; otherwise, add creator usernames to unlock the rest of the campaign strategy form."
+    },
+    "step2": {
+      "eyebrow": "Step 2",
+      "title": "Brand brief",
+      "description": "Capture the brand context and supporting inputs that will guide the strategy recommendation."
+    },
+    "step3": {
+      "eyebrow": "Step 3",
+      "title": "Campaign strategy setup",
+      "description": "Choose the audience, timeframe, and campaign model that best match the report you want to generate."
+    },
+    "fields": {
+      "brandGoal": "Brand goal",
+      "creatorUsernames": "Creator usernames",
+      "notUsingCreators": "Not using creator(s)",
+      "brandName": "Brand name",
+      "brandContext": "Brand context",
+      "goalContext": "Goal context",
+      "brandUrls": "Brand URLs",
+      "timeframe": "Timeframe",
+      "campaignType": "Campaign type",
+      "audience": "Audience"
+    },
+    "fieldHelp": {
+      "brandGoal": "Primary brand goal.",
+      "creatorUsernames": "Creator username list (max 15).",
+      "brandName": "Brand name.",
+      "brandContext": "General brand context.",
+      "goalContext": "Additional context for the brand goal.",
+      "brandUrls": "Brand URL list (max 3).",
+      "timeframe": "Campaign timeframe.",
+      "campaignType": "Selected campaign strategy.",
+      "audience": "Target audiences."
+    },
+    "placeholders": {
+      "creatorUsernames": "creator_one, creator.two, another_creator",
+      "brandName": "Acme Skincare",
+      "brandContext": "Share the current business context, positioning, and what is happening around the brand.",
+      "goalContext": "Add context for the goal so the recommendation can weigh the right tradeoffs.",
+      "brandUrls": "https://brand.com, https://instagram.com/brand"
+    },
+    "select": {
+      "goal": "Select a goal",
+      "timeframe": "Select a timeframe",
+      "campaignModel": "Select a campaign model"
+    },
+    "helperText": {
+      "creatorsDisabled": "Creators are disabled for this Crisis campaign while this option is active.",
+      "creatorUsernames": "Paste a list, press Enter, or separate usernames with commas.",
+      "crisisOnly": "Available for Crisis campaigns. When enabled, the report will be generated without creator usernames or profile validation.",
+      "enableCrisisOnly": "Select Brand goal = Crisis to enable this option.",
+      "brandUrls": "Optional. Add up to 3 relevant URLs for the brand.",
+      "audience": "Select up to 5 audience segments."
+    },
+    "badges": {
+      "creatorsNotRequired": "Creators not required for Crisis",
+      "creatorUsernamesCount": "{{count}} / {{limit}} creator usernames",
+      "workflowUnlocked": "Workflow unlocked"
+    },
+    "actions": {
+      "validateProfiles": "Validate profiles"
+    },
+    "skippedValidation": {
+      "title": "Creator validation skipped",
+      "description": "This Crisis campaign is set to not use creators, so creator username validation is not required and the report will be generated with an empty creators list."
+    },
+    "submitDisabledReason": {
+      "missingUsernames": "Add at least 1 creator username to unlock the workflow.",
+      "invalidUsernames": "Fix invalid usernames before continuing.",
+      "invalidUrls": "Use valid http or https URLs.",
+      "requiredFields": "Complete the required fields to enable report generation.",
+      "validationPending": "Profile validation is still running.",
+      "validationRequired": "Validate profiles before generating the report.",
+      "missingProfiles": "Review the validated profiles and try again."
+    },
+    "validation": {
+      "selectBrandGoal": "Select the primary brand goal.",
+      "addCreatorUsername": "Add at least 1 creator username.",
+      "creatorUsernamesLimit": "You can include up to 15 creator usernames.",
+      "instagramUsername": "Use lowercase letters, numbers, periods or underscores, up to 30 characters.",
+      "brandNameRequired": "Brand name is required.",
+      "brandContextRequired": "Brand context is required.",
+      "goalContextRequired": "Goal context is required.",
+      "maxCharacters": "Use {{count}} characters or less.",
+      "brandUrlsLimit": "Add up to 3 brand URLs.",
+      "selectTimeframe": "Select the timeframe.",
+      "selectCampaignType": "Select the campaign type.",
+      "selectAudience": "Select at least 1 audience.",
+      "audienceLimit": "Select up to 5 audiences."
+    },
+    "preview": {
+      "title": "{{title}}"
+    },
+    "success": {
+      "statusTitle": "Campaign report generated",
+      "reportReady": "Report ready: {{filename}}",
+      "downloadedAndSaved": "Campaign strategy PDF downloaded and saved locally.",
+      "downloadedOnly": "Campaign strategy PDF downloaded, but it could not be saved locally."
+    },
+    "errors": {
+      "reportFailedTitle": "Report generation failed",
+      "reportFailedFallback": "Unable to generate the report."
+    }
+  },
+  "creator": {
+    "submitPanel": {
+      "title": "Generate creator strategy PDF",
+      "description": "The downloaded PDF is also saved into local storage for the dashboard.",
+      "button": "Generate PDF report"
+    },
+    "step1": {
+      "eyebrow": "Step 1",
+      "title": "Add the creator username",
+      "description": "The creator username is the first required input. It unlocks the rest of the workflow and must be validated before report generation."
+    },
+    "step2": {
+      "eyebrow": "Step 2",
+      "title": "Creator and reputation brief",
+      "description": "Capture the creator context, reputation goal, and supporting URLs that should shape the strategy."
+    },
+    "step3": {
+      "eyebrow": "Step 3",
+      "title": "Strategy inputs",
+      "description": "Add the audience, key platforms, reputation signals, and collaborators that should inform the creator strategy report."
+    },
+    "fields": {
+      "creatorUsername": "Creator username",
+      "goalType": "Goal type",
+      "timeframe": "Timeframe",
+      "creatorContext": "Creator context",
+      "goalContext": "Goal context",
+      "creatorUrls": "Creator URLs",
+      "audience": "Audience",
+      "primaryPlatforms": "Primary platforms",
+      "collaborators": "Collaborators",
+      "strengths": "Strengths",
+      "weaknesses": "Weaknesses",
+      "incidents": "Incidents",
+      "concerns": "Concerns"
+    },
+    "fieldHelp": {
+      "creatorUsername": "Creator username.",
+      "goalType": "Primary reputation goal for the creator strategy.",
+      "timeframe": "Strategy timeframe.",
+      "creatorContext": "General creator context.",
+      "goalContext": "Additional context for the reputation goal.",
+      "creatorUrls": "Creator URL list (max 3).",
+      "audience": "Target audiences.",
+      "primaryPlatforms": "Creator's main platforms.",
+      "collaborators": "List of relevant collaborators (max 10).",
+      "strengths": "Strengths within reputation signals to highlight reputational assets.",
+      "weaknesses": "Weaknesses within reputation signals to document friction or vulnerable points.",
+      "incidents": "Incidents within reputation signals to register relevant facts or episodes.",
+      "concerns": "Concerns within reputation signals to highlight active risks or tensions."
+    },
+    "placeholders": {
+      "creatorUsername": "creator_one",
+      "creatorContext": "Describe the creator's current narrative, positioning, and public perception.",
+      "goalContext": "Explain what should change in the creator's reputation over the selected timeframe.",
+      "creatorUrls": "https://instagram.com/creator, https://youtube.com/@creator",
+      "primaryPlatforms": "Instagram\nYouTube\nTikTok",
+      "collaborators": "Brand One\nBrand Two\nManagement Partner",
+      "strengths": "Transparency\nConsistency\nClear voice",
+      "weaknesses": "Overexposure\nLow message clarity",
+      "incidents": "Content backlash\nPublic apology",
+      "concerns": "Collaboration fatigue\nUnclear boundaries"
+    },
+    "select": {
+      "goal": "Select a goal",
+      "timeframe": "Select a timeframe"
+    },
+    "helperText": {
+      "audience": "Select up to 5 audience segments.",
+      "creatorUrls": "Optional. Add up to 3 relevant URLs for the creator.",
+      "primaryPlatforms": "Use one platform per line, up to 6.",
+      "collaborators": "Optional. Use one collaborator per line, up to 10.",
+      "perLine": "Per line"
+    },
+    "badges": {
+      "usernameCount_one": "{{count}} / 1 username",
+      "usernameCount_other": "{{count}} / 1 usernames"
+    },
+    "actions": {
+      "validateProfile": "Validate profile"
+    },
+    "submitDisabledReason": {
+      "missingUsername": "Add the creator username to unlock the workflow.",
+      "invalidUsername": "Fix the creator username before continuing.",
+      "invalidUrls": "Use valid http or https URLs.",
+      "requiredFields": "Complete the required fields to enable report generation.",
+      "validationPending": "Profile validation is still running.",
+      "validationRequired": "Validate the creator profile before generating the report.",
+      "missingProfiles": "Review the validated profiles and try again."
+    },
+    "validation": {
+      "addCreatorUsername": "Add the creator username.",
+      "selectGoalType": "Select the primary reputation goal.",
+      "selectTimeframe": "Select the timeframe.",
+      "creatorContextRequired": "Creator context is required.",
+      "goalContextRequired": "Goal context is required.",
+      "creatorUrlsLimit": "Add up to 3 creator URLs.",
+      "selectAudience": "Select at least 1 audience.",
+      "audienceLimit": "Select up to 5 audiences.",
+      "primaryPlatformsRequired": "Add at least 1 primary platform.",
+      "primaryPlatformsLimit": "Add up to 6 primary platforms.",
+      "collaboratorsLimit": "Add up to 10 collaborators.",
+      "reputationSignalLineLimit": "{{label}} entries must use {{count}} characters or less.",
+      "maxCharacters": "Use {{count}} characters or less."
+    },
+    "success": {
+      "statusTitle": "Creator report generated",
+      "reportReady": "Report ready: {{filename}}",
+      "downloadedAndSaved": "Creator strategy PDF downloaded and saved locally.",
+      "downloadedOnly": "Creator strategy PDF downloaded, but it could not be saved locally."
+    },
+    "errors": {
+      "reportFailedTitle": "Report generation failed",
+      "reportFailedFallback": "Unable to generate the report."
+    }
+  },
+  "catalogs": {
+    "brandGoals": {
+      "trustCredibilityAcceleration": "Trust & Credibility Acceleration",
+      "repositioning": "Repositioning",
+      "crisis": "Crisis"
+    },
+    "creatorGoals": {
+      "communityTrust": "Community Trust",
+      "resilience": "Resilience",
+      "pivot": "Pivot"
+    },
+    "audiences": {
+      "genZ": "Gen Z",
+      "zillennials": "Zillennials",
+      "millennials": "Millennials",
+      "genX": "Gen X",
+      "boomers": "Boomers"
+    },
+    "timeframes": {
+      "threeMonths": "3 months",
+      "sixMonths": "6 months",
+      "twelveMonths": "12 months"
+    },
+    "campaignTypes": {
+      "all_nano_seeding_ugc_flood": {
+        "title": "All Nano \"Seeding / UGC flood\"",
+        "description": "Mix: 20-200 nanos (1k-10k). Goal: UGC, real reviews, mention volume, social proof, and repost-ready content. Ideal for: launches, e-commerce, CPG, restaurants, and early-stage apps. Key: hybrid compensation (product/experience + commission) and a very simple brief."
+      },
+      "all_micro_performance_community_trust": {
+        "title": "All Micro \"Performance + community trust\"",
+        "description": "Mix: 10-80 micros (10k-100k). Goal: conversions, clicks, signups, and sales with trust driven by proximity. Ideal for: performance marketing, fintech, courses, beauty, and DTC. Key: codes/UTMs plus performance bonuses."
+      },
+      "micro_city_blitz": {
+        "title": "Micro \"City Blitz\" (by market)",
+        "description": "Mix: 5-20 micros per city. Goal: local awareness plus traffic to store or event. Ideal for: retail, openings, events, and food delivery. Key: short windows and local hooks."
+      },
+      "all_mid_tier_reach_eficiente": {
+        "title": "All Mid-tier \"Efficient reach\"",
+        "description": "Mix: 5-20 mids (100k-500k). Goal: strong awareness without paying macro or mega rates and with solid real CPM. Ideal for: brands with medium budgets that need scale. Key: high creativity and limited exclusivity/rights."
+      },
+      "macro_plus_micro_swarm_hero_halo": {
+        "title": "\"1-3 Macro + Micro swarm\" (Hero + halo)",
+        "description": "Mix: 1-3 macros (500k-1M) plus 20-100 micros. Goal: the macro opens the conversation, the micro tier sustains and converts it. Ideal for: major launches and seasonal campaigns. Key: macro with the core message and micros with different angles such as benefits, reviews, or tutorials."
+      },
+      "mega_plus_mid_support": {
+        "title": "\"Mega + Mid support\" (Top-of-funnel + depth)",
+        "description": "Mix: 1 mega (1M+) plus 10-30 mids. Goal: massive reach plus credibility and repetition. Ideal for: national awareness, branding, and PR moments. Key: mids with educational or demo content, not only hype."
+      },
+      "mid_plus_micro_always_on": {
+        "title": "\"2-5 Mid + Micro always-on\"",
+        "description": "Mix: 2-5 mids as anchors plus 10-30 monthly micros. Goal: constant presence and brand building. Ideal for: competitive categories such as beauty, fitness, and fintech. Key: 3-6 month contracts and rotating micros to avoid fatigue."
+      },
+      "celebrity_plus_community_creators": {
+        "title": "\"Celebrity + Community creators\" (PR impact + authenticity)",
+        "description": "Mix: 1 celebrity plus 20-60 nanos or micros. Goal: PR or earned media plus community legitimacy. Ideal for: repositioning, causes, and cultural campaigns. Key: celebrity for headlines, community for organic conversation."
+      },
+      "vertical_experts_authority": {
+        "title": "\"Vertical experts\" (Authority)",
+        "description": "Mix: 5-15 expert creators (micro or mid). Goal: consideration, trust, and education in finance, health, or tech. Ideal for: fintech, B2B, education, and health/wellness. Key: long formats such as YouTube or podcasts plus short cutdowns."
+      },
+      "ugc_creators": {
+        "title": "\"UGC creators\" (follower count does not matter)",
+        "description": "Mix: 10-50 UGC creators, sometimes under 10k. Goal: produce ads or paid content without paying creator reach rates. Ideal for: performance ads on Meta or TikTok. Key: pay for production plus usage rights, not for reach."
+      },
+      "event_amplification": {
+        "title": "\"Event amplification\"",
+        "description": "Mix: 1-2 macros or mega plus 10-30 micros or nanos at the event. Goal: live coverage, FOMO, attendance, and social PR. Ideal for: launches, pop-ups, festivals, and press trips. Key: define moment planning and clear deliverables."
+      },
+      "challenge_trend_wave": {
+        "title": "\"Challenge / Trend wave\"",
+        "description": "Mix: 1 mid or macro creator to start plus 30-150 micros or nanos to replicate it. Goal: virality and repeated concept exposure. Ideal for: TikTok, music, and mass consumer products. Key: a very simple mechanic plus incentives."
+      },
+      "creator_squad_ambassadors": {
+        "title": "\"Creator squad\" (ambassadors)",
+        "description": "Mix: 6-20 creators (micro or mid) for 6-12 months. Goal: consistency plus brand association. Ideal for: lifestyle, sports, beauty, and fintech-friendly brands. Key: contracts with reasonable exclusivity, perks, and monthly content."
+      },
+      "retargeting_booster_paid_whitelisting": {
+        "title": "\"Retargeting booster\" (paid + whitelisting)",
+        "description": "Mix: 5-15 micros or mids with whitelisting approval. Goal: run ads from the creator account for better CTR and stronger retargeting. Ideal for: pure performance. Key: negotiate rights and usage duration for 30, 60, or 90 days."
+      }
+    }
+  }
+}

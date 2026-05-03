@@ -12,6 +12,7 @@ import NotFound from "./components/Common/NotFound"
 import { CustomProvider } from "./components/ui/provider"
 import { normalizeAppError } from "./features/errors/http"
 import { redirectToLoginWithReturnTo } from "./features/errors/navigation"
+import "./i18n"
 import { routeTree } from "./routeTree.gen"
 
 OpenAPI.BASE = import.meta.env.VITE_API_URL

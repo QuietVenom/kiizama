@@ -17,7 +17,12 @@ const createProfile = (
 describe("profile validation panel", () => {
   test("profile_validation_panel_without_usernames_renders_initial_gate", () => {
     // Arrange / Act
-    renderWithProviders(<ProfileValidationPanel profiles={[]} usernames={[]} />)
+    renderWithProviders(
+      <ProfileValidationPanel profiles={[]} usernames={[]} />,
+      {
+        language: "en",
+      },
+    )
 
     // Assert
     expect(screen.getByText("Profile validation gate")).toBeVisible()
@@ -34,6 +39,7 @@ describe("profile validation panel", () => {
         profiles={[]}
         usernames={["creator_one"]}
       />,
+      { language: "en" },
     )
 
     // Assert
@@ -48,6 +54,7 @@ describe("profile validation panel", () => {
         profiles={[]}
         usernames={["creator_one"]}
       />,
+      { language: "en" },
     )
 
     // Assert
@@ -63,6 +70,7 @@ describe("profile validation panel", () => {
         profiles={[]}
         usernames={["creator_one"]}
       />,
+      { language: "en" },
     )
 
     // Assert
@@ -80,6 +88,7 @@ describe("profile validation panel", () => {
         ]}
         usernames={["ready", "expired", "missing"]}
       />,
+      { language: "en" },
     )
 
     // Assert
@@ -88,7 +97,7 @@ describe("profile validation panel", () => {
     expect(screen.getByText("@expired · Update Needed")).toBeVisible()
     expect(screen.getByText("@missing · Missing")).toBeVisible()
     expect(
-      screen.getByText("consulte los perfiles validados y vuelva a intentar"),
+      screen.getByText("Review the validated profiles and try again."),
     ).toBeVisible()
   })
 })

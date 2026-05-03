@@ -73,7 +73,7 @@ test.describe("HTTP error routes", () => {
     await page.goto("/login")
 
     await expect(page).toHaveURL(/\/login$/)
-    await expect(page.getByPlaceholder("Email")).toBeVisible()
+    await expect(page.getByPlaceholder("Correo electrónico")).toBeVisible()
   })
 
   test("redirects to login with redirect when current session is invalid", async ({

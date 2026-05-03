@@ -86,12 +86,14 @@ test("auth_reset_password_link_updates_password_and_allows_login", async ({
 
   // Act
   await page.goto(recoveryUrl)
-  await page.getByPlaceholder("New Password").fill(newPassword)
-  await page.getByPlaceholder("Confirm Password").fill(newPassword)
-  await page.getByRole("button", { name: "Reset Password" }).click()
+  await page.getByPlaceholder("Nueva contraseña").fill(newPassword)
+  await page.getByPlaceholder("Confirmar contraseña").fill(newPassword)
+  await page.getByRole("button", { name: "Restablecer contraseña" }).click()
 
   // Assert
-  await expect(page.getByText("Password updated successfully")).toBeVisible()
+  await expect(
+    page.getByText("La contraseña se actualizó correctamente."),
+  ).toBeVisible()
   await logInUser(page, email, newPassword)
 })
 
@@ -103,9 +105,9 @@ test("auth_invalid_reset_password_token_shows_backend_error", async ({
 
   // Act
   await page.goto("/reset-password?token=invalidtoken")
-  await page.getByPlaceholder("New Password").fill(password)
-  await page.getByPlaceholder("Confirm Password").fill(password)
-  await page.getByRole("button", { name: "Reset Password" }).click()
+  await page.getByPlaceholder("Nueva contraseña").fill(password)
+  await page.getByPlaceholder("Confirmar contraseña").fill(password)
+  await page.getByRole("button", { name: "Restablecer contraseña" }).click()
 
   // Assert
   await expect(page.getByText("Invalid token")).toBeVisible()

@@ -74,7 +74,7 @@ describe("appearance settings", () => {
 
   test("settings_tabs_normal_user_sees_all_settings_tabs", async () => {
     // Arrange / Act
-    renderWithProviders(<UserSettingsPage />)
+    renderWithProviders(<UserSettingsPage />, { language: "en" })
 
     // Assert
     expect(await screen.findByRole("tab", { name: "My profile" })).toBeVisible()
@@ -94,7 +94,7 @@ describe("appearance settings", () => {
     }
 
     // Act
-    renderWithProviders(<UserSettingsPage />)
+    renderWithProviders(<UserSettingsPage />, { language: "en" })
 
     // Assert
     expect(await screen.findByRole("tab", { name: "My profile" })).toBeVisible()
@@ -119,7 +119,9 @@ describe("appearance settings", () => {
 
     for (const scenario of scenarios) {
       themeState.theme = scenario.initialTheme
-      const { unmount } = renderWithProviders(<Appearance />)
+      const { unmount } = renderWithProviders(<Appearance />, {
+        language: "en",
+      })
 
       // Act
       await user.click(screen.getByText(scenario.label))
@@ -131,5 +133,17 @@ describe("appearance settings", () => {
     expect(themeState.setTheme).toHaveBeenNthCalledWith(2, "light")
     expect(themeState.setTheme).toHaveBeenNthCalledWith(3, "system")
     expect(localStorage.getItem("theme")).toBe("system")
+  })
+
+  test("appearance_renders_language_switcher", async () => {
+    renderWithProviders(<Appearance />, { language: "en" })
+
+    expect(await screen.findByText("Language")).toBeVisible()
+    expect(
+      await screen.findByRole("button", { name: "Select language" }),
+    ).toBeVisible()
+    expect(
+      await screen.findByRole("button", { name: "Select language" }),
+    ).toHaveTextContent("English")
   })
 })

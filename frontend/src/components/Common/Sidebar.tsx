@@ -1,6 +1,7 @@
 import { Box, Flex, Icon, IconButton, Text } from "@chakra-ui/react"
 import { Link as RouterLink, useLocation } from "@tanstack/react-router"
 import { useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { FaBars } from "react-icons/fa"
 import {
   FiChevronDown,
@@ -49,7 +50,7 @@ type SidebarItem = {
 }
 
 const topItems: SidebarItem[] = [
-  { key: "overview", icon: FiHome, title: "Overview", path: "/overview" },
+  { key: "overview", icon: FiHome, title: "", path: "/overview" },
   {
     key: "creators-search",
     icon: FiSearch,
@@ -150,7 +151,10 @@ const SidebarNavItem = ({
           fontSize="md"
           fontWeight={isActive ? "bold" : "medium"}
           letterSpacing="-0.01em"
-          truncate
+          flex="1"
+          minW={0}
+          whiteSpace="normal"
+          lineHeight="1.3"
         >
           {item.title}
         </Text>
@@ -252,7 +256,8 @@ const SidebarNavItem = ({
                           fontSize="xs"
                           fontWeight={isChildRouteActive ? "bold" : "medium"}
                           letterSpacing="-0.01em"
-                          whiteSpace="nowrap"
+                          whiteSpace="normal"
+                          lineHeight="1.3"
                         >
                           {child.title}
                         </Text>
@@ -329,12 +334,46 @@ const SidebarBody = ({
   userName,
   userEmail,
 }: SidebarBodyProps) => {
-  const profileSubLabel = isSuperuser ? "Admin Plan" : userEmail || "No email"
+  const { t } = useTranslation("common")
+  const { t: tCreatorsSearch } = useTranslation("creatorsSearch")
+  const { t: tBrandIntelligence } = useTranslation("brandIntelligence")
+  const profileSubLabel = isSuperuser
+    ? t("labels.adminPlan")
+    : userEmail || t("labels.noEmail")
+  const localizedTopItems = useMemo(
+    () =>
+      topItems.map((item) =>
+        item.key === "overview"
+          ? { ...item, title: t("navigation.overview") }
+          : item.key === "creators-search"
+            ? {
+                ...item,
+                title: tCreatorsSearch("shell.navigation.title"),
+              }
+            : item.key === "brand-intelligence"
+              ? {
+                  ...item,
+                  title: tBrandIntelligence("shell.navigation.title"),
+                  children: item.children?.map((child) =>
+                    child.key === "reputation-strategy"
+                      ? {
+                          ...child,
+                          title: tBrandIntelligence(
+                            "shell.navigation.reputationStrategy",
+                          ),
+                        }
+                      : child,
+                  ),
+                }
+              : item,
+      ),
+    [t, tBrandIntelligence, tCreatorsSearch],
+  )
   const [expandedSections, setExpandedSections] = useState<
     Record<string, boolean>
   >(() =>
     Object.fromEntries(
-      topItems
+      localizedTopItems
         .filter((item) =>
           item.children?.some((child) =>
             isActiveRoute(currentPath, child.path),
@@ -351,7 +390,7 @@ const SidebarBody = ({
             {
               key: "admin",
               icon: FiUsers,
-              title: "Admin",
+              title: t("navigation.admin"),
               path: "/admin" as const,
             },
           ]
@@ -359,12 +398,17 @@ const SidebarBody = ({
       {
         key: "settings",
         icon: FiSettings,
-        title: "Settings",
+        title: t("navigation.settings"),
         path: "/settings" as const,
       },
-      { key: "logout", icon: FiLogOut, title: "Log Out", danger: true },
+      {
+        key: "logout",
+        icon: FiLogOut,
+        title: t("navigation.logout"),
+        danger: true,
+      },
     ],
-    [isSuperuser],
+    [isSuperuser, t],
   )
 
   useEffect(() => {
@@ -372,7 +416,7 @@ const SidebarBody = ({
       let hasChanges = false
       const nextState = { ...current }
 
-      for (const item of topItems) {
+      for (const item of localizedTopItems) {
         const isChildRouteActive = item.children?.some((child) =>
           isActiveRoute(currentPath, child.path),
         )
@@ -385,7 +429,7 @@ const SidebarBody = ({
 
       return hasChanges ? nextState : current
     })
-  }, [currentPath])
+  }, [currentPath, localizedTopItems])
 
   const handleToggleExpand = (key: string) => {
     setExpandedSections((current) => ({
@@ -413,7 +457,7 @@ const SidebarBody = ({
       </Flex>
 
       <Flex direction="column" gap={1} px={4} pb={4}>
-        {topItems.map((item) => (
+        {localizedTopItems.map((item) => (
           <SidebarNavItem
             key={item.key}
             item={item}
@@ -472,7 +516,7 @@ const SidebarBody = ({
                 lineHeight="1.2"
                 truncate
               >
-                {userName?.trim() || "User"}
+                {userName?.trim() || t("labels.user")}
               </Text>
               <Text
                 fontSize="xs"
@@ -493,6 +537,7 @@ const SidebarBody = ({
 }
 
 const Sidebar = () => {
+  const { t } = useTranslation("common")
   const { pathname } = useLocation()
   const { logout, user } = useAuth()
   const [open, setOpen] = useState(false)
@@ -515,7 +560,7 @@ const Sidebar = () => {
             variant="ghost"
             color="inherit"
             display={{ base: "flex", md: "none" }}
-            aria-label="Open menu"
+            aria-label={t("menu.open")}
             position="fixed"
             top={3}
             left={3}

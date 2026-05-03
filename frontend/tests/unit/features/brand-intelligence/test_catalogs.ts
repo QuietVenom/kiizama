@@ -5,6 +5,7 @@ import {
   BRAND_GOALS_TYPE_OPTIONS,
   CAMPAIGN_TYPE_OPTIONS,
   CREATOR_GOAL_TYPE_OPTIONS,
+  getCampaignTypeContent,
   TIMEFRAME_OPTIONS,
 } from "../../../../src/features/brand-intelligence/catalogs"
 
@@ -29,7 +30,7 @@ describe("brand intelligence catalogs", () => {
   test("campaign_catalog_entries_have_required_contract_fields", () => {
     // Arrange / Act
     const invalidEntries = CAMPAIGN_TYPE_OPTIONS.filter(
-      (option) => !option.name || !option.title || !option.value,
+      (option) => !option.name || !option.titleKey || !option.descriptionKey,
     )
 
     // Assert
@@ -53,18 +54,31 @@ describe("brand intelligence catalogs", () => {
     )
   })
 
-  test("campaign_catalog_labels_preserve_user_facing_copy", () => {
+  test("campaign_catalog_translation_keys_map_to_translated_content", () => {
     // Arrange
-    const nano = CAMPAIGN_TYPE_OPTIONS.find(
-      (option) => option.name === "all_nano_seeding_ugc_flood",
-    )
-    const ambassadors = CAMPAIGN_TYPE_OPTIONS.find(
-      (option) => option.name === "creator_squad_ambassadors",
-    )
+    const t = ((key: string) =>
+      ({
+        "catalogs.campaignTypes.all_nano_seeding_ugc_flood.title":
+          'All Nano "Seeding / UGC flood"',
+        "catalogs.campaignTypes.all_nano_seeding_ugc_flood.description":
+          "UGC content",
+        "catalogs.campaignTypes.creator_squad_ambassadors.title":
+          '"Creator squad" (ambassadors)',
+        "catalogs.campaignTypes.creator_squad_ambassadors.description":
+          "Long-term creators",
+      })[key] ?? key) as never
 
     // Act / Assert
-    expect(nano?.title).toContain("Nano")
-    expect(nano?.value).toContain("UGC")
-    expect(ambassadors?.title).toContain("embajadores")
+    expect(
+      getCampaignTypeContent(t, "all_nano_seeding_ugc_flood"),
+    ).toMatchObject({
+      description: "UGC content",
+      title: expect.stringContaining("Nano"),
+    })
+    expect(
+      getCampaignTypeContent(t, "creator_squad_ambassadors"),
+    ).toMatchObject({
+      title: expect.stringContaining("ambassadors"),
+    })
   })
 })

@@ -2,6 +2,7 @@ import type {
   ProfileSnapshotExpanded,
   ProfileSnapshotExpandedCollection,
 } from "@/client"
+import { formatDate } from "@/i18n"
 import type { CreatorsSearchJobStatus } from "@/lib/creators-search-jobs"
 import { MAX_INSTAGRAM_USERNAMES } from "@/lib/instagram-usernames"
 
@@ -37,12 +38,10 @@ export const overviewToneStyles: Record<
   },
 }
 
-const jobTimestampFormatter = new Intl.DateTimeFormat("en-US", {
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  month: "short",
-})
+type CreatorsSearchT = (
+  key: string,
+  options?: Record<string, unknown>,
+) => string
 
 export const creatorsSearchHistoryQueryKey = (limit?: number) =>
   limit === undefined
@@ -66,13 +65,18 @@ export const getReadyUsernamesFromSearchResult = (
   )
 }
 
-export const formatJobTimestamp = (value: string) => {
+export const formatJobTimestamp = (value: string, language?: string | null) => {
   const parsedDate = new Date(value)
   if (Number.isNaN(parsedDate.getTime())) {
     return value
   }
 
-  return jobTimestampFormatter.format(parsedDate)
+  return formatDate(parsedDate, language, {
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "short",
+  })
 }
 
 export const getJobStatusStyles = (status: CreatorsSearchJobStatus) => {
@@ -121,17 +125,23 @@ export const sortSnapshotsByUsernames = (
 export const getValidationMessage = (
   invalidUsernames: string[],
   overflowAttempted: boolean,
+  t?: CreatorsSearchT,
 ) => {
   if (invalidUsernames.length > 0) {
-    return `Invalid usernames: ${invalidUsernames
+    const invalidList = invalidUsernames
       .map((username) => `@${username}`)
-      .join(
-        ", ",
-      )}. Use lowercase letters, numbers, periods or underscores, up to 30 characters.`
+      .join(", ")
+    const prefix = t ? t("validation.invalidPrefix") : "Invalid usernames"
+    const rule = t
+      ? t("validation.invalidRule")
+      : "Use lowercase letters, numbers, periods or underscores, up to 30 characters."
+    return `${prefix}: ${invalidList}. ${rule}`
   }
 
   if (overflowAttempted) {
-    return "You can search up to 50 usernames per request."
+    return t
+      ? t("validation.overflow")
+      : "You can search up to 50 usernames per request."
   }
 
   return undefined

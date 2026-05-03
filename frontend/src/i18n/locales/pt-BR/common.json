@@ -1,0 +1,61 @@
+{
+  "actions": {
+    "back": "Voltar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "confirm": "Confirmar",
+    "delete": "Excluir",
+    "dismiss": "Dispensar",
+    "edit": "Editar",
+    "loading": "Carregando",
+    "markAsRead": "Marcar como lido",
+    "remove": "Remover",
+    "retry": "Tentar novamente",
+    "save": "Salvar",
+    "search": "Buscar"
+  },
+  "billingNotices": {
+    "emptyDescription": "As próximas renovações e lembretes de teste aparecerão aqui.",
+    "emptyTitle": "Não há avisos de cobrança",
+    "trigger": "Avisos de cobrança"
+  },
+  "labels": {
+    "adminPlan": "Plano Admin",
+    "language": "Idioma",
+    "noEmail": "Sem e-mail",
+    "today": "Hoje",
+    "user": "Usuário",
+    "userSettings": "Configurações do usuário"
+  },
+  "languageSwitcher": {
+    "english": "English",
+    "portugueseBrazil": "Português (Brasil)",
+    "select": "Selecionar idioma",
+    "spanish": "Español"
+  },
+  "menu": {
+    "close": "Fechar menu",
+    "open": "Abrir menu"
+  },
+  "navigation": {
+    "admin": "Admin",
+    "appearance": "Aparência",
+    "blog": "Blog",
+    "dangerZone": "Zona de risco",
+    "login": "Entrar",
+    "logout": "Sair",
+    "myProfile": "Meu perfil",
+    "overview": "Visão geral",
+    "password": "Senha",
+    "payments": "Pagamentos",
+    "settings": "Configurações",
+    "signUp": "Criar conta"
+  },
+  "theme": {
+    "darkMode": "Modo escuro",
+    "lightMode": "Modo claro",
+    "switchToDarkMode": "Mudar para modo escuro",
+    "switchToLightMode": "Mudar para modo claro",
+    "system": "Sistema"
+  }
+}

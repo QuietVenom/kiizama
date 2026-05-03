@@ -1,4 +1,5 @@
 import { Badge, Box, Flex, Text } from "@chakra-ui/react"
+import { useTranslation } from "react-i18next"
 
 import type { CreatorsSearchHistoryItem } from "@/client"
 
@@ -13,6 +14,7 @@ export const SearchHistoryCard = ({
   item: CreatorsSearchHistoryItem
   onClick: (usernames: string[]) => void
 }) => {
+  const { i18n, t } = useTranslation("creatorsSearch")
   const readyUsernames = item.ready_usernames ?? []
   const visibleUsernames = readyUsernames.slice(0, 5)
   const hiddenUsernamesCount = Math.max(
@@ -46,7 +48,7 @@ export const SearchHistoryCard = ({
           <Text color="ui.text" fontWeight="black" lineClamp={2} minW={0}>
             {item.source === "ig-scrape-job" && item.job_id
               ? item.job_id
-              : "Direct search"}
+              : t("history.card.directSearch")}
           </Text>
           <Badge
             rounded="full"
@@ -63,7 +65,10 @@ export const SearchHistoryCard = ({
         </Flex>
 
         <Text mt={3} color="ui.secondaryText" fontSize="sm">
-          {formatJobTimestamp(item.created_at)}
+          {formatJobTimestamp(
+            item.created_at,
+            i18n.resolvedLanguage ?? i18n.language,
+          )}
         </Text>
 
         <Flex mt={4} gap={2} wrap="wrap" alignContent="flex-start">
@@ -123,12 +128,12 @@ export const SearchHistoryCard = ({
           <Text color="ui.text" fontWeight="black">
             {item.source === "ig-scrape-job" && item.job_id
               ? item.job_id
-              : "Direct search"}
+              : t("history.card.directSearch")}
           </Text>
           <Text mt={1} color="ui.secondaryText" fontSize="sm">
             {item.source === "ig-scrape-job"
-              ? "Ready usernames from scrape job"
-              : "Ready usernames from direct search"}
+              ? t("history.card.fromJob")
+              : t("history.card.fromDirect")}
           </Text>
         </Box>
         <Badge
@@ -145,7 +150,10 @@ export const SearchHistoryCard = ({
       </Flex>
 
       <Text mt={3} color="ui.secondaryText" fontSize="sm">
-        {formatJobTimestamp(item.created_at)}
+        {formatJobTimestamp(
+          item.created_at,
+          i18n.resolvedLanguage ?? i18n.language,
+        )}
       </Text>
 
       <Flex mt={3} gap={2} wrap="wrap">

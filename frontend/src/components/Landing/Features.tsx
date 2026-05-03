@@ -9,6 +9,7 @@ import {
 } from "@chakra-ui/react"
 import { keyframes } from "@emotion/react"
 import type { RefObject } from "react"
+import { useTranslation } from "react-i18next"
 import type { IconType } from "react-icons"
 import { BsDatabaseDown } from "react-icons/bs"
 import { FiBarChart2, FiClipboard } from "react-icons/fi"
@@ -43,56 +44,50 @@ const featureToneStyles = {
   neutral: { bg: "ui.panelAlt", color: "ui.neutralText" },
 } as const
 
-const features: Feature[] = [
-  {
-    icon: BsDatabaseDown,
-    title: "Instagram Data Capture",
-    description:
-      "Collect profile snapshots, posts, reels, and key engagement fields seamlessly in one automated workflow.",
-    tone: "info",
-  },
-  {
-    icon: FiClipboard,
-    title: "AI Profile Classification",
-    description:
-      "Classify creators by nuanced categories and roles to accelerate shortlist quality and targeting precision.",
-    tone: "accent",
-  },
-  {
-    icon: FiBarChart2,
-    title: "Performance Reports",
-    description:
-      "Generate downloadable PDF outputs from stored Instagram snapshots and historical metrics.",
-    tone: "brand",
-  },
-  {
-    icon: MdCampaign,
-    title: "Campaign Strategy",
-    description:
-      "Build brand-level strategy inputs leveraging audience demographics, goals, and custom creator sets.",
-    tone: "rose",
-  },
-  {
-    icon: GiGrowth,
-    title: "Creator Strategy",
-    description:
-      "Generate creator-specific strategy outputs grounded on profile context, performance, and reputation signals.",
-    tone: "success",
-  },
-  {
-    icon: HiMiniQueueList,
-    title: "Async Jobs & Persistence",
-    description:
-      "Run heavy scrape jobs with status tracking, retries, and durable storage across profile collections.",
-    tone: "neutral",
-  },
-]
-
 type FeaturesProps = {
   sectionRef: RefObject<HTMLElement | null>
 }
 
 const Features = ({ sectionRef }: FeaturesProps) => {
+  const { t } = useTranslation("landing")
+  const features: Feature[] = [
+    {
+      icon: BsDatabaseDown,
+      title: t("features.items.instagramDataCapture.title"),
+      description: t("features.items.instagramDataCapture.description"),
+      tone: "info",
+    },
+    {
+      icon: FiClipboard,
+      title: t("features.items.aiProfileClassification.title"),
+      description: t("features.items.aiProfileClassification.description"),
+      tone: "accent",
+    },
+    {
+      icon: FiBarChart2,
+      title: t("features.items.performanceReports.title"),
+      description: t("features.items.performanceReports.description"),
+      tone: "brand",
+    },
+    {
+      icon: MdCampaign,
+      title: t("features.items.campaignStrategy.title"),
+      description: t("features.items.campaignStrategy.description"),
+      tone: "rose",
+    },
+    {
+      icon: GiGrowth,
+      title: t("features.items.creatorStrategy.title"),
+      description: t("features.items.creatorStrategy.description"),
+      tone: "success",
+    },
+    {
+      icon: HiMiniQueueList,
+      title: t("features.items.asyncJobsPersistence.title"),
+      description: t("features.items.asyncJobsPersistence.description"),
+      tone: "neutral",
+    },
+  ]
   return (
     // biome-ignore lint/correctness/useUniqueElementIds: section anchor is required for footer navigation links
     <Box
@@ -120,7 +115,7 @@ const Features = ({ sectionRef }: FeaturesProps) => {
             gap={3}
           >
             <Box as="span" h="1px" w="8" bg="ui.mainHover" />
-            Core Capabilities
+            {t("features.eyebrow")}
             <Box as="span" h="1px" w="8" bg="ui.mainHover" />
           </Text>
           <Heading
@@ -130,11 +125,10 @@ const Features = ({ sectionRef }: FeaturesProps) => {
             lineHeight={1.15}
             fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
           >
-            Workflows designed for intelligence at scale
+            {t("features.title")}
           </Heading>
           <Text color="ui.secondaryText" fontSize={{ base: "md", md: "lg" }}>
-            Designed for teams that need operational social data, AI enrichment,
-            and strategy-ready outputs in one unified platform.
+            {t("features.description")}
           </Text>
         </Stack>
 

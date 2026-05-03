@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Link as RouterLink } from "@tanstack/react-router"
 import { useState } from "react"
 import { type SubmitHandler, useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { FiLock, FiUser } from "react-icons/fi"
 
 import { PublicLegalDocumentsService, type UserRegister } from "@/client"
@@ -33,7 +34,11 @@ import { PasswordInput } from "@/components/ui/password-input"
 import { PasswordRequirements } from "@/components/ui/password-requirements"
 import useAuth from "@/hooks/useAuth"
 import useCustomToast from "@/hooks/useCustomToast"
-import { confirmPasswordRules, emailPattern, newPasswordRules } from "@/utils"
+import {
+  buildEmailPattern,
+  confirmPasswordRules,
+  newPasswordRules,
+} from "@/utils"
 import SymbolLogo from "/assets/images/symbol.svg"
 
 const FORM_CONTAINER_MAX_W = { base: "md", md: "3xl" } as const
@@ -45,6 +50,7 @@ type UserRegisterForm = Omit<UserRegister, "legal_acceptances"> & {
 }
 
 export function SignUpPage() {
+  const { t } = useTranslation("auth")
   const { signUpMutation } = useAuth()
   const { showErrorToast } = useCustomToast()
   const landingUrl = "/"
@@ -97,9 +103,7 @@ export function SignUpPage() {
 
   const onSubmit: SubmitHandler<UserRegisterForm> = (data) => {
     if (legalDocumentsQuery.isPending) {
-      showErrorToast(
-        "Estamos cargando la documentación legal requerida. Intenta de nuevo.",
-      )
+      showErrorToast(t("signup.legal.loadError"))
       return
     }
 
@@ -107,7 +111,7 @@ export function SignUpPage() {
       const errorMessage =
         legalDocumentsQuery.error instanceof Error
           ? legalDocumentsQuery.error.message
-          : "No se pudo cargar la documentación legal requerida. Intenta de nuevo."
+          : t("signup.legal.loadError")
       showErrorToast(errorMessage)
       return
     }
@@ -125,9 +129,7 @@ export function SignUpPage() {
       !hasAcceptedPrivacyNotice ||
       !hasAcceptedTermsConditions
     ) {
-      showErrorToast(
-        "No se pudo cargar la documentación legal requerida. Intenta de nuevo.",
-      )
+      showErrorToast(t("signup.legal.loadError"))
       return
     }
 
@@ -181,7 +183,7 @@ export function SignUpPage() {
       <Box position="fixed" top="1rem" right="1rem" zIndex={20}>
         <ChakraLink href={landingUrl}>
           <IconButton
-            aria-label="Go to landing page"
+            aria-label={t("shared.homeAriaLabel")}
             bg="ui.panel"
             color="ui.brandText"
             borderWidth="1px"
@@ -190,7 +192,11 @@ export function SignUpPage() {
             boxShadow="ui.panelSm"
             _hover={{ bg: "ui.brandSoft" }}
           >
-            <Image src={SymbolLogo} alt="Kiizama symbol" boxSize="5" />
+            <Image
+              src={SymbolLogo}
+              alt={t("shared.homeImageAlt")}
+              boxSize="5"
+            />
           </IconButton>
         </ChakraLink>
       </Box>
@@ -232,9 +238,9 @@ export function SignUpPage() {
               <Input
                 minLength={3}
                 {...register("full_name", {
-                  required: "Full Name is required",
+                  required: t("validation.fullNameRequired"),
                 })}
-                placeholder="Full Name"
+                placeholder={t("signup.fullNamePlaceholder")}
                 type="text"
               />
             </InputGroup>
@@ -248,10 +254,10 @@ export function SignUpPage() {
             <InputGroup w="100%" startElement={<FiUser />}>
               <Input
                 {...register("email", {
-                  required: "Email is required",
-                  pattern: emailPattern,
+                  required: t("validation.emailRequired"),
+                  pattern: buildEmailPattern(t("validation.invalidEmail")),
                 })}
-                placeholder="Email"
+                placeholder={t("shared.emailPlaceholder")}
                 type="email"
               />
             </InputGroup>
@@ -260,8 +266,17 @@ export function SignUpPage() {
             <PasswordInput
               type="password"
               startElement={<FiLock />}
-              {...register("password", newPasswordRules())}
-              placeholder="Password"
+              {...register(
+                "password",
+                newPasswordRules(true, {
+                  required: t("validation.passwordRequired"),
+                  length: t("validation.passwordLength"),
+                  uppercase: t("validation.passwordUppercase"),
+                  number: t("validation.passwordNumber"),
+                  special: t("validation.passwordSpecial"),
+                }),
+              )}
+              placeholder={t("password.placeholder")}
               errors={errors}
               helperText={<PasswordRequirements password={passwordValue} />}
             />
@@ -270,8 +285,14 @@ export function SignUpPage() {
             <PasswordInput
               type="confirm_password"
               startElement={<FiLock />}
-              {...register("confirm_password", confirmPasswordRules(getValues))}
-              placeholder="Confirm Password"
+              {...register(
+                "confirm_password",
+                confirmPasswordRules(getValues, true, {
+                  mismatch: t("validation.passwordMismatch"),
+                  required: t("validation.passwordConfirmationRequired"),
+                }),
+              )}
+              placeholder={t("password.confirmPlaceholder")}
               errors={errors}
             />
           </Box>
@@ -282,18 +303,17 @@ export function SignUpPage() {
             loading={isSignupPending || isSubmitting}
             disabled={isSignupPending}
           >
-            Sign Up
+            {t("signup.submit")}
           </Button>
           {legalDocumentsQuery.isError && (
             <Text w={FORM_CONTROL_MAX_W} textAlign="center" color="red.300">
-              No se pudo cargar la documentación legal requerida. Intenta de
-              nuevo para continuar.
+              {t("signup.legal.loadErrorInline")}
             </Text>
           )}
           <Text w={FORM_CONTROL_MAX_W} textAlign="center">
-            Already have an account?{" "}
+            {t("signup.alreadyHaveAccount")}{" "}
             <RouterLink to="/login" className="main-link">
-              Log In
+              {t("signup.loginLink")}
             </RouterLink>
           </Text>
         </InsightCard>
@@ -309,12 +329,12 @@ export function SignUpPage() {
         <DialogContent maxW="lg" data-testid="signup-legal-modal">
           {!isSignupPending && <DialogCloseTrigger />}
           <DialogHeader>
-            <DialogTitle>Antes de crear tu cuenta</DialogTitle>
+            <DialogTitle>{t("signup.legal.title")}</DialogTitle>
           </DialogHeader>
           <DialogBody>
             <Text mb={5}>
               {legalDocuments?.simplified_notice ??
-                "Para crear tu cuenta, necesitas leer y aceptar la documentación legal aplicable. Puedes revisar cada documento en una nueva pestaña antes de continuar."}
+                t("signup.legal.fallbackNotice")}
             </Text>
             <Box display="flex" flexDirection="column" gap={4}>
               {privacyNoticeDocument && (
@@ -326,7 +346,7 @@ export function SignUpPage() {
                     }
                     data-testid="accept-privacy-checkbox"
                   >
-                    He leído y acepto el Aviso de Privacidad
+                    {t("signup.legal.privacyAcceptance")}
                   </Checkbox>
                   <ChakraLink
                     href={privacyNoticeDocument.url}
@@ -337,7 +357,7 @@ export function SignUpPage() {
                     ms="7"
                     data-testid="privacy-link"
                   >
-                    Abrir Aviso de Privacidad
+                    {t("signup.legal.privacyLink")}
                   </ChakraLink>
                 </Box>
               )}
@@ -350,7 +370,7 @@ export function SignUpPage() {
                     }
                     data-testid="accept-terms-checkbox"
                   >
-                    He leído y acepto los Términos y Condiciones
+                    {t("signup.legal.termsAcceptance")}
                   </Checkbox>
                   <ChakraLink
                     href={termsConditionsDocument.url}
@@ -361,7 +381,7 @@ export function SignUpPage() {
                     ms="7"
                     data-testid="terms-link"
                   >
-                    Abrir Términos y Condiciones
+                    {t("signup.legal.termsLink")}
                   </ChakraLink>
                 </Box>
               )}
@@ -374,7 +394,7 @@ export function SignUpPage() {
               onClick={resetLegalModalState}
               disabled={isSignupPending}
             >
-              Cancelar
+              {t("signup.legal.cancel")}
             </Button>
             <Button
               layerStyle="brandGradientButton"
@@ -383,7 +403,7 @@ export function SignUpPage() {
               loading={isSignupPending}
               data-testid="confirm-legal-acceptance"
             >
-              Crear cuenta
+              {t("signup.legal.confirm")}
             </Button>
           </DialogFooter>
         </DialogContent>

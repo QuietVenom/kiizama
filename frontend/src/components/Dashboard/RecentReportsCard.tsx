@@ -8,6 +8,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { AiFillDelete } from "react-icons/ai"
 import { FaDownload } from "react-icons/fa"
 import { FiDelete, FiHardDrive } from "react-icons/fi"
@@ -52,6 +53,7 @@ const downloadButtonStyles = {
 } as const
 
 const RecentReportsCard = () => {
+  const { i18n, t } = useTranslation("dashboard")
   const [items, setItems] = useState<LocalReportItem[]>(() =>
     readLocalReports(),
   )
@@ -102,7 +104,7 @@ const RecentReportsCard = () => {
             letterSpacing="-0.02em"
             minW={0}
           >
-            Available Reports - Local Storage
+            {t("recentReports.title")}
           </Text>
         </HStack>
         <DialogRoot
@@ -126,24 +128,26 @@ const RecentReportsCard = () => {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Estas seguro?</DialogTitle>
+              <DialogTitle>
+                {t("recentReports.deleteAllDialog.title")}
+              </DialogTitle>
             </DialogHeader>
             <DialogBody>
-              <Text>
-                Se eliminaran todos los reportes disponibles en local storage.
-              </Text>
+              <Text>{t("recentReports.deleteAllDialog.description")}</Text>
             </DialogBody>
             <DialogFooter>
               <ButtonGroup>
                 <DialogActionTrigger asChild>
-                  <Button variant="outline">No</Button>
+                  <Button variant="outline">
+                    {t("recentReports.deleteAllDialog.cancel")}
+                  </Button>
                 </DialogActionTrigger>
                 <Button
                   colorPalette="red"
                   variant="solid"
                   onClick={onDeleteAll}
                 >
-                  Si
+                  {t("recentReports.deleteAllDialog.confirm")}
                 </Button>
               </ButtonGroup>
             </DialogFooter>
@@ -157,7 +161,7 @@ const RecentReportsCard = () => {
         fontWeight="medium"
         mb={4}
       >
-        List of available reports
+        {t("recentReports.subtitle")}
       </Text>
 
       <Box
@@ -188,7 +192,7 @@ const RecentReportsCard = () => {
               bg="ui.surfaceSoft"
             >
               <Text fontWeight="bold" color="ui.secondaryText">
-                No reports available in local storage.
+                {t("recentReports.empty")}
               </Text>
             </Box>
           ) : (
@@ -226,14 +230,21 @@ const RecentReportsCard = () => {
                       fontWeight="medium"
                       truncate
                     >
-                      Saved on {formatLocalReportDate(item.createdAt)}
+                      {t("recentReports.savedOn", {
+                        date: formatLocalReportDate(
+                          item.createdAt,
+                          i18n.resolvedLanguage ?? i18n.language,
+                        ),
+                      })}
                     </Text>
                   </Box>
                 </HStack>
 
                 <HStack gap={2} alignSelf={{ base: "flex-end", sm: "initial" }}>
                   <Button
-                    aria-label={`Download report ${item.name}`}
+                    aria-label={t("recentReports.actions.downloadAria", {
+                      name: item.name,
+                    })}
                     variant="solid"
                     size="sm"
                     onClick={() => downloadLocalReport(item)}
@@ -242,7 +253,9 @@ const RecentReportsCard = () => {
                     <Icon as={FaDownload} boxSize={3.5} />
                   </Button>
                   <Button
-                    aria-label={`Delete report ${item.name}`}
+                    aria-label={t("recentReports.actions.deleteAria", {
+                      name: item.name,
+                    })}
                     variant="solid"
                     size="sm"
                     onClick={() => setItemToDelete(item)}
@@ -267,11 +280,13 @@ const RecentReportsCard = () => {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Estas seguro?</DialogTitle>
+            <DialogTitle>
+              {t("recentReports.deleteItemDialog.title")}
+            </DialogTitle>
           </DialogHeader>
           <DialogBody>
             <Text>
-              Se eliminara el reporte{" "}
+              {t("recentReports.deleteItemDialog.descriptionPrefix")}{" "}
               <Text as="span" fontWeight="bold">
                 {itemToDelete?.name}
               </Text>
@@ -281,10 +296,12 @@ const RecentReportsCard = () => {
           <DialogFooter>
             <ButtonGroup>
               <DialogActionTrigger asChild>
-                <Button variant="outline">No</Button>
+                <Button variant="outline">
+                  {t("recentReports.deleteItemDialog.cancel")}
+                </Button>
               </DialogActionTrigger>
               <Button colorPalette="red" variant="solid" onClick={onDeleteItem}>
-                Si
+                {t("recentReports.deleteItemDialog.confirm")}
               </Button>
             </ButtonGroup>
           </DialogFooter>
