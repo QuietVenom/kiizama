@@ -9,6 +9,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import type { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 import { FiArrowUpRight } from "react-icons/fi"
 
 import type {
@@ -26,6 +27,7 @@ import {
   DialogRoot,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { formatDate, formatNumber } from "@/i18n"
 
 type CreatorSnapshotDetailDialogProps = {
   onOpenChange: (open: boolean) => void
@@ -60,21 +62,12 @@ type ReelEntry = {
   updatedAt: string
 }
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  day: "2-digit",
-  month: "long",
-  year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-})
-
-const numberFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
-})
-
-const formatDate = (value?: string | null) => {
+const formatSnapshotDateTime = (
+  value?: string | null,
+  language?: string | null,
+) => {
   if (!value) {
-    return "N/A"
+    return null
   }
 
   const parsedDate = new Date(value)
@@ -82,23 +75,36 @@ const formatDate = (value?: string | null) => {
     return value
   }
 
-  return dateFormatter.format(parsedDate)
+  return formatDate(parsedDate, language, {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
 }
 
-const formatNumber = (value?: number | null) => {
+const formatMetricNumber = (
+  value?: number | null,
+  language?: string | null,
+) => {
   if (typeof value !== "number") {
-    return "N/A"
+    return null
   }
 
-  return numberFormatter.format(value)
+  return formatNumber(value, language, {
+    maximumFractionDigits: 2,
+  })
 }
 
-const formatPercent = (value?: number | null) => {
+const formatPercent = (value?: number | null, language?: string | null) => {
   if (typeof value !== "number") {
-    return "N/A"
+    return null
   }
 
-  return `${numberFormatter.format(value * 100)}%`
+  return `${formatNumber(value * 100, language, {
+    maximumFractionDigits: 2,
+  })}%`
 }
 
 const getInitials = (fullName?: string | null, username?: string | null) => {
@@ -155,35 +161,37 @@ const getEngagement = (
 const getPostTypeLabel = (
   mediaType?: number | null,
   productType?: string | null,
+  t?: (key: string) => string,
 ) => {
   if (productType === "clips") {
-    return "Reel"
+    return t ? t("detail.types.reel") : "Reel"
   }
 
   if (productType === "carousel_container" || mediaType === 8) {
-    return "Carousel"
+    return t ? t("detail.types.carousel") : "Carousel"
   }
 
   if (mediaType === 2) {
-    return "Video"
+    return t ? t("detail.types.video") : "Video"
   }
 
-  return "Post"
+  return t ? t("detail.types.post") : "Post"
 }
 
 const getReelTypeLabel = (
   mediaType?: number | null,
   productType?: string | null,
+  t?: (key: string) => string,
 ) => {
   if (productType === "clips") {
-    return "Reel"
+    return t ? t("detail.types.reel") : "Reel"
   }
 
   if (mediaType === 2) {
-    return "Video"
+    return t ? t("detail.types.video") : "Video"
   }
 
-  return "Reel"
+  return t ? t("detail.types.reel") : "Reel"
 }
 
 const getDisplayUrl = (url?: string | null) => {
@@ -299,7 +307,9 @@ const CreatorSnapshotDetailDialog = ({
   onOpenChange,
   snapshot,
 }: CreatorSnapshotDetailDialogProps) => {
+  const { i18n, t } = useTranslation(["creatorsSearch", "common"])
   const profile = snapshot?.profile
+  const language = i18n.resolvedLanguage ?? i18n.language
   const profileImageSrc = profile?.profile_pic_src || profile?.profile_pic_url
   const postsDocuments = snapshot?.posts ?? []
   const reelsDocuments = snapshot?.reels ?? []
@@ -349,12 +359,19 @@ const CreatorSnapshotDetailDialog = ({
           >
             {profile?.full_name ||
               profile?.username ||
-              "Creator snapshot detail"}
+              t("creatorsSearch:detail.fallbackTitle")}
           </DialogTitle>
           <Text mt={2} color="ui.secondaryText">
-            @{profile?.username || snapshot?.profile_id || "unknown"}{" "}
+            @
+            {profile?.username ||
+              snapshot?.profile_id ||
+              t("creatorsSearch:detail.unknown")}{" "}
             {snapshot
-              ? `• Snapshot captured ${formatDate(snapshot.scraped_at)}`
+              ? `• ${t("creatorsSearch:detail.snapshotCaptured", {
+                  date:
+                    formatSnapshotDateTime(snapshot.scraped_at, language) ??
+                    t("creatorsSearch:detail.notAvailable"),
+                })}`
               : ""}
           </Text>
         </DialogHeader>
@@ -383,7 +400,10 @@ const CreatorSnapshotDetailDialog = ({
                   >
                     {profileImageSrc ? (
                       <Image
-                        alt={profile.username || "Creator avatar"}
+                        alt={
+                          profile.username ||
+                          t("creatorsSearch:detail.avatarAlt")
+                        }
                         h="full"
                         src={profileImageSrc}
                         w="full"
@@ -413,7 +433,7 @@ const CreatorSnapshotDetailDialog = ({
                           px={2.5}
                           py={1}
                         >
-                          Verified
+                          {t("creatorsSearch:card.verified")}
                         </Badge>
                       ) : null}
                       {profile?.is_private ? (
@@ -426,7 +446,7 @@ const CreatorSnapshotDetailDialog = ({
                           px={2.5}
                           py={1}
                         >
-                          Private
+                          {t("creatorsSearch:card.private")}
                         </Badge>
                       ) : null}
                     </Flex>
@@ -437,7 +457,8 @@ const CreatorSnapshotDetailDialog = ({
                       fontWeight="black"
                       letterSpacing="-0.02em"
                     >
-                      {profile?.full_name || "No full name"}
+                      {profile?.full_name ||
+                        t("creatorsSearch:detail.noFullName")}
                     </Text>
 
                     {profileUrl ? (
@@ -461,7 +482,8 @@ const CreatorSnapshotDetailDialog = ({
                     )}
 
                     <Text mt={3} color="ui.secondaryText" lineHeight="1.8">
-                      {profile?.biography?.trim() || "No biography available."}
+                      {profile?.biography?.trim() ||
+                        t("creatorsSearch:detail.noBiography")}
                     </Text>
 
                     {profile?.external_url || bioLinks.length > 0 ? (
@@ -520,22 +542,31 @@ const CreatorSnapshotDetailDialog = ({
 
               <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
                 <MetricTile
-                  label="Followers"
-                  value={formatNumber(profile?.follower_count)}
+                  label={t("creatorsSearch:detail.followers")}
+                  value={
+                    formatMetricNumber(profile?.follower_count, language) ??
+                    t("creatorsSearch:detail.notAvailable")
+                  }
                 />
                 <MetricTile
-                  label="Following"
-                  value={formatNumber(profile?.following_count)}
+                  label={t("creatorsSearch:detail.following")}
+                  value={
+                    formatMetricNumber(profile?.following_count, language) ??
+                    t("creatorsSearch:detail.notAvailable")
+                  }
                 />
                 <MetricTile
-                  label="Media"
-                  value={formatNumber(profile?.media_count)}
+                  label={t("creatorsSearch:detail.media")}
+                  value={
+                    formatMetricNumber(profile?.media_count, language) ??
+                    t("creatorsSearch:detail.notAvailable")
+                  }
                 />
               </SimpleGrid>
 
               <ContentSection
-                title="AI analysis"
-                description="Saved content categories and creator roles associated with this profile."
+                title={t("creatorsSearch:detail.analysis.title")}
+                description={t("creatorsSearch:detail.analysis.description")}
               >
                 <SimpleGrid columns={{ base: 1, lg: 2 }} gap={4}>
                   <Box
@@ -553,7 +584,7 @@ const CreatorSnapshotDetailDialog = ({
                       letterSpacing="0.08em"
                       textTransform="uppercase"
                     >
-                      Categories
+                      {t("creatorsSearch:detail.analysis.categories")}
                     </Text>
                     <Flex mt={3} gap={2} wrap="wrap">
                       {categories.length > 0 ? (
@@ -571,7 +602,7 @@ const CreatorSnapshotDetailDialog = ({
                         ))
                       ) : (
                         <Text color="ui.secondaryText" fontSize="sm">
-                          No categories available.
+                          {t("creatorsSearch:detail.analysis.noCategories")}
                         </Text>
                       )}
                     </Flex>
@@ -592,7 +623,7 @@ const CreatorSnapshotDetailDialog = ({
                       letterSpacing="0.08em"
                       textTransform="uppercase"
                     >
-                      Roles
+                      {t("creatorsSearch:detail.analysis.roles")}
                     </Text>
                     <Flex mt={3} gap={2} wrap="wrap">
                       {roles.length > 0 ? (
@@ -610,7 +641,7 @@ const CreatorSnapshotDetailDialog = ({
                         ))
                       ) : (
                         <Text color="ui.secondaryText" fontSize="sm">
-                          No roles available.
+                          {t("creatorsSearch:detail.analysis.noRoles")}
                         </Text>
                       )}
                     </Flex>
@@ -619,8 +650,8 @@ const CreatorSnapshotDetailDialog = ({
               </ContentSection>
 
               <ContentSection
-                title="Metrics"
-                description="Saved creator metrics arranged to match the report view used across the product."
+                title={t("creatorsSearch:detail.metrics.title")}
+                description={t("creatorsSearch:detail.metrics.description")}
               >
                 {snapshot.metrics && (hasPostItems || hasReelItems) ? (
                   <SimpleGrid
@@ -632,138 +663,238 @@ const CreatorSnapshotDetailDialog = ({
                   >
                     {hasPostItems ? (
                       <MetricsGroupBox
-                        title="Posts"
-                        description={`Metrics based on ${postItems.length} saved post${postItems.length === 1 ? "" : "s"}.`}
+                        title={t("creatorsSearch:detail.metrics.postsTitle")}
+                        description={t(
+                          "creatorsSearch:detail.metrics.postsDescription",
+                          { count: postItems.length },
+                        )}
                       >
                         <MetricTile
-                          label="Total posts"
-                          value={formatNumber(
-                            snapshot.metrics.post_metrics.total_posts,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.totalPosts",
                           )}
+                          value={
+                            formatMetricNumber(
+                              snapshot.metrics.post_metrics.total_posts,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                         <MetricTile
-                          label="Overall post ER"
-                          value={formatPercent(
-                            snapshot.metrics.overall_post_engagement_rate,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.overallPostEr",
                           )}
+                          value={
+                            formatPercent(
+                              snapshot.metrics.overall_post_engagement_rate,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                         <MetricTile
-                          label="Total post likes"
-                          value={formatNumber(
-                            snapshot.metrics.post_metrics.total_likes,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.totalPostLikes",
                           )}
+                          value={
+                            formatMetricNumber(
+                              snapshot.metrics.post_metrics.total_likes,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                         <MetricTile
-                          label="Total post comments"
-                          value={formatNumber(
-                            snapshot.metrics.post_metrics.total_comments,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.totalPostComments",
                           )}
+                          value={
+                            formatMetricNumber(
+                              snapshot.metrics.post_metrics.total_comments,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                         <MetricTile
-                          label="Avg post likes"
-                          value={formatNumber(
-                            snapshot.metrics.post_metrics.avg_likes,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.avgPostLikes",
                           )}
+                          value={
+                            formatMetricNumber(
+                              snapshot.metrics.post_metrics.avg_likes,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                         <MetricTile
-                          label="Avg post comments"
-                          value={formatNumber(
-                            snapshot.metrics.post_metrics.avg_comments,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.avgPostComments",
                           )}
+                          value={
+                            formatMetricNumber(
+                              snapshot.metrics.post_metrics.avg_comments,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                         <MetricTile
-                          label="Avg post ER"
-                          value={formatPercent(
-                            snapshot.metrics.post_metrics.avg_engagement_rate,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.avgPostEr",
                           )}
+                          value={
+                            formatPercent(
+                              snapshot.metrics.post_metrics.avg_engagement_rate,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                         <MetricTile
-                          label="Hashtags per post"
-                          value={formatNumber(
-                            snapshot.metrics.post_metrics.hashtags_per_post,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.hashtagsPerPost",
                           )}
+                          value={
+                            formatMetricNumber(
+                              snapshot.metrics.post_metrics.hashtags_per_post,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                         <MetricTile
-                          label="Mentions per post"
-                          value={formatNumber(
-                            snapshot.metrics.post_metrics.mentions_per_post,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.mentionsPerPost",
                           )}
+                          value={
+                            formatMetricNumber(
+                              snapshot.metrics.post_metrics.mentions_per_post,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                       </MetricsGroupBox>
                     ) : null}
 
                     {hasReelItems ? (
                       <MetricsGroupBox
-                        title="Reels"
-                        description={`Metrics based on ${reelItems.length} saved reel${reelItems.length === 1 ? "" : "s"}.`}
+                        title={t("creatorsSearch:detail.metrics.reelsTitle")}
+                        description={t(
+                          "creatorsSearch:detail.metrics.reelsDescription",
+                          { count: reelItems.length },
+                        )}
                       >
                         <MetricTile
-                          label="Total reels"
-                          value={formatNumber(
-                            snapshot.metrics.reel_metrics.total_reels,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.totalReels",
                           )}
+                          value={
+                            formatMetricNumber(
+                              snapshot.metrics.reel_metrics.total_reels,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                         <MetricTile
-                          label="Reel ER on plays"
-                          value={formatPercent(
-                            snapshot.metrics.reel_engagement_rate_on_plays,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.reelErOnPlays",
                           )}
+                          value={
+                            formatPercent(
+                              snapshot.metrics.reel_engagement_rate_on_plays,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                         <MetricTile
-                          label="Total plays"
-                          value={formatNumber(
-                            snapshot.metrics.reel_metrics.total_plays,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.totalPlays",
                           )}
+                          value={
+                            formatMetricNumber(
+                              snapshot.metrics.reel_metrics.total_plays,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                         <MetricTile
-                          label="Avg reel plays"
-                          value={formatNumber(
-                            snapshot.metrics.reel_metrics.avg_plays,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.avgReelPlays",
                           )}
+                          value={
+                            formatMetricNumber(
+                              snapshot.metrics.reel_metrics.avg_plays,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                         <MetricTile
-                          label="Avg reel likes"
-                          value={formatNumber(
-                            snapshot.metrics.reel_metrics.avg_reel_likes,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.avgReelLikes",
                           )}
+                          value={
+                            formatMetricNumber(
+                              snapshot.metrics.reel_metrics.avg_reel_likes,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                         <MetricTile
-                          label="Avg reel comments"
-                          value={formatNumber(
-                            snapshot.metrics.reel_metrics.avg_reel_comments,
+                          label={t(
+                            "creatorsSearch:detail.metrics.tiles.avgReelComments",
                           )}
+                          value={
+                            formatMetricNumber(
+                              snapshot.metrics.reel_metrics.avg_reel_comments,
+                              language,
+                            ) ?? t("creatorsSearch:detail.notAvailable")
+                          }
                         />
                       </MetricsGroupBox>
                     ) : null}
                   </SimpleGrid>
                 ) : (
                   <Text color="ui.secondaryText">
-                    No metrics were saved for this creator yet.
+                    {t("creatorsSearch:detail.metrics.empty")}
                   </Text>
                 )}
               </ContentSection>
 
               {hasPostItems ? (
                 <ContentSection
-                  title={`Posts (${postItems.length})`}
-                  description={`Saved posts from ${postsDocuments.length} update${postsDocuments.length === 1 ? "" : "s"}, latest on ${formatDate(
-                    latestPostsUpdatedAt,
-                  )}.`}
+                  title={t("creatorsSearch:detail.posts.title", {
+                    count: postItems.length,
+                  })}
+                  description={t("creatorsSearch:detail.posts.description", {
+                    count: postsDocuments.length,
+                    date:
+                      formatSnapshotDateTime(latestPostsUpdatedAt, language) ??
+                      t("creatorsSearch:detail.unknown"),
+                  })}
                 >
                   <Box overflowX="auto">
                     <Table.Root size={{ base: "sm", md: "md" }} minW="920px">
                       <Table.Header>
                         <Table.Row>
-                          <Table.ColumnHeader>Post</Table.ColumnHeader>
-                          <Table.ColumnHeader>Likes</Table.ColumnHeader>
-                          <Table.ColumnHeader>Comments</Table.ColumnHeader>
-                          <Table.ColumnHeader>Engagement</Table.ColumnHeader>
                           <Table.ColumnHeader>
-                            ER (followers)
+                            {t("creatorsSearch:detail.posts.table.post")}
                           </Table.ColumnHeader>
-                          <Table.ColumnHeader>Colabs</Table.ColumnHeader>
-                          <Table.ColumnHeader>Usertags</Table.ColumnHeader>
-                          <Table.ColumnHeader>Type</Table.ColumnHeader>
+                          <Table.ColumnHeader>
+                            {t("creatorsSearch:detail.posts.table.likes")}
+                          </Table.ColumnHeader>
+                          <Table.ColumnHeader>
+                            {t("creatorsSearch:detail.posts.table.comments")}
+                          </Table.ColumnHeader>
+                          <Table.ColumnHeader>
+                            {t("creatorsSearch:detail.posts.table.engagement")}
+                          </Table.ColumnHeader>
+                          <Table.ColumnHeader>
+                            {t("creatorsSearch:detail.posts.table.erFollowers")}
+                          </Table.ColumnHeader>
+                          <Table.ColumnHeader>
+                            {t("creatorsSearch:detail.posts.table.colabs")}
+                          </Table.ColumnHeader>
+                          <Table.ColumnHeader>
+                            {t("creatorsSearch:detail.posts.table.usertags")}
+                          </Table.ColumnHeader>
+                          <Table.ColumnHeader>
+                            {t("creatorsSearch:detail.posts.table.type")}
+                          </Table.ColumnHeader>
                         </Table.Row>
                       </Table.Header>
                       <Table.Body>
@@ -804,15 +935,30 @@ const CreatorSnapshotDetailDialog = ({
                                   <Box minW={0}>
                                     <Text fontWeight="bold" lineClamp={2}>
                                       {item.caption_text?.trim() ||
-                                        `Instagram post ${index + 1}`}
+                                        t(
+                                          "creatorsSearch:detail.posts.fallbackTitle",
+                                          {
+                                            count: index + 1,
+                                          },
+                                        )}
                                     </Text>
                                     <Text
                                       mt={1}
                                       color="ui.secondaryText"
                                       fontSize="xs"
                                     >
-                                      Updated {formatDate(updatedAt)} • Code{" "}
-                                      {item.code}
+                                      {t(
+                                        "creatorsSearch:detail.posts.updatedCode",
+                                        {
+                                          code: item.code,
+                                          date:
+                                            formatSnapshotDateTime(
+                                              updatedAt,
+                                              language,
+                                            ) ??
+                                            t("creatorsSearch:detail.unknown"),
+                                        },
+                                      )}
                                     </Text>
                                     {item.is_paid_partnership ? (
                                       <Badge
@@ -823,27 +969,40 @@ const CreatorSnapshotDetailDialog = ({
                                         px={2.5}
                                         py={1}
                                       >
-                                        Paid partnership
+                                        {t(
+                                          "creatorsSearch:detail.posts.paidPartnership",
+                                        )}
                                       </Badge>
                                     ) : null}
                                   </Box>
                                 </Flex>
                               </Table.Cell>
                               <Table.Cell>
-                                {formatNumber(item.like_count ?? 0)}
+                                {formatMetricNumber(
+                                  item.like_count ?? 0,
+                                  language,
+                                ) ?? "0"}
                               </Table.Cell>
                               <Table.Cell>
-                                {formatNumber(item.comment_count ?? 0)}
+                                {formatMetricNumber(
+                                  item.comment_count ?? 0,
+                                  language,
+                                ) ?? "0"}
                               </Table.Cell>
                               <Table.Cell>
-                                {formatNumber(engagement)}
+                                {formatMetricNumber(engagement, language) ??
+                                  "0"}
                               </Table.Cell>
-                              <Table.Cell>{formatPercent(postEr)}</Table.Cell>
+                              <Table.Cell>
+                                {formatPercent(postEr, language) ??
+                                  t("creatorsSearch:detail.notAvailable")}
+                              </Table.Cell>
                               <Table.Cell>
                                 <Text fontWeight="bold">
-                                  {formatNumber(
+                                  {formatMetricNumber(
                                     item.coauthor_producers?.length ?? 0,
-                                  )}
+                                    language,
+                                  ) ?? "0"}
                                 </Text>
                                 {item.coauthor_producers?.length ? (
                                   <Text
@@ -860,7 +1019,10 @@ const CreatorSnapshotDetailDialog = ({
                               </Table.Cell>
                               <Table.Cell>
                                 <Text fontWeight="bold">
-                                  {formatNumber(item.usertags?.length ?? 0)}
+                                  {formatMetricNumber(
+                                    item.usertags?.length ?? 0,
+                                    language,
+                                  ) ?? "0"}
                                 </Text>
                                 {item.usertags?.length ? (
                                   <Text
@@ -879,6 +1041,7 @@ const CreatorSnapshotDetailDialog = ({
                                 {getPostTypeLabel(
                                   item.media_type,
                                   item.product_type,
+                                  (key) => t(`creatorsSearch:${key}`),
                                 )}
                               </Table.Cell>
                             </Table.Row>
@@ -892,22 +1055,41 @@ const CreatorSnapshotDetailDialog = ({
 
               {hasReelItems ? (
                 <ContentSection
-                  title={`Reels (${reelItems.length})`}
-                  description={`Saved reels from ${reelsDocuments.length} update${reelsDocuments.length === 1 ? "" : "s"}, latest on ${formatDate(
-                    latestReelsUpdatedAt,
-                  )}.`}
+                  title={t("creatorsSearch:detail.reels.title", {
+                    count: reelItems.length,
+                  })}
+                  description={t("creatorsSearch:detail.reels.description", {
+                    count: reelsDocuments.length,
+                    date:
+                      formatSnapshotDateTime(latestReelsUpdatedAt, language) ??
+                      t("creatorsSearch:detail.unknown"),
+                  })}
                 >
                   <Box overflowX="auto">
                     <Table.Root size={{ base: "sm", md: "md" }} minW="860px">
                       <Table.Header>
                         <Table.Row>
-                          <Table.ColumnHeader>Reel</Table.ColumnHeader>
-                          <Table.ColumnHeader>Plays</Table.ColumnHeader>
-                          <Table.ColumnHeader>Likes</Table.ColumnHeader>
-                          <Table.ColumnHeader>Comments</Table.ColumnHeader>
-                          <Table.ColumnHeader>Engagement</Table.ColumnHeader>
-                          <Table.ColumnHeader>ER (plays)</Table.ColumnHeader>
-                          <Table.ColumnHeader>Type</Table.ColumnHeader>
+                          <Table.ColumnHeader>
+                            {t("creatorsSearch:detail.reels.table.reel")}
+                          </Table.ColumnHeader>
+                          <Table.ColumnHeader>
+                            {t("creatorsSearch:detail.reels.table.plays")}
+                          </Table.ColumnHeader>
+                          <Table.ColumnHeader>
+                            {t("creatorsSearch:detail.reels.table.likes")}
+                          </Table.ColumnHeader>
+                          <Table.ColumnHeader>
+                            {t("creatorsSearch:detail.reels.table.comments")}
+                          </Table.ColumnHeader>
+                          <Table.ColumnHeader>
+                            {t("creatorsSearch:detail.reels.table.engagement")}
+                          </Table.ColumnHeader>
+                          <Table.ColumnHeader>
+                            {t("creatorsSearch:detail.reels.table.erPlays")}
+                          </Table.ColumnHeader>
+                          <Table.ColumnHeader>
+                            {t("creatorsSearch:detail.reels.table.type")}
+                          </Table.ColumnHeader>
                         </Table.Row>
                       </Table.Header>
                       <Table.Body>
@@ -947,36 +1129,65 @@ const CreatorSnapshotDetailDialog = ({
                                   </Link>
                                   <Box minW={0}>
                                     <Text fontWeight="bold">
-                                      Instagram reel {index + 1}
+                                      {t(
+                                        "creatorsSearch:detail.reels.fallbackTitle",
+                                        {
+                                          count: index + 1,
+                                        },
+                                      )}
                                     </Text>
                                     <Text
                                       mt={1}
                                       color="ui.secondaryText"
                                       fontSize="xs"
                                     >
-                                      Updated {formatDate(updatedAt)} • Code{" "}
-                                      {item.code}
+                                      {t(
+                                        "creatorsSearch:detail.reels.updatedCode",
+                                        {
+                                          code: item.code,
+                                          date:
+                                            formatSnapshotDateTime(
+                                              updatedAt,
+                                              language,
+                                            ) ??
+                                            t("creatorsSearch:detail.unknown"),
+                                        },
+                                      )}
                                     </Text>
                                   </Box>
                                 </Flex>
                               </Table.Cell>
                               <Table.Cell>
-                                {formatNumber(item.play_count ?? 0)}
+                                {formatMetricNumber(
+                                  item.play_count ?? 0,
+                                  language,
+                                ) ?? "0"}
                               </Table.Cell>
                               <Table.Cell>
-                                {formatNumber(item.like_count ?? 0)}
+                                {formatMetricNumber(
+                                  item.like_count ?? 0,
+                                  language,
+                                ) ?? "0"}
                               </Table.Cell>
                               <Table.Cell>
-                                {formatNumber(item.comment_count ?? 0)}
+                                {formatMetricNumber(
+                                  item.comment_count ?? 0,
+                                  language,
+                                ) ?? "0"}
                               </Table.Cell>
                               <Table.Cell>
-                                {formatNumber(engagement)}
+                                {formatMetricNumber(engagement, language) ??
+                                  "0"}
                               </Table.Cell>
-                              <Table.Cell>{formatPercent(reelEr)}</Table.Cell>
+                              <Table.Cell>
+                                {formatPercent(reelEr, language) ??
+                                  t("creatorsSearch:detail.notAvailable")}
+                              </Table.Cell>
                               <Table.Cell>
                                 {getReelTypeLabel(
                                   item.media_type,
                                   item.product_type,
+                                  (key) => t(`creatorsSearch:${key}`),
                                 )}
                               </Table.Cell>
                             </Table.Row>
@@ -999,7 +1210,7 @@ const CreatorSnapshotDetailDialog = ({
           py={4}
         >
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
+            {t("common:actions.close")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -8,6 +8,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import BlogPostCard from "@/components/Blog/BlogPostCard"
 import Footer from "@/components/Landing/Footer"
 import LandingNavbar from "@/components/Landing/Navbar"
@@ -22,6 +23,7 @@ export function BlogIndexPage({
   isWaitingListEnabled,
   posts,
 }: BlogIndexPageProps) {
+  const { t } = useTranslation("landing")
   const navbarRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
@@ -79,7 +81,7 @@ export function BlogIndexPage({
                 fontWeight="bold"
                 textTransform="uppercase"
               >
-                Kiizama Journal
+                {t("blog.journal")}
               </Badge>
 
               <Heading
@@ -89,7 +91,7 @@ export function BlogIndexPage({
                 letterSpacing="-0.03em"
                 maxW="4xl"
               >
-                The latest Kiizama insights
+                {t("blog.index.title")}
               </Heading>
 
               <Text
@@ -97,8 +99,7 @@ export function BlogIndexPage({
                 fontSize={{ base: "md", md: "lg" }}
                 maxW="2xl"
               >
-                Product thinking, workflow notes, and reputation intelligence
-                perspectives from Kiizama.
+                {t("blog.index.description")}
               </Text>
             </Stack>
 

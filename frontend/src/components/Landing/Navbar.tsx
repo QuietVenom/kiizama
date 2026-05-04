@@ -11,20 +11,15 @@ import {
 import { Link } from "@tanstack/react-router"
 import type { RefObject } from "react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { CiDark, CiLight } from "react-icons/ci"
 import { FiMenu, FiX } from "react-icons/fi"
+import LanguageSwitcher from "@/components/Common/LanguageSwitcher"
 import ThemeLogo from "@/components/Common/ThemeLogo"
 import { Button } from "@/components/ui/button"
 import { useColorMode } from "@/components/ui/color-mode"
 
 type SectionKey = "home" | "features" | "pricing" | "faq"
-
-const sectionLinks: { href: string; key: SectionKey; label: string }[] = [
-  { key: "home", label: "Home", href: "/" },
-  { key: "features", label: "Capabilities", href: "/#capabilities" },
-  { key: "pricing", label: "Plans", href: "/#plans" },
-  { key: "faq", label: "FAQ", href: "/#faq" },
-]
 
 const MOBILE_MENU_ANIMATION_MS = 320
 
@@ -46,13 +41,18 @@ const scrollToSection = (
 }
 
 const LandingThemeToggleButton = () => {
+  const { t } = useTranslation("common")
   const { colorMode, toggleColorMode } = useColorMode()
   const isDarkMode = colorMode === "dark"
 
   return (
     <ClientOnly fallback={<Skeleton boxSize="10" rounded="full" />}>
       <IconButton
-        aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+        aria-label={
+          isDarkMode
+            ? t("theme.switchToLightMode")
+            : t("theme.switchToDarkMode")
+        }
         onClick={toggleColorMode}
         variant="ghost"
         rounded="full"
@@ -82,9 +82,21 @@ const LandingNavbar = ({
   navbarRef,
   sectionRefs,
 }: LandingNavbarProps) => {
+  const { t } = useTranslation("common")
+  const { t: tLanding } = useTranslation("landing")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const loginUrl = "/login"
   const blogUrl = "/blog"
+  const sectionLinks: { href: string; key: SectionKey; label: string }[] = [
+    { key: "home", label: tLanding("navbar.home"), href: "/" },
+    {
+      key: "features",
+      label: tLanding("navbar.capabilities"),
+      href: "/#capabilities",
+    },
+    { key: "pricing", label: tLanding("navbar.plans"), href: "/#plans" },
+    { key: "faq", label: tLanding("navbar.faq"), href: "/#faq" },
+  ]
 
   const handleSectionClick = (key: SectionKey) => {
     const targetSection = sectionRefs?.[key]
@@ -185,7 +197,7 @@ const LandingNavbar = ({
                 h={10}
                 _hover={{ color: "ui.link", bg: "transparent" }}
               >
-                Blog
+                {t("navigation.blog")}
               </Button>
             </Link>
           </HStack>
@@ -195,6 +207,7 @@ const LandingNavbar = ({
             justifySelf={{ base: "auto", md: "end" }}
             display={{ base: "none", md: "flex" }}
           >
+            <LanguageSwitcher variant="landing" />
             <LandingThemeToggleButton />
             <ChakraLink href={loginUrl} _hover={{ textDecoration: "none" }}>
               <Button
@@ -203,7 +216,7 @@ const LandingNavbar = ({
                 fontWeight="semibold"
                 _hover={{ bg: "transparent", color: "ui.text" }}
               >
-                Log In
+                {t("navigation.login")}
               </Button>
             </ChakraLink>
             {isWaitingListEnabled ? (
@@ -216,7 +229,7 @@ const LandingNavbar = ({
                   color="ui.panel"
                   _hover={{ bg: "ui.panelInverse" }}
                 >
-                  Waiting List
+                  {tLanding("navbar.waitingList")}
                 </Button>
               </Link>
             ) : (
@@ -229,7 +242,7 @@ const LandingNavbar = ({
                   color="ui.panel"
                   _hover={{ bg: "ui.panelInverse" }}
                 >
-                  Sign Up
+                  {t("navigation.signUp")}
                 </Button>
               </Link>
             )}
@@ -237,7 +250,7 @@ const LandingNavbar = ({
 
           <IconButton
             display={{ base: "inline-flex", md: "none" }}
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-label={mobileMenuOpen ? t("menu.close") : t("menu.open")}
             variant="ghost"
             color="ui.text"
             onClick={() => setMobileMenuOpen((open) => !open)}
@@ -345,9 +358,19 @@ const LandingNavbar = ({
                 borderBottomWidth="1px"
                 borderBottomColor="ui.border"
               >
-                Blog
+                {t("navigation.blog")}
               </Button>
             </Link>
+            <Box
+              px={3}
+              py={3}
+              borderBottomWidth="1px"
+              borderBottomColor="ui.border"
+              display="flex"
+              justifyContent="flex-start"
+            >
+              <LanguageSwitcher variant="settings" />
+            </Box>
             <Box
               px={3}
               py={3}
@@ -371,7 +394,7 @@ const LandingNavbar = ({
                 borderBottomWidth="1px"
                 borderBottomColor="ui.border"
               >
-                Log In
+                {t("navigation.login")}
               </Button>
             </ChakraLink>
             <Box p={3}>
@@ -388,7 +411,7 @@ const LandingNavbar = ({
                     color="ui.panel"
                     _hover={{ bg: "ui.panelInverse" }}
                   >
-                    Waiting List
+                    {tLanding("navbar.waitingList")}
                   </Button>
                 </Link>
               ) : (
@@ -401,7 +424,7 @@ const LandingNavbar = ({
                     color="ui.panel"
                     _hover={{ bg: "ui.panelInverse" }}
                   >
-                    Sign Up
+                    {t("navigation.signUp")}
                   </Button>
                 </Link>
               )}

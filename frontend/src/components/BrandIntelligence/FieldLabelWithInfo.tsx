@@ -1,5 +1,6 @@
 import { IconButton, Portal, Text, Tooltip } from "@chakra-ui/react"
 import { memo } from "react"
+import { useTranslation } from "react-i18next"
 import { FiInfo } from "react-icons/fi"
 
 type FieldLabelWithInfoProps = {
@@ -12,6 +13,8 @@ const tooltipHoverStyles = { bg: "ui.surfaceSoft", color: "ui.text" } as const
 
 const FieldLabelWithInfo = memo(
   ({ description, label }: FieldLabelWithInfoProps) => {
+    const { t } = useTranslation("brandIntelligence")
+
     if (!description) return null
 
     return (
@@ -24,7 +27,7 @@ const FieldLabelWithInfo = memo(
       >
         <Tooltip.Trigger asChild>
           <IconButton
-            aria-label={`${label} help`}
+            aria-label={t("tooltips.helpButton", { label })}
             variant="ghost"
             size="sm"
             type="button"

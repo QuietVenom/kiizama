@@ -109,10 +109,11 @@ describe("overview page", () => {
     renderOverviewPage(createBillingSummary())
 
     // Assert
-    expect(screen.getByText(/Hi, Marcos/)).toBeVisible()
-    expect(screen.getByText("Profiles")).toBeVisible()
-    expect(screen.getByText("Social Media Reports")).toBeVisible()
-    expect(screen.getByText("Reputation Strategy")).toBeVisible()
+    expect(screen.getByText(/Hola, Marcos/)).toBeVisible()
+    expect(screen.getByText("Perfiles")).toBeVisible()
+    expect(screen.getAllByText("créditos actuales")).toHaveLength(3)
+    expect(screen.getByText("Reportes de social media")).toBeVisible()
+    expect(screen.getByText("Estrategia reputacional")).toBeVisible()
     expect(screen.getByText("8 / 10")).toBeVisible()
     expect(screen.getByText("4 / 5")).toBeVisible()
     expect(screen.getByText("2 / 3")).toBeVisible()
@@ -124,7 +125,7 @@ describe("overview page", () => {
     renderOverviewPage(createBillingSummary())
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Payments" }))
+    await user.click(screen.getByRole("button", { name: "Pagos" }))
 
     // Assert
     expect(router.navigate).toHaveBeenCalledWith({
@@ -140,7 +141,7 @@ describe("overview page", () => {
 
     // Act
     await user.click(
-      screen.getByRole("button", { name: "Activate Your Subscription" }),
+      screen.getByRole("button", { name: "Activa tu suscripción" }),
     )
 
     // Assert
@@ -160,10 +161,10 @@ describe("overview page", () => {
 
     // Assert
     expect(
-      screen.queryByRole("button", { name: "Payments" }),
+      screen.queryByRole("button", { name: "Pagos" }),
     ).not.toBeInTheDocument()
     expect(
-      screen.queryByRole("button", { name: "Activate Your Subscription" }),
+      screen.queryByRole("button", { name: "Activa tu suscripción" }),
     ).not.toBeInTheDocument()
   })
 })

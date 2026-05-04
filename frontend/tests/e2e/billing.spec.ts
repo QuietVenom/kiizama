@@ -117,7 +117,7 @@ test.describe("Billing return refetch", () => {
 
     await page.goto("/settings?tab=payments&billing_return=1")
 
-    await expect(page.getByRole("heading", { name: "Payments" })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Pagos" })).toBeVisible()
     await expect.poll(() => billingSummaryRequests).toBeGreaterThanOrEqual(2)
     await expect.poll(() => billingNoticeRequests).toBeGreaterThanOrEqual(2)
     await expect(page).not.toHaveURL(/billing_return=/)

@@ -1,4 +1,5 @@
 import { HStack, Icon, Text, VStack } from "@chakra-ui/react"
+import { useTranslation } from "react-i18next"
 import { FiCheckCircle, FiCircle } from "react-icons/fi"
 
 import { getPasswordRequirementStates } from "@/utils"
@@ -10,12 +11,18 @@ interface PasswordRequirementsProps {
 export const PasswordRequirements = ({
   password = "",
 }: PasswordRequirementsProps) => {
-  const requirements = getPasswordRequirementStates(password)
+  const { t } = useTranslation("auth")
+  const requirements = getPasswordRequirementStates(password, {
+    length: t("password.requirements.items.length"),
+    uppercase: t("password.requirements.items.uppercase"),
+    number: t("password.requirements.items.number"),
+    special: t("password.requirements.items.special"),
+  })
 
   return (
     <VStack align="stretch" gap={1.5} pt={2}>
       <Text fontSize="xs" color="gray.500" fontWeight="medium">
-        Password requirements
+        {t("password.requirements.title")}
       </Text>
       {requirements.map(({ key, label, satisfied }) => (
         <HStack

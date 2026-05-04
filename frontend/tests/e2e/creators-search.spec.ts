@@ -180,27 +180,31 @@ test.describe("Creators search scrape jobs", () => {
       .getByPlaceholder("creator_one, brand.partner, another_creator")
       .fill(requestedUsername)
     await page.keyboard.press("Enter")
-    await page.getByRole("button", { name: "Search creators" }).click()
-    await expect(page.getByText("Usernames not found").first()).toBeVisible()
+    await page.getByRole("button", { name: "Buscar creadores" }).click()
+    await expect(
+      page.getByText("Usernames no encontrados").first(),
+    ).toBeVisible()
 
-    await page.getByRole("button", { exact: true, name: "Search" }).click()
+    await page.getByRole("button", { exact: true, name: "Buscar" }).click()
 
     // Assert
     await expect(page.getByText(jobId)).toBeVisible()
-    await expect(page.getByText("Queued")).toBeVisible()
-    await expect(page.getByText("Waiting for completion.")).toBeVisible()
+    await expect(page.getByText("En cola")).toBeVisible()
+    await expect(page.getByText("Esperando a que termine.")).toBeVisible()
 
     await page.evaluate(() => window.dispatchEvent(new Event("online")))
 
-    await expect(page.getByText("Done")).toBeVisible()
+    await expect(page.getByText("Completado")).toBeVisible()
     await expect(
-      page.getByText("Click to review the terminal result."),
+      page.getByText("Haz clic para revisar el resultado final."),
     ).toBeVisible()
 
     await page.getByText(jobId).click()
 
-    await expect(page.getByText("CURRENT JOB DETAIL")).toBeVisible()
-    await expect(page.getByText("Ready usernames")).toBeVisible()
+    await expect(page.getByText("DETALLE DEL JOB ACTUAL")).toBeVisible()
+    await expect(
+      page.getByText("Usernames listos", { exact: true }),
+    ).toBeVisible()
     await expect(page.getByText(`@${readyUsername}`).first()).toBeVisible()
   })
 })

@@ -1,4 +1,5 @@
 import { Badge, Box, Flex, HStack, Icon, Spinner, Text } from "@chakra-ui/react"
+import { useTranslation } from "react-i18next"
 import { FiAlertCircle, FiCheckCircle, FiClock } from "react-icons/fi"
 import type { ProfileExistenceItem } from "@/client"
 
@@ -41,6 +42,7 @@ const ProfileValidationPanel = ({
   profiles,
   usernames,
 }: ProfileValidationPanelProps) => {
+  const { t } = useTranslation("brandIntelligence")
   const existingProfiles = profiles.filter(
     (profile) => profile.exists && !profile.expired,
   )
@@ -59,10 +61,9 @@ const ProfileValidationPanel = ({
         px={5}
         py={5}
       >
-        <Text fontWeight="bold">Profile validation gate</Text>
+        <Text fontWeight="bold">{t("validationPanel.title")}</Text>
         <Text mt={2} color="ui.secondaryText">
-          Add the required creator usernames first to enable validation and the
-          rest of the workflow.
+          {t("validationPanel.initialDescription")}
         </Text>
       </Box>
     )
@@ -82,11 +83,10 @@ const ProfileValidationPanel = ({
           <Spinner size="sm" color="ui.brandText" />
           <Box>
             <Text color="ui.brandText" fontWeight="bold">
-              Validating profiles
+              {t("validationPanel.loadingTitle")}
             </Text>
             <Text mt={1} color="ui.secondaryText">
-              Checking whether these usernames already exist in the saved
-              profile dataset.
+              {t("validationPanel.loadingDescription")}
             </Text>
           </Box>
         </Flex>
@@ -108,7 +108,7 @@ const ProfileValidationPanel = ({
           <Icon as={FiAlertCircle} boxSize={5} color="ui.dangerText" mt={0.5} />
           <Box>
             <Text color="ui.dangerText" fontWeight="bold">
-              Validation failed
+              {t("validationPanel.errorTitle")}
             </Text>
             <Text mt={1} color="ui.secondaryText">
               {error}
@@ -133,11 +133,10 @@ const ProfileValidationPanel = ({
           <Icon as={FiClock} boxSize={5} color="ui.warningText" mt={0.5} />
           <Box>
             <Text color="ui.warningText" fontWeight="bold">
-              Validation is outdated
+              {t("validationPanel.staleTitle")}
             </Text>
             <Text mt={1} color="ui.secondaryText">
-              Usernames changed after the last check. Validate again before
-              generating the report.
+              {t("validationPanel.staleDescription")}
             </Text>
           </Box>
         </Flex>
@@ -155,10 +154,9 @@ const ProfileValidationPanel = ({
         px={5}
         py={5}
       >
-        <Text fontWeight="bold">Profile validation gate</Text>
+        <Text fontWeight="bold">{t("validationPanel.title")}</Text>
         <Text mt={2} color="ui.secondaryText">
-          Run profile validation before report generation. This step is always
-          required before any strategy endpoint.
+          {t("validationPanel.preValidationDescription")}
         </Text>
       </Box>
     )
@@ -179,10 +177,9 @@ const ProfileValidationPanel = ({
         direction={{ base: "column", lg: "row" }}
       >
         <Box>
-          <Text fontWeight="bold">Profile validation gate</Text>
+          <Text fontWeight="bold">{t("validationPanel.title")}</Text>
           <Text mt={1} color="ui.secondaryText">
-            Existing profiles can continue. Profiles marked as update needed can
-            also continue, but missing usernames block report generation.
+            {t("validationPanel.readyDescription")}
           </Text>
         </Box>
         <HStack gap={2} alignItems="center">
@@ -196,7 +193,7 @@ const ProfileValidationPanel = ({
             >
               <HStack gap={1.5}>
                 <Spinner size="xs" color="currentColor" />
-                <Text as="span">Refreshing</Text>
+                <Text as="span">{t("validationPanel.refreshing")}</Text>
               </HStack>
             </Badge>
           ) : null}
@@ -207,7 +204,7 @@ const ProfileValidationPanel = ({
             px={3}
             py={1.5}
           >
-            {profiles.length} checked
+            {t("validationPanel.checkedCount", { count: profiles.length })}
           </Badge>
         </HStack>
       </Flex>
@@ -220,7 +217,7 @@ const ProfileValidationPanel = ({
             textTransform="uppercase"
             letterSpacing="0.08em"
           >
-            Ready
+            {t("validationPanel.countCards.ready")}
           </Text>
           <Text mt={1} fontSize="2xl" fontWeight="black">
             {existingProfiles.length}
@@ -233,7 +230,7 @@ const ProfileValidationPanel = ({
             textTransform="uppercase"
             letterSpacing="0.08em"
           >
-            Update Needed
+            {t("validationPanel.countCards.updateNeeded")}
           </Text>
           <Text mt={1} fontSize="2xl" fontWeight="black">
             {expiredProfiles.length}
@@ -246,7 +243,7 @@ const ProfileValidationPanel = ({
             textTransform="uppercase"
             letterSpacing="0.08em"
           >
-            Missing
+            {t("validationPanel.countCards.missing")}
           </Text>
           <Text mt={1} fontSize="2xl" fontWeight="black">
             {missingProfiles.length}
@@ -262,7 +259,7 @@ const ProfileValidationPanel = ({
                 borderColor: "ui.danger",
                 color: "ui.dangerText",
                 icon: FiAlertCircle,
-                label: "Missing",
+                label: t("validationPanel.status.missing"),
               }
             : profile.expired
               ? {
@@ -270,14 +267,14 @@ const ProfileValidationPanel = ({
                   borderColor: "ui.warning",
                   color: "ui.warningText",
                   icon: FiClock,
-                  label: "Update Needed",
+                  label: t("validationPanel.status.updateNeeded"),
                 }
               : {
                   bg: "ui.brandSoft",
                   borderColor: "ui.brandBorderSoft",
                   color: "ui.brandText",
                   icon: FiCheckCircle,
-                  label: "Ready",
+                  label: t("validationPanel.status.ready"),
                 }
 
           return (
@@ -312,7 +309,7 @@ const ProfileValidationPanel = ({
           py={4}
         >
           <Text color="ui.dangerText" fontWeight="black">
-            Validation refresh failed
+            {t("validationPanel.refreshFailed")}
           </Text>
           <Text mt={1} color="ui.secondaryText">
             {error}
@@ -331,7 +328,7 @@ const ProfileValidationPanel = ({
           py={4}
         >
           <Text color="ui.dangerText" fontWeight="black">
-            consulte los perfiles validados y vuelva a intentar
+            {t("validationPanel.missingBlock")}
           </Text>
         </Box>
       ) : null}

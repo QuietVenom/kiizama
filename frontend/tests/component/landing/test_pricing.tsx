@@ -19,6 +19,7 @@ describe("landing pricing", () => {
         isWaitingListEnabled={false}
         sectionRef={createRef<HTMLElement>()}
       />,
+      { language: "en" },
     )
 
     // Assert
@@ -56,6 +57,7 @@ describe("landing pricing", () => {
         isWaitingListEnabled={true}
         sectionRef={createRef<HTMLElement>()}
       />,
+      { language: "en" },
     )
 
     // Assert

@@ -1,4 +1,5 @@
 import { Badge, Box, Flex, Icon, Text } from "@chakra-ui/react"
+import { useTranslation } from "react-i18next"
 import { FiAlertCircle, FiSearch } from "react-icons/fi"
 
 import { Button } from "@/components/ui/button"
@@ -60,140 +61,146 @@ export const SearchOutcomeAlerts = ({
   missingUsernames: string[]
   reportError: string | null
   searchError: string | null
-}) => (
-  <>
-    {searchError ? (
-      <ErrorAlert title="Search failed" message={searchError} />
-    ) : null}
+}) => {
+  const { t } = useTranslation(["creatorsSearch", "common"])
 
-    {reportError ? (
-      <ErrorAlert title="Report generation failed" message={reportError} />
-    ) : null}
+  return (
+    <>
+      {searchError ? (
+        <ErrorAlert
+          title={t("creatorsSearch:alerts.searchFailed")}
+          message={searchError}
+        />
+      ) : null}
 
-    {expiredUsernames.length > 0 ? (
-      <Box
-        mb={{ base: 6, lg: 7 }}
-        rounded="3xl"
-        borderWidth="1px"
-        borderColor="ui.warning"
-        bg="ui.warningSoft"
-        px={{ base: 5, md: 6 }}
-        py={{ base: 5, md: 6 }}
-      >
-        <Text color="ui.warningText" fontSize="lg" fontWeight="black">
-          Profiles need updates
-        </Text>
-        <Flex
-          mt={2}
-          alignItems={{ base: "stretch", md: "flex-start" }}
-          justifyContent="space-between"
-          gap={3}
-          direction={{ base: "column", md: "row" }}
+      {reportError ? (
+        <ErrorAlert
+          title={t("creatorsSearch:alerts.reportFailed")}
+          message={reportError}
+        />
+      ) : null}
+
+      {expiredUsernames.length > 0 ? (
+        <Box
+          mb={{ base: 6, lg: 7 }}
+          rounded="3xl"
+          borderWidth="1px"
+          borderColor="ui.warning"
+          bg="ui.warningSoft"
+          px={{ base: 5, md: 6 }}
+          py={{ base: 5, md: 6 }}
         >
-          <Text color="ui.secondaryText">
-            These creators exist in saved data, but their stored profile data
-            needs to be updated. They are highlighted in yellow above and in the
-            results list so you can identify which saved profiles need to be
-            refreshed.
+          <Text color="ui.warningText" fontSize="lg" fontWeight="black">
+            {t("creatorsSearch:alerts.expired.title")}
           </Text>
-          <Button
-            flexShrink={0}
-            loading={expiredJobsMutation.isPending}
-            onClick={() => expiredJobsMutation.mutate(expiredUsernames)}
-            disabled={
-              expiredUsernames.length === 0 || expiredJobsMutation.isPending
-            }
+          <Flex
+            mt={2}
+            alignItems={{ base: "stretch", md: "flex-start" }}
+            justifyContent="space-between"
+            gap={3}
+            direction={{ base: "column", md: "row" }}
           >
-            <FiSearch />
-            Search
-          </Button>
-        </Flex>
-
-        {expiredJobsError ? (
-          <Text mt={3} color="ui.warningText" fontSize="sm" fontWeight="bold">
-            {expiredJobsError}
-          </Text>
-        ) : null}
-
-        <Flex mt={4} gap={2} wrap="wrap">
-          {expiredUsernames.map((username) => (
-            <Badge
-              key={username}
-              rounded="full"
-              borderWidth="1px"
-              borderColor="ui.warning"
-              bg="ui.panel"
-              color="ui.warningText"
-              px={3}
-              py={1.5}
+            <Text color="ui.secondaryText">
+              {t("creatorsSearch:alerts.expired.description")}
+            </Text>
+            <Button
+              flexShrink={0}
+              loading={expiredJobsMutation.isPending}
+              onClick={() => expiredJobsMutation.mutate(expiredUsernames)}
+              disabled={
+                expiredUsernames.length === 0 || expiredJobsMutation.isPending
+              }
             >
-              @{username}
-            </Badge>
-          ))}
-        </Flex>
-      </Box>
-    ) : null}
+              <FiSearch />
+              {t("common:actions.search")}
+            </Button>
+          </Flex>
 
-    {missingUsernames.length > 0 ? (
-      <Box
-        mb={{ base: 6, lg: 7 }}
-        rounded="3xl"
-        borderWidth="1px"
-        borderColor="ui.danger"
-        bg="ui.dangerSoft"
-        px={{ base: 5, md: 6 }}
-        py={{ base: 5, md: 6 }}
-      >
-        <Text color="ui.dangerText" fontSize="lg" fontWeight="black">
-          Usernames not found
-        </Text>
-        <Flex
-          mt={2}
-          alignItems={{ base: "stretch", md: "flex-start" }}
-          justifyContent="space-between"
-          gap={3}
-          direction={{ base: "column", md: "row" }}
+          {expiredJobsError ? (
+            <Text mt={3} color="ui.warningText" fontSize="sm" fontWeight="bold">
+              {expiredJobsError}
+            </Text>
+          ) : null}
+
+          <Flex mt={4} gap={2} wrap="wrap">
+            {expiredUsernames.map((username) => (
+              <Badge
+                key={username}
+                rounded="full"
+                borderWidth="1px"
+                borderColor="ui.warning"
+                bg="ui.panel"
+                color="ui.warningText"
+                px={3}
+                py={1.5}
+              >
+                @{username}
+              </Badge>
+            ))}
+          </Flex>
+        </Box>
+      ) : null}
+
+      {missingUsernames.length > 0 ? (
+        <Box
+          mb={{ base: 6, lg: 7 }}
+          rounded="3xl"
+          borderWidth="1px"
+          borderColor="ui.danger"
+          bg="ui.dangerSoft"
+          px={{ base: 5, md: 6 }}
+          py={{ base: 5, md: 6 }}
         >
-          <Text color="ui.secondaryText" maxW="56ch">
-            These usernames were not found in the saved creator data. They are
-            also highlighted in red above.
+          <Text color="ui.dangerText" fontSize="lg" fontWeight="black">
+            {t("creatorsSearch:alerts.missing.title")}
           </Text>
-          <Button
-            flexShrink={0}
-            loading={missingJobsMutation.isPending}
-            onClick={() => missingJobsMutation.mutate(missingUsernames)}
-            disabled={
-              missingUsernames.length === 0 || missingJobsMutation.isPending
-            }
+          <Flex
+            mt={2}
+            alignItems={{ base: "stretch", md: "flex-start" }}
+            justifyContent="space-between"
+            gap={3}
+            direction={{ base: "column", md: "row" }}
           >
-            <FiSearch />
-            Search
-          </Button>
-        </Flex>
-
-        {missingJobsError ? (
-          <Text mt={3} color="ui.dangerText" fontSize="sm" fontWeight="bold">
-            {missingJobsError}
-          </Text>
-        ) : null}
-
-        <Flex mt={4} gap={2} wrap="wrap">
-          {missingUsernames.map((username) => (
-            <Badge
-              key={username}
-              rounded="full"
-              borderWidth="1px"
-              borderColor="ui.danger"
-              bg="ui.panel"
-              color="ui.dangerText"
-              px={3}
-              py={1.5}
+            <Text color="ui.secondaryText" maxW="56ch">
+              {t("creatorsSearch:alerts.missing.description")}
+            </Text>
+            <Button
+              flexShrink={0}
+              loading={missingJobsMutation.isPending}
+              onClick={() => missingJobsMutation.mutate(missingUsernames)}
+              disabled={
+                missingUsernames.length === 0 || missingJobsMutation.isPending
+              }
             >
-              @{username}
-            </Badge>
-          ))}
-        </Flex>
-      </Box>
-    ) : null}
-  </>
-)
+              <FiSearch />
+              {t("common:actions.search")}
+            </Button>
+          </Flex>
+
+          {missingJobsError ? (
+            <Text mt={3} color="ui.dangerText" fontSize="sm" fontWeight="bold">
+              {missingJobsError}
+            </Text>
+          ) : null}
+
+          <Flex mt={4} gap={2} wrap="wrap">
+            {missingUsernames.map((username) => (
+              <Badge
+                key={username}
+                rounded="full"
+                borderWidth="1px"
+                borderColor="ui.danger"
+                bg="ui.panel"
+                color="ui.dangerText"
+                px={3}
+                py={1.5}
+              >
+                @{username}
+              </Badge>
+            ))}
+          </Flex>
+        </Box>
+      ) : null}
+    </>
+  )
+}

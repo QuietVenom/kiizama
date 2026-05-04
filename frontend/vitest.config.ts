@@ -2,6 +2,8 @@ import path from "node:path"
 import react from "@vitejs/plugin-react-swc"
 import { defineConfig } from "vitest/config"
 
+const resolvedMaxWorkers = Number(process.env.VITEST_MAX_WORKERS ?? "2")
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -12,7 +14,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
-    maxWorkers: 4,
+    maxWorkers: resolvedMaxWorkers,
     testTimeout: 20_000,
     passWithNoTests: true,
     setupFiles: ["./tests/setup/vitest.setup.ts"],

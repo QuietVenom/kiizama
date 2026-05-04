@@ -9,6 +9,7 @@ import {
 } from "@chakra-ui/react"
 import { Link } from "@tanstack/react-router"
 import { useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import BlogPostContent from "@/components/Blog/BlogPostContent"
 import Footer from "@/components/Landing/Footer"
 import LandingNavbar from "@/components/Landing/Navbar"
@@ -24,6 +25,7 @@ export function BlogPostPage({
   isWaitingListEnabled,
   post,
 }: BlogPostPageProps) {
+  const { i18n, t } = useTranslation("landing")
   const navbarRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
@@ -74,7 +76,7 @@ export function BlogPostPage({
                   w="fit-content"
                   _hover={{ color: "ui.mainHover" }}
                 >
-                  Back to Blog
+                  {t("blog.backToBlog")}
                 </Text>
               </Link>
 
@@ -92,7 +94,7 @@ export function BlogPostPage({
                 fontWeight="bold"
                 textTransform="uppercase"
               >
-                Kiizama Journal
+                {t("blog.journal")}
               </Badge>
 
               <Heading
@@ -105,9 +107,16 @@ export function BlogPostPage({
               </Heading>
 
               <HStack wrap="wrap" gap={3} color="ui.secondaryText">
-                <Text>{formatBlogPublishedAt(post.publishedAt)}</Text>
+                <Text>
+                  {formatBlogPublishedAt(
+                    post.publishedAt,
+                    i18n.resolvedLanguage ?? i18n.language,
+                  )}
+                </Text>
                 <Text>•</Text>
-                <Text>{post.readingTime} min read</Text>
+                <Text>
+                  {t("blog.readingTime", { count: post.readingTime })}
+                </Text>
                 {post.author ? (
                   <>
                     <Text>•</Text>

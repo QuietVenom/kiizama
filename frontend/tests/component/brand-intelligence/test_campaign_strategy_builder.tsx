@@ -154,6 +154,7 @@ describe("campaign strategy builder", () => {
         validation={createValidation({ missing: true })}
         values={campaignFormDefaultValues}
       />,
+      { language: "en" },
     )
 
     // Assert
@@ -174,6 +175,7 @@ describe("campaign strategy builder", () => {
         validation={createValidation({ username: "" })}
         values={createCampaignValues({ profiles_list: [] })}
       />,
+      { language: "en" },
     )
 
     // Act
@@ -205,7 +207,7 @@ describe("campaign strategy builder", () => {
   test("campaign_strategy_success_downloads_single_file_and_saves_local_report", async () => {
     // Arrange
     const user = userEvent.setup()
-    renderWithProviders(<CampaignHarness />)
+    renderWithProviders(<CampaignHarness />, { language: "en" })
 
     // Act
     await user.click(
@@ -243,7 +245,7 @@ describe("campaign strategy builder", () => {
       contentType: "application/zip",
       filename: "campaign.zip",
     })
-    renderWithProviders(<CampaignHarness />)
+    renderWithProviders(<CampaignHarness />, { language: "en" })
 
     // Act
     await user.click(
@@ -262,14 +264,16 @@ describe("campaign strategy builder", () => {
   test("campaign_strategy_missing_profiles_blocks_submit_before_report_boundary", () => {
     // Arrange
     const validation = createValidation({ missing: true })
-    renderWithProviders(<CampaignHarness validation={validation} />)
+    renderWithProviders(<CampaignHarness validation={validation} />, {
+      language: "en",
+    })
 
     // Assert
     expect(
       screen.getByRole("button", { name: "Generate PDF report" }),
     ).toBeDisabled()
     expect(
-      screen.getAllByText("consulte los perfiles validados y vuelva a intentar")
+      screen.getAllByText("Review the validated profiles and try again.")
         .length,
     ).toBeGreaterThan(0)
     expect(brandApi.generateBrandIntelligenceReport).not.toHaveBeenCalled()
@@ -281,7 +285,7 @@ describe("campaign strategy builder", () => {
     brandApi.generateBrandIntelligenceReport.mockRejectedValue(
       new Error("OpenAI is unavailable."),
     )
-    renderWithProviders(<CampaignHarness />)
+    renderWithProviders(<CampaignHarness />, { language: "en" })
 
     // Act
     await user.click(

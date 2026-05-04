@@ -26,8 +26,12 @@ describe("legal route content", () => {
   test("cookie_tables_route_documents_current_browser_storage", () => {
     renderWithProviders(<CookieTablesPage />)
 
+    expect(screen.getByText("kiizama.language")).toBeVisible()
     expect(screen.getByText("kiizama-creators-search-jobs")).toBeVisible()
     expect(screen.getByText("user-events:last-event-id")).toBeVisible()
+    expect(
+      screen.getByText(/keep the selected interface language/i),
+    ).toBeVisible()
     expect(
       screen.getByText(/maintain a consistent user experience/i),
     ).toBeVisible()

@@ -37,9 +37,9 @@ Es una plataforma para tomar decisiones con criterio.
 
 Hoy, equipos de PR, marketing y talento trabajan con:
 
-- demasiada información dispersa
-- poco contexto útil
-- herramientas que no aterrizan decisiones
+- Demasiada información dispersa
+- Poco contexto útil
+- Herramientas que no aterrizan decisiones
 
 Kiizama nace para resolver eso.
 
@@ -61,7 +61,7 @@ Convierte datos en entregables claros (PDF / HTML) para clientes o equipo.
 
 Kiizama no se queda en el “qué pasó”, sino en:
 
-- qué significa y qué hacer con eso.
+- Qué significa y qué hacer con eso.
 
 ## ¿CUÁL ES LA DIFERENCIA?
 
@@ -71,9 +71,9 @@ No es solo discovery.
 
 Es la combinación de:
 
-- información estructurada
-- análisis inteligente
-- y una capa estratégica real
+- Información estructurada
+- Análisis inteligente
+- Y una capa estratégica real
 
 Pensada desde el trabajo diario en PR, marketing y contenido.
 
@@ -81,9 +81,9 @@ Pensada desde el trabajo diario en PR, marketing y contenido.
 
 Estamos construyendo una plataforma cada vez más:
 
-- completa (nuevas plataformas como TikTok)
-- inteligente (búsquedas y recomendaciones más precisas)
-- curada (mejor organización y descubrimiento de talento)
+- Completa (nuevas plataformas como TikTok)
+- Inteligente (búsquedas y recomendaciones más precisas)
+- Curada (mejor organización y descubrimiento de talento)
 
 Nuestra visión:
 
@@ -91,9 +91,9 @@ Crear una base de creators realmente útil para quienes trabajan en esta industr
 
 Creemos que:
 
-- mejores decisiones construyen mejores campañas
-- el contexto vale más que la cantidad de datos
-- la inteligencia de calidad debería ser accesible
+- Mejores decisiones construyen mejores campañas
+- El contexto vale más que la cantidad de datos
+- La inteligencia de calidad debería ser accesible
 
 ## FOUNDERS
 

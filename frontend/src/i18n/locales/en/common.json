@@ -1,0 +1,61 @@
+{
+  "actions": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "dismiss": "Dismiss",
+    "edit": "Edit",
+    "loading": "Loading",
+    "markAsRead": "Mark as read",
+    "remove": "Remove",
+    "retry": "Retry",
+    "save": "Save",
+    "search": "Search"
+  },
+  "billingNotices": {
+    "emptyDescription": "Upcoming renewals and trial reminders will appear here.",
+    "emptyTitle": "No billing notices",
+    "trigger": "Billing notices"
+  },
+  "labels": {
+    "adminPlan": "Admin Plan",
+    "language": "Language",
+    "noEmail": "No email",
+    "today": "Today",
+    "user": "User",
+    "userSettings": "User Settings"
+  },
+  "languageSwitcher": {
+    "english": "English",
+    "portugueseBrazil": "Português (Brasil)",
+    "select": "Select language",
+    "spanish": "Español"
+  },
+  "menu": {
+    "close": "Close menu",
+    "open": "Open menu"
+  },
+  "navigation": {
+    "admin": "Admin",
+    "appearance": "Appearance",
+    "blog": "Blog",
+    "dangerZone": "Danger zone",
+    "login": "Log In",
+    "logout": "Log Out",
+    "myProfile": "My profile",
+    "overview": "Overview",
+    "password": "Password",
+    "payments": "Payments",
+    "settings": "Settings",
+    "signUp": "Sign Up"
+  },
+  "theme": {
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "switchToDarkMode": "Switch to dark mode",
+    "switchToLightMode": "Switch to light mode",
+    "system": "System"
+  }
+}

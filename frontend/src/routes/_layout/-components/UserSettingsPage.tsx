@@ -1,4 +1,6 @@
 import { Box, Heading, Tabs } from "@chakra-ui/react"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import DashboardPageShell from "@/components/Dashboard/DashboardPageShell"
 import Appearance from "@/components/UserSettings/Appearance"
@@ -7,14 +9,6 @@ import DeleteAccount from "@/components/UserSettings/DeleteAccount"
 import Payments from "@/components/UserSettings/Payments"
 import UserInformation from "@/components/UserSettings/UserInformation"
 import useAuth from "@/hooks/useAuth"
-
-const tabsConfig = [
-  { value: "my-profile", title: "My profile", component: UserInformation },
-  { value: "payments", title: "Payments", component: Payments },
-  { value: "password", title: "Password", component: ChangePassword },
-  { value: "appearance", title: "Appearance", component: Appearance },
-  { value: "danger-zone", title: "Danger zone", component: DeleteAccount },
-]
 
 type UserSettingsPageProps = {
   billingReturn?: number
@@ -29,7 +23,38 @@ export function UserSettingsPage({
   onTabChange = () => undefined,
   tab,
 }: UserSettingsPageProps) {
+  const { t } = useTranslation("common")
   const { user: currentUser } = useAuth()
+  const tabsConfig = useMemo(
+    () => [
+      {
+        value: "my-profile",
+        title: t("navigation.myProfile"),
+        component: UserInformation,
+      },
+      {
+        value: "payments",
+        title: t("navigation.payments"),
+        component: Payments,
+      },
+      {
+        value: "password",
+        title: t("navigation.password"),
+        component: ChangePassword,
+      },
+      {
+        value: "appearance",
+        title: t("navigation.appearance"),
+        component: Appearance,
+      },
+      {
+        value: "danger-zone",
+        title: t("navigation.dangerZone"),
+        component: DeleteAccount,
+      },
+    ],
+    [t],
+  )
   const finalTabs = currentUser?.is_superuser
     ? tabsConfig.filter(
         (item) => item.value !== "payments" && item.value !== "danger-zone",
@@ -46,7 +71,7 @@ export function UserSettingsPage({
     <DashboardPageShell>
       <Box>
         <Heading size="lg" textAlign={{ base: "center", md: "left" }} mb={8}>
-          User Settings
+          {t("labels.userSettings")}
         </Heading>
 
         <Tabs.Root

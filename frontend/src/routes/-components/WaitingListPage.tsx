@@ -10,6 +10,7 @@ import {
 import { useMutation } from "@tanstack/react-query"
 import { Link as RouterLink } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { FiMail } from "react-icons/fi"
 
 import { OpenAPI } from "@/client"
@@ -19,7 +20,7 @@ import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
 import useCustomToast from "@/hooks/useCustomToast"
-import { emailPattern } from "@/utils"
+import { buildEmailPattern } from "@/utils"
 import SymbolLogo from "/assets/images/symbol.svg"
 
 const FORM_CONTAINER_MAX_W = { base: "md", md: "3xl" } as const
@@ -39,27 +40,10 @@ interface WaitingListForm {
   email: string
 }
 
-const WAITING_LIST_OPTIONS: Array<{
-  value: WaitingListInterest
-  label: string
-}> = [
-  {
-    value: "public_relations",
-    label: "Public Relations - Relaciones Publicas",
-  },
-  { value: "marketing", label: "Marketing - Marketing" },
-  { value: "creator", label: "Creator - Creador" },
-  {
-    value: "creator_talent_management",
-    label: "Creator/Talent Management - Gestion de Creadores/Talento",
-  },
-  { value: "publicity", label: "Publicity - Publicidad" },
-  { value: "other", label: "Other - Otro" },
-]
-
 const WAITING_LIST_PATH = "/api/v1/public/waiting-list/"
 
 export function WaitingListPage() {
+  const { t } = useTranslation("auth")
   const { showErrorToast, showSuccessToast } = useCustomToast()
   const {
     register,
@@ -95,21 +79,18 @@ export function WaitingListPage() {
       if (!response.ok) {
         const detail = body.detail
         if (Array.isArray(detail) && detail.length > 0) {
-          throw new Error(detail[0]?.msg || "Something went wrong.")
+          throw new Error(detail[0]?.msg || t("waitingList.genericError"))
         }
-        throw new Error((detail as string) || "Something went wrong.")
+        throw new Error((detail as string) || t("waitingList.genericError"))
       }
-      return (
-        body.message ||
-        "Registro recibido. Gracias por unirte a la waiting list."
-      )
+      return body.message || t("waitingList.successFallback")
     },
     onSuccess: (message: string) => {
       showSuccessToast(message)
       reset()
     },
     onError: (error: Error) => {
-      showErrorToast(error.message || "Something went wrong.")
+      showErrorToast(error.message || t("waitingList.genericError"))
     },
   })
 
@@ -148,7 +129,7 @@ export function WaitingListPage() {
       <Box position="fixed" top="1rem" right="1rem" zIndex={20}>
         <RouterLink to="/">
           <IconButton
-            aria-label="Go to landing page"
+            aria-label={t("shared.homeAriaLabel")}
             bg="ui.panel"
             color="ui.brandText"
             borderWidth="1px"
@@ -157,7 +138,11 @@ export function WaitingListPage() {
             boxShadow="ui.panelSm"
             _hover={{ bg: "ui.brandSoft" }}
           >
-            <Image src={SymbolLogo} alt="Kiizama symbol" boxSize="5" />
+            <Image
+              src={SymbolLogo}
+              alt={t("shared.homeImageAlt")}
+              boxSize="5"
+            />
           </IconButton>
         </RouterLink>
       </Box>
@@ -197,7 +182,7 @@ export function WaitingListPage() {
             fontWeight="semibold"
             textAlign="center"
           >
-            Join Our Waiting List
+            {t("waitingList.title")}
           </Text>
 
           <Field
@@ -224,13 +209,22 @@ export function WaitingListPage() {
               textOverflow="ellipsis"
               whiteSpace="nowrap"
               {...register("interest", {
-                required: "Please select an option",
+                required: t("validation.waitingListInterestRequired"),
               })}
             >
-              <option value="">Select your area</option>
-              {WAITING_LIST_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
+              <option value="">{t("waitingList.interestPlaceholder")}</option>
+              {(
+                [
+                  "public_relations",
+                  "marketing",
+                  "creator",
+                  "creator_talent_management",
+                  "publicity",
+                  "other",
+                ] as const
+              ).map((option) => (
+                <option key={option} value={option}>
+                  {t(`waitingList.options.${option}`)}
                 </option>
               ))}
             </chakra.select>
@@ -246,10 +240,10 @@ export function WaitingListPage() {
             <InputGroup w="100%" startElement={<FiMail />}>
               <Input
                 {...register("email", {
-                  required: "Email is required",
-                  pattern: emailPattern,
+                  required: t("validation.emailRequired"),
+                  pattern: buildEmailPattern(t("validation.invalidEmail")),
                 })}
-                placeholder="Email"
+                placeholder={t("shared.emailPlaceholder")}
                 type="email"
               />
             </InputGroup>
@@ -262,7 +256,7 @@ export function WaitingListPage() {
             type="submit"
             loading={isSubmitting || waitingListMutation.isPending}
           >
-            Send
+            {t("waitingList.submit")}
           </Button>
         </InsightCard>
       </Container>

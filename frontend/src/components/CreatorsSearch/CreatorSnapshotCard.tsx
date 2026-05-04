@@ -1,8 +1,10 @@
 import { Badge, Box, Flex, Grid, Image, Link, Text } from "@chakra-ui/react"
+import { useTranslation } from "react-i18next"
 import { FiArrowUpRight, FiEye, FiFileText } from "react-icons/fi"
 
 import type { ProfileSnapshotExpanded } from "@/client"
 import { Button } from "@/components/ui/button"
+import { formatDate, getLocaleForLanguage } from "@/i18n"
 
 type CreatorSnapshotCardProps = {
   isGeneratingReport?: boolean
@@ -12,28 +14,26 @@ type CreatorSnapshotCardProps = {
   snapshot: ProfileSnapshotExpanded
 }
 
-const numberFormatter = new Intl.NumberFormat("en-US", {
-  notation: "compact",
-  maximumFractionDigits: 1,
-})
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-})
-
-const formatNumber = (value?: number | null) => {
+const formatCompactNumber = (
+  value: number | null | undefined,
+  language?: string | null,
+) => {
   if (typeof value !== "number") {
     return "0"
   }
 
-  return numberFormatter.format(value)
+  return new Intl.NumberFormat(getLocaleForLanguage(language), {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value)
 }
 
-const formatDate = (value?: string | null) => {
+const formatSnapshotDate = (
+  value?: string | null,
+  language?: string | null,
+) => {
   if (!value) {
-    return "No snapshot date"
+    return null
   }
 
   const parsedDate = new Date(value)
@@ -41,7 +41,11 @@ const formatDate = (value?: string | null) => {
     return value
   }
 
-  return dateFormatter.format(parsedDate)
+  return formatDate(parsedDate, language, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  })
 }
 
 const getInitials = (fullName?: string | null, username?: string | null) => {
@@ -61,10 +65,13 @@ const CreatorSnapshotCard = ({
   onOpenDetails,
   snapshot,
 }: CreatorSnapshotCardProps) => {
+  const { i18n, t } = useTranslation("creatorsSearch")
   const profile = snapshot.profile
   const categories = profile?.ai_categories?.filter(Boolean) ?? []
   const roles = profile?.ai_roles?.filter(Boolean) ?? []
   const profileImageSrc = profile?.profile_pic_src || profile?.profile_pic_url
+
+  const language = i18n.resolvedLanguage ?? i18n.language
 
   return (
     <Box
@@ -123,7 +130,9 @@ const CreatorSnapshotCard = ({
                 letterSpacing="-0.02em"
                 lineClamp={2}
               >
-                {profile?.full_name || profile?.username || "Resolved profile"}
+                {profile?.full_name ||
+                  profile?.username ||
+                  t("card.fallbackName")}
               </Text>
               <Text color="ui.link" fontSize="sm" fontWeight="bold">
                 @{profile?.username || snapshot.profile_id}
@@ -141,12 +150,12 @@ const CreatorSnapshotCard = ({
                   px={2.5}
                   py={1}
                 >
-                  Update Needed
+                  {t("card.updateNeeded")}
                 </Badge>
               ) : null}
               {profile?.is_verified ? (
                 <Badge colorPalette="design" rounded="full" px={2.5} py={1}>
-                  Verified
+                  {t("card.verified")}
                 </Badge>
               ) : null}
               {profile?.is_private ? (
@@ -159,7 +168,7 @@ const CreatorSnapshotCard = ({
                   px={2.5}
                   py={1}
                 >
-                  Private
+                  {t("card.private")}
                 </Badge>
               ) : null}
             </Flex>
@@ -172,8 +181,7 @@ const CreatorSnapshotCard = ({
             lineClamp={3}
             minH={{ base: "auto", lg: "60px" }}
           >
-            {profile?.biography?.trim() ||
-              "No biography available for this creator."}
+            {profile?.biography?.trim() || t("card.noBiography")}
           </Text>
         </Box>
       </Flex>
@@ -188,26 +196,26 @@ const CreatorSnapshotCard = ({
       >
         <Box>
           <Text color="ui.mutedText" fontSize="xs" fontWeight="bold">
-            Followers
+            {t("card.followers")}
           </Text>
           <Text fontSize="lg" fontWeight="black">
-            {formatNumber(profile?.follower_count)}
+            {formatCompactNumber(profile?.follower_count, language)}
           </Text>
         </Box>
         <Box>
           <Text color="ui.mutedText" fontSize="xs" fontWeight="bold">
-            Following
+            {t("card.following")}
           </Text>
           <Text fontSize="lg" fontWeight="black">
-            {formatNumber(profile?.following_count)}
+            {formatCompactNumber(profile?.following_count, language)}
           </Text>
         </Box>
         <Box>
           <Text color="ui.mutedText" fontSize="xs" fontWeight="bold">
-            Media
+            {t("card.media")}
           </Text>
           <Text fontSize="lg" fontWeight="black">
-            {formatNumber(profile?.media_count)}
+            {formatCompactNumber(profile?.media_count, language)}
           </Text>
         </Box>
       </Grid>
@@ -253,10 +261,11 @@ const CreatorSnapshotCard = ({
       >
         <Box>
           <Text color="ui.mutedText" fontSize="xs" fontWeight="bold">
-            Snapshot captured
+            {t("card.snapshotCaptured")}
           </Text>
           <Text color="ui.secondaryText" fontWeight="semibold">
-            {formatDate(snapshot.scraped_at)}
+            {formatSnapshotDate(snapshot.scraped_at, language) ??
+              t("card.noSnapshotDate")}
           </Text>
         </Box>
 
@@ -268,7 +277,7 @@ const CreatorSnapshotCard = ({
               onClick={onGenerateReport}
             >
               <FiFileText />
-              Report
+              {t("card.report")}
             </Button>
           ) : null}
           {profile?.external_url ? (
@@ -284,14 +293,14 @@ const CreatorSnapshotCard = ({
               gap={1.5}
               _hover={{ color: "ui.link" }}
             >
-              External URL
+              {t("card.externalUrl")}
               <FiArrowUpRight />
             </Link>
           ) : null}
 
           <Button variant="ghost" onClick={onOpenDetails}>
             <FiEye />
-            View detail
+            {t("card.viewDetail")}
           </Button>
         </Flex>
       </Flex>

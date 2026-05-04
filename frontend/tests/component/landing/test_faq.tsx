@@ -10,7 +10,9 @@ describe("landing FAQ", () => {
   test("faq_request_limits_answer_includes_base_plan_consumption_limits", async () => {
     // Arrange
     const user = userEvent.setup()
-    renderWithProviders(<FAQ sectionRef={createRef<HTMLElement>()} />)
+    renderWithProviders(<FAQ sectionRef={createRef<HTMLElement>()} />, {
+      language: "en",
+    })
 
     // Act
     await user.click(

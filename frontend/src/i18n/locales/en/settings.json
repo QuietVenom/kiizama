@@ -1,0 +1,39 @@
+{
+  "userInformation": {
+    "title": "My Profile",
+    "fullNameLabel": "Full name",
+    "emailLabel": "Email",
+    "notAvailable": "N/A",
+    "successToast": "User information updated successfully.",
+    "validation": {
+      "emailRequired": "Email is required",
+      "invalidEmail": "Invalid email address"
+    },
+    "actions": {
+      "save": "Save",
+      "edit": "Edit",
+      "cancel": "Cancel"
+    }
+  },
+  "changePassword": {
+    "title": "Password",
+    "currentPasswordPlaceholder": "Current Password",
+    "save": "Save",
+    "successToast": "Password updated successfully."
+  },
+  "deleteAccount": {
+    "title": "Danger Zone",
+    "description": "Deleting your account is permanent and cannot be undone.",
+    "dialog": {
+      "trigger": "Delete Account",
+      "title": "Delete account",
+      "descriptionPrefix": "This action will permanently delete your account and all associated access. Type",
+      "descriptionHighlight": "Delete Account",
+      "descriptionSuffix": "to confirm the action, then click",
+      "confirm": "Delete Account",
+      "descriptionFinal": "to continue.",
+      "cancel": "Cancel",
+      "successToast": "Account deleted successfully."
+    }
+  }
+}

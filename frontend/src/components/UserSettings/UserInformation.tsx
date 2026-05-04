@@ -10,6 +10,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { type SubmitHandler, useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 
 import {
   type ApiError,
@@ -19,10 +20,11 @@ import {
 } from "@/client"
 import useAuth, { currentUserQueryOptions } from "@/hooks/useAuth"
 import useCustomToast from "@/hooks/useCustomToast"
-import { emailPattern, handleError } from "@/utils"
+import { buildEmailPattern, handleError } from "@/utils"
 import { Field } from "../ui/field"
 
 const UserInformation = () => {
+  const { t } = useTranslation("settings")
   const fullNameFieldId = "user-full-name"
   const emailFieldId = "user-email"
   const queryClient = useQueryClient()
@@ -55,7 +57,7 @@ const UserInformation = () => {
       queryClient.setQueryData(currentUserQueryOptions.queryKey, updatedUser)
       reset(updatedUser)
       setEditMode(false)
-      showSuccessToast("User updated successfully.")
+      showSuccessToast(t("userInformation.successToast"))
     },
     onError: (err: ApiError) => {
       handleError(err)
@@ -77,7 +79,7 @@ const UserInformation = () => {
   return (
     <Container maxW="full">
       <Heading size="sm" py={4}>
-        User Information
+        {t("userInformation.title")}
       </Heading>
       <Box
         w={{ sm: "full", md: "sm" }}
@@ -85,14 +87,14 @@ const UserInformation = () => {
         onSubmit={handleSubmit(onSubmit)}
       >
         <Field
-          label="Full name"
+          label={t("userInformation.fullNameLabel")}
           labelMode={editMode ? "label" : "text"}
           ids={editMode ? { control: fullNameFieldId } : undefined}
         >
           {editMode ? (
             <Input
               id={fullNameFieldId}
-              aria-label="Full name"
+              aria-label={t("userInformation.fullNameLabel")}
               {...register("full_name", { maxLength: 30 })}
               type="text"
               size="md"
@@ -105,13 +107,13 @@ const UserInformation = () => {
               truncate
               maxW="sm"
             >
-              {currentUser?.full_name || "N/A"}
+              {currentUser?.full_name || t("userInformation.notAvailable")}
             </Text>
           )}
         </Field>
         <Field
           mt={4}
-          label="Email"
+          label={t("userInformation.emailLabel")}
           labelMode={editMode ? "label" : "text"}
           ids={editMode ? { control: emailFieldId } : undefined}
           invalid={!!errors.email}
@@ -120,10 +122,12 @@ const UserInformation = () => {
           {editMode ? (
             <Input
               id={emailFieldId}
-              aria-label="Email"
+              aria-label={t("userInformation.emailLabel")}
               {...register("email", {
-                required: "Email is required",
-                pattern: emailPattern,
+                required: t("userInformation.validation.emailRequired"),
+                pattern: buildEmailPattern(
+                  t("userInformation.validation.invalidEmail"),
+                ),
               })}
               type="email"
               size="md"
@@ -142,7 +146,9 @@ const UserInformation = () => {
             loading={editMode ? isSubmitting : false}
             disabled={editMode ? !isDirty || !getValues("email") : false}
           >
-            {editMode ? "Save" : "Edit"}
+            {editMode
+              ? t("userInformation.actions.save")
+              : t("userInformation.actions.edit")}
           </Button>
           {editMode && (
             <Button
@@ -151,7 +157,7 @@ const UserInformation = () => {
               onClick={onCancel}
               disabled={isSubmitting}
             >
-              Cancel
+              {t("userInformation.actions.cancel")}
             </Button>
           )}
         </Flex>

@@ -2,6 +2,7 @@ import { Button, ButtonGroup, Text } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 
 import { type ApiError, UsersService } from "@/client"
 import {
@@ -20,6 +21,7 @@ import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
 const DeleteConfirmation = () => {
+  const { t } = useTranslation("settings")
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
@@ -32,7 +34,7 @@ const DeleteConfirmation = () => {
   const mutation = useMutation({
     mutationFn: () => UsersService.deleteUserMe(),
     onSuccess: () => {
-      showSuccessToast("Your account has been successfully deleted")
+      showSuccessToast(t("deleteAccount.dialog.successToast"))
       setIsOpen(false)
       logout()
     },
@@ -58,7 +60,7 @@ const DeleteConfirmation = () => {
     >
       <DialogTrigger asChild>
         <Button variant="solid" colorPalette="red" mt={4}>
-          Delete
+          {t("deleteAccount.dialog.trigger")}
         </Button>
       </DialogTrigger>
 
@@ -66,14 +68,15 @@ const DeleteConfirmation = () => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogCloseTrigger />
           <DialogHeader>
-            <DialogTitle>Confirmation Required</DialogTitle>
+            <DialogTitle>{t("deleteAccount.dialog.title")}</DialogTitle>
           </DialogHeader>
           <DialogBody>
             <Text mb={4}>
-              All your account data will be{" "}
-              <strong>permanently deleted.</strong> If you are sure, please
-              click <strong>"Confirm"</strong> to proceed. This action cannot be
-              undone.
+              {t("deleteAccount.dialog.descriptionPrefix")}{" "}
+              <strong>{t("deleteAccount.dialog.descriptionHighlight")}</strong>.{" "}
+              {t("deleteAccount.dialog.descriptionSuffix")}{" "}
+              <strong>"{t("deleteAccount.dialog.confirm")}"</strong>.{" "}
+              {t("deleteAccount.dialog.descriptionFinal")}
             </Text>
           </DialogBody>
 
@@ -85,7 +88,7 @@ const DeleteConfirmation = () => {
                   colorPalette="gray"
                   disabled={isSubmitting}
                 >
-                  Cancel
+                  {t("deleteAccount.dialog.cancel")}
                 </Button>
               </DialogActionTrigger>
               <Button
@@ -94,7 +97,7 @@ const DeleteConfirmation = () => {
                 type="submit"
                 loading={isSubmitting}
               >
-                Delete
+                {t("deleteAccount.dialog.confirm")}
               </Button>
             </ButtonGroup>
           </DialogFooter>

@@ -1,0 +1,174 @@
+{
+  "navbar": {
+    "home": "Inicio",
+    "capabilities": "Capacidades",
+    "plans": "Planes",
+    "faq": "FAQ",
+    "waitingList": "Lista de espera"
+  },
+  "hero": {
+    "badge": "Inteligencia reputacional para Instagram",
+    "title": {
+      "prefix": "Convierte datos de redes sociales en",
+      "highlight": "estrategia reputacional"
+    },
+    "description": "Diseñado para equipos de Relaciones Públicas, Marketing, Creadores y Talento. Analiza perfiles, clasifica con IA y genera entregables estratégicos en minutos.",
+    "joinWaitingList": "Unirme a la lista de espera",
+    "alreadyHaveAccount": "Ya tengo una cuenta",
+    "trustSignals": {
+      "profileSnapshots": "Snapshots de perfiles y métricas de engagement",
+      "classification": "Flujos de clasificación impulsados por IA",
+      "reports": "Reportes estratégicos en PDF",
+      "storage": "Persistencia duradera y pipelines asíncronos"
+    },
+    "cards": {
+      "creatorPerformanceReport": "Reporte de performance de creador",
+      "brandReputation": "Reputación de marca",
+      "creatorReputation": "Reputación de creador",
+      "high": "Alta"
+    }
+  },
+  "features": {
+    "eyebrow": "Capacidades clave",
+    "title": "Workflows diseñados para inteligencia a escala",
+    "description": "Pensado para equipos que necesitan datos operativos de social media, enriquecimiento con IA y entregables listos para estrategia en una sola plataforma.",
+    "items": {
+      "instagramDataCapture": {
+        "title": "Captura de datos de Instagram",
+        "description": "Recolecta snapshots de perfil, posts, reels y campos clave de engagement dentro de un workflow automatizado."
+      },
+      "aiProfileClassification": {
+        "title": "Clasificación de perfiles con IA",
+        "description": "Clasifica creadores por categorías y roles con mayor precisión para acelerar shortlist y targeting."
+      },
+      "performanceReports": {
+        "title": "Reportes de performance",
+        "description": "Genera PDFs descargables a partir de snapshots guardados de Instagram y métricas históricas."
+      },
+      "campaignStrategy": {
+        "title": "Estrategia de campaña",
+        "description": "Construye inputs estratégicos a nivel marca usando demografía, objetivos y conjuntos personalizados de creadores."
+      },
+      "creatorStrategy": {
+        "title": "Estrategia de creador",
+        "description": "Genera entregables estratégicos para creadores con base en contexto de perfil, performance y señales reputacionales."
+      },
+      "asyncJobsPersistence": {
+        "title": "Jobs asíncronos y persistencia",
+        "description": "Ejecuta scraping pesado con tracking de estado, reintentos y persistencia durable sobre colecciones de perfiles."
+      }
+    }
+  },
+  "pricing": {
+    "eyebrow": "Paquetes actuales",
+    "title": "Empieza gratis y después continúa con el plan base mensual",
+    "description": "Prueba Kiizama por 7 días sin agregar tarjeta. Cuando estés listo, el plan Base cuesta $389 MXN al mes (IVA incluido).",
+    "recommended": "Recomendado",
+    "ready": "¿Listo para convertir datos de creadores en decisiones más claras?",
+    "joinWaitingList": "Unirme a la lista de espera",
+    "logIn": "Iniciar sesión",
+    "plans": {
+      "trial": {
+        "name": "Prueba gratis",
+        "price": "$0",
+        "priceSuffix": "por 7 días",
+        "badge": "Sin tarjeta",
+        "cta": "Empezar prueba gratis",
+        "description": "Explora Kiizama con una prueba de 7 días antes de elegir un plan de pago.",
+        "features": {
+          "noCard": "Sin tarjeta de crédito o débito para empezar",
+          "search": "Acceso a workflows de búsqueda de creadores",
+          "snapshots": "Snapshots de perfil y métricas guardadas",
+          "strategy": "Entregables estratégicos asistidos por IA"
+        }
+      },
+      "base": {
+        "name": "Base",
+        "price": "$389 MXN",
+        "priceSuffix": "al mes (IVA incluido)",
+        "badge": "Suscripción mensual",
+        "cta": "Empezar plan base",
+        "description": "El plan mensual actual para equipos que necesitan inteligencia continua de creadores.",
+        "features": {
+          "mxn": "Suscripción mensual en pesos mexicanos",
+          "discovery": "Herramientas de descubrimiento y validación",
+          "reports": "Reportes de performance social",
+          "reputation": "Workflows de estrategia reputacional",
+          "cancel": "Cancela cuando quieras"
+        }
+      }
+    }
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "title": "Respuestas a preguntas clave",
+    "items": {
+      "platformSupport": {
+        "question": "¿Qué red social está soportada hoy?",
+        "answer": "Hoy Kiizama se enfoca en workflows sobre Instagram, incluyendo snapshots de perfiles, generación de reportes y entregables de estrategia reputacional."
+      },
+      "reportOutputs": {
+        "question": "¿Qué entregables genera la plataforma?",
+        "answer": "Puedes generar reportes en PDF. Las solicitudes multi-perfil pueden entregarse como un archivo ZIP con cada entregable."
+      },
+      "aiEnrichment": {
+        "question": "¿Usan IA dentro del flujo de análisis?",
+        "answer": "Sí. La plataforma enriquece perfiles con categorías y roles generados por IA, y también potencia la generación de estrategias de campaña y reputación de creador."
+      },
+      "requestLimits": {
+        "question": "¿Existen límites operativos por solicitud?",
+        "answer": "Sí. El plan Base hoy incluye 50 búsquedas de perfiles, 20 reportes de social media y 5 solicitudes de estrategia reputacional por ciclo mensual. Además, siguen aplicando topes por solicitud: hasta 10 usernames por job de scraping, hasta 20 usernames por solicitud de reporte de Instagram y hasta 15 perfiles por solicitud de estrategia de campaña. Iremos agregando nuevos planes o ajustando límites conforme crezca la demanda."
+      }
+    }
+  },
+  "blog": {
+    "journal": "Journal de Kiizama",
+    "backToBlog": "Volver al blog",
+    "readMore": "Leer más",
+    "readingTime_one": "{{count}} min de lectura",
+    "readingTime_other": "{{count}} min de lectura",
+    "index": {
+      "title": "Los últimos insights de Kiizama",
+      "description": "Product thinking, notas de workflow y perspectivas de inteligencia reputacional desde Kiizama."
+    }
+  },
+  "footer": {
+    "tagline": "Inteligencia reputacional avanzada y workflows estratégicos para equipos modernos de marca y creadores.",
+    "sections": {
+      "product": "Producto",
+      "company": "Compañía",
+      "legal": "Legal"
+    },
+    "links": {
+      "capabilities": "Capacidades",
+      "pricing": "Precios",
+      "apiDocs": "Documentación API",
+      "faq": "FAQ",
+      "aboutUs": "Nosotros",
+      "careers": "Carreras",
+      "contact": "Contacto",
+      "security": "Seguridad",
+      "privacyPolicy": "Política de privacidad",
+      "termsOfService": "Términos del servicio",
+      "providers": "Proveedores"
+    },
+    "copyright": "© {{year}} Kiizama Inc. Todos los derechos reservados.",
+    "cookieSettings": "Configuración de cookies",
+    "cookiePanel": {
+      "done": "Listo",
+      "title": "Kiizama usa cookies para ofrecerte una mejor experiencia.",
+      "description": "Al hacer clic en \"Aceptar todo\", aceptas el almacenamiento de cookies en tu dispositivo con fines funcionales, analíticos y publicitarios.",
+      "acceptAll": "Aceptar todo",
+      "details": "Consulta el Aviso de Cookies para más detalles.",
+      "options": {
+        "strictlyNecessary": "Estrictamente necesarias",
+        "functional": "Funcionales",
+        "analytics": "Analíticas",
+        "marketing": "Marketing"
+      },
+      "aria": {
+        "cookies": "Cookies de {{label}}"
+      }
+    }
+  }
+}

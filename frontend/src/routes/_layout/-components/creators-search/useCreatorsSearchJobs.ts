@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react"
+import { useTranslation } from "react-i18next"
 
 import {
   ApiError,
@@ -46,6 +47,7 @@ export const useCreatorsSearchJobs = ({
     payload: CreatorsSearchHistoryCreateRequest,
   ) => void
 }) => {
+  const { t } = useTranslation("creatorsSearch")
   const [currentJobs, setCurrentJobs] = useState<CreatorsSearchLocalJob[]>(() =>
     readCreatorsSearchJobs(),
   )
@@ -133,16 +135,14 @@ export const useCreatorsSearchJobs = ({
     },
     onSuccess: ({ batchCount, createdCount, skippedCount }) => {
       if (batchCount > 0 && createdCount === 0 && skippedCount === batchCount) {
-        setExpiredJobsError(
-          "An active scrape job already exists for these usernames.",
-        )
+        setExpiredJobsError(t("jobs.errors.duplicateActiveJob"))
       }
 
       scrollPageTopIntoView(pageTopRef)
     },
     onError: (error) => {
       setExpiredJobsError(
-        extractApiErrorMessage(error, "Unable to create scrape jobs."),
+        extractApiErrorMessage(error, t("jobs.errors.unableToCreate")),
       )
       scrollPageTopIntoView(pageTopRef)
     },
@@ -156,16 +156,14 @@ export const useCreatorsSearchJobs = ({
     },
     onSuccess: ({ batchCount, createdCount, skippedCount }) => {
       if (batchCount > 0 && createdCount === 0 && skippedCount === batchCount) {
-        setMissingJobsError(
-          "An active scrape job already exists for these usernames.",
-        )
+        setMissingJobsError(t("jobs.errors.duplicateActiveJob"))
       }
 
       scrollPageTopIntoView(pageTopRef)
     },
     onError: (error) => {
       setMissingJobsError(
-        extractApiErrorMessage(error, "Unable to create scrape jobs."),
+        extractApiErrorMessage(error, t("jobs.errors.unableToCreate")),
       )
       scrollPageTopIntoView(pageTopRef)
     },

@@ -77,10 +77,16 @@ const { SignUpPage } = await import(
 
 const fillValidSignupForm = async () => {
   const user = userEvent.setup()
-  await user.type(screen.getByPlaceholderText("Full Name"), "Test User")
-  await user.type(screen.getByPlaceholderText("Email"), "user@example.com")
-  await user.type(screen.getByPlaceholderText("Password"), "Aa1!valid")
-  await user.type(screen.getByPlaceholderText("Confirm Password"), "Aa1!valid")
+  await user.type(screen.getByPlaceholderText("Nombre completo"), "Test User")
+  await user.type(
+    screen.getByPlaceholderText("Correo electrónico"),
+    "user@example.com",
+  )
+  await user.type(screen.getByPlaceholderText("Contraseña"), "Aa1!valid")
+  await user.type(
+    screen.getByPlaceholderText("Confirmar contraseña"),
+    "Aa1!valid",
+  )
   return user
 }
 
@@ -96,14 +102,14 @@ describe("signup form", () => {
     renderWithProviders(<SignUpPage />)
 
     // Assert
-    expect(screen.getByPlaceholderText("Full Name")).toBeVisible()
-    expect(screen.getByPlaceholderText("Email")).toBeVisible()
-    expect(screen.getByPlaceholderText("Password")).toBeVisible()
-    expect(screen.getByPlaceholderText("Confirm Password")).toBeVisible()
-    expect(screen.getByRole("link", { name: "Log In" })).toHaveAttribute(
-      "href",
-      "/login",
-    )
+    expect(screen.getByPlaceholderText("Nombre completo")).toBeVisible()
+    expect(screen.getByPlaceholderText("Correo electrónico")).toBeVisible()
+    expect(screen.getByPlaceholderText("Contraseña")).toBeVisible()
+    expect(screen.getByPlaceholderText("Confirmar contraseña")).toBeVisible()
+    expect(screen.getByText("Requisitos de contraseña")).toBeVisible()
+    expect(
+      screen.getByRole("link", { name: "Iniciar sesión" }),
+    ).toHaveAttribute("href", "/login")
   })
 
   test("signup_form_empty_fields_shows_required_validation_errors", async () => {
@@ -112,14 +118,20 @@ describe("signup form", () => {
     renderWithProviders(<SignUpPage />)
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Sign Up" }))
+    await user.click(screen.getByRole("button", { name: "Crear cuenta" }))
 
     // Assert
-    expect(await screen.findByText("Full Name is required")).toBeVisible()
-    expect(await screen.findByText("Email is required")).toBeVisible()
-    expect(await screen.findByText("Password is required")).toBeVisible()
     expect(
-      await screen.findByText("Password confirmation is required"),
+      await screen.findByText("El nombre completo es obligatorio"),
+    ).toBeVisible()
+    expect(
+      await screen.findByText("El correo electrónico es obligatorio"),
+    ).toBeVisible()
+    expect(
+      await screen.findByText("La contraseña es obligatoria"),
+    ).toBeVisible()
+    expect(
+      await screen.findByText("La confirmación de contraseña es obligatoria"),
     ).toBeVisible()
   })
 
@@ -129,21 +141,28 @@ describe("signup form", () => {
     renderWithProviders(<SignUpPage />)
 
     // Act
-    await user.type(screen.getByPlaceholderText("Full Name"), "Test User")
-    await user.type(screen.getByPlaceholderText("Email"), "bad-email")
-    await user.type(screen.getByPlaceholderText("Password"), "weak")
+    await user.type(screen.getByPlaceholderText("Nombre completo"), "Test User")
     await user.type(
-      screen.getByPlaceholderText("Confirm Password"),
+      screen.getByPlaceholderText("Correo electrónico"),
+      "bad-email",
+    )
+    await user.type(screen.getByPlaceholderText("Contraseña"), "weak")
+    await user.type(
+      screen.getByPlaceholderText("Confirmar contraseña"),
       "different",
     )
-    await user.click(screen.getByRole("button", { name: "Sign Up" }))
+    await user.click(screen.getByRole("button", { name: "Crear cuenta" }))
 
     // Assert
-    expect(await screen.findByText("Invalid email address")).toBeVisible()
+    expect(await screen.findByText("Correo electrónico inválido")).toBeVisible()
     expect(
-      await screen.findByText("Password must be between 8 and 25 characters"),
+      await screen.findByText(
+        "La contraseña debe tener entre 8 y 25 caracteres",
+      ),
     ).toBeVisible()
-    expect(await screen.findByText("The passwords do not match")).toBeVisible()
+    expect(
+      await screen.findByText("Las contraseñas no coinciden"),
+    ).toBeVisible()
   })
 
   test("signup_form_valid_submit_opens_legal_modal_with_disabled_confirm", async () => {
@@ -152,7 +171,7 @@ describe("signup form", () => {
     const user = await fillValidSignupForm()
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Sign Up" }))
+    await user.click(screen.getByRole("button", { name: "Crear cuenta" }))
 
     // Assert
     expect(await screen.findByTestId("signup-legal-modal")).toBeVisible()
@@ -171,7 +190,7 @@ describe("signup form", () => {
     // Arrange
     renderWithProviders(<SignUpPage />)
     const user = await fillValidSignupForm()
-    await user.click(screen.getByRole("button", { name: "Sign Up" }))
+    await user.click(screen.getByRole("button", { name: "Crear cuenta" }))
     await screen.findByTestId("signup-legal-modal")
 
     // Act

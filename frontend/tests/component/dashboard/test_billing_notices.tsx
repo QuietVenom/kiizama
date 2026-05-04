@@ -55,7 +55,11 @@ describe("dashboard billing notices", () => {
     // Arrange
     const user = userEvent.setup()
     billingApi.readBillingNotices.mockResolvedValue({ data: [] })
-    renderWithProviders(<DashboardTopbar />)
+    renderWithProviders(<DashboardTopbar />, { language: "en" })
+
+    expect(
+      screen.getByRole("button", { name: "Select language" }),
+    ).toBeVisible()
 
     // Act
     await user.click(
@@ -89,7 +93,7 @@ describe("dashboard billing notices", () => {
         }),
       ],
     })
-    renderWithProviders(<DashboardTopbar />)
+    renderWithProviders(<DashboardTopbar />, { language: "en" })
 
     // Act
     await user.click(
@@ -111,7 +115,9 @@ describe("dashboard billing notices", () => {
     billingApi.markBillingNoticeRead.mockResolvedValue(
       createBillingNotice({ id: "notice-read", status: "read" }),
     )
-    const { queryClient } = renderWithProviders(<DashboardTopbar />)
+    const { queryClient } = renderWithProviders(<DashboardTopbar />, {
+      language: "en",
+    })
     const invalidateQueries = vi.spyOn(queryClient, "invalidateQueries")
 
     // Act
@@ -145,7 +151,9 @@ describe("dashboard billing notices", () => {
     billingApi.dismissBillingNotice.mockResolvedValue(
       createBillingNotice({ id: "notice-dismiss", status: "dismissed" }),
     )
-    const { queryClient } = renderWithProviders(<DashboardTopbar />)
+    const { queryClient } = renderWithProviders(<DashboardTopbar />, {
+      language: "en",
+    })
     const invalidateQueries = vi.spyOn(queryClient, "invalidateQueries")
 
     // Act

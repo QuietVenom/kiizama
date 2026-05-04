@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query"
 import { useMutation } from "@tanstack/react-query"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { invalidateBillingSummary } from "@/features/billing/api"
 import { extractApiErrorMessage } from "@/lib/api-errors"
@@ -12,6 +13,7 @@ export const useCreatorReport = ({
 }: {
   queryClient: QueryClient
 }) => {
+  const { t } = useTranslation("creatorsSearch")
   const [reportError, setReportError] = useState<string | null>(null)
 
   const reportMutation = useMutation({
@@ -23,9 +25,7 @@ export const useCreatorReport = ({
       invalidateBillingSummary(queryClient)
     },
     onError: (error) => {
-      setReportError(
-        extractApiErrorMessage(error, "Unable to generate the report."),
-      )
+      setReportError(extractApiErrorMessage(error, t("alerts.reportFailed")))
     },
   })
 

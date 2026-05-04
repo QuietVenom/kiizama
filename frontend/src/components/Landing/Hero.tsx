@@ -14,6 +14,7 @@ import {
 import { keyframes } from "@emotion/react"
 import { Link } from "@tanstack/react-router"
 import type { RefObject } from "react"
+import { useTranslation } from "react-i18next"
 import { BsFileEarmarkPersonFill } from "react-icons/bs"
 import {
   FiArrowRight,
@@ -49,20 +50,21 @@ const pulse = keyframes`
   }
 `
 
-const trustSignals = [
-  "Profile snapshots and engagement metrics",
-  "AI-powered classification workflows",
-  "Strategic PDF reports",
-  "Durable storage and async pipelines",
-]
-
 type HeroProps = {
   isWaitingListEnabled: boolean
   sectionRef: RefObject<HTMLElement | null>
 }
 
 const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
+  const { t } = useTranslation("landing")
+  const { t: tCommon } = useTranslation("common")
   const loginUrl = "/login"
+  const trustSignals = [
+    t("hero.trustSignals.profileSnapshots"),
+    t("hero.trustSignals.classification"),
+    t("hero.trustSignals.reports"),
+    t("hero.trustSignals.storage"),
+  ]
 
   return (
     <Box
@@ -139,7 +141,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                   bg="ui.link"
                 />
               </Box>
-              Instagram Reputation Intelligence
+              {t("hero.badge")}
             </Badge>
 
             <Heading
@@ -149,9 +151,9 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
               color="ui.text"
               fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
             >
-              Turn social media data into{" "}
+              {t("hero.title.prefix")}{" "}
               <Box as="span" display="inline" layerStyle="brandGradientText">
-                reputation strategy
+                {t("hero.title.highlight")}
               </Box>
             </Heading>
 
@@ -161,9 +163,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
               maxW="2xl"
               lineHeight="1.8"
             >
-              Built for Public Relations, Marketing, Creators, and Talent teams.
-              Analyze profiles, classify with AI, and generate strategic outputs
-              in minutes.
+              {t("hero.description")}
             </Text>
 
             <HStack gap={4} flexWrap="wrap">
@@ -175,7 +175,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                     rounded="xl"
                     layerStyle="brandGradientButton"
                   >
-                    Join waiting list
+                    {t("hero.joinWaitingList")}
                     <FiArrowRight />
                   </Button>
                 </Link>
@@ -187,7 +187,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                     rounded="xl"
                     layerStyle="brandGradientButton"
                   >
-                    Sign Up
+                    {tCommon("navigation.signUp")}
                     <FiArrowRight />
                   </Button>
                 </Link>
@@ -199,7 +199,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                   fontWeight="semibold"
                   _hover={{ bg: "transparent", color: "ui.text" }}
                 >
-                  I already have an account
+                  {t("hero.alreadyHaveAccount")}
                   <FiChevronRight />
                 </Button>
               </ChakraLink>
@@ -281,9 +281,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                   lineHeight={1.2}
                   letterSpacing="-0.02em"
                 >
-                  Creator Performance
-                  <br />
-                  Report
+                  {t("hero.cards.creatorPerformanceReport")}
                 </Text>
               </HStack>
               <Box h="1px" w="full" bg="ui.borderSoft" mb={6} />
@@ -327,7 +325,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                   lineHeight={1.2}
                   letterSpacing="-0.02em"
                 >
-                  Brand Reputation
+                  {t("hero.cards.brandReputation")}
                 </Text>
               </HStack>
               <Box h="1px" w="full" bg="ui.borderSoft" mb={6} />
@@ -383,7 +381,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                     lineHeight={1.2}
                     letterSpacing="-0.02em"
                   >
-                    Creator Reputation
+                    {t("hero.cards.creatorReputation")}
                   </Text>
                 </HStack>
                 <Box
@@ -395,7 +393,7 @@ const Hero = ({ isWaitingListEnabled, sectionRef }: HeroProps) => {
                   fontWeight="bold"
                   fontSize={{ base: "2xs", md: "sm" }}
                 >
-                  High
+                  {t("hero.cards.high")}
                 </Box>
               </HStack>
               <Box h="1px" w="full" bg="ui.borderSoft" mb={6} />

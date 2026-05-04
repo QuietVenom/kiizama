@@ -9,6 +9,7 @@ import {
 import { Link as RouterLink } from "@tanstack/react-router"
 import { useEffect } from "react"
 import InfoPageShell from "@/components/Common/InfoPageShell"
+import { LANGUAGE_STORAGE_KEY } from "@/i18n"
 
 export function CookieTablesPage() {
   useEffect(() => {
@@ -80,6 +81,19 @@ export function CookieTablesPage() {
                     <Table.Cell>
                       Used to remember UI/UX settings selected by the user, such
                       as the application appearance mode.
+                    </Table.Cell>
+                    <Table.Cell>Kiizama</Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>{LANGUAGE_STORAGE_KEY}</Table.Cell>
+                    <Table.Cell>
+                      Persistent until changed or browser storage is cleared
+                    </Table.Cell>
+                    <Table.Cell>Local Storage</Table.Cell>
+                    <Table.Cell>
+                      Used to remember the user&apos;s language preference so
+                      the Services can keep the selected interface language
+                      across navigation and future visits.
                     </Table.Cell>
                     <Table.Cell>Kiizama</Table.Cell>
                   </Table.Row>

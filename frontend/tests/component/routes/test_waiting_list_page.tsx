@@ -40,15 +40,15 @@ describe("waiting list page", () => {
     renderWithProviders(<WaitingListPage />)
 
     // Assert
-    expect(screen.getByText("Join Our Waiting List")).toBeVisible()
+    expect(screen.getByText("Únete a nuestra lista de espera")).toBeVisible()
     expect(screen.getByRole("combobox")).toBeVisible()
-    expect(screen.getByPlaceholderText("Email")).toBeVisible()
-    expect(screen.getByRole("button", { name: "Send" })).toBeVisible()
+    expect(screen.getByPlaceholderText("Correo electrónico")).toBeVisible()
+    expect(screen.getByRole("button", { name: "Enviar" })).toBeVisible()
     expect(
-      screen.getByRole("button", { name: "Go to landing page" }),
+      screen.getByRole("button", { name: "Ir a la landing" }),
     ).toBeVisible()
     expect(
-      screen.getByRole("link", { name: "Kiizama symbol" }),
+      screen.getByRole("link", { name: "Símbolo de Kiizama" }),
     ).toHaveAttribute("href", "/")
   })
 
@@ -58,11 +58,13 @@ describe("waiting list page", () => {
     renderWithProviders(<WaitingListPage />)
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Send" }))
+    await user.click(screen.getByRole("button", { name: "Enviar" }))
 
     // Assert
-    expect(await screen.findByText("Please select an option")).toBeVisible()
-    expect(await screen.findByText("Email is required")).toBeVisible()
+    expect(await screen.findByText("Selecciona una opción")).toBeVisible()
+    expect(
+      await screen.findByText("El correo electrónico es obligatorio"),
+    ).toBeVisible()
   })
 
   test("waiting_list_page_success_posts_payload_resets_form_and_shows_toast", async () => {
@@ -77,8 +79,11 @@ describe("waiting list page", () => {
 
     // Act
     await user.selectOptions(screen.getByRole("combobox"), "marketing")
-    await user.type(screen.getByPlaceholderText("Email"), "user@example.com")
-    await user.click(screen.getByRole("button", { name: "Send" }))
+    await user.type(
+      screen.getByPlaceholderText("Correo electrónico"),
+      "user@example.com",
+    )
+    await user.click(screen.getByRole("button", { name: "Enviar" }))
 
     // Assert
     await waitFor(() => {
@@ -92,7 +97,7 @@ describe("waiting list page", () => {
       email: "user@example.com",
       interest: "marketing",
     })
-    expect(screen.getByPlaceholderText("Email")).toHaveValue("")
+    expect(screen.getByPlaceholderText("Correo electrónico")).toHaveValue("")
     expect(screen.getByRole("combobox")).toHaveValue("")
   })
 
@@ -110,8 +115,11 @@ describe("waiting list page", () => {
 
     // Act
     await user.selectOptions(screen.getByRole("combobox"), "creator")
-    await user.type(screen.getByPlaceholderText("Email"), "user@example.com")
-    await user.click(screen.getByRole("button", { name: "Send" }))
+    await user.type(
+      screen.getByPlaceholderText("Correo electrónico"),
+      "user@example.com",
+    )
+    await user.click(screen.getByRole("button", { name: "Enviar" }))
 
     // Assert
     await waitFor(() => {

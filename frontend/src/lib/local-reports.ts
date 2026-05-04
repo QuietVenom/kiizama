@@ -1,3 +1,4 @@
+import { formatDate } from "@/i18n"
 import { blobToDataUrl, triggerFileDownload } from "@/lib/report-files"
 
 export const LOCAL_REPORTS_STORAGE_KEY = "kiizama-overview-local-reports"
@@ -25,12 +26,6 @@ type SaveLocalReportParams = {
 type LocalReportsUpdatedDetail = {
   reports: LocalReportItem[]
 }
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-})
 
 const isLocalReportItem = (value: unknown): value is LocalReportItem => {
   if (!value || typeof value !== "object") return false
@@ -195,11 +190,18 @@ export const downloadLocalReport = (report: LocalReportItem) => {
   triggerFileDownload(report.dataUrl, report.name)
 }
 
-export const formatLocalReportDate = (createdAt: string) => {
+export const formatLocalReportDate = (
+  createdAt: string,
+  language?: string | null,
+) => {
   const parsedDate = new Date(createdAt)
   if (Number.isNaN(parsedDate.getTime())) {
     return createdAt
   }
 
-  return dateFormatter.format(parsedDate)
+  return formatDate(parsedDate, language, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  })
 }

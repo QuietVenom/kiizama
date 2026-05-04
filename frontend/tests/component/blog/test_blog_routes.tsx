@@ -70,11 +70,18 @@ describe("blog route presentation", () => {
     // Act
     renderWithProviders(
       <BlogIndexPage isWaitingListEnabled={true} posts={posts} />,
+      { language: "en" },
     )
 
     // Assert
     expect(
       screen.getByRole("heading", { name: "The latest Kiizama insights" }),
+    ).toBeVisible()
+    expect(screen.getByText("Kiizama Journal")).toBeVisible()
+    expect(
+      screen.getByText(
+        "Product thinking, workflow notes, and reputation intelligence perspectives from Kiizama.",
+      ),
     ).toBeVisible()
     expect(screen.getByRole("heading", { name: "Alpha post" })).toBeVisible()
     expect(screen.getByRole("heading", { name: "Beta post" })).toBeVisible()
@@ -88,6 +95,7 @@ describe("blog route presentation", () => {
     // Act
     renderWithProviders(
       <BlogPostPage isWaitingListEnabled={false} post={post} />,
+      { language: "en" },
     )
 
     // Assert
@@ -96,10 +104,27 @@ describe("blog route presentation", () => {
       "/blog",
     )
     expect(screen.getByRole("heading", { name: "Alpha post" })).toBeVisible()
+    expect(screen.getByText("Kiizama Journal")).toBeVisible()
     expect(screen.getByText("April 25, 2026")).toBeVisible()
     expect(screen.getByText("3 min read")).toBeVisible()
     expect(screen.getByText("Kiizama")).toBeVisible()
     expect(screen.getByText("Alpha body")).toBeVisible()
+  })
+
+  test("blog_detail_route_uses_translated_public_blog_labels", () => {
+    const post = createPost({ publishedAt: "2026-04-05", readingTime: 1 })
+
+    renderWithProviders(
+      <BlogPostPage isWaitingListEnabled={false} post={post} />,
+      { language: "es" },
+    )
+
+    expect(
+      screen.getByRole("link", { name: "Volver al blog" }),
+    ).toHaveAttribute("href", "/blog")
+    expect(screen.getByText("Journal de Kiizama")).toBeVisible()
+    expect(screen.getByText("5 de abril de 2026")).toBeVisible()
+    expect(screen.getByText("1 min de lectura")).toBeVisible()
   })
 
   test("blog_detail_unknown_slug_is_not_found_by_content_lookup", () => {

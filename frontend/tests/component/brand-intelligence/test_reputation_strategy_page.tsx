@@ -41,7 +41,7 @@ const { ReputationStrategyPage } = await import(
 describe("reputation strategy page", () => {
   test("reputation_strategy_page_initial_state_renders_campaign_strategy_header_and_badges", () => {
     // Arrange / Act
-    renderWithProviders(<ReputationStrategyPage />)
+    renderWithProviders(<ReputationStrategyPage />, { language: "en" })
 
     // Assert
     expect(
@@ -58,7 +58,7 @@ describe("reputation strategy page", () => {
   test("reputation_strategy_page_creator_strategy_selection_renders_creator_builder", async () => {
     // Arrange
     const user = userEvent.setup()
-    renderWithProviders(<ReputationStrategyPage />)
+    renderWithProviders(<ReputationStrategyPage />, { language: "en" })
 
     // Act
     await user.click(

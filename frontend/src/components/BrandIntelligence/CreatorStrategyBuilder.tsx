@@ -8,6 +8,7 @@ import {
   Textarea,
 } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import type { TFunction } from "i18next"
 import { type Dispatch, type SetStateAction, useMemo, useState } from "react"
 import {
   type Control,
@@ -17,6 +18,7 @@ import {
   type UseFormReturn,
   useWatch,
 } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { FiAlertCircle, FiFileText, FiSearch } from "react-icons/fi"
 
 import { Button } from "@/components/ui/button"
@@ -28,15 +30,17 @@ import {
   generateBrandIntelligenceReport,
 } from "@/features/brand-intelligence/api"
 import {
-  AUDIENCE_OPTIONS,
-  CREATOR_GOAL_TYPE_OPTIONS,
-  TIMEFRAME_OPTIONS,
+  type AUDIENCE_OPTIONS,
+  type CREATOR_GOAL_TYPE_OPTIONS,
+  getAudienceLabel,
+  getAudienceOptions,
+  getCreatorGoalTypeLabel,
+  getCreatorGoalTypeOptions,
+  getTimeframeLabel,
+  getTimeframeOptions,
+  type TIMEFRAME_OPTIONS,
 } from "@/features/brand-intelligence/catalogs"
-import {
-  BRAND_INTELLIGENCE_LIMITS,
-  CREATOR_FIELD_HELP,
-  REPUTATION_SIGNAL_FIELD_HELP,
-} from "@/features/brand-intelligence/form-config"
+import { BRAND_INTELLIGENCE_LIMITS } from "@/features/brand-intelligence/form-config"
 import type {
   CreatorFormValues,
   CreatorTextInputValues,
@@ -129,7 +133,10 @@ const getUrlPalette = (invalidUrls: ReadonlySet<string>, value: string) => {
   }
 }
 
-const buildSignalFieldRules = (fieldLabel: string) => ({
+const buildSignalFieldRules = (
+  t: TFunction<"brandIntelligence">,
+  fieldLabel: string,
+) => ({
   validate: (value: string[] | undefined) => {
     if (
       (value ?? []).some(
@@ -137,7 +144,10 @@ const buildSignalFieldRules = (fieldLabel: string) => ({
           entry.length > BRAND_INTELLIGENCE_LIMITS.reputationSignalCharacters,
       )
     ) {
-      return `${fieldLabel} entries must use 30 characters or less.`
+      return t("creator.validation.reputationSignalLineLimit", {
+        count: BRAND_INTELLIGENCE_LIMITS.reputationSignalCharacters,
+        label: fieldLabel,
+      })
     }
 
     return true
@@ -184,6 +194,7 @@ const CreatorStrategySummary = ({
   creatorUsername: string
   expiredUsernames: string[]
 }) => {
+  const { t } = useTranslation("brandIntelligence")
   const [
     audience,
     collaboratorsList,
@@ -239,41 +250,83 @@ const CreatorStrategySummary = ({
 
   const summarySections = [
     {
-      title: "Profile gate",
+      title: t("summary.sections.profileGate"),
       items: [
         {
-          label: "Creator username",
+          label: t("summary.items.creatorUsername"),
           value: creatorUsername ? [`@${creatorUsername}`] : [],
         },
-        { label: "Expired profiles", value: expiredUsernames },
+        { label: t("summary.items.expiredProfiles"), value: expiredUsernames },
       ],
     },
     {
-      title: "Creator brief",
+      title: t("summary.sections.creatorBrief"),
       items: [
-        { label: "Creator context", value: creatorContext },
-        { label: "Creator URLs", value: normalizedCreatorUrls },
-        { label: "Goal type", value: goalType },
-        { label: "Goal context", value: goalContext },
-        { label: "Audience", value: audience ?? [] },
-        { label: "Timeframe", value: timeframe },
+        { label: t("summary.items.creatorContext"), value: creatorContext },
+        { label: t("summary.items.creatorUrls"), value: normalizedCreatorUrls },
+        {
+          label: t("summary.items.goalType"),
+          value: goalType
+            ? getCreatorGoalTypeLabel(
+                t,
+                goalType as (typeof CREATOR_GOAL_TYPE_OPTIONS)[number],
+              )
+            : undefined,
+        },
+        { label: t("summary.items.goalContext"), value: goalContext },
+        {
+          label: t("summary.items.audience"),
+          value: (audience ?? []).map((value) =>
+            getAudienceLabel(t, value as (typeof AUDIENCE_OPTIONS)[number]),
+          ),
+        },
+        {
+          label: t("summary.items.timeframe"),
+          value: timeframe
+            ? getTimeframeLabel(
+                t,
+                timeframe as (typeof TIMEFRAME_OPTIONS)[number],
+              )
+            : undefined,
+        },
       ],
     },
     {
-      title: "Strategy inputs",
+      title: t("summary.sections.strategyInputs"),
       items: [
-        { label: "Primary platforms", value: normalizedPlatforms },
-        { label: "Collaborators", value: normalizedCollaborators },
-        { label: "Strengths", value: normalizedSignals.strengths },
-        { label: "Weaknesses", value: normalizedSignals.weaknesses },
-        { label: "Incidents", value: normalizedSignals.incidents },
-        { label: "Concerns", value: normalizedSignals.concerns },
+        {
+          label: t("summary.items.primaryPlatforms"),
+          value: normalizedPlatforms,
+        },
+        {
+          label: t("summary.items.collaborators"),
+          value: normalizedCollaborators,
+        },
+        {
+          label: t("summary.items.strengths"),
+          value: normalizedSignals.strengths,
+        },
+        {
+          label: t("summary.items.weaknesses"),
+          value: normalizedSignals.weaknesses,
+        },
+        {
+          label: t("summary.items.incidents"),
+          value: normalizedSignals.incidents,
+        },
+        {
+          label: t("summary.items.concerns"),
+          value: normalizedSignals.concerns,
+        },
       ],
     },
   ]
 
   return (
-    <StrategySummaryCard title="Creator Strategy" sections={summarySections} />
+    <StrategySummaryCard
+      title={t("summary.creatorTitle")}
+      sections={summarySections}
+    />
   )
 }
 
@@ -296,6 +349,7 @@ const CreatorSubmitPanel = ({
   orderedProfilesCount: number
   reportIsPending: boolean
 }) => {
+  const { t } = useTranslation("brandIntelligence")
   const [
     audience,
     creatorContext,
@@ -338,19 +392,19 @@ const CreatorSubmitPanel = ({
     normalizedPlatforms.length > 0
 
   const submitDisabledReason = !creatorUsername
-    ? "Add the creator username to unlock the workflow."
+    ? t("creator.submitDisabledReason.missingUsername")
     : invalidCreatorUsername
-      ? "Fix the creator username before continuing."
+      ? t("creator.submitDisabledReason.invalidUsername")
       : hasInvalidCreatorUrls
-        ? "Use valid http or https URLs."
+        ? t("creator.submitDisabledReason.invalidUrls")
         : !hasRequiredFields
-          ? "Complete the required fields to enable report generation."
+          ? t("creator.submitDisabledReason.requiredFields")
           : isValidationPending
-            ? "Profile validation is still running."
+            ? t("creator.submitDisabledReason.validationPending")
             : isValidationStale || orderedProfilesCount === 0
-              ? "Validate the creator profile before generating the report."
+              ? t("creator.submitDisabledReason.validationRequired")
               : missingUsernames.length > 0
-                ? "consulte los perfiles validados y vuelva a intentar"
+                ? t("creator.submitDisabledReason.missingProfiles")
                 : null
 
   return (
@@ -367,11 +421,10 @@ const CreatorSubmitPanel = ({
       >
         <Box maxW="58ch">
           <Text fontSize="lg" fontWeight="black">
-            Generate creator strategy PDF
+            {t("creator.submitPanel.title")}
           </Text>
           <Text mt={2} color="ui.secondaryText">
-            The downloaded PDF is also saved into local storage for the
-            dashboard.
+            {t("creator.submitPanel.description")}
           </Text>
           {submitDisabledReason ? (
             <Text mt={3} color="ui.mutedText" fontSize="sm">
@@ -388,7 +441,7 @@ const CreatorSubmitPanel = ({
           alignSelf={{ base: "stretch", lg: "center" }}
         >
           <FiFileText />
-          Generate PDF report
+          {t("creator.submitPanel.button")}
         </Button>
       </Flex>
     </Box>
@@ -403,6 +456,7 @@ const CreatorStrategyBuilder = ({
   onTextInputValuesChange,
   validation,
 }: CreatorStrategyBuilderProps) => {
+  const { t } = useTranslation("brandIntelligence")
   const queryClient = useQueryClient()
   const { showErrorToast, showSuccessToast } = useCustomToast()
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -434,6 +488,9 @@ const CreatorStrategyBuilder = ({
   const isWorkflowUnlocked = Boolean(creatorUsername)
   const canRunValidation =
     Boolean(creatorUsername) && !invalidCreatorUsername && !isValidationPending
+  const creatorGoalOptions = useMemo(() => getCreatorGoalTypeOptions(t), [t])
+  const timeframeOptions = useMemo(() => getTimeframeOptions(t), [t])
+  const audienceOptions = useMemo(() => getAudienceOptions(t), [t])
 
   const handleValidateProfiles = async () => {
     setSubmitError(null)
@@ -459,7 +516,7 @@ const CreatorStrategyBuilder = ({
         .map((profile) => profile.username)
 
       if (missingProfiles.length > 0) {
-        throw new Error("consulte los perfiles validados y vuelva a intentar")
+        throw new Error(t("creator.submitDisabledReason.missingProfiles"))
       }
 
       return generateBrandIntelligenceReport({
@@ -475,7 +532,7 @@ const CreatorStrategyBuilder = ({
     onSuccess: async ({ blob, filename }) => {
       invalidateBillingSummary(queryClient)
       downloadBlob(blob, filename)
-      setSubmitSuccess(`Report ready: ${filename}`)
+      setSubmitSuccess(t("creator.success.reportReady", { filename }))
 
       try {
         await saveLocalReport({
@@ -484,16 +541,14 @@ const CreatorStrategyBuilder = ({
           reportType: "reputation-creator-strategy",
           source: "brand-intelligence",
         })
-        showSuccessToast("Creator strategy PDF downloaded and saved locally.")
+        showSuccessToast(t("creator.success.downloadedAndSaved"))
       } catch {
-        showErrorToast(
-          "Creator strategy PDF downloaded, but it could not be saved locally.",
-        )
+        showErrorToast(t("creator.success.downloadedOnly"))
       }
     },
     onError: (error) => {
       setSubmitError(
-        extractApiErrorMessage(error, "Unable to generate the report."),
+        extractApiErrorMessage(error, t("creator.errors.reportFailedFallback")),
       )
     },
   })
@@ -517,9 +572,9 @@ const CreatorStrategyBuilder = ({
     >
       <Flex direction="column" gap={6} minW={0}>
         <StrategySection
-          eyebrow="Step 1"
-          title="Add the creator username"
-          description="The creator username is the first required input. It unlocks the rest of the workflow and must be validated before report generation."
+          eyebrow={t("creator.step1.eyebrow")}
+          title={t("creator.step1.title")}
+          description={t("creator.step1.description")}
         >
           <Controller
             control={control}
@@ -529,11 +584,11 @@ const CreatorStrategyBuilder = ({
                 const normalizedValue = normalizeUsernameList([value])[0] ?? ""
 
                 if (!normalizedValue) {
-                  return "Add the creator username."
+                  return t("creator.validation.addCreatorUsername")
                 }
 
                 if (!isValidInstagramUsername(normalizedValue)) {
-                  return "Use lowercase letters, numbers, periods or underscores, up to 30 characters."
+                  return t("campaign.validation.instagramUsername")
                 }
 
                 return true
@@ -544,10 +599,10 @@ const CreatorStrategyBuilder = ({
                 required
                 invalid={!!fieldState.error}
                 errorText={fieldState.error?.message}
-                label="Creator username"
+                label={t("creator.fields.creatorUsername")}
                 labelEndElement={renderFieldInfo(
-                  "Creator username",
-                  CREATOR_FIELD_HELP.creator_username,
+                  t("creator.fields.creatorUsername"),
+                  t("creator.fieldHelp.creatorUsername"),
                 )}
                 helperText={
                   <FieldHelperWithCounter
@@ -582,7 +637,7 @@ const CreatorStrategyBuilder = ({
                   onValueChange={(nextValue) =>
                     field.onChange(normalizeUsernameList(nextValue)[0] ?? "")
                   }
-                  placeholder="creator_one"
+                  placeholder={t("creator.placeholders.creatorUsername")}
                   renderTagLabel={(value) => `@${value}`}
                   value={creatorValidationUsernames}
                 />
@@ -606,7 +661,9 @@ const CreatorStrategyBuilder = ({
               px={3}
               py={1.5}
             >
-              {creatorUsername ? "1 / 1 username" : "0 / 1 username"}
+              {t("creator.badges.usernameCount", {
+                count: creatorUsername ? 1 : 0,
+              })}
             </Badge>
 
             <Button
@@ -617,7 +674,7 @@ const CreatorStrategyBuilder = ({
               loading={isValidationPending}
             >
               <FiSearch />
-              Validate profile
+              {t("creator.actions.validateProfile")}
             </Button>
           </Flex>
 
@@ -633,33 +690,33 @@ const CreatorStrategyBuilder = ({
         </StrategySection>
 
         <StrategySection
-          eyebrow="Step 2"
-          title="Creator and reputation brief"
-          description="Capture the creator context, reputation goal, and supporting URLs that should shape the strategy."
+          eyebrow={t("creator.step2.eyebrow")}
+          title={t("creator.step2.title")}
+          description={t("creator.step2.description")}
         >
           <Grid templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} gap={4}>
             <Field
               required
               invalid={!!errors.goal_type}
               errorText={errors.goal_type?.message}
-              label="Goal type"
+              label={t("creator.fields.goalType")}
               labelEndElement={renderFieldInfo(
-                "Goal type",
-                CREATOR_FIELD_HELP.goal_type,
+                t("creator.fields.goalType"),
+                t("creator.fieldHelp.goalType"),
               )}
             >
               <NativeSelect.Root disabled={!isWorkflowUnlocked}>
                 <NativeSelect.Field
                   {...register("goal_type", {
-                    required: "Select the primary reputation goal.",
+                    required: t("creator.validation.selectGoalType"),
                   })}
                   {...autofillIgnoreProps}
                   {...inputStyles}
                 >
-                  <option value="">Select a goal</option>
-                  {CREATOR_GOAL_TYPE_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
+                  <option value="">{t("creator.select.goal")}</option>
+                  {creatorGoalOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
                     </option>
                   ))}
                 </NativeSelect.Field>
@@ -671,24 +728,24 @@ const CreatorStrategyBuilder = ({
               required
               invalid={!!errors.timeframe}
               errorText={errors.timeframe?.message}
-              label="Timeframe"
+              label={t("creator.fields.timeframe")}
               labelEndElement={renderFieldInfo(
-                "Timeframe",
-                CREATOR_FIELD_HELP.timeframe,
+                t("creator.fields.timeframe"),
+                t("creator.fieldHelp.timeframe"),
               )}
             >
               <NativeSelect.Root disabled={!isWorkflowUnlocked}>
                 <NativeSelect.Field
                   {...register("timeframe", {
-                    required: "Select the timeframe.",
+                    required: t("creator.validation.selectTimeframe"),
                   })}
                   {...autofillIgnoreProps}
                   {...inputStyles}
                 >
-                  <option value="">Select a timeframe</option>
-                  {TIMEFRAME_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
+                  <option value="">{t("creator.select.timeframe")}</option>
+                  {timeframeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
                     </option>
                   ))}
                 </NativeSelect.Field>
@@ -706,10 +763,10 @@ const CreatorStrategyBuilder = ({
               required
               invalid={!!errors.creator_context}
               errorText={errors.creator_context?.message}
-              label="Creator context"
+              label={t("creator.fields.creatorContext")}
               labelEndElement={renderFieldInfo(
-                "Creator context",
-                CREATOR_FIELD_HELP.creator_context,
+                t("creator.fields.creatorContext"),
+                t("creator.fieldHelp.creatorContext"),
               )}
               helperText={
                 <CharacterCountHelper
@@ -721,10 +778,12 @@ const CreatorStrategyBuilder = ({
             >
               <Textarea
                 {...register("creator_context", {
-                  required: "Creator context is required.",
+                  required: t("creator.validation.creatorContextRequired"),
                   maxLength: {
                     value: 500,
-                    message: "Use 500 characters or less.",
+                    message: t("creator.validation.maxCharacters", {
+                      count: 500,
+                    }),
                   },
                 })}
                 {...autofillIgnoreProps}
@@ -732,7 +791,7 @@ const CreatorStrategyBuilder = ({
                 disabled={!isWorkflowUnlocked}
                 maxLength={500}
                 minH="132px"
-                placeholder="Describe the creator's current narrative, positioning, and public perception."
+                placeholder={t("creator.placeholders.creatorContext")}
               />
             </Field>
 
@@ -740,10 +799,10 @@ const CreatorStrategyBuilder = ({
               required
               invalid={!!errors.goal_context}
               errorText={errors.goal_context?.message}
-              label="Goal context"
+              label={t("creator.fields.goalContext")}
               labelEndElement={renderFieldInfo(
-                "Goal context",
-                CREATOR_FIELD_HELP.goal_context,
+                t("creator.fields.goalContext"),
+                t("creator.fieldHelp.goalContext"),
               )}
               helperText={
                 <CharacterCountHelper
@@ -755,10 +814,12 @@ const CreatorStrategyBuilder = ({
             >
               <Textarea
                 {...register("goal_context", {
-                  required: "Goal context is required.",
+                  required: t("creator.validation.goalContextRequired"),
                   maxLength: {
                     value: 500,
-                    message: "Use 500 characters or less.",
+                    message: t("creator.validation.maxCharacters", {
+                      count: 500,
+                    }),
                   },
                 })}
                 {...autofillIgnoreProps}
@@ -766,7 +827,7 @@ const CreatorStrategyBuilder = ({
                 disabled={!isWorkflowUnlocked}
                 maxLength={500}
                 minH="132px"
-                placeholder="Explain what should change in the creator's reputation over the selected timeframe."
+                placeholder={t("creator.placeholders.goalContext")}
               />
             </Field>
           </Grid>
@@ -780,11 +841,11 @@ const CreatorStrategyBuilder = ({
                   if (
                     (value ?? []).length > BRAND_INTELLIGENCE_LIMITS.creatorUrls
                   ) {
-                    return "Add up to 3 creator URLs."
+                    return t("creator.validation.creatorUrlsLimit")
                   }
 
                   if ((value ?? []).some((url) => !isValidHttpUrl(url))) {
-                    return "Use valid http or https URLs."
+                    return t("creator.submitDisabledReason.invalidUrls")
                   }
 
                   return true
@@ -804,15 +865,15 @@ const CreatorStrategyBuilder = ({
                   <Field
                     invalid={!!fieldState.error}
                     errorText={fieldState.error?.message}
-                    label="Creator URLs"
+                    label={t("creator.fields.creatorUrls")}
                     labelEndElement={renderFieldInfo(
-                      "Creator URLs",
-                      CREATOR_FIELD_HELP.creator_urls,
+                      t("creator.fields.creatorUrls"),
+                      t("creator.fieldHelp.creatorUrls"),
                     )}
                     helperText={
                       fieldState.error
                         ? undefined
-                        : "Optional. Add up to 3 relevant URLs for the creator."
+                        : t("creator.helperText.creatorUrls")
                     }
                   >
                     <TagsInputField
@@ -825,7 +886,7 @@ const CreatorStrategyBuilder = ({
                       onValueChange={(nextValue) =>
                         field.onChange(normalizeListValues(nextValue))
                       }
-                      placeholder="https://instagram.com/creator, https://youtube.com/@creator"
+                      placeholder={t("creator.placeholders.creatorUrls")}
                       value={field.value ?? []}
                     />
                   </Field>
@@ -836,9 +897,9 @@ const CreatorStrategyBuilder = ({
         </StrategySection>
 
         <StrategySection
-          eyebrow="Step 3"
-          title="Strategy inputs"
-          description="Add the audience, key platforms, reputation signals, and collaborators that should inform the creator strategy report."
+          eyebrow={t("creator.step3.eyebrow")}
+          title={t("creator.step3.title")}
+          description={t("creator.step3.description")}
         >
           <Controller
             control={control}
@@ -846,11 +907,11 @@ const CreatorStrategyBuilder = ({
             rules={{
               validate: (value) => {
                 if (!value || value.length === 0) {
-                  return "Select at least 1 audience."
+                  return t("creator.validation.selectAudience")
                 }
 
                 if (value.length > BRAND_INTELLIGENCE_LIMITS.audience) {
-                  return "Select up to 5 audiences."
+                  return t("creator.validation.audienceLimit")
                 }
 
                 return true
@@ -861,25 +922,22 @@ const CreatorStrategyBuilder = ({
                 required
                 invalid={!!fieldState.error}
                 errorText={fieldState.error?.message}
-                label="Audience"
+                label={t("creator.fields.audience")}
                 labelEndElement={renderFieldInfo(
-                  "Audience",
-                  CREATOR_FIELD_HELP.audience,
+                  t("creator.fields.audience"),
+                  t("creator.fieldHelp.audience"),
                 )}
                 helperText={
                   fieldState.error
                     ? undefined
-                    : "Select up to 5 audience segments."
+                    : t("creator.helperText.audience")
                 }
               >
                 <MultiSelectOptionGroup
                   disabled={!isWorkflowUnlocked}
                   maxSelections={BRAND_INTELLIGENCE_LIMITS.audience}
                   onChange={field.onChange}
-                  options={AUDIENCE_OPTIONS.map((option) => ({
-                    label: option,
-                    value: option,
-                  }))}
+                  options={audienceOptions}
                   value={field.value ?? []}
                 />
               </Field>
@@ -897,13 +955,13 @@ const CreatorStrategyBuilder = ({
               rules={{
                 validate: (value) => {
                   if (!value || value.length === 0) {
-                    return "Add at least 1 primary platform."
+                    return t("creator.validation.primaryPlatformsRequired")
                   }
 
                   if (
                     value.length > BRAND_INTELLIGENCE_LIMITS.primaryPlatforms
                   ) {
-                    return "Add up to 6 primary platforms."
+                    return t("creator.validation.primaryPlatformsLimit")
                   }
 
                   return true
@@ -914,15 +972,15 @@ const CreatorStrategyBuilder = ({
                   required
                   invalid={!!fieldState.error}
                   errorText={fieldState.error?.message}
-                  label="Primary platforms"
+                  label={t("creator.fields.primaryPlatforms")}
                   labelEndElement={renderFieldInfo(
-                    "Primary platforms",
-                    CREATOR_FIELD_HELP.primary_platforms,
+                    t("creator.fields.primaryPlatforms"),
+                    t("creator.fieldHelp.primaryPlatforms"),
                   )}
                   helperText={
                     fieldState.error
                       ? undefined
-                      : "Use one platform per line, up to 6."
+                      : t("creator.helperText.primaryPlatforms")
                   }
                 >
                   <Textarea
@@ -941,7 +999,7 @@ const CreatorStrategyBuilder = ({
                       }))
                       field.onChange(normalizeTextareaListValues(nextValue))
                     }}
-                    placeholder={"Instagram\nYouTube\nTikTok"}
+                    placeholder={t("creator.placeholders.primaryPlatforms")}
                     ref={field.ref}
                     value={
                       creatorTextInputValues.primaryPlatforms ||
@@ -961,7 +1019,7 @@ const CreatorStrategyBuilder = ({
                     (value ?? []).length >
                     BRAND_INTELLIGENCE_LIMITS.collaborators
                   ) {
-                    return "Add up to 10 collaborators."
+                    return t("creator.validation.collaboratorsLimit")
                   }
 
                   return true
@@ -971,15 +1029,15 @@ const CreatorStrategyBuilder = ({
                 <Field
                   invalid={!!fieldState.error}
                   errorText={fieldState.error?.message}
-                  label="Collaborators"
+                  label={t("creator.fields.collaborators")}
                   labelEndElement={renderFieldInfo(
-                    "Collaborators",
-                    CREATOR_FIELD_HELP.collaborators_list,
+                    t("creator.fields.collaborators"),
+                    t("creator.fieldHelp.collaborators"),
                   )}
                   helperText={
                     fieldState.error
                       ? undefined
-                      : "Optional. Use one collaborator per line, up to 10."
+                      : t("creator.helperText.collaborators")
                   }
                 >
                   <Textarea
@@ -998,7 +1056,7 @@ const CreatorStrategyBuilder = ({
                       }))
                       field.onChange(normalizeTextareaListValues(nextValue))
                     }}
-                    placeholder={"Brand One\nBrand Two\nManagement Partner"}
+                    placeholder={t("creator.placeholders.collaborators")}
                     ref={field.ref}
                     value={
                       creatorTextInputValues.collaborators ||
@@ -1018,15 +1076,15 @@ const CreatorStrategyBuilder = ({
             <Controller
               control={control}
               name="reputation_signals.strengths"
-              rules={buildSignalFieldRules("Strengths")}
+              rules={buildSignalFieldRules(t, t("creator.fields.strengths"))}
               render={({ field, fieldState }) => (
                 <Field
                   invalid={!!fieldState.error}
                   errorText={fieldState.error?.message}
-                  label="Strengths"
+                  label={t("creator.fields.strengths")}
                   labelEndElement={renderFieldInfo(
-                    "Strengths",
-                    REPUTATION_SIGNAL_FIELD_HELP.strengths,
+                    t("creator.fields.strengths"),
+                    t("creator.fieldHelp.strengths"),
                   )}
                   helperText={
                     <FieldHelperWithCounter
@@ -1034,7 +1092,7 @@ const CreatorStrategyBuilder = ({
                         creatorTextInputValues.strengths ||
                           formatTextareaListValues(field.value),
                       )}
-                      helperText="Per line"
+                      helperText={t("creator.helperText.perLine")}
                       limit={
                         BRAND_INTELLIGENCE_LIMITS.reputationSignalCharacters
                       }
@@ -1060,7 +1118,7 @@ const CreatorStrategyBuilder = ({
                       }))
                       field.onChange(normalizeTextareaListValues(nextValue))
                     }}
-                    placeholder={"Transparency\nConsistency\nClear voice"}
+                    placeholder={t("creator.placeholders.strengths")}
                     ref={field.ref}
                     value={
                       creatorTextInputValues.strengths ||
@@ -1074,15 +1132,15 @@ const CreatorStrategyBuilder = ({
             <Controller
               control={control}
               name="reputation_signals.weaknesses"
-              rules={buildSignalFieldRules("Weaknesses")}
+              rules={buildSignalFieldRules(t, t("creator.fields.weaknesses"))}
               render={({ field, fieldState }) => (
                 <Field
                   invalid={!!fieldState.error}
                   errorText={fieldState.error?.message}
-                  label="Weaknesses"
+                  label={t("creator.fields.weaknesses")}
                   labelEndElement={renderFieldInfo(
-                    "Weaknesses",
-                    REPUTATION_SIGNAL_FIELD_HELP.weaknesses,
+                    t("creator.fields.weaknesses"),
+                    t("creator.fieldHelp.weaknesses"),
                   )}
                   helperText={
                     <FieldHelperWithCounter
@@ -1090,7 +1148,7 @@ const CreatorStrategyBuilder = ({
                         creatorTextInputValues.weaknesses ||
                           formatTextareaListValues(field.value),
                       )}
-                      helperText="Per line"
+                      helperText={t("creator.helperText.perLine")}
                       limit={
                         BRAND_INTELLIGENCE_LIMITS.reputationSignalCharacters
                       }
@@ -1116,7 +1174,7 @@ const CreatorStrategyBuilder = ({
                       }))
                       field.onChange(normalizeTextareaListValues(nextValue))
                     }}
-                    placeholder={"Overexposure\nLow message clarity"}
+                    placeholder={t("creator.placeholders.weaknesses")}
                     ref={field.ref}
                     value={
                       creatorTextInputValues.weaknesses ||
@@ -1130,15 +1188,15 @@ const CreatorStrategyBuilder = ({
             <Controller
               control={control}
               name="reputation_signals.incidents"
-              rules={buildSignalFieldRules("Incidents")}
+              rules={buildSignalFieldRules(t, t("creator.fields.incidents"))}
               render={({ field, fieldState }) => (
                 <Field
                   invalid={!!fieldState.error}
                   errorText={fieldState.error?.message}
-                  label="Incidents"
+                  label={t("creator.fields.incidents")}
                   labelEndElement={renderFieldInfo(
-                    "Incidents",
-                    REPUTATION_SIGNAL_FIELD_HELP.incidents,
+                    t("creator.fields.incidents"),
+                    t("creator.fieldHelp.incidents"),
                   )}
                   helperText={
                     <FieldHelperWithCounter
@@ -1146,7 +1204,7 @@ const CreatorStrategyBuilder = ({
                         creatorTextInputValues.incidents ||
                           formatTextareaListValues(field.value),
                       )}
-                      helperText="Per line"
+                      helperText={t("creator.helperText.perLine")}
                       limit={
                         BRAND_INTELLIGENCE_LIMITS.reputationSignalCharacters
                       }
@@ -1172,7 +1230,7 @@ const CreatorStrategyBuilder = ({
                       }))
                       field.onChange(normalizeTextareaListValues(nextValue))
                     }}
-                    placeholder={"Content backlash\nPublic apology"}
+                    placeholder={t("creator.placeholders.incidents")}
                     ref={field.ref}
                     value={
                       creatorTextInputValues.incidents ||
@@ -1186,15 +1244,15 @@ const CreatorStrategyBuilder = ({
             <Controller
               control={control}
               name="reputation_signals.concerns"
-              rules={buildSignalFieldRules("Concerns")}
+              rules={buildSignalFieldRules(t, t("creator.fields.concerns"))}
               render={({ field, fieldState }) => (
                 <Field
                   invalid={!!fieldState.error}
                   errorText={fieldState.error?.message}
-                  label="Concerns"
+                  label={t("creator.fields.concerns")}
                   labelEndElement={renderFieldInfo(
-                    "Concerns",
-                    REPUTATION_SIGNAL_FIELD_HELP.concerns,
+                    t("creator.fields.concerns"),
+                    t("creator.fieldHelp.concerns"),
                   )}
                   helperText={
                     <FieldHelperWithCounter
@@ -1202,7 +1260,7 @@ const CreatorStrategyBuilder = ({
                         creatorTextInputValues.concerns ||
                           formatTextareaListValues(field.value),
                       )}
-                      helperText="Per line"
+                      helperText={t("creator.helperText.perLine")}
                       limit={
                         BRAND_INTELLIGENCE_LIMITS.reputationSignalCharacters
                       }
@@ -1228,7 +1286,7 @@ const CreatorStrategyBuilder = ({
                       }))
                       field.onChange(normalizeTextareaListValues(nextValue))
                     }}
-                    placeholder={"Collaboration fatigue\nUnclear boundaries"}
+                    placeholder={t("creator.placeholders.concerns")}
                     ref={field.ref}
                     value={
                       creatorTextInputValues.concerns ||
@@ -1254,7 +1312,7 @@ const CreatorStrategyBuilder = ({
               <FiAlertCircle color="var(--chakra-colors-ui-dangerText)" />
               <Box>
                 <Text color="ui.dangerText" fontWeight="black">
-                  Report generation failed
+                  {t("creator.errors.reportFailedTitle")}
                 </Text>
                 <Text mt={1} color="ui.secondaryText">
                   {submitError}
@@ -1274,7 +1332,7 @@ const CreatorStrategyBuilder = ({
             py={{ base: 4, md: 5 }}
           >
             <Text color="ui.brandText" fontWeight="black">
-              Creator report generated
+              {t("creator.success.statusTitle")}
             </Text>
             <Text mt={1} color="ui.secondaryText">
               {submitSuccess}

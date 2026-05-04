@@ -6,6 +6,11 @@ export const emailPattern = {
   message: "Invalid email address",
 }
 
+export const buildEmailPattern = (message = emailPattern.message) => ({
+  value: emailPattern.value,
+  message,
+})
+
 export const namePattern = {
   value: /^[A-Za-z\s\u00C0-\u017F]{1,30}$/,
   message: "Invalid name",
@@ -20,52 +25,92 @@ const passwordHasNumber = (value: string) => /\d/.test(value)
 const passwordHasAllowedSpecialCharacter = (value: string) =>
   PASSWORD_SPECIAL_CHARACTERS.some((character) => value.includes(character))
 
-export const passwordRules = (isRequired = true) => {
+type PasswordRulesMessages = {
+  minLength: string
+  required: string
+}
+
+export const passwordRules = (
+  isRequired = true,
+  messages?: Partial<PasswordRulesMessages>,
+) => {
+  const resolvedMessages: PasswordRulesMessages = {
+    minLength:
+      messages?.minLength ??
+      `Password must be at least ${PASSWORD_MIN_LENGTH} characters`,
+    required: messages?.required ?? "Password is required",
+  }
   const rules: any = {
     minLength: {
       value: PASSWORD_MIN_LENGTH,
-      message: `Password must be at least ${PASSWORD_MIN_LENGTH} characters`,
+      message: resolvedMessages.minLength,
     },
   }
 
   if (isRequired) {
-    rules.required = "Password is required"
+    rules.required = resolvedMessages.required
   }
 
   return rules
 }
 
-const getNewPasswordError = (value: string) => {
+type NewPasswordMessages = {
+  required: string
+  length: string
+  uppercase: string
+  number: string
+  special: string
+}
+
+const getDefaultNewPasswordMessages = (): NewPasswordMessages => ({
+  required: "Password is required",
+  length: `Password must be between ${PASSWORD_MIN_LENGTH} and ${PASSWORD_MAX_LENGTH} characters`,
+  uppercase: "Password must include at least 1 uppercase letter",
+  number: "Password must include at least 1 number",
+  special: `Password must include at least 1 special character (${PASSWORD_SPECIAL_CHARACTERS.join(", ")})`,
+})
+
+const getNewPasswordError = (
+  value: string,
+  messages: NewPasswordMessages = getDefaultNewPasswordMessages(),
+) => {
   if (
     value.length < PASSWORD_MIN_LENGTH ||
     value.length > PASSWORD_MAX_LENGTH
   ) {
-    return `Password must be between ${PASSWORD_MIN_LENGTH} and ${PASSWORD_MAX_LENGTH} characters`
+    return messages.length
   }
   if (!passwordHasUppercase(value)) {
-    return "Password must include at least 1 uppercase letter"
+    return messages.uppercase
   }
   if (!passwordHasNumber(value)) {
-    return "Password must include at least 1 number"
+    return messages.number
   }
   if (!passwordHasAllowedSpecialCharacter(value)) {
-    return `Password must include at least 1 special character (${PASSWORD_SPECIAL_CHARACTERS.join(", ")})`
+    return messages.special
   }
   return true
 }
 
-export const newPasswordRules = (isRequired = true) => {
+export const newPasswordRules = (
+  isRequired = true,
+  messages?: Partial<NewPasswordMessages>,
+) => {
+  const resolvedMessages: NewPasswordMessages = {
+    ...getDefaultNewPasswordMessages(),
+    ...messages,
+  }
   const rules: any = {
     validate: (value: string) => {
       if (!value && !isRequired) {
         return true
       }
-      return getNewPasswordError(value)
+      return getNewPasswordError(value, resolvedMessages)
     },
   }
 
   if (isRequired) {
-    rules.required = "Password is required"
+    rules.required = resolvedMessages.required
   }
 
   return rules
@@ -83,53 +128,79 @@ export interface PasswordRequirementState {
   satisfied: boolean
 }
 
+type PasswordRequirementLabels = {
+  length: string
+  uppercase: string
+  number: string
+  special: string
+}
+
 export const getPasswordRequirementStates = (
   password: string,
+  labels?: Partial<PasswordRequirementLabels>,
 ): PasswordRequirementState[] => {
   const value = password ?? ""
+  const resolvedLabels: PasswordRequirementLabels = {
+    length: `${PASSWORD_MIN_LENGTH}-${PASSWORD_MAX_LENGTH} characters`,
+    uppercase: "At least 1 uppercase letter",
+    number: "At least 1 number",
+    special: `At least 1 special character (${PASSWORD_SPECIAL_CHARACTERS.join(" ")})`,
+    ...labels,
+  }
 
   return [
     {
       key: "length",
-      label: `${PASSWORD_MIN_LENGTH}-${PASSWORD_MAX_LENGTH} characters`,
+      label: resolvedLabels.length,
       satisfied:
         value.length >= PASSWORD_MIN_LENGTH &&
         value.length <= PASSWORD_MAX_LENGTH,
     },
     {
       key: "uppercase",
-      label: "At least 1 uppercase letter",
+      label: resolvedLabels.uppercase,
       satisfied: passwordHasUppercase(value),
     },
     {
       key: "number",
-      label: "At least 1 number",
+      label: resolvedLabels.number,
       satisfied: passwordHasNumber(value),
     },
     {
       key: "special",
-      label: `At least 1 special character (${PASSWORD_SPECIAL_CHARACTERS.join(" ")})`,
+      label: resolvedLabels.special,
       satisfied: passwordHasAllowedSpecialCharacter(value),
     },
   ]
 }
 
+type ConfirmPasswordMessages = {
+  mismatch: string
+  required: string
+}
+
 export const confirmPasswordRules = (
   getValues: () => any,
   isRequired = true,
+  messages?: Partial<ConfirmPasswordMessages>,
 ) => {
+  const resolvedMessages: ConfirmPasswordMessages = {
+    mismatch: "The passwords do not match",
+    required: "Password confirmation is required",
+    ...messages,
+  }
   const rules: any = {
     validate: (value: string) => {
       const password = getValues().password || getValues().new_password
       if (!isRequired && !password && !value) {
         return true
       }
-      return value === password ? true : "The passwords do not match"
+      return value === password ? true : resolvedMessages.mismatch
     },
   }
 
   if (isRequired) {
-    rules.required = "Password confirmation is required"
+    rules.required = resolvedMessages.required
   }
 
   return rules

@@ -27,8 +27,8 @@ describe("search outcome alerts", () => {
     )
 
     // Assert
-    expect(screen.getAllByText("Search failed")[0]).toBeVisible()
-    expect(screen.getByText("Report generation failed")).toBeVisible()
+    expect(screen.getAllByText("La búsqueda falló")[0]).toBeVisible()
+    expect(screen.getByText("La generación del reporte falló")).toBeVisible()
     expect(screen.getByText("Report failed")).toBeVisible()
   })
 
@@ -50,10 +50,12 @@ describe("search outcome alerts", () => {
     )
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Search" }))
+    await user.click(screen.getByRole("button", { name: "Buscar" }))
 
     // Assert
-    expect(screen.getByText("Profiles need updates")).toBeVisible()
+    expect(
+      screen.getByText("Los perfiles necesitan actualización"),
+    ).toBeVisible()
     expect(screen.getByText("@expired_creator")).toBeVisible()
     expect(screen.getByText("Duplicate expired job")).toBeVisible()
     expect(expiredJobsMutation.mutate).toHaveBeenCalledWith(["expired_creator"])
@@ -77,10 +79,10 @@ describe("search outcome alerts", () => {
     )
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Search" }))
+    await user.click(screen.getByRole("button", { name: "Buscar" }))
 
     // Assert
-    expect(screen.getByText("Usernames not found")).toBeVisible()
+    expect(screen.getByText("Usernames no encontrados")).toBeVisible()
     expect(screen.getByText("@missing_creator")).toBeVisible()
     expect(screen.getByText("Duplicate missing job")).toBeVisible()
     expect(missingJobsMutation.mutate).toHaveBeenCalledWith(["missing_creator"])

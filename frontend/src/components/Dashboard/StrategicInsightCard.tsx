@@ -1,5 +1,6 @@
 import { Box, Flex, Icon, Link, Text } from "@chakra-ui/react"
 import { keyframes } from "@emotion/react"
+import { useTranslation } from "react-i18next"
 import { FiUser } from "react-icons/fi"
 import { IoNewspaperOutline } from "react-icons/io5"
 import { getAllBlogPosts } from "@/features/blog/content"
@@ -29,6 +30,7 @@ const StrategicInsightCard = ({
   periodLabel,
   periodValue,
 }: StrategicInsightCardProps) => {
+  const { t } = useTranslation("dashboard")
   return (
     <Flex direction="column" gap={6} h="full" minH="full">
       <Box
@@ -70,7 +72,7 @@ const StrategicInsightCard = ({
                 textTransform="uppercase"
                 fontWeight="bold"
               >
-                News
+                {t("overview.strategic.news")}
               </Text>
             </Flex>
             {latestBlogPosts.length > 0 ? (
@@ -96,7 +98,7 @@ const StrategicInsightCard = ({
                 fontSize={{ base: "sm", lg: "md" }}
                 color="ui.inverseMutedText"
               >
-                No published blog posts yet.
+                {t("overview.strategic.noPosts")}
               </Text>
             )}
           </Box>
@@ -118,12 +120,12 @@ const StrategicInsightCard = ({
             fontWeight="black"
             letterSpacing="-0.02em"
           >
-            Plan Status
+            {t("overview.strategic.planStatus")}
           </Text>
         </Flex>
         <Flex direction="column" gap={3}>
           <Text color="ui.secondaryText">
-            Plan Type:{" "}
+            {t("overview.strategic.planType")}:{" "}
             <Text as="span" fontWeight="bold" color="inherit">
               {planLabel}
             </Text>

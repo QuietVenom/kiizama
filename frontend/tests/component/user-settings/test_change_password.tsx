@@ -51,14 +51,19 @@ describe("change password settings", () => {
     renderWithProviders(<ChangePassword />)
 
     // Act
-    await user.type(screen.getByPlaceholderText("Current Password"), "old-pass")
-    await user.type(screen.getByPlaceholderText("New Password"), "weak")
-    await user.type(screen.getByPlaceholderText("Confirm Password"), "weak")
-    await user.click(screen.getByRole("button", { name: "Save" }))
+    await user.type(
+      screen.getByPlaceholderText("Contraseña actual"),
+      "old-pass",
+    )
+    await user.type(screen.getByPlaceholderText("Nueva contraseña"), "weak")
+    await user.type(screen.getByPlaceholderText("Confirmar contraseña"), "weak")
+    await user.click(screen.getByRole("button", { name: "Guardar" }))
 
     // Assert
     expect(
-      await screen.findByText("Password must be between 8 and 25 characters"),
+      await screen.findByText(
+        "La contraseña debe tener entre 8 y 25 caracteres",
+      ),
     ).toBeVisible()
     expect(updatePasswordMe).not.toHaveBeenCalled()
   })
@@ -70,16 +75,24 @@ describe("change password settings", () => {
     renderWithProviders(<ChangePassword />)
 
     // Act
-    await user.type(screen.getByPlaceholderText("Current Password"), "old-pass")
-    await user.type(screen.getByPlaceholderText("New Password"), "Aa1!valid")
     await user.type(
-      screen.getByPlaceholderText("Confirm Password"),
+      screen.getByPlaceholderText("Contraseña actual"),
+      "old-pass",
+    )
+    await user.type(
+      screen.getByPlaceholderText("Nueva contraseña"),
+      "Aa1!valid",
+    )
+    await user.type(
+      screen.getByPlaceholderText("Confirmar contraseña"),
       "Aa1!different",
     )
-    await user.click(screen.getByRole("button", { name: "Save" }))
+    await user.click(screen.getByRole("button", { name: "Guardar" }))
 
     // Assert
-    expect(await screen.findByText("The passwords do not match")).toBeVisible()
+    expect(
+      await screen.findByText("Las contraseñas no coinciden"),
+    ).toBeVisible()
     expect(updatePasswordMe).not.toHaveBeenCalled()
   })
 
@@ -92,13 +105,19 @@ describe("change password settings", () => {
     renderWithProviders(<ChangePassword />)
 
     // Act
-    await user.type(screen.getByPlaceholderText("Current Password"), "old-pass")
-    await user.type(screen.getByPlaceholderText("New Password"), "Aa1!valid")
     await user.type(
-      screen.getByPlaceholderText("Confirm Password"),
+      screen.getByPlaceholderText("Contraseña actual"),
+      "old-pass",
+    )
+    await user.type(
+      screen.getByPlaceholderText("Nueva contraseña"),
       "Aa1!valid",
     )
-    await user.click(screen.getByRole("button", { name: "Save" }))
+    await user.type(
+      screen.getByPlaceholderText("Confirmar contraseña"),
+      "Aa1!valid",
+    )
+    await user.click(screen.getByRole("button", { name: "Guardar" }))
 
     // Assert
     await waitFor(() => {
@@ -110,7 +129,7 @@ describe("change password settings", () => {
       })
     })
     expect(toast.showSuccessToast).toHaveBeenCalledWith(
-      "Password updated successfully.",
+      "La contraseña se actualizó correctamente.",
     )
   })
 
@@ -123,13 +142,19 @@ describe("change password settings", () => {
     renderWithProviders(<ChangePassword />)
 
     // Act
-    await user.type(screen.getByPlaceholderText("Current Password"), "bad-pass")
-    await user.type(screen.getByPlaceholderText("New Password"), "Aa1!valid")
     await user.type(
-      screen.getByPlaceholderText("Confirm Password"),
+      screen.getByPlaceholderText("Contraseña actual"),
+      "bad-pass",
+    )
+    await user.type(
+      screen.getByPlaceholderText("Nueva contraseña"),
       "Aa1!valid",
     )
-    await user.click(screen.getByRole("button", { name: "Save" }))
+    await user.type(
+      screen.getByPlaceholderText("Confirmar contraseña"),
+      "Aa1!valid",
+    )
+    await user.click(screen.getByRole("button", { name: "Guardar" }))
 
     // Assert
     await waitFor(() => {
@@ -146,10 +171,16 @@ describe("change password settings", () => {
     renderWithProviders(<ChangePassword />)
 
     // Act
-    await user.type(screen.getByPlaceholderText("Current Password"), "Aa1!same")
-    await user.type(screen.getByPlaceholderText("New Password"), "Aa1!same")
-    await user.type(screen.getByPlaceholderText("Confirm Password"), "Aa1!same")
-    await user.click(screen.getByRole("button", { name: "Save" }))
+    await user.type(
+      screen.getByPlaceholderText("Contraseña actual"),
+      "Aa1!same",
+    )
+    await user.type(screen.getByPlaceholderText("Nueva contraseña"), "Aa1!same")
+    await user.type(
+      screen.getByPlaceholderText("Confirmar contraseña"),
+      "Aa1!same",
+    )
+    await user.click(screen.getByRole("button", { name: "Guardar" }))
 
     // Assert
     await waitFor(() => {

@@ -9,41 +9,38 @@ import {
 } from "@chakra-ui/react"
 import type { RefObject } from "react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { FiMinus, FiPlus } from "react-icons/fi"
-
-const faqs = [
-  {
-    id: "platform-support",
-    question: "Which social platform is supported today?",
-    answer:
-      "Kiizama currently focuses on Instagram workflows, including profile snapshots, report generation, and reputation strategy outputs.",
-  },
-  {
-    id: "report-outputs",
-    question: "What outputs does the platform generate?",
-    answer:
-      "You can generate PDF reports. Multi-profile requests can be delivered as a ZIP file containing each output.",
-  },
-  {
-    id: "ai-enrichment",
-    question: "Do you use AI in the analysis flow?",
-    answer:
-      "Yes. The platform enriches profiles with AI categories and roles, and powers campaign and creator reputation strategy generation.",
-  },
-  {
-    id: "request-limits",
-    question: "Are there operational limits per request?",
-    answer:
-      "Yes. The Base plan currently includes 50 profile lookups, 20 social media reports, and 5 reputation strategy requests per monthly cycle. Per-request caps still apply: up to 10 usernames per scrape job, up to 20 usernames per Instagram report request, and up to 15 profiles per campaign strategy request. We will add new plans or adjust limits as demand grows.",
-  },
-]
 
 type FAQProps = {
   sectionRef: RefObject<HTMLElement | null>
 }
 
 const FAQ = ({ sectionRef }: FAQProps) => {
+  const { t } = useTranslation("landing")
   const [openItem, setOpenItem] = useState<string | null>(null)
+  const faqs = [
+    {
+      id: "platform-support",
+      question: t("faq.items.platformSupport.question"),
+      answer: t("faq.items.platformSupport.answer"),
+    },
+    {
+      id: "report-outputs",
+      question: t("faq.items.reportOutputs.question"),
+      answer: t("faq.items.reportOutputs.answer"),
+    },
+    {
+      id: "ai-enrichment",
+      question: t("faq.items.aiEnrichment.question"),
+      answer: t("faq.items.aiEnrichment.answer"),
+    },
+    {
+      id: "request-limits",
+      question: t("faq.items.requestLimits.question"),
+      answer: t("faq.items.requestLimits.answer"),
+    },
+  ]
 
   const handleToggle = (id: string) => {
     setOpenItem((current) => (current === id ? null : id))
@@ -72,7 +69,7 @@ const FAQ = ({ sectionRef }: FAQProps) => {
             gap={3}
           >
             <Box as="span" h="1px" w="8" bg="ui.mainHover" />
-            FAQ
+            {t("faq.eyebrow")}
             <Box as="span" h="1px" w="8" bg="ui.mainHover" />
           </Text>
           <Heading
@@ -81,7 +78,7 @@ const FAQ = ({ sectionRef }: FAQProps) => {
             letterSpacing="-0.02em"
             fontFamily="'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif"
           >
-            Answers to key questions
+            {t("faq.title")}
           </Heading>
         </Stack>
 

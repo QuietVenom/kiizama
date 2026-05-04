@@ -30,8 +30,8 @@ describe("current jobs panel", () => {
     )
 
     // Assert
-    expect(screen.getByText("No scrape jobs yet.")).toBeVisible()
-    expect(screen.getByText("0 / 10 jobs")).toBeVisible()
+    expect(screen.getByText("Todavía no hay jobs de scraping.")).toBeVisible()
+    expect(screen.getByText("0 / 10 trabajos")).toBeVisible()
   })
 
   test("current_jobs_panel_queued_job_renders_waiting_progress", () => {
@@ -42,8 +42,8 @@ describe("current jobs panel", () => {
 
     // Assert
     expect(screen.getByText("job_123")).toBeVisible()
-    expect(screen.getByText("Queued")).toBeVisible()
-    expect(screen.getByText("Waiting for completion.")).toBeVisible()
+    expect(screen.getByText("En cola")).toBeVisible()
+    expect(screen.getByText("Esperando a que termine.")).toBeVisible()
   })
 
   test("current_jobs_panel_done_job_click_calls_select_job", async () => {

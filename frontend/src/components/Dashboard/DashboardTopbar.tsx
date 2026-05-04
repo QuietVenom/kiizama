@@ -8,8 +8,10 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useTranslation } from "react-i18next"
 import { FiBell, FiCalendar } from "react-icons/fi"
 
+import LanguageSwitcher from "@/components/Common/LanguageSwitcher"
 import {
   billingNoticesQueryKey,
   billingSummaryQueryKey,
@@ -17,17 +19,19 @@ import {
   markBillingNoticeRead,
   readBillingNotices,
 } from "@/features/billing/api"
+import { formatDate } from "@/i18n"
 import { MenuContent, MenuRoot, MenuTrigger } from "../ui/menu"
 
-const formatToday = () =>
-  new Intl.DateTimeFormat("es-MX", {
+const formatToday = (language?: string) =>
+  formatDate(new Date(), language, {
     day: "2-digit",
     month: "long",
     year: "numeric",
     timeZone: "America/Mexico_City",
-  }).format(new Date())
+  })
 
 const DashboardTopbar = () => {
+  const { i18n, t } = useTranslation("common")
   const queryClient = useQueryClient()
   const { data } = useQuery({
     queryKey: billingNoticesQueryKey,
@@ -72,11 +76,12 @@ const DashboardTopbar = () => {
       zIndex={5}
     >
       <Flex alignItems="center" gap={3}>
+        <LanguageSwitcher variant="dashboard" />
         <MenuRoot>
           <MenuTrigger asChild>
             <Box position="relative">
               <IconButton
-                aria-label="Billing notices"
+                aria-label={t("billingNotices.trigger")}
                 variant="outline"
                 rounded="2xl"
               >
@@ -100,9 +105,9 @@ const DashboardTopbar = () => {
           <MenuContent minW="24rem" p={2}>
             {notices.length === 0 ? (
               <Box px={3} py={4}>
-                <Text fontWeight="bold">No billing notices</Text>
+                <Text fontWeight="bold">{t("billingNotices.emptyTitle")}</Text>
                 <Text mt={1} color="ui.secondaryText" fontSize="sm">
-                  Upcoming renewals and trial reminders will appear here.
+                  {t("billingNotices.emptyDescription")}
                 </Text>
               </Box>
             ) : (
@@ -133,7 +138,7 @@ const DashboardTopbar = () => {
                         loading={readMutation.isPending}
                         onClick={() => readMutation.mutate(notice.id)}
                       >
-                        Mark as read
+                        {t("actions.markAsRead")}
                       </Button>
                     ) : null}
                     <Button
@@ -142,7 +147,7 @@ const DashboardTopbar = () => {
                       loading={dismissMutation.isPending}
                       onClick={() => dismissMutation.mutate(notice.id)}
                     >
-                      Dismiss
+                      {t("actions.dismiss")}
                     </Button>
                   </Flex>
                 </Box>
@@ -159,10 +164,10 @@ const DashboardTopbar = () => {
               letterSpacing="0.2em"
               textTransform="uppercase"
             >
-              Today
+              {t("labels.today")}
             </Text>
             <Text fontSize={{ base: "sm", lg: "md" }} fontWeight="bold">
-              {formatToday()}
+              {formatToday(i18n.resolvedLanguage ?? i18n.language)}
             </Text>
           </Box>
           <Box

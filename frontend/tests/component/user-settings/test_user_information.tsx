@@ -80,12 +80,15 @@ describe("user information settings", () => {
     renderWithProviders(<UserInformation />)
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Edit" }))
-    await user.clear(screen.getByLabelText("Full name"))
-    await user.type(screen.getByLabelText("Full name"), "Changed User")
-    await user.clear(screen.getByLabelText("Email"))
-    await user.type(screen.getByLabelText("Email"), "changed@example.com")
-    await user.click(screen.getByRole("button", { name: "Cancel" }))
+    await user.click(screen.getByRole("button", { name: "Editar" }))
+    await user.clear(screen.getByLabelText("Nombre completo"))
+    await user.type(screen.getByLabelText("Nombre completo"), "Changed User")
+    await user.clear(screen.getByLabelText("Correo electrónico"))
+    await user.type(
+      screen.getByLabelText("Correo electrónico"),
+      "changed@example.com",
+    )
+    await user.click(screen.getByRole("button", { name: "Cancelar" }))
 
     // Assert
     expect(screen.getByText("Test User")).toBeVisible()
@@ -99,13 +102,13 @@ describe("user information settings", () => {
     renderWithProviders(<UserInformation />)
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Edit" }))
-    await user.clear(screen.getByLabelText("Email"))
-    await user.type(screen.getByLabelText("Email"), "bad-email")
-    await user.click(screen.getByRole("button", { name: "Save" }))
+    await user.click(screen.getByRole("button", { name: "Editar" }))
+    await user.clear(screen.getByLabelText("Correo electrónico"))
+    await user.type(screen.getByLabelText("Correo electrónico"), "bad-email")
+    await user.click(screen.getByRole("button", { name: "Guardar" }))
 
     // Assert
-    expect(await screen.findByText("Invalid email address")).toBeVisible()
+    expect(await screen.findByText("Correo electrónico inválido")).toBeVisible()
     expect(updateUserMe).not.toHaveBeenCalled()
   })
 
@@ -130,12 +133,15 @@ describe("user information settings", () => {
     renderWithProviders(<UserInformation />)
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Edit" }))
-    await user.clear(screen.getByLabelText("Full name"))
-    await user.type(screen.getByLabelText("Full name"), "Updated User")
-    await user.clear(screen.getByLabelText("Email"))
-    await user.type(screen.getByLabelText("Email"), "updated@example.com")
-    await user.click(screen.getByRole("button", { name: "Save" }))
+    await user.click(screen.getByRole("button", { name: "Editar" }))
+    await user.clear(screen.getByLabelText("Nombre completo"))
+    await user.type(screen.getByLabelText("Nombre completo"), "Updated User")
+    await user.clear(screen.getByLabelText("Correo electrónico"))
+    await user.type(
+      screen.getByLabelText("Correo electrónico"),
+      "updated@example.com",
+    )
+    await user.click(screen.getByRole("button", { name: "Guardar" }))
 
     // Assert
     await waitFor(() => {
@@ -147,7 +153,7 @@ describe("user information settings", () => {
       })
     })
     expect(toast.showSuccessToast).toHaveBeenCalledWith(
-      "User updated successfully.",
+      "La información del usuario se actualizó correctamente.",
     )
     expect(await screen.findByText("Updated User")).toBeVisible()
     expect(screen.getByText("updated@example.com")).toBeVisible()
@@ -162,12 +168,18 @@ describe("user information settings", () => {
     renderWithProviders(<UserInformation />)
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Edit" }))
-    await user.clear(screen.getByLabelText("Full name"))
-    await user.type(screen.getByLabelText("Full name"), "Test User Edited")
-    await user.clear(screen.getByLabelText("Email"))
-    await user.type(screen.getByLabelText("Email"), "taken@example.com")
-    const saveButton = screen.getByRole("button", { name: "Save" })
+    await user.click(screen.getByRole("button", { name: "Editar" }))
+    await user.clear(screen.getByLabelText("Nombre completo"))
+    await user.type(
+      screen.getByLabelText("Nombre completo"),
+      "Test User Edited",
+    )
+    await user.clear(screen.getByLabelText("Correo electrónico"))
+    await user.type(
+      screen.getByLabelText("Correo electrónico"),
+      "taken@example.com",
+    )
+    const saveButton = screen.getByRole("button", { name: "Guardar" })
     await waitFor(() => {
       expect(saveButton).toBeEnabled()
     })

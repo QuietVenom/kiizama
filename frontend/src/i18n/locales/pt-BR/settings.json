@@ -1,0 +1,39 @@
+{
+  "userInformation": {
+    "title": "Meu perfil",
+    "fullNameLabel": "Nome completo",
+    "emailLabel": "E-mail",
+    "notAvailable": "N/D",
+    "successToast": "As informações do usuário foram atualizadas com sucesso.",
+    "validation": {
+      "emailRequired": "O e-mail é obrigatório",
+      "invalidEmail": "Endereço de e-mail inválido"
+    },
+    "actions": {
+      "save": "Salvar",
+      "edit": "Editar",
+      "cancel": "Cancelar"
+    }
+  },
+  "changePassword": {
+    "title": "Senha",
+    "currentPasswordPlaceholder": "Senha atual",
+    "save": "Salvar",
+    "successToast": "A senha foi atualizada com sucesso."
+  },
+  "deleteAccount": {
+    "title": "Zona de perigo",
+    "description": "Excluir sua conta é permanente e não pode ser desfeito.",
+    "dialog": {
+      "trigger": "Excluir conta",
+      "title": "Excluir conta",
+      "descriptionPrefix": "Esta ação excluirá permanentemente sua conta e todo o acesso associado. Digite",
+      "descriptionHighlight": "Excluir conta",
+      "descriptionSuffix": "para confirmar a ação e depois clique em",
+      "confirm": "Excluir conta",
+      "descriptionFinal": "para continuar.",
+      "cancel": "Cancelar",
+      "successToast": "A conta foi excluída com sucesso."
+    }
+  }
+}

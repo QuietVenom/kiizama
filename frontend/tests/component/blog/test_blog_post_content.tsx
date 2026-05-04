@@ -25,6 +25,10 @@ describe("blog post content", () => {
     )
     expect(screen.getByText("First item")).toBeVisible()
     expect(screen.getByText("Second item")).toBeVisible()
+    expect(
+      getComputedStyle(screen.getByText("First item").closest("ul") as Element)
+        .listStyleType,
+    ).toBe("disc")
     expect(screen.getByText("const value = true")).toBeVisible()
   })
 

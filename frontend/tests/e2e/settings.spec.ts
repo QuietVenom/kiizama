@@ -9,12 +9,12 @@ const themeStorageKey = "theme"
 
 const openAppearanceTab = async (page: Page) => {
   await page.goto("/settings")
-  await page.getByRole("tab", { name: "Appearance" }).click()
+  await page.getByRole("tab", { name: "Apariencia" }).click()
 }
 
 const clickAppearanceMode = async (
   page: Page,
-  label: "System" | "Light Mode" | "Dark Mode",
+  label: "Sistema" | "Modo claro" | "Modo oscuro",
 ) => {
   await page
     .locator("label")
@@ -47,18 +47,22 @@ test.describe("settings profile persistence", () => {
     await logInUser(page, email, password)
 
     await page.goto("/settings")
-    await page.getByRole("button", { name: "Edit" }).click()
-    await page.getByLabel("Full name").fill(updatedName)
-    await page.getByLabel("Email").fill(updatedEmail)
-    await page.getByRole("button", { name: "Save" }).click()
+    await page.getByRole("button", { name: "Editar" }).click()
+    await page.getByLabel("Nombre completo").fill(updatedName)
+    await page.getByLabel("Correo electrónico").fill(updatedEmail)
+    await page.getByRole("button", { name: "Guardar" }).click()
 
-    await expect(page.getByText(/User updated successfully\.?/)).toBeVisible()
+    await expect(
+      page.getByText(
+        /La información del usuario se actualizó correctamente\.?/,
+      ),
+    ).toBeVisible()
     await page.reload()
     await expect(
-      page.getByLabel("My profile").getByText(updatedName, { exact: true }),
+      page.getByLabel("Mi perfil").getByText(updatedName, { exact: true }),
     ).toBeVisible()
     await expect(
-      page.getByLabel("My profile").getByText(updatedEmail, { exact: true }),
+      page.getByLabel("Mi perfil").getByText(updatedEmail, { exact: true }),
     ).toBeVisible()
   })
 })
@@ -77,13 +81,15 @@ test.describe("settings password persistence", () => {
     await logInUser(page, email, password)
 
     await page.goto("/settings")
-    await page.getByRole("tab", { name: "Password" }).click()
-    await page.getByPlaceholder("Current Password").fill(password)
-    await page.getByPlaceholder("New Password").fill(newPassword)
-    await page.getByPlaceholder("Confirm Password").fill(newPassword)
-    await page.getByRole("button", { name: "Save" }).click()
+    await page.getByRole("tab", { name: "Contraseña" }).click()
+    await page.getByPlaceholder("Contraseña actual").fill(password)
+    await page.getByPlaceholder("Nueva contraseña").fill(newPassword)
+    await page.getByPlaceholder("Confirmar contraseña").fill(newPassword)
+    await page.getByRole("button", { name: "Guardar" }).click()
 
-    await expect(page.getByText("Password updated successfully.")).toBeVisible()
+    await expect(
+      page.getByText("La contraseña se actualizó correctamente."),
+    ).toBeVisible()
     await logOutUser(page)
     await logInUser(page, email, newPassword)
   })
@@ -95,7 +101,7 @@ test("settings_theme_system_mode_persists_and_follows_browser_preference", async
   await page.emulateMedia({ colorScheme: "dark" })
   await openAppearanceTab(page)
 
-  await clickAppearanceMode(page, "System")
+  await clickAppearanceMode(page, "Sistema")
   await expect.poll(async () => getDocumentThemeClass(page)).toBe("dark")
   await expect
     .poll(async () =>

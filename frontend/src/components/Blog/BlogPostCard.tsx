@@ -8,6 +8,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Link } from "@tanstack/react-router"
+import { useTranslation } from "react-i18next"
 import { formatBlogPublishedAt } from "@/features/blog/format"
 import type { BlogPost } from "@/features/blog/types"
 
@@ -16,6 +17,8 @@ type BlogPostCardProps = {
 }
 
 const BlogPostCard = ({ post }: BlogPostCardProps) => {
+  const { i18n, t } = useTranslation("landing")
+
   return (
     <Box
       layerStyle="landingCard"
@@ -40,11 +43,14 @@ const BlogPostCard = ({ post }: BlogPostCardProps) => {
               fontSize={{ base: "sm", md: "md" }}
               fontWeight="medium"
             >
-              {formatBlogPublishedAt(post.publishedAt)}
+              {formatBlogPublishedAt(
+                post.publishedAt,
+                i18n.resolvedLanguage ?? i18n.language,
+              )}
             </Text>
 
             <Text color="ui.secondaryText" fontSize="sm">
-              {post.readingTime} min read
+              {t("blog.readingTime", { count: post.readingTime })}
             </Text>
           </HStack>
 
@@ -92,7 +98,7 @@ const BlogPostCard = ({ post }: BlogPostCardProps) => {
           borderColor="ui.borderSoft"
           _hover={{ color: "ui.text", borderColor: "ui.brandBorderSoft" }}
         >
-          Read More
+          {t("blog.readMore")}
         </Button>
       </Link>
     </Box>

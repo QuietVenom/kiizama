@@ -1,6 +1,7 @@
 import { Box, Button, Container, Heading, VStack } from "@chakra-ui/react"
 import { useMutation } from "@tanstack/react-query"
 import { type SubmitHandler, useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { FiLock } from "react-icons/fi"
 
 import { type ApiError, type UpdatePassword, UsersService } from "@/client"
@@ -19,6 +20,7 @@ interface UpdatePasswordForm extends UpdatePassword {
 }
 
 const ChangePassword = () => {
+  const { t } = useTranslation(["settings", "auth"])
   const { showSuccessToast } = useCustomToast()
   const {
     register,
@@ -36,7 +38,7 @@ const ChangePassword = () => {
     mutationFn: (data: UpdatePassword) =>
       UsersService.updatePasswordMe({ requestBody: data }),
     onSuccess: () => {
-      showSuccessToast("Password updated successfully.")
+      showSuccessToast(t("settings:changePassword.successToast"))
       reset()
     },
     onError: (err: ApiError) => {
@@ -52,30 +54,53 @@ const ChangePassword = () => {
   return (
     <Container maxW="full">
       <Heading size="sm" py={4}>
-        Change Password
+        {t("settings:changePassword.title")}
       </Heading>
       <Box as="form" onSubmit={handleSubmit(onSubmit)}>
         <VStack gap={4} w={{ base: "100%", md: "sm" }}>
           <PasswordInput
             type="current_password"
             startElement={<FiLock />}
-            {...register("current_password", passwordRules())}
-            placeholder="Current Password"
+            {...register(
+              "current_password",
+              passwordRules(true, {
+                minLength: t("auth:validation.passwordMinLength"),
+                required: t("auth:validation.passwordRequired"),
+              }),
+            )}
+            placeholder={t(
+              "settings:changePassword.currentPasswordPlaceholder",
+            )}
             errors={errors}
           />
           <PasswordInput
             type="new_password"
             startElement={<FiLock />}
-            {...register("new_password", newPasswordRules())}
-            placeholder="New Password"
+            {...register(
+              "new_password",
+              newPasswordRules(true, {
+                required: t("auth:validation.passwordRequired"),
+                length: t("auth:validation.passwordLength"),
+                uppercase: t("auth:validation.passwordUppercase"),
+                number: t("auth:validation.passwordNumber"),
+                special: t("auth:validation.passwordSpecial"),
+              }),
+            )}
+            placeholder={t("auth:password.newPlaceholder")}
             errors={errors}
             helperText={<PasswordRequirements password={newPasswordValue} />}
           />
           <PasswordInput
             type="confirm_password"
             startElement={<FiLock />}
-            {...register("confirm_password", confirmPasswordRules(getValues))}
-            placeholder="Confirm Password"
+            {...register(
+              "confirm_password",
+              confirmPasswordRules(getValues, true, {
+                mismatch: t("auth:validation.passwordMismatch"),
+                required: t("auth:validation.passwordConfirmationRequired"),
+              }),
+            )}
+            placeholder={t("auth:password.confirmPlaceholder")}
             errors={errors}
           />
         </VStack>
@@ -85,7 +110,7 @@ const ChangePassword = () => {
           type="submit"
           loading={isSubmitting}
         >
-          Save
+          {t("settings:changePassword.save")}
         </Button>
       </Box>
     </Container>

@@ -53,11 +53,11 @@ describe("creator snapshot card", () => {
     // Assert
     expect(screen.getByText("Creator One")).toBeVisible()
     expect(screen.getByText("@creator_one")).toBeVisible()
-    expect(screen.getByText("Verified")).toBeVisible()
-    expect(screen.getByText("Private")).toBeVisible()
+    expect(screen.getByText("Verificado")).toBeVisible()
+    expect(screen.getByText("Privado")).toBeVisible()
     expect(screen.getByText("Fitness")).toBeVisible()
     expect(screen.getByText("Coach")).toBeVisible()
-    expect(screen.getByText("12.5K")).toBeVisible()
+    expect(screen.getByText("12,5 mil")).toBeVisible()
     expect(screen.getByText("250")).toBeVisible()
     expect(screen.getByText("88")).toBeVisible()
   })
@@ -99,8 +99,8 @@ describe("creator snapshot card", () => {
     )
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Report" }))
-    await user.click(screen.getByRole("button", { name: "View detail" }))
+    await user.click(screen.getByRole("button", { name: "Reporte" }))
+    await user.click(screen.getByRole("button", { name: "Ver detalle" }))
 
     // Assert
     expect(onGenerateReport).toHaveBeenCalled()

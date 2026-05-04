@@ -19,6 +19,7 @@ import {
   type UseFormReturn,
   useWatch,
 } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { FiAlertCircle, FiFileText, FiSearch } from "react-icons/fi"
 
 import UsernameTagsInput from "@/components/CreatorsSearch/UsernameTagsInput"
@@ -32,15 +33,20 @@ import {
   generateBrandIntelligenceReport,
 } from "@/features/brand-intelligence/api"
 import {
-  AUDIENCE_OPTIONS,
-  BRAND_GOALS_TYPE_OPTIONS,
-  CAMPAIGN_TYPE_OPTIONS,
-  TIMEFRAME_OPTIONS,
+  type AUDIENCE_OPTIONS,
+  type BRAND_GOALS_TYPE_OPTIONS,
+  type CAMPAIGN_TYPE_OPTIONS,
+  getAudienceLabel,
+  getAudienceOptions,
+  getBrandGoalTypeLabel,
+  getBrandGoalTypeOptions,
+  getCampaignTypeContent,
+  getCampaignTypeOptions,
+  getTimeframeLabel,
+  getTimeframeOptions,
+  type TIMEFRAME_OPTIONS,
 } from "@/features/brand-intelligence/catalogs"
-import {
-  BRAND_INTELLIGENCE_LIMITS,
-  CAMPAIGN_FIELD_HELP,
-} from "@/features/brand-intelligence/form-config"
+import { BRAND_INTELLIGENCE_LIMITS } from "@/features/brand-intelligence/form-config"
 import {
   buildCampaignStrategyPayload,
   type CampaignFormValues,
@@ -117,10 +123,17 @@ const CampaignTypePreview = ({
 }: {
   control: Control<CampaignFormValues>
 }) => {
+  const { t } = useTranslation("brandIntelligence")
   const campaignType = useWatch({ control, name: "campaign_type" })
   const selectedCampaignType = useMemo(
-    () => CAMPAIGN_TYPE_OPTIONS.find((option) => option.name === campaignType),
-    [campaignType],
+    () =>
+      campaignType
+        ? getCampaignTypeContent(
+            t,
+            campaignType as (typeof CAMPAIGN_TYPE_OPTIONS)[number]["name"],
+          )
+        : null,
+    [campaignType, t],
   )
 
   if (!selectedCampaignType) {
@@ -141,7 +154,7 @@ const CampaignTypePreview = ({
         {selectedCampaignType.title}
       </Text>
       <Text mt={1.5} color="ui.secondaryText">
-        {selectedCampaignType.value}
+        {selectedCampaignType.description}
       </Text>
     </Box>
   )
@@ -158,6 +171,7 @@ const CampaignStrategySummary = ({
   isNotUsingCreators: boolean
   normalizedProfiles: string[]
 }) => {
+  const { t } = useTranslation("brandIntelligence")
   const [
     audience,
     brandContext,
@@ -186,59 +200,89 @@ const CampaignStrategySummary = ({
     [brandUrls],
   )
   const selectedCampaignType = useMemo(
-    () => CAMPAIGN_TYPE_OPTIONS.find((option) => option.name === campaignType),
-    [campaignType],
+    () =>
+      campaignType
+        ? getCampaignTypeContent(
+            t,
+            campaignType as (typeof CAMPAIGN_TYPE_OPTIONS)[number]["name"],
+          )
+        : null,
+    [campaignType, t],
   )
 
   const summarySections = [
     {
-      title: "Creators gate",
+      title: t("summary.sections.creatorsGate"),
       items: [
         {
-          label: "Creator usage",
+          label: t("summary.items.creatorUsage"),
           value: isNotUsingCreators
-            ? "Not using creators for this campaign."
+            ? t("summary.values.notUsingCreators")
             : undefined,
         },
         {
-          label: "Creator usernames",
+          label: t("summary.items.creatorUsernames"),
           value: isNotUsingCreators ? [] : normalizedProfiles,
         },
         {
-          label: "Expired profiles",
+          label: t("summary.items.expiredProfiles"),
           value: isNotUsingCreators ? [] : expiredUsernames,
         },
       ],
     },
     {
-      title: "Brand brief",
+      title: t("summary.sections.brandBrief"),
       items: [
-        { label: "Brand name", value: brandName },
-        { label: "Brand context", value: brandContext },
-        { label: "Brand URLs", value: normalizedBrandUrls },
-        { label: "Brand goal", value: brandGoalsType },
-        { label: "Goal context", value: brandGoalsContext },
+        { label: t("summary.items.brandName"), value: brandName },
+        { label: t("summary.items.brandContext"), value: brandContext },
+        { label: t("summary.items.brandUrls"), value: normalizedBrandUrls },
+        {
+          label: t("summary.items.brandGoal"),
+          value: brandGoalsType
+            ? getBrandGoalTypeLabel(
+                t,
+                brandGoalsType as (typeof BRAND_GOALS_TYPE_OPTIONS)[number],
+              )
+            : undefined,
+        },
+        { label: t("summary.items.goalContext"), value: brandGoalsContext },
       ],
     },
     {
-      title: "Campaign setup",
+      title: t("summary.sections.campaignSetup"),
       items: [
-        { label: "Audience", value: audience ?? [] },
-        { label: "Timeframe", value: timeframe },
         {
-          label: "Campaign type",
-          value: selectedCampaignType?.title ?? campaignType,
+          label: t("summary.items.audience"),
+          value: (audience ?? []).map((value) =>
+            getAudienceLabel(t, value as (typeof AUDIENCE_OPTIONS)[number]),
+          ),
         },
         {
-          label: "Campaign type context",
-          value: selectedCampaignType?.value,
+          label: t("summary.items.timeframe"),
+          value: timeframe
+            ? getTimeframeLabel(
+                t,
+                timeframe as (typeof TIMEFRAME_OPTIONS)[number],
+              )
+            : undefined,
+        },
+        {
+          label: t("summary.items.campaignType"),
+          value: selectedCampaignType?.title,
+        },
+        {
+          label: t("summary.items.campaignTypeContext"),
+          value: selectedCampaignType?.description,
         },
       ],
     },
   ]
 
   return (
-    <StrategySummaryCard title="Campaign Strategy" sections={summarySections} />
+    <StrategySummaryCard
+      title={t("summary.campaignTitle")}
+      sections={summarySections}
+    />
   )
 }
 
@@ -263,6 +307,7 @@ const CampaignSubmitPanel = ({
   orderedProfilesCount: number
   reportIsPending: boolean
 }) => {
+  const { t } = useTranslation("brandIntelligence")
   const [
     audience,
     brandContext,
@@ -305,20 +350,20 @@ const CampaignSubmitPanel = ({
 
   const submitDisabledReason =
     !isNotUsingCreators && normalizedProfiles.length === 0
-      ? "Add at least 1 creator username to unlock the workflow."
+      ? t("campaign.submitDisabledReason.missingUsernames")
       : !isNotUsingCreators && invalidUsernames.length > 0
-        ? "Fix invalid usernames before continuing."
+        ? t("campaign.submitDisabledReason.invalidUsernames")
         : hasInvalidBrandUrls
-          ? "Use valid http or https URLs."
+          ? t("campaign.submitDisabledReason.invalidUrls")
           : !hasRequiredFields
-            ? "Complete the required fields to enable report generation."
+            ? t("campaign.submitDisabledReason.requiredFields")
             : !isNotUsingCreators && isValidationPending
-              ? "Profile validation is still running."
+              ? t("campaign.submitDisabledReason.validationPending")
               : !isNotUsingCreators &&
                   (isValidationStale || orderedProfilesCount === 0)
-                ? "Validate profiles before generating the report."
+                ? t("campaign.submitDisabledReason.validationRequired")
                 : !isNotUsingCreators && missingUsernames.length > 0
-                  ? "consulte los perfiles validados y vuelva a intentar"
+                  ? t("campaign.submitDisabledReason.missingProfiles")
                   : null
 
   return (
@@ -335,11 +380,10 @@ const CampaignSubmitPanel = ({
       >
         <Box maxW="58ch">
           <Text fontSize="lg" fontWeight="black">
-            Generate campaign strategy PDF
+            {t("campaign.submitPanel.title")}
           </Text>
           <Text mt={2} color="ui.secondaryText">
-            The downloaded PDF is also saved into local storage for the
-            dashboard.
+            {t("campaign.submitPanel.description")}
           </Text>
           {submitDisabledReason ? (
             <Text mt={3} color="ui.mutedText" fontSize="sm">
@@ -356,7 +400,7 @@ const CampaignSubmitPanel = ({
           alignSelf={{ base: "stretch", lg: "center" }}
         >
           <FiFileText />
-          Generate PDF report
+          {t("campaign.submitPanel.button")}
         </Button>
       </Flex>
     </Box>
@@ -368,6 +412,7 @@ const CampaignStrategyBuilder = ({
   normalizedProfiles,
   validation,
 }: CampaignStrategyBuilderProps) => {
+  const { t } = useTranslation("brandIntelligence")
   const queryClient = useQueryClient()
   const { showErrorToast, showSuccessToast } = useCustomToast()
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -433,6 +478,10 @@ const CampaignStrategyBuilder = ({
     normalizedProfiles.length > 0 &&
     invalidUsernames.length === 0 &&
     !isValidationPending
+  const brandGoalOptions = useMemo(() => getBrandGoalTypeOptions(t), [t])
+  const timeframeOptions = useMemo(() => getTimeframeOptions(t), [t])
+  const campaignTypeOptions = useMemo(() => getCampaignTypeOptions(t), [t])
+  const audienceOptions = useMemo(() => getAudienceOptions(t), [t])
 
   const handleValidateProfiles = async () => {
     if (isNotUsingCreators) return
@@ -464,7 +513,7 @@ const CampaignStrategyBuilder = ({
           .map((profile) => profile.username)
 
         if (missingProfiles.length > 0) {
-          throw new Error("consulte los perfiles validados y vuelva a intentar")
+          throw new Error(t("campaign.submitDisabledReason.missingProfiles"))
         }
       }
 
@@ -481,7 +530,7 @@ const CampaignStrategyBuilder = ({
     onSuccess: async ({ blob, filename }) => {
       invalidateBillingSummary(queryClient)
       downloadBlob(blob, filename)
-      setSubmitSuccess(`Report ready: ${filename}`)
+      setSubmitSuccess(t("campaign.success.reportReady", { filename }))
 
       try {
         await saveLocalReport({
@@ -490,16 +539,17 @@ const CampaignStrategyBuilder = ({
           reportType: "reputation-campaign-strategy",
           source: "brand-intelligence",
         })
-        showSuccessToast("Campaign strategy PDF downloaded and saved locally.")
+        showSuccessToast(t("campaign.success.downloadedAndSaved"))
       } catch {
-        showErrorToast(
-          "Campaign strategy PDF downloaded, but it could not be saved locally.",
-        )
+        showErrorToast(t("campaign.success.downloadedOnly"))
       }
     },
     onError: (error) => {
       setSubmitError(
-        extractApiErrorMessage(error, "Unable to generate the report."),
+        extractApiErrorMessage(
+          error,
+          t("campaign.errors.reportFailedFallback"),
+        ),
       )
     },
   })
@@ -523,32 +573,32 @@ const CampaignStrategyBuilder = ({
     >
       <Flex direction="column" gap={6} minW={0}>
         <StrategySection
-          eyebrow="Step 1"
-          title="Set the brand goal and creators"
-          description="Choose the brand goal first. If this is a Crisis campaign, you can explicitly decide not to use creators; otherwise, add creator usernames to unlock the rest of the campaign strategy form."
+          eyebrow={t("campaign.step1.eyebrow")}
+          title={t("campaign.step1.title")}
+          description={t("campaign.step1.description")}
         >
           <Field
             required
             invalid={!!errors.brand_goals_type}
             errorText={errors.brand_goals_type?.message}
-            label="Brand goal"
+            label={t("campaign.fields.brandGoal")}
             labelEndElement={renderFieldInfo(
-              "Brand goal",
-              CAMPAIGN_FIELD_HELP.brand_goals_type,
+              t("campaign.fields.brandGoal"),
+              t("campaign.fieldHelp.brandGoal"),
             )}
           >
             <NativeSelect.Root>
               <NativeSelect.Field
                 {...register("brand_goals_type", {
-                  required: "Select the primary brand goal.",
+                  required: t("campaign.validation.selectBrandGoal"),
                 })}
                 {...autofillIgnoreProps}
                 {...inputStyles}
               >
-                <option value="">Select a goal</option>
-                {BRAND_GOALS_TYPE_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                <option value="">{t("campaign.select.goal")}</option>
+                {brandGoalOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </NativeSelect.Field>
@@ -566,17 +616,17 @@ const CampaignStrategyBuilder = ({
                 }
 
                 if (!value || value.length === 0) {
-                  return "Add at least 1 creator username."
+                  return t("campaign.validation.addCreatorUsername")
                 }
 
                 if (value.length > BRAND_INTELLIGENCE_LIMITS.campaignProfiles) {
-                  return "You can include up to 15 creator usernames."
+                  return t("campaign.validation.creatorUsernamesLimit")
                 }
 
                 if (
                   value.some((username) => !isValidInstagramUsername(username))
                 ) {
-                  return "Use lowercase letters, numbers, periods or underscores, up to 30 characters."
+                  return t("campaign.validation.instagramUsername")
                 }
 
                 return true
@@ -587,17 +637,17 @@ const CampaignStrategyBuilder = ({
                 required={!isNotUsingCreators}
                 invalid={!!fieldState.error}
                 errorText={fieldState.error?.message}
-                label="Creator usernames"
+                label={t("campaign.fields.creatorUsernames")}
                 labelEndElement={renderFieldInfo(
-                  "Creator usernames",
-                  CAMPAIGN_FIELD_HELP.profiles_list,
+                  t("campaign.fields.creatorUsernames"),
+                  t("campaign.fieldHelp.creatorUsernames"),
                 )}
                 helperText={
                   fieldState.error
                     ? undefined
                     : isNotUsingCreators
-                      ? "Creators are disabled for this Crisis campaign while this option is active."
-                      : "Paste a list, press Enter, or separate usernames with commas."
+                      ? t("campaign.helperText.creatorsDisabled")
+                      : t("campaign.helperText.creatorUsernames")
                 }
               >
                 <UsernameTagsInput
@@ -609,7 +659,7 @@ const CampaignStrategyBuilder = ({
                   onValueChange={(nextValue) =>
                     field.onChange(normalizeUsernameList(nextValue))
                   }
-                  placeholder="creator_one, creator.two, another_creator"
+                  placeholder={t("campaign.placeholders.creatorUsernames")}
                   value={field.value}
                 />
               </Field>
@@ -620,8 +670,8 @@ const CampaignStrategyBuilder = ({
             mt={4}
             helperText={
               isCrisisGoal
-                ? "Available for Crisis campaigns. When enabled, the report will be generated without creator usernames or profile validation."
-                : "Select Brand goal = Crisis to enable this option."
+                ? t("campaign.helperText.crisisOnly")
+                : t("campaign.helperText.enableCrisisOnly")
             }
           >
             <Checkbox
@@ -631,7 +681,7 @@ const CampaignStrategyBuilder = ({
                 setNotUsingCreators(Boolean(checked))
               }
             >
-              Not using creator(s)
+              {t("campaign.fields.notUsingCreators")}
             </Checkbox>
           </Field>
 
@@ -651,7 +701,7 @@ const CampaignStrategyBuilder = ({
                   px={3}
                   py={1.5}
                 >
-                  Creators not required for Crisis
+                  {t("campaign.badges.creatorsNotRequired")}
                 </Badge>
               ) : (
                 <Badge
@@ -663,8 +713,10 @@ const CampaignStrategyBuilder = ({
                   px={3}
                   py={1.5}
                 >
-                  {normalizedProfiles.length} /{" "}
-                  {BRAND_INTELLIGENCE_LIMITS.campaignProfiles} creator usernames
+                  {t("campaign.badges.creatorUsernamesCount", {
+                    count: normalizedProfiles.length,
+                    limit: BRAND_INTELLIGENCE_LIMITS.campaignProfiles,
+                  })}
                 </Badge>
               )}
               {isWorkflowUnlocked ? (
@@ -675,7 +727,7 @@ const CampaignStrategyBuilder = ({
                   px={3}
                   py={1.5}
                 >
-                  Workflow unlocked
+                  {t("campaign.badges.workflowUnlocked")}
                 </Badge>
               ) : null}
             </HStack>
@@ -689,7 +741,7 @@ const CampaignStrategyBuilder = ({
                 loading={isValidationPending}
               >
                 <FiSearch />
-                Validate profiles
+                {t("campaign.actions.validateProfiles")}
               </Button>
             )}
           </Flex>
@@ -705,12 +757,10 @@ const CampaignStrategyBuilder = ({
                 py={5}
               >
                 <Text fontWeight="bold" color="ui.brandText">
-                  Creator validation skipped
+                  {t("campaign.skippedValidation.title")}
                 </Text>
                 <Text mt={2} color="ui.secondaryText">
-                  This Crisis campaign is set to not use creators, so creator
-                  username validation is not required and the report will be
-                  generated with an empty creators list.
+                  {t("campaign.skippedValidation.description")}
                 </Text>
               </Box>
             ) : (
@@ -726,18 +776,18 @@ const CampaignStrategyBuilder = ({
         </StrategySection>
 
         <StrategySection
-          eyebrow="Step 2"
-          title="Brand brief"
-          description="Capture the brand context and supporting inputs that will guide the strategy recommendation."
+          eyebrow={t("campaign.step2.eyebrow")}
+          title={t("campaign.step2.title")}
+          description={t("campaign.step2.description")}
         >
           <Field
             required
             invalid={!!errors.brand_name}
             errorText={errors.brand_name?.message}
-            label="Brand name"
+            label={t("campaign.fields.brandName")}
             labelEndElement={renderFieldInfo(
-              "Brand name",
-              CAMPAIGN_FIELD_HELP.brand_name,
+              t("campaign.fields.brandName"),
+              t("campaign.fieldHelp.brandName"),
             )}
             helperText={
               <CharacterCountHelper
@@ -749,17 +799,19 @@ const CampaignStrategyBuilder = ({
           >
             <Input
               {...register("brand_name", {
-                required: "Brand name is required.",
+                required: t("campaign.validation.brandNameRequired"),
                 maxLength: {
                   value: 120,
-                  message: "Use 120 characters or less.",
+                  message: t("campaign.validation.maxCharacters", {
+                    count: 120,
+                  }),
                 },
               })}
               {...autofillIgnoreProps}
               {...inputStyles}
               disabled={!isWorkflowUnlocked}
               maxLength={120}
-              placeholder="Acme Skincare"
+              placeholder={t("campaign.placeholders.brandName")}
             />
           </Field>
 
@@ -772,10 +824,10 @@ const CampaignStrategyBuilder = ({
               required
               invalid={!!errors.brand_context}
               errorText={errors.brand_context?.message}
-              label="Brand context"
+              label={t("campaign.fields.brandContext")}
               labelEndElement={renderFieldInfo(
-                "Brand context",
-                CAMPAIGN_FIELD_HELP.brand_context,
+                t("campaign.fields.brandContext"),
+                t("campaign.fieldHelp.brandContext"),
               )}
               helperText={
                 <CharacterCountHelper
@@ -787,10 +839,12 @@ const CampaignStrategyBuilder = ({
             >
               <Textarea
                 {...register("brand_context", {
-                  required: "Brand context is required.",
+                  required: t("campaign.validation.brandContextRequired"),
                   maxLength: {
                     value: 500,
-                    message: "Use 500 characters or less.",
+                    message: t("campaign.validation.maxCharacters", {
+                      count: 500,
+                    }),
                   },
                 })}
                 {...autofillIgnoreProps}
@@ -798,7 +852,7 @@ const CampaignStrategyBuilder = ({
                 disabled={!isWorkflowUnlocked}
                 maxLength={500}
                 minH="132px"
-                placeholder="Share the current business context, positioning, and what is happening around the brand."
+                placeholder={t("campaign.placeholders.brandContext")}
               />
             </Field>
 
@@ -806,10 +860,10 @@ const CampaignStrategyBuilder = ({
               required
               invalid={!!errors.brand_goals_context}
               errorText={errors.brand_goals_context?.message}
-              label="Goal context"
+              label={t("campaign.fields.goalContext")}
               labelEndElement={renderFieldInfo(
-                "Goal context",
-                CAMPAIGN_FIELD_HELP.brand_goals_context,
+                t("campaign.fields.goalContext"),
+                t("campaign.fieldHelp.goalContext"),
               )}
               helperText={
                 <CharacterCountHelper
@@ -821,10 +875,12 @@ const CampaignStrategyBuilder = ({
             >
               <Textarea
                 {...register("brand_goals_context", {
-                  required: "Goal context is required.",
+                  required: t("campaign.validation.goalContextRequired"),
                   maxLength: {
                     value: 500,
-                    message: "Use 500 characters or less.",
+                    message: t("campaign.validation.maxCharacters", {
+                      count: 500,
+                    }),
                   },
                 })}
                 {...autofillIgnoreProps}
@@ -832,7 +888,7 @@ const CampaignStrategyBuilder = ({
                 disabled={!isWorkflowUnlocked}
                 maxLength={500}
                 minH="132px"
-                placeholder="Add context for the goal so the recommendation can weigh the right tradeoffs."
+                placeholder={t("campaign.placeholders.goalContext")}
               />
             </Field>
           </Grid>
@@ -846,11 +902,11 @@ const CampaignStrategyBuilder = ({
                   if (
                     (value ?? []).length > BRAND_INTELLIGENCE_LIMITS.brandUrls
                   ) {
-                    return "Add up to 3 brand URLs."
+                    return t("campaign.validation.brandUrlsLimit")
                   }
 
                   if ((value ?? []).some((url) => !isValidHttpUrl(url))) {
-                    return "Use valid http or https URLs."
+                    return t("campaign.submitDisabledReason.invalidUrls")
                   }
 
                   return true
@@ -868,15 +924,15 @@ const CampaignStrategyBuilder = ({
                   <Field
                     invalid={!!fieldState.error}
                     errorText={fieldState.error?.message}
-                    label="Brand URLs"
+                    label={t("campaign.fields.brandUrls")}
                     labelEndElement={renderFieldInfo(
-                      "Brand URLs",
-                      CAMPAIGN_FIELD_HELP.brand_urls,
+                      t("campaign.fields.brandUrls"),
+                      t("campaign.fieldHelp.brandUrls"),
                     )}
                     helperText={
                       fieldState.error
                         ? undefined
-                        : "Optional. Add up to 3 relevant URLs for the brand."
+                        : t("campaign.helperText.brandUrls")
                     }
                   >
                     <TagsInputField
@@ -889,7 +945,7 @@ const CampaignStrategyBuilder = ({
                       onValueChange={(nextValue) =>
                         field.onChange(normalizeListValues(nextValue))
                       }
-                      placeholder="https://brand.com, https://instagram.com/brand"
+                      placeholder={t("campaign.placeholders.brandUrls")}
                       value={field.value ?? []}
                     />
                   </Field>
@@ -900,33 +956,33 @@ const CampaignStrategyBuilder = ({
         </StrategySection>
 
         <StrategySection
-          eyebrow="Step 3"
-          title="Campaign strategy setup"
-          description="Choose the audience, timeframe, and campaign model that best match the report you want to generate."
+          eyebrow={t("campaign.step3.eyebrow")}
+          title={t("campaign.step3.title")}
+          description={t("campaign.step3.description")}
         >
           <Grid templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} gap={4}>
             <Field
               required
               invalid={!!errors.timeframe}
               errorText={errors.timeframe?.message}
-              label="Timeframe"
+              label={t("campaign.fields.timeframe")}
               labelEndElement={renderFieldInfo(
-                "Timeframe",
-                CAMPAIGN_FIELD_HELP.timeframe,
+                t("campaign.fields.timeframe"),
+                t("campaign.fieldHelp.timeframe"),
               )}
             >
               <NativeSelect.Root disabled={!isWorkflowUnlocked}>
                 <NativeSelect.Field
                   {...register("timeframe", {
-                    required: "Select the timeframe.",
+                    required: t("campaign.validation.selectTimeframe"),
                   })}
                   {...autofillIgnoreProps}
                   {...inputStyles}
                 >
-                  <option value="">Select a timeframe</option>
-                  {TIMEFRAME_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
+                  <option value="">{t("campaign.select.timeframe")}</option>
+                  {timeframeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
                     </option>
                   ))}
                 </NativeSelect.Field>
@@ -938,24 +994,24 @@ const CampaignStrategyBuilder = ({
               required
               invalid={!!errors.campaign_type}
               errorText={errors.campaign_type?.message}
-              label="Campaign type"
+              label={t("campaign.fields.campaignType")}
               labelEndElement={renderFieldInfo(
-                "Campaign type",
-                CAMPAIGN_FIELD_HELP.campaign_type,
+                t("campaign.fields.campaignType"),
+                t("campaign.fieldHelp.campaignType"),
               )}
             >
               <NativeSelect.Root disabled={!isWorkflowUnlocked}>
                 <NativeSelect.Field
                   {...register("campaign_type", {
-                    required: "Select the campaign type.",
+                    required: t("campaign.validation.selectCampaignType"),
                   })}
                   {...autofillIgnoreProps}
                   {...inputStyles}
                 >
-                  <option value="">Select a campaign model</option>
-                  {CAMPAIGN_TYPE_OPTIONS.map((option) => (
-                    <option key={option.name} value={option.name}>
-                      {option.title}
+                  <option value="">{t("campaign.select.campaignModel")}</option>
+                  {campaignTypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
                     </option>
                   ))}
                 </NativeSelect.Field>
@@ -973,11 +1029,11 @@ const CampaignStrategyBuilder = ({
               rules={{
                 validate: (value) => {
                   if (!value || value.length === 0) {
-                    return "Select at least 1 audience."
+                    return t("campaign.validation.selectAudience")
                   }
 
                   if (value.length > BRAND_INTELLIGENCE_LIMITS.audience) {
-                    return "Select up to 5 audiences."
+                    return t("campaign.validation.audienceLimit")
                   }
 
                   return true
@@ -988,25 +1044,22 @@ const CampaignStrategyBuilder = ({
                   required
                   invalid={!!fieldState.error}
                   errorText={fieldState.error?.message}
-                  label="Audience"
+                  label={t("campaign.fields.audience")}
                   labelEndElement={renderFieldInfo(
-                    "Audience",
-                    CAMPAIGN_FIELD_HELP.audience,
+                    t("campaign.fields.audience"),
+                    t("campaign.fieldHelp.audience"),
                   )}
                   helperText={
                     fieldState.error
                       ? undefined
-                      : "Select up to 5 audience segments."
+                      : t("campaign.helperText.audience")
                   }
                 >
                   <MultiSelectOptionGroup
                     disabled={!isWorkflowUnlocked}
                     maxSelections={BRAND_INTELLIGENCE_LIMITS.audience}
                     onChange={field.onChange}
-                    options={AUDIENCE_OPTIONS.map((option) => ({
-                      label: option,
-                      value: option,
-                    }))}
+                    options={audienceOptions}
                     value={field.value ?? []}
                   />
                 </Field>
@@ -1028,7 +1081,7 @@ const CampaignStrategyBuilder = ({
               <FiAlertCircle color="var(--chakra-colors-ui-dangerText)" />
               <Box>
                 <Text color="ui.dangerText" fontWeight="black">
-                  Report generation failed
+                  {t("campaign.errors.reportFailedTitle")}
                 </Text>
                 <Text mt={1} color="ui.secondaryText">
                   {submitError}
@@ -1048,7 +1101,7 @@ const CampaignStrategyBuilder = ({
             py={{ base: 4, md: 5 }}
           >
             <Text color="ui.brandText" fontWeight="black">
-              Campaign report generated
+              {t("campaign.success.statusTitle")}
             </Text>
             <Text mt={1} color="ui.secondaryText">
               {submitSuccess}
