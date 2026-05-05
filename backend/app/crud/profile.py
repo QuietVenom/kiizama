@@ -3,11 +3,12 @@ from datetime import UTC, datetime
 from typing import Any, cast
 
 from fastapi import HTTPException
+from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
 from app.models import IgProfile
-from app.schemas import Profile, UpdateProfile
+from app.schemas import Profile, ProfileSearchFilters, UpdateProfile
 
 Document = dict[str, Any]
 
@@ -111,6 +112,103 @@ def list_profiles(collection: Any, skip: int = 0, limit: int = 100) -> list[Docu
     updated_at = cast(Any, IgProfile.updated_at)
     statement = select(IgProfile).order_by(updated_at.desc()).offset(skip).limit(limit)
     return [_serialize_profile(record) for record in session.exec(statement).all()]
+
+
+def _apply_profile_search_filters(
+    statement: Any,
+    filters: ProfileSearchFilters,
+) -> Any:
+    conditions: list[Any] = []
+
+    if filters.query:
+        query_pattern = f"%{filters.query.lower()}%"
+        username_column = cast(Any, IgProfile.username)
+        full_name_column = cast(Any, IgProfile.full_name)
+        biography_column = cast(Any, IgProfile.biography)
+        conditions.append(
+            or_(
+                func.lower(username_column).like(query_pattern),
+                func.lower(func.coalesce(full_name_column, "")).like(query_pattern),
+                func.lower(func.coalesce(biography_column, "")).like(query_pattern),
+            )
+        )
+
+    ai_categories_column = cast(Any, IgProfile.ai_categories)
+    if filters.ai_categories:
+        category_conditions = [
+            ai_categories_column.contains([category])
+            for category in filters.ai_categories
+        ]
+        conditions.append(or_(*category_conditions))
+
+    ai_roles_column = cast(Any, IgProfile.ai_roles)
+    if filters.ai_roles:
+        role_conditions = [
+            ai_roles_column.contains([role]) for role in filters.ai_roles
+        ]
+        conditions.append(or_(*role_conditions))
+
+    follower_count_column = cast(Any, IgProfile.follower_count)
+    if filters.follower_count_min is not None:
+        conditions.append(follower_count_column >= filters.follower_count_min)
+    if filters.follower_count_max is not None:
+        conditions.append(follower_count_column <= filters.follower_count_max)
+
+    if conditions:
+        statement = statement.where(*conditions)
+    return statement
+
+
+def _build_profile_search_order_by(filters: ProfileSearchFilters) -> list[Any]:
+    profile_id_column = cast(Any, IgProfile.id)
+    username_column = cast(Any, IgProfile.username)
+    username_sort_column = func.lower(username_column)
+    follower_count_column = cast(Any, IgProfile.follower_count)
+    updated_at_column = cast(Any, IgProfile.updated_at)
+
+    if filters.sort_by == "username":
+        primary = (
+            username_sort_column.asc()
+            if filters.sort_order == "asc"
+            else username_sort_column.desc()
+        )
+        return [primary, profile_id_column.asc()]
+
+    if filters.sort_by == "updated_date":
+        primary = (
+            updated_at_column.asc()
+            if filters.sort_order == "asc"
+            else updated_at_column.desc()
+        )
+        return [primary, username_sort_column.asc(), profile_id_column.asc()]
+
+    primary = (
+        follower_count_column.asc()
+        if filters.sort_order == "asc"
+        else follower_count_column.desc()
+    )
+    return [primary, username_sort_column.asc(), profile_id_column.asc()]
+
+
+def search_profiles(
+    collection: Any,
+    filters: ProfileSearchFilters,
+) -> tuple[list[Document], int]:
+    session = collection
+    assert isinstance(session, Session)
+
+    count_statement = _apply_profile_search_filters(
+        select(func.count()).select_from(IgProfile),
+        filters,
+    )
+    total = int(session.exec(count_statement).one())
+
+    offset = (filters.page - 1) * filters.page_size
+    statement = _apply_profile_search_filters(select(IgProfile), filters)
+    statement = statement.order_by(*_build_profile_search_order_by(filters))
+    statement = statement.offset(offset).limit(filters.page_size)
+    records = session.exec(statement).all()
+    return ([_serialize_profile(record) for record in records], total)
 
 
 def get_profiles_by_usernames(collection: Any, usernames: list[str]) -> list[Document]:

@@ -1,4 +1,5 @@
 import { chakra, Flex, Icon, Text } from "@chakra-ui/react"
+import type { ComponentPropsWithoutRef } from "react"
 import type { IconType } from "react-icons"
 
 type StrategyOptionCardProps = {
@@ -7,13 +8,15 @@ type StrategyOptionCardProps = {
   isActive: boolean
   onClick: () => void
   title: string
-}
+} & Pick<ComponentPropsWithoutRef<"button">, "onFocus" | "onMouseEnter">
 
 const StrategyOptionCard = ({
   description,
   icon,
   isActive,
+  onFocus,
   onClick,
+  onMouseEnter,
   title,
 }: StrategyOptionCardProps) => {
   return (
@@ -25,6 +28,8 @@ const StrategyOptionCard = ({
       borderColor={isActive ? "ui.brandBorderSoft" : "ui.border"}
       bg={isActive ? "ui.brandSoft" : "ui.panel"}
       onClick={onClick}
+      onFocus={onFocus}
+      onMouseEnter={onMouseEnter}
     >
       <Flex
         boxSize="11"

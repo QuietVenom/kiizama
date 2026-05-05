@@ -3058,6 +3058,56 @@ export const ProfileExistenceItemSchema = {
     title: 'ProfileExistenceItem'
 } as const;
 
+export const ProfileSearchPaginationSchema = {
+    properties: {
+        page: {
+            type: 'integer',
+            title: 'Page'
+        },
+        page_size: {
+            type: 'integer',
+            title: 'Page Size'
+        },
+        total: {
+            type: 'integer',
+            title: 'Total'
+        },
+        total_pages: {
+            type: 'integer',
+            title: 'Total Pages'
+        },
+        has_next: {
+            type: 'boolean',
+            title: 'Has Next'
+        },
+        has_previous: {
+            type: 'boolean',
+            title: 'Has Previous'
+        }
+    },
+    type: 'object',
+    required: ['page', 'page_size', 'total', 'total_pages', 'has_next', 'has_previous'],
+    title: 'ProfileSearchPagination'
+} as const;
+
+export const ProfileSearchResponseSchema = {
+    properties: {
+        profiles: {
+            items: {
+                '$ref': '#/components/schemas/Profile'
+            },
+            type: 'array',
+            title: 'Profiles'
+        },
+        pagination: {
+            '$ref': '#/components/schemas/ProfileSearchPagination'
+        }
+    },
+    type: 'object',
+    required: ['profiles', 'pagination'],
+    title: 'ProfileSearchResponse'
+} as const;
+
 export const ProfileSnapshotSchema = {
     properties: {
         _id: {
@@ -3260,6 +3310,107 @@ export const ProfileSnapshotExpandedCollectionSchema = {
     required: ['snapshots'],
     title: 'ProfileSnapshotExpandedCollection',
     description: 'A container holding a list of `ProfileSnapshotExpanded` instances.'
+} as const;
+
+export const ProfileSnapshotFullSchema = {
+    properties: {
+        _id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Id'
+        },
+        profile_id: {
+            type: 'string',
+            title: 'Profile Id'
+        },
+        post_ids: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Post Ids'
+        },
+        reel_ids: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Reel Ids'
+        },
+        metrics_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Metrics Id'
+        },
+        scraped_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Scraped At'
+        },
+        profile: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/Profile'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        posts: {
+            items: {
+                '$ref': '#/components/schemas/PostsDocument'
+            },
+            type: 'array',
+            title: 'Posts'
+        },
+        reels: {
+            items: {
+                '$ref': '#/components/schemas/ReelsDocument'
+            },
+            type: 'array',
+            title: 'Reels'
+        },
+        metrics: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/Metrics'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        update_required: {
+            type: 'boolean',
+            title: 'Update Required',
+            default: false
+        }
+    },
+    type: 'object',
+    required: ['profile_id', 'scraped_at'],
+    title: 'ProfileSnapshotFull',
+    description: 'Expanded profile snapshot for full profile detail responses.',
+    example: {
+        id: '65c2f0b7f6b7a8c1c3d4e5f9',
+        metrics_id: '65c2f0b7f6b7a8c1c3d4e8c1',
+        post_ids: ['65c2f0b7f6b7a8c1c3d4e6a1', '65c2f0b7f6b7a8c1c3d4e6a2'],
+        profile_id: '65c2f0b7f6b7a8c1c3d4e5f6',
+        reel_ids: ['65c2f0b7f6b7a8c1c3d4e7b1', '65c2f0b7f6b7a8c1c3d4e7b2'],
+        scraped_at: '2024-02-12T15:04:05Z'
+    }
 } as const;
 
 export const ProfileUsernamesSchema = {

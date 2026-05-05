@@ -31,6 +31,9 @@ def test_instagram_data_openapi_contract_exposes_expected_paths_and_shapes(
         schema, path="/api/v1/ig-profiles/by-username/{username}", method="get"
     )
     assert_operation(schema, path="/api/v1/ig-profiles/by-usernames", method="post")
+    assert_operation(
+        schema, path="/api/v1/ig-profiles/{profile_id}/full-profile", method="get"
+    )
     assert_operation(schema, path="/api/v1/ig-profile-snapshots/advanced", method="get")
 
     assert_schema_has_properties(
@@ -47,4 +50,9 @@ def test_instagram_data_openapi_contract_exposes_expected_paths_and_shapes(
     )
     assert_schema_has_properties(
         schema, "Metrics", {"_id", "post_metrics", "reel_metrics"}
+    )
+    assert_schema_has_properties(
+        schema,
+        "ProfileSnapshotFull",
+        {"_id", "profile", "posts", "reels", "metrics", "update_required"},
     )

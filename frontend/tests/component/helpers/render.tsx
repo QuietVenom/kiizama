@@ -5,6 +5,7 @@ import type { PropsWithChildren, ReactElement } from "react"
 import { CustomProvider } from "../../../src/components/ui/provider"
 import type { SupportedLanguage } from "../../../src/i18n"
 import i18n, { DEFAULT_LANGUAGE, LANGUAGE_STORAGE_KEY } from "../../../src/i18n"
+import { deleteCookie } from "../../../src/lib/browser-cookies"
 
 export const createTestQueryClient = () =>
   new QueryClient({
@@ -34,7 +35,8 @@ export const renderWithProviders = (
     ...renderOptions
   } = options
 
-  localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
+  localStorage.removeItem(LANGUAGE_STORAGE_KEY)
+  deleteCookie(LANGUAGE_STORAGE_KEY)
   i18n.services.languageDetector?.cacheUserLanguage(language)
   i18n.language = language
   i18n.languages = [language]

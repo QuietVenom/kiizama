@@ -1,286 +1,233 @@
-import { Box, Grid } from "@chakra-ui/react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useMemo, useRef, useState } from "react"
+import { Box, Flex, Grid, Icon, Skeleton, Tabs, Text } from "@chakra-ui/react"
+import { lazy, Suspense, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { FiGrid, FiSearch } from "react-icons/fi"
 
-import {
-  IgProfileSnapshotsService,
-  type ProfileSnapshotExpanded,
-  type ProfileSnapshotExpandedCollection,
-} from "@/client"
-import CreatorSnapshotDetailDialog from "@/components/CreatorsSearch/CreatorSnapshotDetailDialog"
 import DashboardTopbar from "@/components/Dashboard/DashboardTopbar"
-import { extractApiErrorMessage } from "@/lib/api-errors"
-import {
-  areStringArraysEqual,
-  isValidInstagramUsername,
-  sanitizeInstagramUsernames,
-} from "@/lib/instagram-usernames"
-
-import { CurrentJobDetailDialog } from "./CurrentJobDetailDialog"
-import { CurrentJobsPanel } from "./CurrentJobsPanel"
-import {
-  getReadyUsernamesFromSearchResult,
-  getValidationMessage,
-  MAX_USERNAMES,
-  sortSnapshotsByUsernames,
-} from "./creators-search.logic"
 import { SearchGuideDialog } from "./SearchGuideDialog"
 import { SearchHeader } from "./SearchHeader"
-import { SearchHistoryDialog } from "./SearchHistoryDialog"
-import { SearchHistoryPanel } from "./SearchHistoryPanel"
-import { SearchInputPanel } from "./SearchInputPanel"
-import { SearchOutcomeAlerts } from "./SearchOutcomeAlerts"
-import { SearchResultsSection } from "./SearchResultsSection"
-import { useCreatorReport } from "./useCreatorReport"
-import { useCreatorsSearchHistory } from "./useCreatorsSearchHistory"
-import { useCreatorsSearchJobs } from "./useCreatorsSearchJobs"
+
+const loadDirectCreatorsSearchTab = () => import("./DirectCreatorsSearchTab")
+const loadCreatorsDirectoryPreview = () => import("./CreatorsDirectoryPreview")
+
+const DirectCreatorsSearchTab = lazy(loadDirectCreatorsSearchTab)
+const CreatorsDirectoryPreview = lazy(loadCreatorsDirectoryPreview)
+
+const CreatorsSearchTabFallback = ({
+  showResults = true,
+}: {
+  showResults?: boolean
+}) => (
+  <Box>
+    <Grid
+      templateColumns={{
+        base: "1fr",
+        "2xl": "minmax(0, 3fr) minmax(320px, 1fr)",
+      }}
+      gap={6}
+      mb={{ base: 7, lg: 8 }}
+    >
+      <Box
+        rounded="30px"
+        borderWidth="1px"
+        borderColor="ui.border"
+        bg="ui.panel"
+        boxShadow="ui.panel"
+        px={{ base: 5, md: 6 }}
+        py={{ base: 5, md: 6 }}
+      >
+        <Skeleton h="4" w="28" rounded="full" />
+        <Skeleton mt={4} h="9" w="64" rounded="xl" />
+        <Skeleton mt={5} h="14" rounded="2xl" />
+        <Skeleton mt={4} h="12" rounded="2xl" />
+      </Box>
+
+      <Box
+        rounded="30px"
+        borderWidth="1px"
+        borderColor="ui.border"
+        bg="ui.panel"
+        boxShadow="ui.panel"
+        px={{ base: 5, md: 6 }}
+        py={{ base: 5, md: 6 }}
+      >
+        <Skeleton h="4" w="24" rounded="full" />
+        <Skeleton mt={4} h="8" w="44" rounded="xl" />
+        <Skeleton mt={5} h="24" rounded="2xl" />
+        <Skeleton mt={4} h="24" rounded="2xl" />
+      </Box>
+    </Grid>
+
+    {showResults ? (
+      <Grid
+        templateColumns={{ base: "1fr", lg: "repeat(2, minmax(0, 1fr))" }}
+        gap={6}
+      >
+        <Skeleton h="220px" rounded="3xl" />
+        <Skeleton h="220px" rounded="3xl" />
+      </Grid>
+    ) : (
+      <Skeleton h="520px" rounded="3xl" />
+    )}
+  </Box>
+)
 
 export function CreatorsSearchPage() {
   const { t } = useTranslation("creatorsSearch")
-  const queryClient = useQueryClient()
+  const [activeTab, setActiveTab] = useState<
+    "direct-search" | "directory-preview"
+  >("direct-search")
   const [isGuideOpen, setIsGuideOpen] = useState(false)
-  const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false)
-  const [usernames, setUsernames] = useState<string[]>([])
-  const [submittedUsernames, setSubmittedUsernames] = useState<string[]>([])
-  const [overflowAttempted, setOverflowAttempted] = useState(false)
-  const [searchError, setSearchError] = useState<string | null>(null)
-  const [searchResult, setSearchResult] =
-    useState<ProfileSnapshotExpandedCollection | null>(null)
-  const [selectedSnapshot, setSelectedSnapshot] =
-    useState<ProfileSnapshotExpanded | null>(null)
-  const pageTopRef = useRef<HTMLDivElement | null>(null)
 
-  const { persistSearchHistoryEntry, previewQuery, viewAllQuery } =
-    useCreatorsSearchHistory({
-      isViewAllOpen: isSearchHistoryOpen,
-    })
-  const {
-    clearJobErrors,
-    clearSelectedCurrentJob,
-    currentJobs,
-    expiredJobsError,
-    expiredJobsMutation,
-    missingJobsError,
-    missingJobsMutation,
-    selectCurrentJob,
-    selectedCurrentJob,
-  } = useCreatorsSearchJobs({
-    pageTopRef,
-    persistSearchHistoryEntry,
-  })
-  const { clearReportError, reportError, reportMutation } = useCreatorReport({
-    queryClient,
-  })
-
-  const invalidUsernames = useMemo(
-    () => usernames.filter((username) => !isValidInstagramUsername(username)),
-    [usernames],
-  )
-  const invalidSet = useMemo(
-    () => new Set(invalidUsernames),
-    [invalidUsernames],
-  )
-  const isSearchStale = useMemo(
-    () =>
-      submittedUsernames.length > 0 &&
-      !areStringArraysEqual(usernames, submittedUsernames),
-    [submittedUsernames, usernames],
-  )
-  const missingUsernames = useMemo(
-    () => (isSearchStale ? [] : (searchResult?.missing_usernames ?? [])),
-    [isSearchStale, searchResult],
-  )
-  const expiredUsernames = useMemo(
-    () => (isSearchStale ? [] : (searchResult?.expired_usernames ?? [])),
-    [isSearchStale, searchResult],
-  )
-  const missingSet = useMemo(
-    () => new Set(missingUsernames),
-    [missingUsernames],
-  )
-  const expiredSet = useMemo(
-    () => new Set(expiredUsernames),
-    [expiredUsernames],
-  )
-  const sortedSnapshots = useMemo(
-    () =>
-      sortSnapshotsByUsernames(
-        searchResult?.snapshots ?? [],
-        submittedUsernames,
-      ),
-    [searchResult?.snapshots, submittedUsernames],
-  )
-
-  const validationMessage = getValidationMessage(
-    invalidUsernames,
-    overflowAttempted,
-    (key, options) => t(key, options),
-  )
-  const hasValidationIssue = Boolean(validationMessage)
-  const hasSearched =
-    submittedUsernames.length > 0 ||
-    searchResult !== null ||
-    searchError !== null
-
-  const searchMutation = useMutation({
-    mutationFn: (requestedUsernames: string[]) =>
-      IgProfileSnapshotsService.readIgProfileSnapshotsAdvanced({
-        limit: MAX_USERNAMES,
-        usernames: requestedUsernames,
-      }),
-    onMutate: (requestedUsernames) => {
-      clearReportError()
-      clearJobErrors()
-      setSubmittedUsernames(requestedUsernames)
-      setSearchError(null)
-      setSearchResult(null)
-      setSelectedSnapshot(null)
-    },
-    onSuccess: (data, requestedUsernames) => {
-      setSearchResult(data)
-      const readyUsernames = getReadyUsernamesFromSearchResult(
-        requestedUsernames,
-        data,
-      )
-      if (readyUsernames.length > 0) {
-        persistSearchHistoryEntry({
-          source: "direct-search",
-          ready_usernames: readyUsernames,
-        })
-      }
-    },
-    onError: (error) => {
-      setSearchError(extractApiErrorMessage(error, t("alerts.searchFailed")))
-    },
-  })
-
-  const handleUsernamesChange = (nextValue: string[]) => {
-    const sanitizedValue = sanitizeInstagramUsernames(nextValue)
-    setUsernames(sanitizedValue)
-
-    if (sanitizedValue.length < MAX_USERNAMES) {
-      setOverflowAttempted(false)
-    }
-  }
-
-  const handleSearch = () => {
-    const nextUsernames = sanitizeInstagramUsernames(usernames)
-    const nextInvalidUsernames = nextUsernames.filter(
-      (username) => !isValidInstagramUsername(username),
-    )
-
-    setUsernames(nextUsernames)
-    setOverflowAttempted(false)
-
-    if (nextUsernames.length === 0 || nextInvalidUsernames.length > 0) {
-      return
-    }
-
-    searchMutation.mutate(nextUsernames)
-  }
-
-  const handleReuseReadyUsernames = (readyUsernames: string[]) => {
-    setUsernames(sanitizeInstagramUsernames(readyUsernames))
-    setOverflowAttempted(false)
-    clearSelectedCurrentJob()
-    setIsSearchHistoryOpen(false)
-  }
+  useEffect(() => {
+    void loadDirectCreatorsSearchTab()
+    void loadCreatorsDirectoryPreview()
+  }, [])
 
   return (
-    <Box ref={pageTopRef} minH="100vh" bg="ui.page">
+    <Box minH="100vh" bg="ui.page">
       <DashboardTopbar />
 
       <Box px={{ base: 4, md: 7, lg: 10 }} py={{ base: 7, lg: 9 }}>
         <SearchHeader onOpenGuide={() => setIsGuideOpen(true)} />
 
-        <Grid
-          templateColumns={{
-            base: "1fr",
-            "2xl": "minmax(0, 3fr) minmax(320px, 1fr)",
-          }}
-          gap={6}
-          mb={{ base: 7, lg: 8 }}
+        <Tabs.Root
+          value={activeTab}
+          onValueChange={({ value }) =>
+            setActiveTab(value as "direct-search" | "directory-preview")
+          }
+          variant="plain"
         >
-          <SearchInputPanel
-            expiredSet={expiredSet}
-            hasValidationIssue={hasValidationIssue}
-            invalidSet={invalidSet}
-            invalidUsernames={invalidUsernames}
-            isSearchPending={searchMutation.isPending}
-            isSearchStale={isSearchStale}
-            maxUsernames={MAX_USERNAMES}
-            missingSet={missingSet}
-            usernames={usernames}
-            validationMessage={validationMessage}
-            onMaxExceeded={() => setOverflowAttempted(true)}
-            onSearch={handleSearch}
-            onUsernamesChange={handleUsernamesChange}
-          />
+          <Box
+            mb={{ base: 6, lg: 7 }}
+            p="1.5"
+            rounded="full"
+            borderWidth="1px"
+            borderColor="ui.border"
+            bg="ui.panel"
+            boxShadow="ui.card"
+            maxW="fit-content"
+          >
+            <Tabs.List
+              gap="1.5"
+              rounded="full"
+              bg="ui.surfaceSoft"
+              p="1.5"
+              borderWidth="1px"
+              borderColor="ui.borderSoft"
+            >
+              <Tabs.Trigger
+                value="direct-search"
+                onMouseEnter={() => void loadDirectCreatorsSearchTab()}
+                onFocus={() => void loadDirectCreatorsSearchTab()}
+                rounded="full"
+                minH={{ base: "64px", md: "72px" }}
+                px={{ base: 4, md: 5 }}
+                py={{ base: 3.5, md: 4 }}
+                color="ui.secondaryText"
+                transition="all 180ms ease"
+                _selected={{
+                  bg: "ui.panel",
+                  color: "ui.text",
+                  boxShadow: "ui.card",
+                }}
+              >
+                <Flex align="center" gap={3} py="0.5">
+                  <Flex
+                    boxSize="9"
+                    rounded="full"
+                    align="center"
+                    justify="center"
+                    bg="ui.brandSoft"
+                    color="ui.brandText"
+                  >
+                    <Icon as={FiSearch} boxSize={4} />
+                  </Flex>
+                  <Box textAlign="left" py="0.5">
+                    <Text fontWeight="black" lineHeight="1.15">
+                      {t("tabs.direct.title")}
+                    </Text>
+                    <Text
+                      display={{ base: "none", md: "block" }}
+                      mt="1"
+                      fontSize="xs"
+                      lineHeight="1.35"
+                      color="ui.mutedText"
+                    >
+                      {t("tabs.direct.description")}
+                    </Text>
+                  </Box>
+                </Flex>
+              </Tabs.Trigger>
 
-          <CurrentJobsPanel
-            currentJobs={currentJobs}
-            onSelectJob={selectCurrentJob}
-          />
-        </Grid>
+              <Tabs.Trigger
+                value="directory-preview"
+                onMouseEnter={() => void loadCreatorsDirectoryPreview()}
+                onFocus={() => void loadCreatorsDirectoryPreview()}
+                rounded="full"
+                minH={{ base: "64px", md: "72px" }}
+                px={{ base: 4, md: 5 }}
+                py={{ base: 3.5, md: 4 }}
+                color="ui.secondaryText"
+                transition="all 180ms ease"
+                _selected={{
+                  bg: "ui.panel",
+                  color: "ui.text",
+                  boxShadow: "ui.card",
+                }}
+              >
+                <Flex align="center" gap={3} py="0.5">
+                  <Flex
+                    boxSize="9"
+                    rounded="full"
+                    align="center"
+                    justify="center"
+                    bg="ui.infoSoft"
+                    color="ui.infoText"
+                  >
+                    <Icon as={FiGrid} boxSize={4} />
+                  </Flex>
+                  <Box textAlign="left" py="0.5">
+                    <Text fontWeight="black" lineHeight="1.15">
+                      {t("tabs.directory.title")}
+                    </Text>
+                    <Text
+                      display={{ base: "none", md: "block" }}
+                      mt="1"
+                      fontSize="xs"
+                      lineHeight="1.35"
+                      color="ui.mutedText"
+                    >
+                      {t("tabs.directory.description")}
+                    </Text>
+                  </Box>
+                </Flex>
+              </Tabs.Trigger>
+            </Tabs.List>
+          </Box>
 
-        <SearchHistoryPanel
-          isError={previewQuery.isError}
-          isLoading={previewQuery.isLoading}
-          items={previewQuery.data?.items ?? []}
-          onReuseReadyUsernames={handleReuseReadyUsernames}
-          onViewAll={() => setIsSearchHistoryOpen(true)}
-        />
-
-        <SearchOutcomeAlerts
-          expiredJobsError={expiredJobsError}
-          expiredJobsMutation={expiredJobsMutation}
-          expiredUsernames={expiredUsernames}
-          missingJobsError={missingJobsError}
-          missingJobsMutation={missingJobsMutation}
-          missingUsernames={missingUsernames}
-          reportError={reportError}
-          searchError={searchError}
-        />
-
-        <SearchResultsSection
-          expiredSet={expiredSet}
-          expiredUsernames={expiredUsernames}
-          hasSearched={hasSearched}
-          isSearchPending={searchMutation.isPending}
-          missingUsernames={missingUsernames}
-          reportMutation={reportMutation}
-          searchError={searchError}
-          snapshots={sortedSnapshots}
-          submittedUsernames={submittedUsernames}
-          onOpenSnapshot={setSelectedSnapshot}
-        />
+          <Box pt="0">
+            <Suspense
+              fallback={
+                <CreatorsSearchTabFallback
+                  showResults={activeTab === "direct-search"}
+                />
+              }
+            >
+              {activeTab === "direct-search" ? (
+                <DirectCreatorsSearchTab />
+              ) : (
+                <CreatorsDirectoryPreview
+                  onRequestDirectSearchFocus={() =>
+                    setActiveTab("direct-search")
+                  }
+                />
+              )}
+            </Suspense>
+          </Box>
+        </Tabs.Root>
       </Box>
 
-      <CreatorSnapshotDetailDialog
-        snapshot={selectedSnapshot}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSelectedSnapshot(null)
-          }
-        }}
-      />
-      <CurrentJobDetailDialog
-        job={selectedCurrentJob}
-        onOpenChange={(open) => {
-          if (!open) {
-            clearSelectedCurrentJob()
-          }
-        }}
-        onReuseReadyUsernames={handleReuseReadyUsernames}
-      />
-      <SearchHistoryDialog
-        items={viewAllQuery.data?.items ?? []}
-        loading={viewAllQuery.isLoading}
-        open={isSearchHistoryOpen}
-        onOpenChange={setIsSearchHistoryOpen}
-        onReuseReadyUsernames={handleReuseReadyUsernames}
-      />
       <SearchGuideDialog open={isGuideOpen} onOpenChange={setIsGuideOpen} />
     </Box>
   )

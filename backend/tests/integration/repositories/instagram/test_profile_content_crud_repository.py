@@ -33,6 +33,7 @@ from app.crud.profile import (
     get_profiles_by_usernames,
     list_profiles,
     replace_profile,
+    search_profiles,
     update_profile,
 )
 from app.crud.reels import (
@@ -56,6 +57,7 @@ from app.schemas import (
     PostItem,
     PostMetrics,
     Profile,
+    ProfileSearchFilters,
     Reel,
     ReelItem,
     ReelMetrics,
@@ -97,14 +99,18 @@ def _profile(
     username: str | None = None,
     ig_id: str | None = None,
     follower_count: int = 1_000,
+    full_name: str | None = None,
+    biography: str = "Creator biography",
+    ai_categories: list[str] | None = None,
+    ai_roles: list[str] | None = None,
 ) -> Profile:
     suffix = uuid4().hex
     resolved_username = username or f"creator_{suffix}"
     return Profile(
         ig_id=ig_id or f"ig-{suffix}",
         username=resolved_username,
-        full_name=f"{resolved_username} Full",
-        biography="Creator biography",
+        full_name=full_name or f"{resolved_username} Full",
+        biography=biography,
         is_private=False,
         is_verified=True,
         profile_pic_url=cast(
@@ -117,8 +123,8 @@ def _profile(
         following_count=100,
         media_count=20,
         bio_links=[],
-        ai_categories=["Beauty"],
-        ai_roles=["Creator"],
+        ai_categories=ai_categories or ["Beauty"],
+        ai_roles=ai_roles or ["Creator"],
     )
 
 
@@ -216,6 +222,128 @@ def test_profiles_crud_lookups_and_duplicate_constraints_persist_in_postgres(
             )
         )
     assert exc_info.value.status_code == 409
+
+
+def test_search_profiles_filters_sort_and_paginates_results(db: Session) -> None:
+    _run(
+        create_profile(
+            db,
+            _profile(
+                username="alpha-fit",
+                ig_id=uuid4().hex,
+                follower_count=5_000,
+                full_name="Alpha Fit",
+                biography="Fitness creator",
+                ai_categories=["Fitness"],
+                ai_roles=["Creator"],
+            ),
+        )
+    )
+    _run(
+        create_profile(
+            db,
+            _profile(
+                username="beta-gaming",
+                ig_id=uuid4().hex,
+                follower_count=20_000,
+                full_name="Beta Gaming",
+                biography="Streaming creator",
+                ai_categories=["Gaming"],
+                ai_roles=["Streamer"],
+            ),
+        )
+    )
+    _run(
+        create_profile(
+            db,
+            _profile(
+                username="delta-glow",
+                ig_id=uuid4().hex,
+                follower_count=8_000,
+                full_name="Delta Glow",
+                biography="Beauty ugc creator",
+                ai_categories=["Beauty"],
+                ai_roles=["UGC"],
+            ),
+        )
+    )
+    _run(
+        create_profile(
+            db,
+            _profile(
+                username="gamma-move",
+                ig_id=uuid4().hex,
+                follower_count=12_000,
+                full_name="Gamma Move",
+                biography="Fitness and travel ugc creator",
+                ai_categories=["Fitness", "Travel"],
+                ai_roles=["Creator", "UGC"],
+            ),
+        )
+    )
+
+    filters = ProfileSearchFilters(
+        ai_categories=["Fitness", "Beauty"],
+        ai_roles=["UGC"],
+        follower_count_min=7_000,
+        follower_count_max=15_000,
+        sort_by="follower_count",
+        sort_order="asc",
+        page=1,
+        page_size=2,
+    )
+
+    results, total = _run(search_profiles(db, filters))
+
+    assert total == 2
+    assert [profile["username"] for profile in results] == [
+        "delta-glow",
+        "gamma-move",
+    ]
+    assert [profile["follower_count"] for profile in results] == [8_000, 12_000]
+
+
+def test_search_profiles_matches_partial_username_and_full_name(db: Session) -> None:
+    _run(
+        create_profile(
+            db,
+            _profile(
+                username="alpha-signal",
+                ig_id=uuid4().hex,
+                full_name="Signal Builder",
+                biography="Profile one",
+            ),
+        )
+    )
+    _run(
+        create_profile(
+            db,
+            _profile(
+                username="steady-creator",
+                ig_id=uuid4().hex,
+                full_name="Gamma Focus",
+                biography="Profile two",
+            ),
+        )
+    )
+
+    username_results, username_total = _run(
+        search_profiles(
+            db,
+            ProfileSearchFilters(query="sign", page=1, page_size=20),
+        )
+    )
+    full_name_results, full_name_total = _run(
+        search_profiles(
+            db,
+            ProfileSearchFilters(query="focus", page=1, page_size=20),
+        )
+    )
+
+    assert username_total == 1
+    assert [profile["username"] for profile in username_results] == ["alpha-signal"]
+    assert full_name_total == 1
+    assert [profile["username"] for profile in full_name_results] == ["steady-creator"]
 
 
 def test_posts_reels_and_metrics_crud_handles_not_found_and_invalid_ids(

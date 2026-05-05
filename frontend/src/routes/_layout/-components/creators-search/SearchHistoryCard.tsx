@@ -16,10 +16,13 @@ export const SearchHistoryCard = ({
 }) => {
   const { i18n, t } = useTranslation("creatorsSearch")
   const readyUsernames = item.ready_usernames ?? []
-  const visibleUsernames = readyUsernames.slice(0, 5)
+  const visibleUsernames = readyUsernames.slice(0, 10)
   const hiddenUsernamesCount = Math.max(
     readyUsernames.length - visibleUsernames.length,
     0,
+  )
+  const compactPreviewUsernames = visibleUsernames.map(
+    (username) => `@${username}`,
   )
 
   if (compact) {
@@ -71,35 +74,25 @@ export const SearchHistoryCard = ({
           )}
         </Text>
 
-        <Flex mt={4} gap={2} wrap="wrap" alignContent="flex-start">
-          {visibleUsernames.map((username) => (
-            <Badge
-              key={`${item.id}-${username}`}
-              rounded="full"
-              borderWidth="1px"
-              borderColor="ui.borderSoft"
-              bg="ui.panel"
-              color="ui.text"
-              px={3}
-              py={1.5}
-            >
-              @{username}
-            </Badge>
-          ))}
+        <Box mt={4}>
+          <Text color="ui.text" fontSize="xs" lineHeight="1.45" lineClamp={4}>
+            {compactPreviewUsernames.join(", ")}
+          </Text>
           {hiddenUsernamesCount > 0 ? (
             <Badge
+              mt={2}
               rounded="full"
               borderWidth="1px"
               borderColor="ui.borderSoft"
               bg="ui.panel"
               color="ui.secondaryText"
-              px={3}
-              py={1.5}
+              px={2.5}
+              py={1}
             >
               +{hiddenUsernamesCount}
             </Badge>
           ) : null}
-        </Flex>
+        </Box>
       </Box>
     )
   }

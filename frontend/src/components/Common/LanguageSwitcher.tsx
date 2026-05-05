@@ -69,9 +69,9 @@ export const LanguageSwitcher = ({
     i18n.resolvedLanguage ?? i18n.language,
   )
   const languageOptions: LanguageOption[] = [
-    { value: "en", label: t("languageSwitcher.english") },
     { value: "es", label: t("languageSwitcher.spanish") },
     { value: "pt-BR", label: t("languageSwitcher.portugueseBrazil") },
+    { value: "en", label: t("languageSwitcher.english") },
   ]
   const activeOption =
     languageOptions.find((option) => option.value === activeLanguage) ??

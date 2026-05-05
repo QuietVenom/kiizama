@@ -16,6 +16,7 @@ from app.crud.profile_snapshots import (
     delete_profile_snapshot,
     get_profile_snapshot,
     get_profile_snapshot_by_profile_id,
+    get_profile_snapshot_full_by_profile_id,
     list_profile_snapshots,
     list_profile_snapshots_full,
     replace_profile_snapshot,
@@ -253,6 +254,31 @@ def test_list_profile_snapshots_full_reads_expanded_snapshot_from_postgres(
     assert expanded_snapshot["reels"][0]["reels"][0]["code"] == "REEL_BETA_1"
     assert expanded_snapshot["metrics"]["overall_post_engagement_rate"] == 0.07
     assert expanded_snapshot["metrics"]["reel_engagement_rate_on_plays"] == 0.060625
+
+
+def test_get_profile_snapshot_full_by_profile_id_reads_expanded_snapshot_from_postgres(
+    db: Session,
+) -> None:
+    now = datetime.now(UTC)
+    persisted = persist_snapshot_tree(
+        db,
+        ig_id="1234567891",
+        username="creator_beta_full",
+        scraped_at=now,
+        post_code="POST_BETA_FULL_1",
+        reel_code="REEL_BETA_FULL_1",
+    )
+
+    expanded_snapshot = _run(
+        get_profile_snapshot_full_by_profile_id(db, persisted["profile_id"])
+    )
+
+    assert expanded_snapshot is not None
+    assert expanded_snapshot["_id"] == persisted["snapshot"]["_id"]
+    assert expanded_snapshot["profile"]["username"] == "creator_beta_full"
+    assert expanded_snapshot["posts"][0]["posts"][0]["code"] == "POST_BETA_FULL_1"
+    assert expanded_snapshot["reels"][0]["reels"][0]["code"] == "REEL_BETA_FULL_1"
+    assert expanded_snapshot["metrics"]["overall_post_engagement_rate"] == 0.07
 
 
 def test_profile_snapshots_crud_filters_profile_and_handles_invalid_ids(

@@ -90,6 +90,19 @@ class ProfileSnapshotExpanded(ProfileSnapshot):
     )
 
 
+class ProfileSnapshotFull(ProfileSnapshotExpanded):
+    """
+    Expanded profile snapshot for full profile detail responses.
+    """
+
+    update_required: bool = False
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+    )
+
+
 class ProfileSnapshotExpandedCollection(BaseModel):
     """
     A container holding a list of `ProfileSnapshotExpanded` instances.

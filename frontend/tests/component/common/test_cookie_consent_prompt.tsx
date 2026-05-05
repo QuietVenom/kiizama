@@ -8,6 +8,10 @@ import {
   readCookiePreferences,
   writeCookiePreferences,
 } from "../../../src/hooks/useCookieConsent"
+import {
+  COOKIE_CONSENT_NAME,
+  LEGACY_COOKIE_CONSENT_NAME,
+} from "../../../src/lib/cookie-settings"
 import { renderWithProviders } from "../helpers/render"
 
 vi.mock("@tanstack/react-router", () => ({
@@ -32,8 +36,9 @@ const CookieConsentPrompt = (
 
 const clearCookieConsent = () => {
   // biome-ignore lint/suspicious/noDocumentCookie: this test must reset the browser cookie boundary before each case.
-  document.cookie =
-    "notion_cookie_consent=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+  document.cookie = `${COOKIE_CONSENT_NAME}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`
+  // biome-ignore lint/suspicious/noDocumentCookie: this test must reset the browser cookie boundary before each case.
+  document.cookie = `${LEGACY_COOKIE_CONSENT_NAME}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`
 }
 
 describe("cookie consent prompt", () => {
@@ -108,5 +113,19 @@ describe("cookie consent prompt", () => {
 
     // Assert
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+  })
+
+  test("cookie_consent_prompt_migrates_legacy_cookie_name", () => {
+    // Arrange
+    // biome-ignore lint/suspicious/noDocumentCookie: this test seeds the legacy consent cookie to verify migration.
+    document.cookie = `${LEGACY_COOKIE_CONSENT_NAME}=${encodeURIComponent(JSON.stringify(DEFAULT_COOKIE_PREFERENCES))}; path=/`
+
+    // Act
+    renderWithProviders(<CookieConsentPrompt />)
+
+    // Assert
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+    expect(readCookiePreferences()).toEqual(DEFAULT_COOKIE_PREFERENCES)
+    expect(document.cookie).toContain(`${COOKIE_CONSENT_NAME}=`)
   })
 })

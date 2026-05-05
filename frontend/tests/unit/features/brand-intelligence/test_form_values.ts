@@ -21,7 +21,12 @@ const createCampaignValues = (
   brand_name: "  Kiizama  ",
   brand_urls: [" https://kiizama.com ", "", "https://kiizama.com"],
   campaign_type: "all_nano_seeding_ugc_flood",
-  profiles_list: [" @Creator.One ", "creator.one", "", "@Second_Creator"],
+  profiles_list: [
+    " https://www.instagram.com/Creator.One/ ",
+    "creator.one",
+    "",
+    "@Second_Creator",
+  ],
   timeframe: "3 months",
   ...overrides,
 })
@@ -34,7 +39,7 @@ const createCreatorValues = (
   collaborators_list: [" Brand One ", "", "Brand One", "@BrandTwo"],
   creator_context: "  Creator context  ",
   creator_urls: [" https://creator.test ", "", "https://creator.test"],
-  creator_username: " @Creator.One ",
+  creator_username: " https://www.instagram.com/Creator.One/?hl=en ",
   goal_context: "  Goal context  ",
   goal_type: "Community Trust",
   primary_platforms: [" Instagram ", "TikTok", "Instagram"],

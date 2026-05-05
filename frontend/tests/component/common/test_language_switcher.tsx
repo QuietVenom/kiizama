@@ -1,9 +1,9 @@
 import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, test } from "vitest"
-
 import LanguageSwitcher from "../../../src/components/Common/LanguageSwitcher"
 import { LANGUAGE_STORAGE_KEY } from "../../../src/i18n"
+import { readCookie } from "../../../src/lib/browser-cookies"
 import { renderWithProviders } from "../helpers/render"
 
 describe("language switcher", () => {
@@ -22,7 +22,8 @@ describe("language switcher", () => {
     await user.click(await screen.findByText("Português (Brasil)"))
 
     await waitFor(() => {
-      expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBe("pt-BR")
+      expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBeNull()
+      expect(readCookie(LANGUAGE_STORAGE_KEY)).toBe("pt-BR")
       expect(document.documentElement.lang).toBe("pt-BR")
       expect(
         screen.getByRole("button", { name: "Selecionar idioma" }),

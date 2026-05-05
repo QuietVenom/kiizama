@@ -15,7 +15,7 @@ const cookieConsentPreferences = encodeURIComponent(
 )
 
 const cookieConsentCookies = cookieConsentHosts.map((domain) => ({
-  name: "notion_cookie_consent",
+  name: "kiizama_cookie_consent",
   value: cookieConsentPreferences,
   domain,
   path: "/",
@@ -25,19 +25,20 @@ const cookieConsentCookies = cookieConsentHosts.map((domain) => ({
   sameSite: "Lax" as const,
 }))
 
+const languageCookies = cookieConsentHosts.map((domain) => ({
+  name: languageStorageKey,
+  value: e2eLanguage,
+  domain,
+  path: "/",
+  expires: Math.floor(Date.now() / 1000) + oneYearInSeconds,
+  httpOnly: false,
+  secure: false,
+  sameSite: "Lax" as const,
+}))
+
 export const anonymousStorageState = {
-  cookies: cookieConsentCookies,
-  origins: [
-    {
-      origin: "http://localhost:5173",
-      localStorage: [
-        {
-          name: languageStorageKey,
-          value: e2eLanguage,
-        },
-      ],
-    },
-  ],
+  cookies: [...cookieConsentCookies, ...languageCookies],
+  origins: [],
 }
 
 export async function ensureCookieConsent(
@@ -46,14 +47,12 @@ export async function ensureCookieConsent(
   const context =
     "context" in pageOrContext ? pageOrContext.context() : pageOrContext
 
-  await context.addCookies(cookieConsentCookies)
+  await context.addCookies([...cookieConsentCookies, ...languageCookies])
   await context.addInitScript(
-    ({ key, value }) => {
-      window.localStorage.setItem(key, value)
+    ({ value }) => {
       document.documentElement.lang = value
     },
     {
-      key: languageStorageKey,
       value: e2eLanguage,
     },
   )

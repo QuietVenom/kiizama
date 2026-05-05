@@ -10,11 +10,21 @@
     "description": "Add multiple Instagram usernames, review which creators are already stored in the platform, and open a complete view for each match.",
     "guideButton": "Search guide"
   },
+  "tabs": {
+    "direct": {
+      "title": "Direct Creator Search",
+      "description": "Add usernames you already know."
+    },
+    "directory": {
+      "title": "Browse by Category or Role",
+      "description": "Preview the upcoming directory flow."
+    }
+  },
   "input": {
     "eyebrow": "MULTI-USERNAME LOOKUP",
     "title": "Search creators by username",
     "helpAria": "Search help",
-    "tooltip": "Paste a list, press Enter, or separate usernames with commas. Usernames are normalized to lowercase and any leading @ is removed automatically before the search runs.",
+    "tooltip": "Paste a list, press Enter, or separate usernames with commas. You can also paste Instagram profile URLs. Before the search runs, usernames are normalized to lowercase and any leading @ or supported profile URL is converted automatically into the username.",
     "label": "Instagram usernames",
     "helper": "Up to 50 usernames per request.",
     "placeholder": "creator_one, brand.partner, another_creator",
@@ -134,6 +144,97 @@
       }
     }
   },
+  "directoryPreview": {
+    "filters": {
+      "eyebrow": "DISCOVERY FILTERS",
+      "title": "Shape your creator",
+      "searchAction": "SEARCH",
+      "saveFilterAction": "Save filter",
+      "searchLabel": "Text search",
+      "optional": "(Optional)",
+      "searchPlaceholder": "Search by keyword, niche, or creator style",
+      "searchHint": "Type 3 or more characters to include text search in the request.",
+      "categories": "Featured categories",
+      "roles": "Creator roles",
+      "range": "Follower range",
+      "sort": "Sort by",
+      "sortValue": "Best match",
+      "dialog": {
+        "cancel": "Cancel",
+        "add": "Add"
+      },
+      "categoryDialog": {
+        "trigger": "Choose categories",
+        "title": "Select categories",
+        "description": "These are the creator categories currently available in the catalog.",
+        "empty": "No categories have been added to this filter yet."
+      },
+      "roleDialog": {
+        "trigger": "Choose roles",
+        "title": "Select roles",
+        "description": "These are the creator roles currently available in the catalog.",
+        "empty": "No roles have been added to this filter yet."
+      },
+      "rangeDialog": {
+        "trigger": "Choose range",
+        "title": "Select the range",
+        "description": "Use a creator size preset or define a manual follower range.",
+        "empty": "No range has been added to this filter yet.",
+        "presetsLabel": "Creator size presets",
+        "manualLabel": "Manual range",
+        "manualDescription": "You can use minimum, maximum, or both. Minimum starts at 1 by default.",
+        "minLabel": "Minimum",
+        "maxLabel": "Maximum",
+        "minChip": "Min {{value}}",
+        "maxChip": "Max {{value}}"
+      },
+      "sortDialog": {
+        "trigger": "Choose order",
+        "title": "Select the order",
+        "description": "These options mirror the current search endpoint contract exactly.",
+        "sortByLabel": "Sort by",
+        "directionLabel": "Direction",
+        "options": {
+          "username": "Username",
+          "followerCount": "Follower count"
+        }
+      },
+      "resetAction": "Restore defaults"
+    },
+    "updateQueue": {
+      "eyebrow": "UPDATE LIST",
+      "title": "Ready for update",
+      "description": "Keep profiles here while you continue browsing. When ready, send them to refresh jobs.",
+      "count_one": "{{count}} / {{max}} profile",
+      "count_other": "{{count}} / {{max}} profiles",
+      "empty": "Profiles marked for update will appear here.",
+      "addAction": "Update list",
+      "addedAction": "Added",
+      "removeAction": "Remove",
+      "submitAction": "Update",
+      "limitError": "You can queue up to {{max}} profiles for update."
+    },
+    "results": {
+      "eyebrow": "SEARCH RESULTS",
+      "title": "Explore",
+      "summary": "{{total}} profiles ready to review",
+      "followers": "Followers",
+      "media": "Media",
+      "viewProfile": "View full profile",
+      "idleTitle": "Run a search to explore saved creators.",
+      "idleDescription": "Apply filters and click search to populate this panel with real profiles.",
+      "emptyTitle": "No creators matched this search.",
+      "emptyDescription": "Try another combination of filters or broaden the follower range.",
+      "errorTitle": "Search failed",
+      "errorFallback": "Unable to load creator search results.",
+      "fallbackCategory": "No curated category",
+      "fallbackRole": "No curated role",
+      "status": {
+        "current": "Current",
+        "update": "Update"
+      }
+    }
+  },
   "card": {
     "fallbackName": "Resolved profile",
     "updateNeeded": "Update Needed",
@@ -237,6 +338,9 @@
       "carousel": "Carousel",
       "video": "Video",
       "post": "Post"
-    }
+    },
+    "loadingTitle": "Loading full profile",
+    "loadingDescription": "Fetching the latest saved profile snapshot.",
+    "errorTitle": "Unable to load full profile"
   }
 }
