@@ -643,6 +643,20 @@ export type ProfileExistenceItem = {
     expired: boolean;
 };
 
+export type ProfileSearchPagination = {
+    page: number;
+    page_size: number;
+    total: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+};
+
+export type ProfileSearchResponse = {
+    profiles: Array<Profile>;
+    pagination: ProfileSearchPagination;
+};
+
 /**
  * Relates a profile to scraped posts, reels, and metrics at a point in time.
  */
@@ -685,6 +699,23 @@ export type ProfileSnapshotExpandedCollection = {
     snapshots: Array<ProfileSnapshotExpanded>;
     missing_usernames?: Array<(string)>;
     expired_usernames?: Array<(string)>;
+};
+
+/**
+ * Expanded profile snapshot for full profile detail responses.
+ */
+export type ProfileSnapshotFull = {
+    _id?: (string | null);
+    profile_id: string;
+    post_ids?: Array<(string)>;
+    reel_ids?: Array<(string)>;
+    metrics_id?: (string | null);
+    scraped_at: string;
+    profile?: (Profile | null);
+    posts?: Array<PostsDocument>;
+    reels?: Array<ReelsDocument>;
+    metrics?: (Metrics | null);
+    update_required?: boolean;
 };
 
 export type ProfileUsernames = {
@@ -1212,6 +1243,26 @@ export type IgProfilesReadIgProfilesByUsernamesData = {
 };
 
 export type IgProfilesReadIgProfilesByUsernamesResponse = (ProfileCollection);
+
+export type IgProfilesSearchIgProfilesData = {
+    aiCategories?: (Array<(string)> | null);
+    aiRoles?: (Array<(string)> | null);
+    followerCountMax?: (number | null);
+    followerCountMin?: (number | null);
+    page?: number;
+    pageSize?: number;
+    query?: (string | null);
+    sortBy?: 'username' | 'follower_count' | 'updated_date';
+    sortOrder?: 'asc' | 'desc';
+};
+
+export type IgProfilesSearchIgProfilesResponse = (ProfileSearchResponse);
+
+export type IgProfilesReadIgProfileFullProfileData = {
+    profileId: string;
+};
+
+export type IgProfilesReadIgProfileFullProfileResponse = (ProfileSnapshotFull);
 
 export type IgProfilesReadIgProfileData = {
     profileId: string;

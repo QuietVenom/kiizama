@@ -8,38 +8,45 @@ vi.mock("@/components/Dashboard/DashboardTopbar", () => ({
   default: () => <div>Dashboard topbar</div>,
 }))
 
-vi.mock("@/components/BrandIntelligence/CampaignStrategyBuilder", () => ({
-  default: () => <section>Generate campaign strategy PDF</section>,
-}))
-
-vi.mock("@/components/BrandIntelligence/CreatorStrategyBuilder", () => ({
-  default: () => <section>Generate creator strategy PDF</section>,
-}))
-
 vi.mock(
-  "@/features/brand-intelligence/use-profile-existence-validation",
+  "@/routes/_layout/brand-intelligence/-components/CampaignStrategyTab",
   () => ({
-    useProfileExistenceValidation: () => ({
-      existingUsernames: [],
-      expiredUsernames: [],
-      hasValidatedProfiles: false,
-      isValidationPending: false,
-      isValidationStale: false,
-      missingUsernames: [],
-      orderedProfiles: [],
-      validateProfiles: vi.fn(),
-      validatedUsernames: [],
-      validationError: null,
-    }),
+    default: () => <section>Generate campaign strategy PDF</section>,
   }),
 )
+
+vi.mock(
+  "@/routes/_layout/brand-intelligence/-components/CreatorStrategyTab",
+  () => ({
+    default: () => <section>Generate creator strategy PDF</section>,
+  }),
+)
+
+vi.mock("@/components/BrandIntelligence/StrategyOptionCard", () => ({
+  default: ({
+    description,
+    isActive,
+    onClick,
+    title,
+  }: {
+    description: string
+    isActive: boolean
+    onClick: () => void
+    title: string
+  }) => (
+    <button aria-pressed={isActive} onClick={onClick} type="button">
+      <span>{title}</span>
+      <span>{description}</span>
+    </button>
+  ),
+}))
 
 const { ReputationStrategyPage } = await import(
   "../../../src/routes/_layout/brand-intelligence/-components/ReputationStrategyPage"
 )
 
 describe("reputation strategy page", () => {
-  test("reputation_strategy_page_initial_state_renders_campaign_strategy_header_and_badges", () => {
+  test("reputation_strategy_page_initial_state_renders_campaign_strategy_header_and_badges", async () => {
     // Arrange / Act
     renderWithProviders(<ReputationStrategyPage />, { language: "en" })
 
@@ -52,7 +59,9 @@ describe("reputation strategy page", () => {
     expect(screen.getByText("Profile validation first")).toBeVisible()
     expect(screen.getByText("PDF only")).toBeVisible()
     expect(screen.getByText("Local reports synced")).toBeVisible()
-    expect(screen.getByText("Generate campaign strategy PDF")).toBeVisible()
+    expect(
+      await screen.findByText("Generate campaign strategy PDF"),
+    ).toBeVisible()
   })
 
   test("reputation_strategy_page_creator_strategy_selection_renders_creator_builder", async () => {
@@ -66,6 +75,8 @@ describe("reputation strategy page", () => {
     )
 
     // Assert
-    expect(screen.getByText("Generate creator strategy PDF")).toBeVisible()
+    expect(
+      await screen.findByText("Generate creator strategy PDF"),
+    ).toBeVisible()
   })
 })

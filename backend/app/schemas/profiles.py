@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import (
     AnyUrl,
@@ -7,11 +7,15 @@ from pydantic import (
     ConfigDict,
     Field,
     StringConstraints,
+    field_validator,
+    model_validator,
 )
 from pydantic.functional_validators import BeforeValidator
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 NonEmptyStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+ProfileSearchSortBy = Literal["username", "follower_count", "updated_date"]
+ProfileSearchSortOrder = Literal["asc", "desc"]
 
 
 class BioLink(BaseModel):
@@ -131,3 +135,77 @@ class ProfileCollection(BaseModel):
     """
 
     profiles: list[Profile]
+
+
+class ProfileSearchFilters(BaseModel):
+    query: str | None = Field(default=None, min_length=3, max_length=100)
+    ai_categories: list[NonEmptyStr] = Field(default_factory=list, max_length=25)
+    ai_roles: list[NonEmptyStr] = Field(default_factory=list, max_length=25)
+    follower_count_min: int | None = Field(default=None, ge=0)
+    follower_count_max: int | None = Field(default=None, ge=0)
+    sort_by: ProfileSearchSortBy = "follower_count"
+    sort_order: ProfileSearchSortOrder = "desc"
+    page: int = Field(default=1, ge=1)
+    page_size: int = Field(default=20, ge=1, le=100)
+
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    @field_validator("query")
+    @classmethod
+    def normalize_query(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return value or None
+
+    @field_validator("ai_categories", "ai_roles", mode="before")
+    @classmethod
+    def normalize_filters(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        if isinstance(value, str):
+            raw_items = [value]
+        elif isinstance(value, list):
+            raw_items = value
+        else:
+            raise ValueError("Expected a list of strings.")
+
+        normalized: list[str] = []
+        seen: set[str] = set()
+        for raw_item in raw_items:
+            if not isinstance(raw_item, str):
+                raise ValueError("Expected a list of strings.")
+            item = raw_item.strip()
+            if not item:
+                continue
+            item_key = item.casefold()
+            if item_key in seen:
+                continue
+            seen.add(item_key)
+            normalized.append(item)
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_follower_range(self) -> "ProfileSearchFilters":
+        if (
+            self.follower_count_min is not None
+            and self.follower_count_max is not None
+            and self.follower_count_min > self.follower_count_max
+        ):
+            raise ValueError(
+                "follower_count_min cannot be greater than follower_count_max."
+            )
+        return self
+
+
+class ProfileSearchPagination(BaseModel):
+    page: int
+    page_size: int
+    total: int
+    total_pages: int
+    has_next: bool
+    has_previous: bool
+
+
+class ProfileSearchResponse(BaseModel):
+    profiles: list[Profile]
+    pagination: ProfileSearchPagination

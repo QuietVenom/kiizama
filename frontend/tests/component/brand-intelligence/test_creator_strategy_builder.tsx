@@ -11,6 +11,7 @@ import {
   creatorFormDefaultValues,
   creatorTextInputDefaultValues,
 } from "../../../src/features/brand-intelligence/form-values"
+import { normalizeUsernameList } from "../../../src/features/brand-intelligence/utils"
 import { renderWithProviders } from "../helpers/render"
 
 const { billingApi, brandApi, localReports, reportFiles, toast } = vi.hoisted(
@@ -120,13 +121,11 @@ const createValidation = ({
 const CreatorHarness = ({
   creatorTextInputValues = creatorTextInputDefaultValues,
   creatorUsername = "creator_one",
-  creatorValidationUsernames = ["creator_one"],
   validation = createValidation(),
   values = createCreatorValues(),
 }: {
   creatorTextInputValues?: CreatorTextInputValues
   creatorUsername?: string
-  creatorValidationUsernames?: string[]
   validation?: ReturnType<typeof createValidation>
   values?: CreatorFormValues
 }) => {
@@ -134,12 +133,18 @@ const CreatorHarness = ({
     defaultValues: values,
   })
   const [textInputValues, setTextInputValues] = useState(creatorTextInputValues)
+  const creatorUsernameValue = form.watch("creator_username")
+  const normalizedCreatorUsername =
+    normalizeUsernameList([creatorUsernameValue ?? ""])[0] ?? ""
+  const derivedCreatorValidationUsernames = normalizedCreatorUsername
+    ? [normalizedCreatorUsername]
+    : []
 
   return (
     <CreatorStrategyBuilder
       creatorTextInputValues={textInputValues}
-      creatorUsername={creatorUsername}
-      creatorValidationUsernames={creatorValidationUsernames}
+      creatorUsername={creatorUsername || normalizedCreatorUsername}
+      creatorValidationUsernames={derivedCreatorValidationUsernames}
       form={form}
       onTextInputValuesChange={setTextInputValues}
       validation={validation as never}
@@ -168,7 +173,6 @@ describe("creator strategy builder", () => {
     renderWithProviders(
       <CreatorHarness
         creatorUsername=""
-        creatorValidationUsernames={[]}
         validation={createValidation({ username: "" })}
         values={creatorFormDefaultValues}
       />,
@@ -196,6 +200,7 @@ describe("creator strategy builder", () => {
     )
 
     // Assert
+    expect(await screen.findByText("Report ready: creator.pdf")).toBeVisible()
     await waitFor(() => {
       expect(brandApi.generateBrandIntelligenceReport).toHaveBeenCalledWith({
         endpointPath: "/api/v1/brand-intelligence/reputation-creator-strategy",
@@ -232,6 +237,7 @@ describe("creator strategy builder", () => {
     )
 
     // Assert
+    expect(await screen.findByText("Report ready: creator.zip")).toBeVisible()
     await waitFor(() => {
       expect(reportFiles.downloadBlob).toHaveBeenCalledWith(
         expect.any(Blob),
@@ -274,5 +280,28 @@ describe("creator strategy builder", () => {
     // Assert
     expect(await screen.findByText("Report generation failed")).toBeVisible()
     expect(screen.getByText("OpenAI is unavailable.")).toBeVisible()
+  })
+
+  test("creator_strategy_paste_profile_url_keeps_full_input_until_normalized_username_is_created", async () => {
+    // Arrange
+    const user = userEvent.setup()
+    renderWithProviders(
+      <CreatorHarness
+        creatorUsername=""
+        validation={createValidation({ username: "therock" })}
+        values={creatorFormDefaultValues}
+      />,
+      { language: "en" },
+    )
+
+    // Act
+    await user.type(
+      screen.getByRole("textbox", { name: "Creator username" }),
+      "https://www.instagram.com/therock/,",
+    )
+
+    // Assert
+    expect(screen.getByRole("button", { name: "Remove therock" })).toBeVisible()
+    expect(screen.queryByText("@ther")).not.toBeInTheDocument()
   })
 })

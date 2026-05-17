@@ -17,6 +17,48 @@ describe("instagram usernames", () => {
     expect(username).toBe("user.name")
   })
 
+  test("instagram_username_normalize_extracts_username_from_instagram_profile_urls", () => {
+    // Arrange / Act / Assert
+    expect(
+      normalizeInstagramUsername("https://www.instagram.com/emilio.marcos/"),
+    ).toBe("emilio.marcos")
+    expect(
+      normalizeInstagramUsername("https://www.instagram.com/emilio.marcos"),
+    ).toBe("emilio.marcos")
+    expect(
+      normalizeInstagramUsername("http://www.instagram.com/emilio.marcos"),
+    ).toBe("emilio.marcos")
+    expect(
+      normalizeInstagramUsername("https://instagram.com/emilio.marcos"),
+    ).toBe("emilio.marcos")
+    expect(
+      normalizeInstagramUsername(
+        "https://www.instagram.com/emilio.marcos/?hl=en",
+      ),
+    ).toBe("emilio.marcos")
+    expect(
+      normalizeInstagramUsername(
+        "https://www.instagram.com/emilio.marcos/reels/",
+      ),
+    ).toBe("emilio.marcos")
+  })
+
+  test("instagram_username_normalize_rejects_reserved_or_non_instagram_urls", () => {
+    // Arrange / Act / Assert
+    expect(
+      normalizeInstagramUsername("https://www.instagram.com/p/abc123/"),
+    ).toBe("https://www.instagram.com/p/abc123/")
+    expect(
+      normalizeInstagramUsername("https://www.instagram.com/explore/topics/1"),
+    ).toBe("https://www.instagram.com/explore/topics/1")
+    expect(normalizeInstagramUsername("https://www.tiktok.com/@emilio")).toBe(
+      "https://www.tiktok.com/@emilio",
+    )
+    expect(normalizeInstagramUsername("https://www.instagram.com/")).toBe(
+      "https://www.instagram.com/",
+    )
+  })
+
   test("instagram_username_parse_splits_common_separators_and_dedupes", () => {
     // Arrange / Act
     const usernames = parseInstagramUsernamesInput(
@@ -38,6 +80,19 @@ describe("instagram usernames", () => {
 
     // Assert
     expect(usernames).toEqual(["first", "second", "third"])
+  })
+
+  test("instagram_username_sanitize_dedupes_mixed_handles_and_profile_urls", () => {
+    // Arrange / Act
+    const usernames = sanitizeInstagramUsernames([
+      "@emilio.marcos",
+      "https://www.instagram.com/emilio.marcos/",
+      "instagram.com/Emilio.Marcos",
+      "second_creator",
+    ])
+
+    // Assert
+    expect(usernames).toEqual(["emilio.marcos", "second_creator"])
   })
 
   test("instagram_username_validation_rejects_invalid_shapes", () => {

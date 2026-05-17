@@ -26,9 +26,20 @@ from .profile_snapshots import (
     ProfileSnapshotCollection,
     ProfileSnapshotExpanded,
     ProfileSnapshotExpandedCollection,
+    ProfileSnapshotFull,
     UpdateProfileSnapshot,
 )
-from .profiles import BioLink, Profile, ProfileCollection, UpdateProfile
+from .profiles import (
+    BioLink,
+    Profile,
+    ProfileCollection,
+    ProfileSearchFilters,
+    ProfileSearchPagination,
+    ProfileSearchResponse,
+    ProfileSearchSortBy,
+    ProfileSearchSortOrder,
+    UpdateProfile,
+)
 from .reels import (
     Reel,
     ReelCollection,
@@ -55,10 +66,16 @@ __all__ = [
     "PostsDocumentCollection",
     "Profile",
     "ProfileCollection",
+    "ProfileSearchFilters",
+    "ProfileSearchPagination",
+    "ProfileSearchResponse",
+    "ProfileSearchSortBy",
+    "ProfileSearchSortOrder",
     "ProfileSnapshot",
     "ProfileSnapshotCollection",
     "ProfileSnapshotExpanded",
     "ProfileSnapshotExpandedCollection",
+    "ProfileSnapshotFull",
     "Reel",
     "ReelCollection",
     "ReelItem",

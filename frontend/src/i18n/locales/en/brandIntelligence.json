@@ -160,7 +160,7 @@
     },
     "helperText": {
       "creatorsDisabled": "Creators are disabled for this Crisis campaign while this option is active.",
-      "creatorUsernames": "Paste a list, press Enter, or separate usernames with commas.",
+      "creatorUsernames": "Paste a list, press Enter, or separate usernames with commas. You can also paste Instagram profile URLs.",
       "crisisOnly": "Available for Crisis campaigns. When enabled, the report will be generated without creator usernames or profile validation.",
       "enableCrisisOnly": "Select Brand goal = Crisis to enable this option.",
       "brandUrls": "Optional. Add up to 3 relevant URLs for the brand.",
@@ -253,7 +253,7 @@
       "concerns": "Concerns"
     },
     "fieldHelp": {
-      "creatorUsername": "Creator username.",
+      "creatorUsername": "Creator username. Instagram profile URLs are also accepted.",
       "goalType": "Primary reputation goal for the creator strategy.",
       "timeframe": "Strategy timeframe.",
       "creatorContext": "General creator context.",

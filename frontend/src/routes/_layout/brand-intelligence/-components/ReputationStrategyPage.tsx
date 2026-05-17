@@ -1,81 +1,89 @@
-import { Badge, Box, Flex, Heading, SimpleGrid, Text } from "@chakra-ui/react"
-import { useMemo, useState } from "react"
-import { useForm, useWatch } from "react-hook-form"
+import {
+  Badge,
+  Box,
+  Flex,
+  Heading,
+  SimpleGrid,
+  Skeleton,
+  Text,
+} from "@chakra-ui/react"
+import { lazy, Suspense, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { FiTarget, FiUserCheck } from "react-icons/fi"
 import { ImBlocked } from "react-icons/im"
 
-import CampaignStrategyBuilder from "@/components/BrandIntelligence/CampaignStrategyBuilder"
-import CreatorStrategyBuilder from "@/components/BrandIntelligence/CreatorStrategyBuilder"
 import StrategyOptionCard from "@/components/BrandIntelligence/StrategyOptionCard"
 import DashboardTopbar from "@/components/Dashboard/DashboardTopbar"
-import {
-  type CampaignFormValues,
-  type CreatorFormValues,
-  campaignFormDefaultValues,
-  creatorFormDefaultValues,
-  creatorTextInputDefaultValues,
-} from "@/features/brand-intelligence/form-values"
-import { useProfileExistenceValidation } from "@/features/brand-intelligence/use-profile-existence-validation"
-import { normalizeUsernameList } from "@/features/brand-intelligence/utils"
 
 type StrategyType =
   | "reputation-campaign-strategy"
   | "reputation-creator-strategy"
 
-const EMPTY_USERNAMES: string[] = []
+const loadCampaignStrategyTab = () => import("./CampaignStrategyTab")
+const loadCreatorStrategyTab = () => import("./CreatorStrategyTab")
+
+const CampaignStrategyTab = lazy(loadCampaignStrategyTab)
+const CreatorStrategyTab = lazy(loadCreatorStrategyTab)
+
+const StrategyTabFallback = () => (
+  <Box
+    display="grid"
+    gridTemplateColumns={{ base: "1fr", xl: "minmax(0, 1.65fr) 360px" }}
+    gap={6}
+  >
+    <Flex direction="column" gap={6} minW={0}>
+      <Box
+        rounded="30px"
+        borderWidth="1px"
+        borderColor="ui.border"
+        bg="ui.panel"
+        boxShadow="ui.panel"
+        px={{ base: 5, md: 6 }}
+        py={{ base: 5, md: 6 }}
+      >
+        <Skeleton h="4" w="24" rounded="full" />
+        <Skeleton mt={4} h="8" w="56" rounded="xl" />
+        <Skeleton mt={3} h="4" rounded="full" />
+        <Skeleton mt={6} h="14" rounded="2xl" />
+        <Skeleton mt={4} h="14" rounded="2xl" />
+        <Skeleton mt={4} h="14" rounded="2xl" />
+      </Box>
+      <Skeleton h="320px" rounded="3xl" />
+      <Skeleton h="280px" rounded="3xl" />
+    </Flex>
+
+    <Flex direction="column" gap={6}>
+      <Skeleton h="260px" rounded="3xl" />
+      <Skeleton h="220px" rounded="3xl" />
+    </Flex>
+  </Box>
+)
 
 export function ReputationStrategyPage() {
   const { t } = useTranslation("brandIntelligence")
   const [selectedStrategy, setSelectedStrategy] = useState<StrategyType>(
     "reputation-campaign-strategy",
   )
-  const [creatorTextInputValues, setCreatorTextInputValues] = useState(
-    creatorTextInputDefaultValues,
-  )
-
-  const campaignForm = useForm<CampaignFormValues>({
-    mode: "onBlur",
-    shouldUnregister: false,
-    defaultValues: campaignFormDefaultValues,
-  })
-  const creatorForm = useForm<CreatorFormValues>({
-    mode: "onBlur",
-    shouldUnregister: false,
-    defaultValues: creatorFormDefaultValues,
+  const [mountedStrategies, setMountedStrategies] = useState<
+    Record<StrategyType, boolean>
+  >({
+    "reputation-campaign-strategy": true,
+    "reputation-creator-strategy": false,
   })
 
-  const campaignProfilesValue = useWatch({
-    control: campaignForm.control,
-    name: "profiles_list",
-    defaultValue: campaignFormDefaultValues.profiles_list,
-  })
-  const creatorUsernameValue = useWatch({
-    control: creatorForm.control,
-    name: "creator_username",
-    defaultValue: creatorFormDefaultValues.creator_username,
-  })
+  useEffect(() => {
+    void loadCampaignStrategyTab()
+  }, [])
 
-  const normalizedCampaignProfiles = useMemo(
-    () => normalizeUsernameList(campaignProfilesValue ?? []),
-    [campaignProfilesValue],
-  )
-  const normalizedCreatorUsername = useMemo(
-    () => normalizeUsernameList([creatorUsernameValue ?? ""])[0] ?? "",
-    [creatorUsernameValue],
-  )
-  const creatorValidationUsernames = useMemo(
-    () =>
-      normalizedCreatorUsername ? [normalizedCreatorUsername] : EMPTY_USERNAMES,
-    [normalizedCreatorUsername],
-  )
+  const handleSelectStrategy = (strategy: StrategyType) => {
+    setSelectedStrategy(strategy)
+    setMountedStrategies((current) =>
+      current[strategy] ? current : { ...current, [strategy]: true },
+    )
+  }
 
-  const campaignValidation = useProfileExistenceValidation(
-    normalizedCampaignProfiles,
-  )
-  const creatorValidation = useProfileExistenceValidation(
-    creatorValidationUsernames,
-  )
+  const isCampaignSelected = selectedStrategy === "reputation-campaign-strategy"
+  const isCreatorSelected = selectedStrategy === "reputation-creator-strategy"
 
   return (
     <Box minH="100vh" bg="ui.page">
@@ -154,15 +162,19 @@ export function ReputationStrategyPage() {
           <StrategyOptionCard
             description={t("page.strategyOptions.campaign.description")}
             icon={FiTarget}
-            isActive={selectedStrategy === "reputation-campaign-strategy"}
-            onClick={() => setSelectedStrategy("reputation-campaign-strategy")}
+            isActive={isCampaignSelected}
+            onMouseEnter={() => void loadCampaignStrategyTab()}
+            onFocus={() => void loadCampaignStrategyTab()}
+            onClick={() => handleSelectStrategy("reputation-campaign-strategy")}
             title={t("page.strategyOptions.campaign.title")}
           />
           <StrategyOptionCard
             description={t("page.strategyOptions.creator.description")}
             icon={FiUserCheck}
-            isActive={selectedStrategy === "reputation-creator-strategy"}
-            onClick={() => setSelectedStrategy("reputation-creator-strategy")}
+            isActive={isCreatorSelected}
+            onMouseEnter={() => void loadCreatorStrategyTab()}
+            onFocus={() => void loadCreatorStrategyTab()}
+            onClick={() => handleSelectStrategy("reputation-creator-strategy")}
             title={t("page.strategyOptions.creator.title")}
           />
         </SimpleGrid>
@@ -205,22 +217,20 @@ export function ReputationStrategyPage() {
           </Flex>
         </Box>
 
-        {selectedStrategy === "reputation-campaign-strategy" ? (
-          <CampaignStrategyBuilder
-            form={campaignForm}
-            normalizedProfiles={normalizedCampaignProfiles}
-            validation={campaignValidation}
-          />
-        ) : (
-          <CreatorStrategyBuilder
-            creatorTextInputValues={creatorTextInputValues}
-            creatorUsername={normalizedCreatorUsername}
-            creatorValidationUsernames={creatorValidationUsernames}
-            form={creatorForm}
-            onTextInputValuesChange={setCreatorTextInputValues}
-            validation={creatorValidation}
-          />
-        )}
+        {mountedStrategies["reputation-campaign-strategy"] ? (
+          <Box display={isCampaignSelected ? "block" : "none"}>
+            <Suspense fallback={<StrategyTabFallback />}>
+              <CampaignStrategyTab />
+            </Suspense>
+          </Box>
+        ) : null}
+        {mountedStrategies["reputation-creator-strategy"] ? (
+          <Box display={isCreatorSelected ? "block" : "none"}>
+            <Suspense fallback={<StrategyTabFallback />}>
+              <CreatorStrategyTab />
+            </Suspense>
+          </Box>
+        ) : null}
       </Box>
     </Box>
   )

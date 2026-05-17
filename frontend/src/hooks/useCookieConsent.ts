@@ -1,4 +1,10 @@
 import { useEffect, useRef, useState } from "react"
+import { deleteCookie, readCookie, writeCookie } from "@/lib/browser-cookies"
+import {
+  COOKIE_CONSENT_NAME,
+  getSharedCookieOptions,
+  LEGACY_COOKIE_CONSENT_NAME,
+} from "@/lib/cookie-settings"
 
 export type CookiePreferenceKey = "functional" | "analytics" | "marketing"
 
@@ -14,9 +20,6 @@ export type CookieConsentOption = {
   label: string
   editable: boolean
 }
-
-const COOKIE_CONSENT_NAME = "notion_cookie_consent"
-
 export const DEFAULT_COOKIE_PREFERENCES: CookiePreferences = {
   strictlyNecessary: true,
   functional: true,
@@ -47,31 +50,38 @@ const parseCookiePreferences = (rawValue: string): CookiePreferences | null => {
 }
 
 export const readCookiePreferences = (): CookiePreferences | null => {
-  if (typeof document === "undefined") {
+  const currentPreferences = parseCookiePreferences(
+    readCookie(COOKIE_CONSENT_NAME) ?? "",
+  )
+
+  if (currentPreferences) {
+    return currentPreferences
+  }
+
+  const legacyPreferences = parseCookiePreferences(
+    readCookie(LEGACY_COOKIE_CONSENT_NAME) ?? "",
+  )
+
+  if (!legacyPreferences) {
     return null
   }
 
-  const cookieValue = document.cookie
-    .split("; ")
-    .find((entry) => entry.startsWith(`${COOKIE_CONSENT_NAME}=`))
-
-  if (!cookieValue) {
-    return null
-  }
-
-  const rawValue = cookieValue.slice(COOKIE_CONSENT_NAME.length + 1)
-  return parseCookiePreferences(rawValue)
+  writeCookiePreferences(legacyPreferences)
+  deleteCookie(LEGACY_COOKIE_CONSENT_NAME)
+  deleteCookie(LEGACY_COOKIE_CONSENT_NAME, {
+    domain: getSharedCookieOptions().domain,
+    path: "/",
+    sameSite: "Lax",
+  })
+  return legacyPreferences
 }
 
 export const writeCookiePreferences = (preferences: CookiePreferences) => {
-  if (typeof document === "undefined") {
-    return
-  }
-
-  const maxAge = 60 * 60 * 24 * 365
-  const value = encodeURIComponent(JSON.stringify(preferences))
-  // biome-ignore lint/suspicious/noDocumentCookie: consent preferences are intentionally stored in a first-party cookie for broad browser compatibility.
-  document.cookie = `${COOKIE_CONSENT_NAME}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`
+  writeCookie(
+    COOKIE_CONSENT_NAME,
+    JSON.stringify(preferences),
+    getSharedCookieOptions(),
+  )
 }
 
 export const ensureCookieConsentSaved = (): CookiePreferences => {

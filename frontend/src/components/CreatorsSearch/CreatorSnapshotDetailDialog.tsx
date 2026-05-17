@@ -5,6 +5,7 @@ import {
   Image,
   Link,
   SimpleGrid,
+  Skeleton,
   Table,
   Text,
 } from "@chakra-ui/react"
@@ -16,6 +17,7 @@ import type {
   BioLink,
   PostItem,
   ProfileSnapshotExpanded,
+  ProfileSnapshotFull,
   ReelItem,
 } from "@/client"
 import { Button } from "@/components/ui/button"
@@ -30,8 +32,11 @@ import {
 import { formatDate, formatNumber } from "@/i18n"
 
 type CreatorSnapshotDetailDialogProps = {
+  errorMessage?: string | null
+  loading?: boolean
   onOpenChange: (open: boolean) => void
-  snapshot: ProfileSnapshotExpanded | null
+  open?: boolean
+  snapshot: ProfileSnapshotExpanded | ProfileSnapshotFull | null
 }
 
 type ContentSectionProps = {
@@ -304,10 +309,14 @@ const MetricsGroupBox = ({
 )
 
 const CreatorSnapshotDetailDialog = ({
+  errorMessage = null,
+  loading = false,
   onOpenChange,
+  open,
   snapshot,
 }: CreatorSnapshotDetailDialogProps) => {
   const { i18n, t } = useTranslation(["creatorsSearch", "common"])
+  const isOpen = open ?? (Boolean(snapshot) || loading || Boolean(errorMessage))
   const profile = snapshot?.profile
   const language = i18n.resolvedLanguage ?? i18n.language
   const profileImageSrc = profile?.profile_pic_src || profile?.profile_pic_url
@@ -332,7 +341,7 @@ const CreatorSnapshotDetailDialog = ({
 
   return (
     <DialogRoot
-      open={Boolean(snapshot)}
+      open={isOpen}
       placement="center"
       onOpenChange={({ open }) => onOpenChange(open)}
     >
@@ -357,22 +366,32 @@ const CreatorSnapshotDetailDialog = ({
             fontWeight="black"
             letterSpacing="-0.02em"
           >
-            {profile?.full_name ||
-              profile?.username ||
-              t("creatorsSearch:detail.fallbackTitle")}
+            {loading
+              ? t("creatorsSearch:detail.loadingTitle")
+              : profile?.full_name ||
+                profile?.username ||
+                t("creatorsSearch:detail.fallbackTitle")}
           </DialogTitle>
           <Text mt={2} color="ui.secondaryText">
-            @
-            {profile?.username ||
-              snapshot?.profile_id ||
-              t("creatorsSearch:detail.unknown")}{" "}
-            {snapshot
-              ? `• ${t("creatorsSearch:detail.snapshotCaptured", {
-                  date:
-                    formatSnapshotDateTime(snapshot.scraped_at, language) ??
-                    t("creatorsSearch:detail.notAvailable"),
-                })}`
-              : ""}
+            {loading ? (
+              t("creatorsSearch:detail.loadingDescription")
+            ) : errorMessage ? (
+              t("creatorsSearch:detail.errorTitle")
+            ) : (
+              <>
+                @
+                {profile?.username ||
+                  snapshot?.profile_id ||
+                  t("creatorsSearch:detail.unknown")}{" "}
+                {snapshot
+                  ? `• ${t("creatorsSearch:detail.snapshotCaptured", {
+                      date:
+                        formatSnapshotDateTime(snapshot.scraped_at, language) ??
+                        t("creatorsSearch:detail.notAvailable"),
+                    })}`
+                  : ""}
+              </>
+            )}
           </Text>
         </DialogHeader>
 
@@ -381,7 +400,33 @@ const CreatorSnapshotDetailDialog = ({
           py={{ base: 5, md: 6 }}
           overflowY="auto"
         >
-          {snapshot ? (
+          {loading ? (
+            <Flex direction="column" gap={5}>
+              <Skeleton h="180px" rounded="3xl" />
+              <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
+                <Skeleton h="120px" rounded="2xl" />
+                <Skeleton h="120px" rounded="2xl" />
+                <Skeleton h="120px" rounded="2xl" />
+              </SimpleGrid>
+              <Skeleton h="280px" rounded="3xl" />
+            </Flex>
+          ) : errorMessage ? (
+            <Box
+              rounded="3xl"
+              borderWidth="1px"
+              borderColor="ui.danger"
+              bg="ui.dangerSoft"
+              px={{ base: 5, md: 6 }}
+              py={{ base: 5, md: 6 }}
+            >
+              <Text color="ui.dangerText" fontWeight="black">
+                {t("creatorsSearch:detail.errorTitle")}
+              </Text>
+              <Text mt={2} color="ui.secondaryText">
+                {errorMessage}
+              </Text>
+            </Box>
+          ) : snapshot ? (
             <Flex direction="column" gap={5}>
               <Box
                 layerStyle="dashboardCard"

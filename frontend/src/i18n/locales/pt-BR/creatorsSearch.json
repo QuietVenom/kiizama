@@ -10,11 +10,21 @@
     "description": "Adicione vários usernames do Instagram, revise quais criadores já estão armazenados na plataforma e abra uma visão completa para cada correspondência.",
     "guideButton": "Guia de busca"
   },
+  "tabs": {
+    "direct": {
+      "title": "Busca direta de criadores",
+      "description": "Adicione usernames que voce ja conhece."
+    },
+    "directory": {
+      "title": "Explorar por categoria ou papel",
+      "description": "Previa do novo fluxo de diretorio."
+    }
+  },
   "input": {
     "eyebrow": "BUSCA MULTI-USERNAME",
     "title": "Buscar criadores por username",
     "helpAria": "Ajuda da busca",
-    "tooltip": "Cole uma lista, pressione Enter ou separe os usernames com vírgulas. Os usernames são normalizados para minúsculas e qualquer @ inicial é removido automaticamente antes de executar a busca.",
+    "tooltip": "Cole uma lista, pressione Enter ou separe os usernames com vírgulas. Você também pode colar URLs de perfil do Instagram. Antes de executar a busca, os usernames são normalizados para minúsculas e qualquer @ inicial ou URL de perfil compatível é convertida automaticamente para o username.",
     "label": "Usernames do Instagram",
     "helper": "Até 50 usernames por solicitação.",
     "placeholder": "creator_one, brand.partner, another_creator",
@@ -134,6 +144,97 @@
       }
     }
   },
+  "directoryPreview": {
+    "filters": {
+      "eyebrow": "FILTROS DE DESCOBERTA",
+      "title": "Defina seu criador",
+      "searchAction": "BUSCAR",
+      "saveFilterAction": "Salvar filtro",
+      "searchLabel": "Busca por texto",
+      "optional": "(Opcional)",
+      "searchPlaceholder": "Buscar por keyword, nicho ou estilo do criador",
+      "searchHint": "Digite 3 ou mais caracteres para incluir esta busca na solicitacao.",
+      "categories": "Categorias em destaque",
+      "roles": "Papeis do criador",
+      "range": "Faixa de seguidores",
+      "sort": "Ordenar por",
+      "sortValue": "Melhor match",
+      "dialog": {
+        "cancel": "Cancelar",
+        "add": "Adicionar"
+      },
+      "categoryDialog": {
+        "trigger": "Escolher categorias",
+        "title": "Selecione categorias",
+        "description": "Estas sao as categorias de criadores atualmente disponiveis no catalogo.",
+        "empty": "Voce ainda nao adicionou categorias a este filtro."
+      },
+      "roleDialog": {
+        "trigger": "Escolher papeis",
+        "title": "Selecione papeis",
+        "description": "Estes sao os papeis de criadores atualmente disponiveis no catalogo.",
+        "empty": "Voce ainda nao adicionou papeis a este filtro."
+      },
+      "rangeDialog": {
+        "trigger": "Escolher faixa",
+        "title": "Selecione a faixa",
+        "description": "Use um tipo de criador por size ou defina uma faixa manual de seguidores.",
+        "empty": "Voce ainda nao adicionou uma faixa a este filtro.",
+        "presetsLabel": "Tipos de criador por size",
+        "manualLabel": "Faixa manual",
+        "manualDescription": "Voce pode usar minimo, maximo ou ambos. O minimo comeca em 1 por default.",
+        "minLabel": "Minimo",
+        "maxLabel": "Maximo",
+        "minChip": "Min {{value}}",
+        "maxChip": "Max {{value}}"
+      },
+      "sortDialog": {
+        "trigger": "Escolher ordem",
+        "title": "Selecione a ordem",
+        "description": "Estas opcoes refletem exatamente o contrato atual do endpoint de busca.",
+        "sortByLabel": "Ordenar por",
+        "directionLabel": "Direcao",
+        "options": {
+          "username": "Username",
+          "followerCount": "Follower count"
+        }
+      },
+      "resetAction": "Restaurar padrao"
+    },
+    "updateQueue": {
+      "eyebrow": "LISTA DE ATUALIZAÇÃO",
+      "title": "Lista para atualização",
+      "description": "Mantenha os perfis aqui enquanto continua navegando. Quando quiser, envie-os para jobs de atualização.",
+      "count_one": "{{count}} / {{max}} perfil",
+      "count_other": "{{count}} / {{max}} perfis",
+      "empty": "Os perfis marcados para atualizar aparecerão aqui.",
+      "addAction": "Lista de atualização",
+      "addedAction": "Adicionado",
+      "removeAction": "Remover",
+      "submitAction": "Atualizar",
+      "limitError": "Você pode adicionar até {{max}} perfis à lista de atualização."
+    },
+    "results": {
+      "eyebrow": "RESULTADOS DA BUSCA",
+      "title": "Explore",
+      "summary": "{{total}} perfis prontos para revisar",
+      "followers": "Seguidores",
+      "media": "Mídia",
+      "viewProfile": "Ver perfil completo",
+      "idleTitle": "Execute uma busca para explorar criadores salvos.",
+      "idleDescription": "Aplique filtros e clique em buscar para preencher este painel com perfis reais.",
+      "emptyTitle": "Nenhum criador correspondeu a esta busca.",
+      "emptyDescription": "Tente outra combinacao de filtros ou amplie a faixa de seguidores.",
+      "errorTitle": "A busca falhou",
+      "errorFallback": "Nao foi possivel carregar os resultados da busca de criadores.",
+      "fallbackCategory": "Sem categoria curada",
+      "fallbackRole": "Sem papel curado",
+      "status": {
+        "current": "Atual",
+        "update": "Atualizar"
+      }
+    }
+  },
   "card": {
     "fallbackName": "Perfil resolvido",
     "updateNeeded": "Atualização necessária",
@@ -237,6 +338,9 @@
       "carousel": "Carrossel",
       "video": "Vídeo",
       "post": "Post"
-    }
+    },
+    "loadingTitle": "Carregando perfil completo",
+    "loadingDescription": "Buscando o ultimo snapshot salvo do perfil.",
+    "errorTitle": "Nao foi possivel carregar o perfil completo"
   }
 }

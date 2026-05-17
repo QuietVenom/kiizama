@@ -160,7 +160,7 @@
     },
     "helperText": {
       "creatorsDisabled": "Los creadores están deshabilitados para esta campaña de Crisis mientras esta opción permanezca activa.",
-      "creatorUsernames": "Pega una lista, presiona Enter o separa los usernames con comas.",
+      "creatorUsernames": "Pega una lista, presiona Enter o separa los usernames con comas. También puedes pegar URLs de perfil de Instagram.",
       "crisisOnly": "Disponible para campañas de Crisis. Cuando se habilita, el reporte se generará sin usernames de creadores ni validación de perfiles.",
       "enableCrisisOnly": "Selecciona Goal de marca = Crisis para habilitar esta opción.",
       "brandUrls": "Opcional. Agrega hasta 3 URLs relevantes para la marca.",
@@ -253,7 +253,7 @@
       "concerns": "Preocupaciones"
     },
     "fieldHelp": {
-      "creatorUsername": "Username del creador.",
+      "creatorUsername": "Username del creador. También acepta URLs de perfil de Instagram.",
       "goalType": "Goal reputacional principal para la estrategia del creador.",
       "timeframe": "Horizonte temporal de la estrategia.",
       "creatorContext": "Contexto general del creador.",

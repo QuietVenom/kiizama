@@ -82,6 +82,19 @@ describe("brand intelligence utils", () => {
     expect(normalized).toEqual(["creator.one", "second_creator"])
   })
 
+  test("normalize_username_list_extracts_instagram_profile_urls", () => {
+    // Arrange / Act
+    const normalized = normalizeUsernameList([
+      "https://www.instagram.com/emilio.marcos/",
+      "instagram.com/Emilio.Marcos?hl=en",
+      "https://www.instagram.com/emilio.marcos/reels/",
+      "@second_creator",
+    ])
+
+    // Assert
+    expect(normalized).toEqual(["emilio.marcos", "second_creator"])
+  })
+
   test("is_valid_http_url_accepts_only_http_and_https_urls", () => {
     // Arrange / Act / Assert
     expect(isValidHttpUrl("https://kiizama.com")).toBe(true)

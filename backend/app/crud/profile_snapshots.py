@@ -234,6 +234,33 @@ def get_profile_snapshot_by_profile_id(
     return _serialize_snapshot(record) if record else None
 
 
+def get_profile_snapshot_full_by_profile_id(
+    collection: Any, profile_id: str
+) -> Document | None:
+    session = collection
+    assert isinstance(session, Session)
+    parsed_profile_id = _parse_optional_uuid(profile_id)
+    if parsed_profile_id is None:
+        return None
+
+    statement = _build_profile_snapshots_full_statement(
+        skip=0,
+        limit=1,
+        profile_ids=[parsed_profile_id],
+    )
+    snapshot = session.exec(statement).first()
+    if snapshot is None:
+        return None
+
+    return _serialize_snapshot_full(
+        snapshot,
+        profile=snapshot.profile,
+        posts_document=snapshot.posts_document,
+        reels_document=snapshot.reels_document,
+        metrics=snapshot.metrics,
+    )
+
+
 def list_profile_snapshots(
     collection: Any,
     skip: int = 0,

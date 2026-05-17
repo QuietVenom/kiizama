@@ -161,7 +161,9 @@ const fillCreatorStrategyForm = async (page: Page) => {
   await page
     .getByRole("button", { name: /Estrategia reputacional de creador/i })
     .click()
-  await page.getByPlaceholder("creator_one").fill(creatorUsername)
+  await page
+    .getByRole("textbox", { name: /Username del creador/i })
+    .fill(creatorUsername)
   await page.keyboard.press("Enter")
   await page.getByRole("button", { name: "Validar perfil" }).click()
   await expect(page.getByText("1 revisados")).toBeVisible()

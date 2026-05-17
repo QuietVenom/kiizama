@@ -10,6 +10,7 @@ import { Link as RouterLink } from "@tanstack/react-router"
 import { useEffect } from "react"
 import InfoPageShell from "@/components/Common/InfoPageShell"
 import { LANGUAGE_STORAGE_KEY } from "@/i18n"
+import { COOKIE_CONSENT_NAME } from "@/lib/cookie-settings"
 
 export function CookieTablesPage() {
   useEffect(() => {
@@ -86,14 +87,13 @@ export function CookieTablesPage() {
                   </Table.Row>
                   <Table.Row>
                     <Table.Cell>{LANGUAGE_STORAGE_KEY}</Table.Cell>
-                    <Table.Cell>
-                      Persistent until changed or browser storage is cleared
-                    </Table.Cell>
-                    <Table.Cell>Local Storage</Table.Cell>
+                    <Table.Cell>365 days</Table.Cell>
+                    <Table.Cell>.kiizama.com</Table.Cell>
                     <Table.Cell>
                       Used to remember the user&apos;s language preference so
-                      the Services can keep the selected interface language
-                      across navigation and future visits.
+                      the Website and Services can keep the selected interface
+                      language aligned across navigation, future visits, and
+                      supported Kiizama subdomains.
                     </Table.Cell>
                     <Table.Cell>Kiizama</Table.Cell>
                   </Table.Row>
@@ -143,11 +143,12 @@ export function CookieTablesPage() {
                     <Table.Cell>Kiizama</Table.Cell>
                   </Table.Row>
                   <Table.Row>
-                    <Table.Cell>notion_cookie_consent</Table.Cell>
+                    <Table.Cell>{COOKIE_CONSENT_NAME}</Table.Cell>
                     <Table.Cell>365 days</Table.Cell>
-                    <Table.Cell>www.kiizama.com</Table.Cell>
+                    <Table.Cell>.kiizama.com</Table.Cell>
                     <Table.Cell>
-                      Used to help remember your cookie consent preferences.
+                      Used to help remember your cookie consent preferences
+                      across supported Kiizama subdomains.
                     </Table.Cell>
                     <Table.Cell>Kiizama</Table.Cell>
                   </Table.Row>
@@ -235,7 +236,7 @@ export function CookieTablesPage() {
           </Stack>
 
           <Text color="ui.mutedText" fontSize="sm">
-            Last Updated: May 1, 2026
+            Last Updated: May 6, 2026
           </Text>
         </Stack>
       </Box>

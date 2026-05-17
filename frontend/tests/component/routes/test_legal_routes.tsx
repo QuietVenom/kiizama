@@ -27,10 +27,19 @@ describe("legal route content", () => {
     renderWithProviders(<CookieTablesPage />)
 
     expect(screen.getByText("kiizama.language")).toBeVisible()
+    expect(screen.getByText("kiizama_cookie_consent")).toBeVisible()
+    expect(screen.getAllByText(".kiizama.com").length).toBeGreaterThan(0)
     expect(screen.getByText("kiizama-creators-search-jobs")).toBeVisible()
     expect(screen.getByText("user-events:last-event-id")).toBeVisible()
     expect(
-      screen.getByText(/keep the selected interface language/i),
+      screen.getByText(
+        /selected interface language aligned across navigation/i,
+      ),
+    ).toBeVisible()
+    expect(
+      screen.getByText(
+        /cookie consent preferences across supported kiizama subdomains/i,
+      ),
     ).toBeVisible()
     expect(
       screen.getByText(/maintain a consistent user experience/i),

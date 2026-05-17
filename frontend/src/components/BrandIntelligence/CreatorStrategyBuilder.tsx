@@ -625,7 +625,6 @@ const CreatorStrategyBuilder = ({
                     })
                   }
                   invalid={!!fieldState.error}
-                  inputMaxLength={30}
                   inputValue={creatorTextInputValues.creatorUsername}
                   max={1}
                   onInputValueChange={(value) =>
