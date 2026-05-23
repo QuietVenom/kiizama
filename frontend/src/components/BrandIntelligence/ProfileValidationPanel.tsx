@@ -52,21 +52,7 @@ const ProfileValidationPanel = ({
   const missingProfiles = profiles.filter((profile) => !profile.exists)
 
   if (usernames.length === 0) {
-    return (
-      <Box
-        rounded="3xl"
-        borderWidth="1px"
-        borderColor="ui.border"
-        bg="ui.panel"
-        px={5}
-        py={5}
-      >
-        <Text fontWeight="bold">{t("validationPanel.title")}</Text>
-        <Text mt={2} color="ui.secondaryText">
-          {t("validationPanel.initialDescription")}
-        </Text>
-      </Box>
-    )
+    return null
   }
 
   if (isLoading && profiles.length === 0) {
@@ -145,21 +131,7 @@ const ProfileValidationPanel = ({
   }
 
   if (profiles.length === 0) {
-    return (
-      <Box
-        rounded="3xl"
-        borderWidth="1px"
-        borderColor="ui.border"
-        bg="ui.panel"
-        px={5}
-        py={5}
-      >
-        <Text fontWeight="bold">{t("validationPanel.title")}</Text>
-        <Text mt={2} color="ui.secondaryText">
-          {t("validationPanel.preValidationDescription")}
-        </Text>
-      </Box>
-    )
+    return null
   }
 
   return (

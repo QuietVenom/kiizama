@@ -33,11 +33,7 @@ describe("creators search page", () => {
     renderWithProviders(<CreatorsSearchPage />, { language: "en" })
 
     // Assert
-    expect(
-      screen.getByRole("heading", {
-        name: "Search saved creator profiles in one request.",
-      }),
-    ).toBeVisible()
+    expect(screen.getByText("Creators Search")).toBeVisible()
     expect(screen.getByText("Direct Creator Search")).toBeVisible()
     expect(screen.getByText("Browse by Category or Role")).toBeVisible()
     expect(

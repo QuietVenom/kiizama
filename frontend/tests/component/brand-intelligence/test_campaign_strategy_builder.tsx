@@ -159,8 +159,8 @@ describe("campaign strategy builder", () => {
 
     // Assert
     expect(
-      screen.getByText(/Add at least 1 creator username to unlock/i),
-    ).toBeVisible()
+      screen.queryByText(/Add at least 1 creator username to unlock/i),
+    ).not.toBeInTheDocument()
     expect(
       screen.getByRole("button", { name: "Generate PDF report" }),
     ).toBeDisabled()
@@ -184,7 +184,7 @@ describe("campaign strategy builder", () => {
       "Crisis",
     )
     await user.click(
-      screen.getByRole("checkbox", { name: "Not using creator(s)" }),
+      screen.getByRole("checkbox", { name: /Not using creator\(s\)/ }),
     )
     expect(await screen.findByText("Creator validation skipped")).toBeVisible()
     await user.click(

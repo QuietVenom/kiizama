@@ -12,10 +12,19 @@ from typing import TYPE_CHECKING, Any, cast
 
 import httpx
 import pytest
-from kiizama_scrape_core.ig_scraper.schemas import (
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramBatchCountersSchema,
     InstagramBatchScrapeSummaryResponse,
     InstagramBatchUsernameStatus,
+)
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
+    InstagramBatchCountersSchema as InstagramBatchCountersSchemaV2,
+)
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
+    InstagramBatchScrapeSummaryResponse as InstagramBatchScrapeSummaryResponseV2,
+)
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
+    InstagramBatchUsernameStatus as InstagramBatchUsernameStatusV2,
 )
 from sqlalchemy.exc import OperationalError
 
@@ -208,8 +217,10 @@ def test_process_message_leaves_message_pending_when_backend_completion_is_trans
 
     async def fake_execute_job_payload(
         payload: dict[str, Any],
+        *,
+        job_id: str | None = None,
     ) -> tuple[Any, str | None]:
-        del payload
+        del payload, job_id
         return _summary(), None
 
     _worker_modules()
@@ -235,8 +246,10 @@ def test_process_message_acks_when_backend_reports_conflict(monkeypatch: Any) ->
 
     async def fake_execute_job_payload(
         payload: dict[str, Any],
+        *,
+        job_id: str | None = None,
     ) -> tuple[Any, str | None]:
-        del payload
+        del payload, job_id
         return _summary(), None
 
     _worker_modules()
@@ -256,6 +269,43 @@ def test_process_message_acks_when_backend_reports_conflict(monkeypatch: Any) ->
     assert runtime.finished == [(runtime.handle, True)]
 
 
+def test_process_message_logs_completion_with_counters(
+    monkeypatch: Any,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    caplog.set_level(logging.INFO, logger="scrape_worker")
+    runtime = FakeRuntime(_handle())
+    backend_client = FakeBackendClient(_completion_result(status_code=200))
+
+    async def fake_execute_job_payload(
+        payload: dict[str, Any],
+        *,
+        job_id: str | None = None,
+    ) -> tuple[Any, str | None]:
+        del payload
+        assert job_id == "job-1"
+        return _summary(), None
+
+    _worker_modules()
+    monkeypatch.setattr(
+        "scrape_worker.worker.execute_job_payload", fake_execute_job_payload
+    )
+
+    _run(
+        _process_message(
+            runtime=runtime,
+            backend_client=backend_client,
+            message=_message(),
+        )
+    )
+
+    assert (
+        "Completed scrape job job-1 "
+        "(status=done, ack=true, counters=requested=1 successful=1 failed=0 not_found=0)"
+        in caplog.text
+    )
+
+
 def test_process_message_short_circuits_scrape_when_attempts_are_exhausted(
     monkeypatch: Any,
 ) -> None:
@@ -265,8 +315,12 @@ def test_process_message_short_circuits_scrape_when_attempts_are_exhausted(
 
     async def fake_execute_job_payload(
         payload: dict[str, Any],
+        *,
+        job_id: str | None = None,
     ) -> tuple[Any, str | None]:
-        raise AssertionError(f"execute_job_payload should not run: {payload!r}")
+        raise AssertionError(
+            f"execute_job_payload should not run: {payload!r} {job_id!r}"
+        )
 
     _worker_modules()
     monkeypatch.setattr(
@@ -298,8 +352,10 @@ def test_process_message_skips_backend_completion_when_lease_is_lost(
 
     async def fake_execute_job_payload(
         payload: dict[str, Any],
+        *,
+        job_id: str | None = None,
     ) -> tuple[Any, str | None]:
-        del payload
+        del payload, job_id
         return _summary(), None
 
     _worker_modules()
@@ -341,8 +397,10 @@ def test_process_message_leaves_job_pending_when_backend_transport_is_unavailabl
 
     async def fake_execute_job_payload(
         payload: dict[str, Any],
+        *,
+        job_id: str | None = None,
     ) -> tuple[Any, str | None]:
-        del payload
+        del payload, job_id
         return _summary(), None
 
     _worker_modules()
@@ -371,7 +429,10 @@ def test_process_message_leaves_job_pending_when_postgres_is_unavailable(
 
     async def fake_execute_job_payload(
         payload: dict[str, Any],
+        *,
+        job_id: str | None = None,
     ) -> tuple[Any, str | None]:
+        del job_id
         raise OperationalError(
             statement="select 1",
             params=payload,
@@ -394,6 +455,104 @@ def test_process_message_leaves_job_pending_when_postgres_is_unavailable(
 
     assert backend_client.calls == []
     assert runtime.finished == [(runtime.handle, False)]
+
+
+def test_execute_job_payload_uses_v2_executor_with_worker_config(
+    monkeypatch: Any,
+) -> None:
+    _completion_result_cls, _settings_obj, worker_module = _worker_modules()
+    monkeypatch.setenv("IG_SCRAPER_V2_HEADLESS", "false")
+    monkeypatch.setenv("IG_SCRAPER_V2_TIMEOUT_MS", "45000")
+    monkeypatch.setenv("IG_SCRAPER_V2_MAX_CONCURRENT", "3")
+
+    captured: dict[str, Any] = {}
+
+    class FakeSession:
+        def __init__(self, bind: Any) -> None:
+            captured["session_bind"] = bind
+
+    class FakeCredentialsStore:
+        def __init__(self, session_provider: Any) -> None:
+            captured["credential_session_provider"] = session_provider
+
+    class FakeAnalysisService:
+        def __init__(self, *, api_key: str) -> None:
+            captured["openai_api_key"] = api_key
+
+    class FakeScraperBackend:
+        def __init__(
+            self,
+            *,
+            config: Any,
+            credentials_store: Any,
+            logger: Any,
+            job_id: str | None,
+        ) -> None:
+            captured["scraper_config"] = config
+            captured["credentials_store"] = credentials_store
+            captured["logger"] = logger
+            captured["job_id"] = job_id
+
+    expected_summary = InstagramBatchScrapeSummaryResponseV2(
+        usernames=[
+            InstagramBatchUsernameStatusV2(
+                username="alpha",
+                status="success",
+                error=None,
+            )
+        ],
+        counters=InstagramBatchCountersSchemaV2(
+            requested=1,
+            successful=1,
+        ),
+        error=None,
+    )
+
+    async def fake_execute_scrape_job_payload(
+        payload: dict[str, Any],
+        *,
+        session_factory: Any,
+        scraper_backend: Any,
+        analysis_service: Any,
+    ) -> tuple[Any, str | None]:
+        captured["payload"] = payload
+        captured["session_factory"] = session_factory
+        captured["scraper_backend"] = scraper_backend
+        captured["analysis_service"] = analysis_service
+        return expected_summary, None
+
+    monkeypatch.setattr(worker_module, "Session", FakeSession)
+    monkeypatch.setattr(
+        worker_module, "SqlInstagramCredentialsStoreV2", FakeCredentialsStore
+    )
+    monkeypatch.setattr(
+        worker_module, "OpenAIInstagramProfileAnalysisServiceV2", FakeAnalysisService
+    )
+    monkeypatch.setattr(worker_module, "InstagramScraperV2Backend", FakeScraperBackend)
+    monkeypatch.setattr(
+        worker_module, "execute_scrape_job_payload", fake_execute_scrape_job_payload
+    )
+
+    summary, error = _run(
+        worker_module.execute_job_payload(
+            {"usernames": ["alpha"]},
+            job_id="job-1",
+        )
+    )
+
+    assert error is None
+    assert summary is expected_summary
+    assert isinstance(summary, InstagramBatchScrapeSummaryResponse)
+    assert captured["payload"] == {"usernames": ["alpha"]}
+    assert captured["openai_api_key"] == _settings().openai_api_key
+    assert captured["scraper_config"].browser.headless is False
+    assert captured["scraper_config"].browser.timeout_ms == 45_000
+    assert captured["scraper_config"].crawler.max_concurrent == 3
+    assert captured["job_id"] == "job-1"
+    assert isinstance(captured["scraper_backend"], FakeScraperBackend)
+    assert isinstance(captured["analysis_service"], FakeAnalysisService)
+    captured["session_factory"]()
+    assert captured["session_bind"] is worker_module.engine
 
 
 def test_worker_loop_uses_exponential_backoff_and_recovers_from_dependency_loss(
@@ -433,11 +592,6 @@ def test_worker_loop_uses_exponential_backoff_and_recovers_from_dependency_loss(
     async def fake_sleep(delay: float) -> None:
         sleep_calls.append(delay)
 
-    monkeypatch.setattr(
-        worker_module,
-        "configure_credentials_store_resolver",
-        lambda resolver: None,
-    )
     monkeypatch.setattr(
         worker_module,
         "get_worker_redis_client",

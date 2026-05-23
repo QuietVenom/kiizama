@@ -2,43 +2,36 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
-from kiizama_scrape_core.ig_scraper.analysis import (
-    OpenAIInstagramProfileAnalysisService,
+from kiizama_core.job_control import (
+    JobControlRepository,
+    JobControlUnavailableError,
+    JobWorkerRuntime,
+    QueuedJobMessage,
 )
-from kiizama_scrape_core.ig_scraper.jobs import (
+from kiizama_scrape_core.ig_scraper_v2 import (
     WORKER_JOB_EXECUTION_MODE,
+    InstagramScraperV2Backend,
+    OpenAIInstagramProfileAnalysisServiceV2,
+    SqlInstagramCredentialsStoreV2,
     build_instagram_job_queue_spec,
+    build_scraper_v2_config,
+    execute_scrape_job_payload,
 )
-from kiizama_scrape_core.ig_scraper.persistence import (
-    SqlInstagramCredentialsStore,
-    SqlInstagramScrapePersistence,
+from kiizama_scrape_core.ig_scraper_v2.logging_utils import (
+    format_counters,
+    proxy_mode_label,
+    sanitize_exception_for_log,
 )
-from kiizama_scrape_core.ig_scraper.schemas import (
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramBatchCountersSchema,
     InstagramBatchScrapeRequest,
     InstagramBatchScrapeSummaryResponse,
     InstagramBatchUsernameStatus,
     InstagramScrapeJobTerminalizationRequest,
-)
-from kiizama_scrape_core.ig_scraper.service import (
-    build_batch_scrape_summary,
-    enrich_with_ai_analysis,
-    persist_scrape_results_to_db,
-    prepare_scrape_batch_payload,
-    scrape_profiles_batch,
-)
-from kiizama_scrape_core.ig_scraper.types.session_validator import (
-    configure_credentials_store_resolver,
-)
-from kiizama_scrape_core.job_control import (
-    JobControlRepository,
-    JobControlUnavailableError,
-    JobWorkerRuntime,
-    QueuedJobMessage,
 )
 from redis.exceptions import RedisError
 from sqlalchemy.exc import SQLAlchemyError
@@ -143,46 +136,37 @@ async def _ensure_worker_dependencies_ready(runtime: WorkerRuntimePort) -> None:
 
 async def execute_job_payload(
     payload: dict[str, Any],
+    *,
+    job_id: str | None = None,
 ) -> tuple[InstagramBatchScrapeSummaryResponse, str | None]:
-    request = InstagramBatchScrapeRequest.model_validate(payload)
-    original_request = request.model_copy(deep=True)
-    with Session(engine) as session:
-        persistence = SqlInstagramScrapePersistence(session=session)
-        analysis_service = OpenAIInstagramProfileAnalysisService(
-            api_key=_settings().openai_api_key
-        )
-
-        request, early_response = await prepare_scrape_batch_payload(
-            request,
-            persistence,
-        )
-        if early_response is not None:
-            summary = build_batch_scrape_summary(
-                original_request,
-                request,
-                response=None,
-                early_response=early_response,
-            )
-            return summary, summary.error
-
-        response = await scrape_profiles_batch(request)
-        # TODO: add a cold browser warm-up before login/scrape so the Playwright
-        # flow can use ISP proxy sessions reliably when worker jobs are re-enabled.
-        response = await enrich_with_ai_analysis(
-            response,
-            analysis_service=analysis_service,
-        )
-        response = await persist_scrape_results_to_db(
-            response,
-            persistence=persistence,
-        )
-
-        summary = build_batch_scrape_summary(
-            original_request,
-            request,
-            response=response,
-        )
-        return summary, response.error or summary.error
+    config = build_scraper_v2_config()
+    usernames = payload.get("usernames", [])
+    logger.info(
+        "Starting IG v2 scrape runtime "
+        "(job_id=%s, proxy_mode=%s, headless=%s, max_concurrent=%s, max_posts=%s, usernames=%s)",
+        job_id or "unknown",
+        proxy_mode_label(config),
+        str(config.browser.headless).lower(),
+        config.crawler.max_concurrent,
+        config.max_posts,
+        len(usernames) if isinstance(usernames, list) else 0,
+    )
+    credentials_store = SqlInstagramCredentialsStoreV2(lambda: Session(engine))
+    scraper_backend = InstagramScraperV2Backend(
+        config=config,
+        credentials_store=credentials_store,
+        logger=logger,
+        job_id=job_id,
+    )
+    analysis_service = OpenAIInstagramProfileAnalysisServiceV2(
+        api_key=_settings().openai_api_key
+    )
+    return await execute_scrape_job_payload(
+        payload,
+        session_factory=lambda: Session(engine),
+        scraper_backend=scraper_backend,
+        analysis_service=analysis_service,
+    )
 
 
 async def process_message(
@@ -193,7 +177,7 @@ async def process_message(
 ) -> None:
     if message.execution_mode != WORKER_JOB_EXECUTION_MODE:
         logger.warning(
-            "Ignoring job %s with execution_mode=%s in legacy scrape worker. "
+            "Ignoring job %s with execution_mode=%s in Playwright scrape worker. "
             "TODO: keep worker reserved for Playwright/login jobs only.",
             message.job_id,
             message.execution_mode,
@@ -225,7 +209,10 @@ async def process_message(
             status = "failed"
         else:
             try:
-                summary, error = await execute_job_payload(handle.message.payload)
+                summary, error = await execute_job_payload(
+                    handle.message.payload,
+                    job_id=handle.job_id,
+                )
                 status = "done"
             except asyncio.CancelledError:
                 raise
@@ -234,11 +221,16 @@ async def process_message(
                     raise WorkerDependencyUnavailableError(
                         f"Dependency unavailable while executing job {handle.job_id}."
                     ) from exc
-                logger.exception("Scrape job %s failed: %s", handle.job_id, exc)
-                summary = _build_exhausted_summary(handle.message.payload).model_copy(
-                    update={"error": _truncate_error(str(exc))}
+                sanitized_error = sanitize_exception_for_log(exc)
+                logger.exception(
+                    "Scrape job %s failed: %s",
+                    handle.job_id,
+                    sanitized_error,
                 )
-                error = _truncate_error(str(exc))
+                summary = _build_exhausted_summary(handle.message.payload).model_copy(
+                    update={"error": _truncate_error(sanitized_error)}
+                )
+                error = _truncate_error(sanitized_error)
                 status = "failed"
 
         if handle.lease_lost.is_set():
@@ -255,7 +247,7 @@ async def process_message(
                     status=status,
                     attempt=handle.attempt,
                     worker_id=settings.worker_id,
-                    completed_at=datetime.now(timezone.utc),
+                    completed_at=datetime.now(UTC),
                     summary=summary,
                     error=error,
                 ),
@@ -267,6 +259,13 @@ async def process_message(
                 ) from exc
             raise
         ack = _should_ack_completion_result(completion_result)
+        logger.info(
+            "Completed scrape job %s (status=%s, ack=%s, counters=%s)",
+            handle.job_id,
+            status,
+            str(ack).lower(),
+            format_counters(summary.counters),
+        )
         if not ack:
             logger.warning(
                 "Backend completion for job %s returned %s; leaving message pending.",
@@ -279,9 +278,6 @@ async def process_message(
 
 async def worker_loop() -> None:
     settings = _settings()
-    configure_credentials_store_resolver(
-        lambda: SqlInstagramCredentialsStore(lambda: Session(engine))
-    )
 
     repository = JobControlRepository(
         spec=build_instagram_job_queue_spec(

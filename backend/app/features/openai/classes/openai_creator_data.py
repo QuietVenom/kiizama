@@ -369,6 +369,26 @@ def render_creator_strategy_sections_html(
 
     parts: list[str] = ['<article class="reputation-strategy-ai">']
 
+    ordered_sections = [
+        *[
+            section
+            for section in output.sections
+            if section.title.strip().lower() == "executive summary"
+        ],
+        *[
+            section
+            for section in output.sections
+            if section.title.strip().lower() != "executive summary"
+        ],
+    ]
+
+    for section in ordered_sections:
+        title = escape(section.title)
+        content_html = _render_text_blocks(section.content)
+        if not content_html:
+            continue
+        parts.append(f"<section><h2>{title}</h2>{content_html}</section>")
+
     if output.assumptions:
         parts.append("<section><h2>Assumptions</h2><ul>")
         for item in output.assumptions:
@@ -400,13 +420,6 @@ def render_creator_strategy_sections_html(
             else:
                 parts.append(f"<li>{escape(claim)}</li>")
         parts.append("</ul></section>")
-
-    for section in output.sections:
-        title = escape(section.title)
-        content_html = _render_text_blocks(section.content)
-        if not content_html:
-            continue
-        parts.append(f"<section><h2>{title}</h2>{content_html}</section>")
 
     parts.append("</article>")
     return "".join(parts)

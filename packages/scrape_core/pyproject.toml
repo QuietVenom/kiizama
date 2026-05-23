@@ -5,17 +5,20 @@ description = "Shared scrape core for Kiizama backend and worker runtimes."
 requires-python = ">=3.12,<4.0"
 dependencies = [
     "apify-client>=2.5.0,<3.0.0",
+    "crawlee[playwright]>=1.7.0,<2.0.0",
     "cryptography>=46.0.4",
     "httpx>=0.28.1",
+    "kiizama-core",
     "openai>=2.5.0",
     "playwright>=1.55.0",
-    "psycopg[binary]<4.0.0,>=3.1.13",
     "pydantic>2.0",
-    "redis>=5.2.1,<6.0.0",
     "sqlmodel<1.0.0,>=0.0.21",
     "tenacity>=8.2.3,<9.0.0",
     "uuid6>=2025.0.1",
 ]
+
+[tool.uv.sources]
+kiizama-core = { path = "../core", editable = true }
 
 [build-system]
 requires = ["hatchling"]

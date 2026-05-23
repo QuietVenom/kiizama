@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from kiizama_scrape_core.job_control.repository import (
+from kiizama_core.job_control.repository import (
     JobControlRepository as CoreJobControlRepository,
 )
-from kiizama_scrape_core.job_control.repository import (
+from kiizama_core.job_control.repository import (
     JobControlUnavailableError,
 )
 

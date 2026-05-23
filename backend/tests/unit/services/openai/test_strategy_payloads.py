@@ -1,6 +1,6 @@
 import asyncio
 import json
-from typing import Any
+from typing import Any, cast
 
 from app.features.brand_intelligence.services.service_profiles import (
     build_creator_profile_summary,
@@ -360,8 +360,9 @@ def test_reputation_strategy_payload_model_dump_input_is_supported() -> None:
 
 def test_reputation_strategy_payload_invalid_type_raises_type_error() -> None:
     # Arrange / Act / Assert
+    invalid_payload: Any = object()
     try:
-        serialize_reputation_strategy_payload(object())
+        serialize_reputation_strategy_payload(invalid_payload)
     except TypeError as exc:
         assert "Unsupported payload type for reputation strategy input" in str(exc)
     else:
@@ -467,10 +468,15 @@ def test_reputation_strategy_html_renders_assumptions_facts_and_text_blocks() ->
         ],
         "sections": [
             {
+                "id": "summary",
+                "title": "Executive Summary",
+                "content": "Summary first",
+            },
+            {
                 "id": "intro",
                 "title": "Plan <One>",
                 "content": "First line\nSecond <line>",
-            }
+            },
         ],
     }
 
@@ -482,6 +488,8 @@ def test_reputation_strategy_html_renders_assumptions_facts_and_text_blocks() ->
     assert "<strong>Audience trusts reviews</strong><br>Risk: Lower CTR" in html
     assert "<li>No risk note</li>" in html
     assert "https://example.com/?a=1&amp;b=2" in html
+    assert html.index("<h2>Executive Summary</h2>") < html.index("<h2>Assumptions</h2>")
+    assert "<p>Summary first</p>" in html
     assert "<h2>Plan &lt;One&gt;</h2>" in html
     assert "First line<br>Second &lt;line&gt;" in html
 
@@ -633,8 +641,9 @@ def test_creator_strategy_payload_model_dump_input_is_supported() -> None:
 
 def test_creator_strategy_payload_invalid_type_raises_type_error() -> None:
     # Arrange / Act / Assert
+    invalid_payload: Any = object()
     try:
-        serialize_creator_strategy_payload(object())
+        serialize_creator_strategy_payload(invalid_payload)
     except TypeError as exc:
         assert "Unsupported payload type for creator strategy input" in str(exc)
     else:
@@ -730,6 +739,11 @@ def test_creator_strategy_html_renders_assumptions_sources_and_list_formats() ->
         ],
         sections=[
             ReputationCreatorStrategySection(
+                id="summary",
+                title="Executive Summary",
+                content="Creator summary first",
+            ),
+            ReputationCreatorStrategySection(
                 id="ordered",
                 title="Ordered <Plan>",
                 content="1. Audit\n2. Launch",
@@ -759,6 +773,8 @@ def test_creator_strategy_html_renders_assumptions_sources_and_list_formats() ->
     assert "<strong>Audience trusts creator</strong><br>Risk: Low conversion" in html
     assert "<li>No risk</li>" in html
     assert "https://example.com/?x=1&amp;y=2" in html
+    assert html.index("<h2>Executive Summary</h2>") < html.index("<h2>Assumptions</h2>")
+    assert "<p>Creator summary first</p>" in html
     assert "<h2>Ordered &lt;Plan&gt;</h2>" in html
     assert "<ol><li>Audit</li><li>Launch</li></ol>" in html
     assert "<ul><li>Trust</li><li>Conversion</li></ul>" in html
@@ -856,7 +872,7 @@ def test_execute_strategy_template_dispatches_service_and_parses_output() -> Non
                 "primary_platforms": ["Instagram"],
                 "current_metrics": {},
             },
-            service=service,
+            service=cast(Any, service),
         )
     )
 

@@ -16,14 +16,11 @@ export const SearchHistoryCard = ({
 }) => {
   const { i18n, t } = useTranslation("creatorsSearch")
   const readyUsernames = item.ready_usernames ?? []
-  const visibleUsernames = readyUsernames.slice(0, 10)
-  const hiddenUsernamesCount = Math.max(
-    readyUsernames.length - visibleUsernames.length,
-    0,
-  )
-  const compactPreviewUsernames = visibleUsernames.map(
-    (username) => `@${username}`,
-  )
+  const previewUsernames = readyUsernames.slice(0, 5)
+  const compactPreviewText =
+    readyUsernames.length > 5
+      ? `${previewUsernames.map((username) => `@${username}`).join(", ")}...`
+      : previewUsernames.map((username) => `@${username}`).join(", ")
 
   if (compact) {
     return (
@@ -33,9 +30,10 @@ export const SearchHistoryCard = ({
         borderWidth="1px"
         borderColor="ui.border"
         bg="ui.surfaceSoft"
-        p={4}
-        minH="0"
-        aspectRatio={1}
+        px={3.5}
+        py={3.5}
+        minW={{ base: "210px", md: "220px" }}
+        maxW={{ base: "240px", md: "240px" }}
         display="flex"
         flexDirection="column"
         textAlign="left"
@@ -48,7 +46,13 @@ export const SearchHistoryCard = ({
         onClick={() => onClick(readyUsernames)}
       >
         <Flex alignItems="flex-start" justifyContent="space-between" gap={3}>
-          <Text color="ui.text" fontWeight="black" lineClamp={2} minW={0}>
+          <Text
+            color="ui.text"
+            fontSize="2xs"
+            fontWeight="black"
+            lineClamp={2}
+            minW={0}
+          >
             {item.source === "ig-scrape-job" && item.job_id
               ? item.job_id
               : t("history.card.directSearch")}
@@ -59,40 +63,24 @@ export const SearchHistoryCard = ({
             borderColor="ui.borderSoft"
             bg="ui.panel"
             color="ui.brandText"
-            px={3}
-            py={1.5}
+            px={2.5}
+            py={1}
+            fontSize="2xs"
             flexShrink={0}
           >
             {readyUsernames.length}
           </Badge>
         </Flex>
 
-        <Text mt={3} color="ui.secondaryText" fontSize="sm">
-          {formatJobTimestamp(
-            item.created_at,
-            i18n.resolvedLanguage ?? i18n.language,
-          )}
+        <Text
+          mt={2.5}
+          color="ui.secondaryText"
+          fontSize="xs"
+          lineHeight="1.45"
+          lineClamp={3}
+        >
+          {compactPreviewText}
         </Text>
-
-        <Box mt={4}>
-          <Text color="ui.text" fontSize="xs" lineHeight="1.45" lineClamp={4}>
-            {compactPreviewUsernames.join(", ")}
-          </Text>
-          {hiddenUsernamesCount > 0 ? (
-            <Badge
-              mt={2}
-              rounded="full"
-              borderWidth="1px"
-              borderColor="ui.borderSoft"
-              bg="ui.panel"
-              color="ui.secondaryText"
-              px={2.5}
-              py={1}
-            >
-              +{hiddenUsernamesCount}
-            </Badge>
-          ) : null}
-        </Box>
       </Box>
     )
   }

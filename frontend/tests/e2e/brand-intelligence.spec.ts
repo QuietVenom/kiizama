@@ -216,7 +216,7 @@ test.describe("Brand Intelligence report generation", () => {
     await page.goto("/brand-intelligence/reputation-strategy")
     await expect(
       page.getByRole("heading", {
-        name: "Construye reportes modulares de estrategia reputacional.",
+        name: "Construye reportes de estrategia reputacional.",
       }),
     ).toBeVisible()
     await fillCampaignStrategyForm(page)
@@ -256,7 +256,7 @@ test.describe("Brand Intelligence report generation", () => {
     await page.goto("/brand-intelligence/reputation-strategy")
     await expect(
       page.getByRole("heading", {
-        name: "Construye reportes modulares de estrategia reputacional.",
+        name: "Construye reportes de estrategia reputacional.",
       }),
     ).toBeVisible()
     await fillCreatorStrategyForm(page)

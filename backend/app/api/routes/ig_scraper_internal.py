@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, status
-from kiizama_scrape_core.ig_scraper.schemas import (
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramScrapeJobTerminalizationRequest,
     InstagramScrapeJobTerminalizationResponse,
 )

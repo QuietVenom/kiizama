@@ -26,7 +26,6 @@ describe("search history panel", () => {
         isLoading
         items={[]}
         onReuseReadyUsernames={vi.fn()}
-        onViewAll={vi.fn()}
       />,
     )
 
@@ -50,7 +49,6 @@ describe("search history panel", () => {
         isLoading={false}
         items={[]}
         onReuseReadyUsernames={vi.fn()}
-        onViewAll={vi.fn()}
       />,
     )
 
@@ -70,7 +68,6 @@ describe("search history panel", () => {
         isLoading={false}
         items={[]}
         onReuseReadyUsernames={vi.fn()}
-        onViewAll={vi.fn()}
       />,
     )
 
@@ -84,23 +81,38 @@ describe("search history panel", () => {
     // Arrange
     const user = userEvent.setup()
     const onReuseReadyUsernames = vi.fn()
-    const onViewAll = vi.fn()
     renderWithProviders(
       <SearchHistoryPanel
         isError={false}
         isLoading={false}
         items={[createHistoryItem()]}
         onReuseReadyUsernames={onReuseReadyUsernames}
-        onViewAll={onViewAll}
       />,
     )
 
     // Act
     await user.click(screen.getByRole("button", { name: /job_123/i }))
-    await user.click(screen.getByRole("button", { name: "Ver todo" }))
 
     // Assert
     expect(onReuseReadyUsernames).toHaveBeenCalledWith(["alpha", "beta"])
-    expect(onViewAll).toHaveBeenCalled()
+    expect(screen.getByText("@alpha, @beta")).toBeVisible()
+    expect(screen.getByText("2")).toBeVisible()
+  })
+
+  test("search_history_panel_collapsed_hides_cards", () => {
+    // Arrange / Act
+    renderWithProviders(
+      <SearchHistoryPanel
+        collapsed
+        isError={false}
+        isLoading={false}
+        items={[createHistoryItem()]}
+        onReuseReadyUsernames={vi.fn()}
+      />,
+    )
+
+    // Assert
+    expect(screen.getByText("Historial de búsqueda")).toBeVisible()
+    expect(screen.queryByText("job_123")).toBeNull()
   })
 })

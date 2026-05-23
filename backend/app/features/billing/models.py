@@ -4,7 +4,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any, cast
 
-from kiizama_scrape_core.ig_scraper.sqlmodels import PRIVATE_SCHEMA
+from kiizama_scrape_core.ig_scraper_v2.sqlmodels import PRIVATE_SCHEMA
 from sqlalchemy import Column, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel

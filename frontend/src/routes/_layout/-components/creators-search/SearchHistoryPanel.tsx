@@ -1,74 +1,79 @@
-import { Box, Flex, Heading, Text } from "@chakra-ui/react"
+import { Badge, Box, Flex, Icon, Text } from "@chakra-ui/react"
 import { useTranslation } from "react-i18next"
+import { FiChevronDown, FiChevronRight } from "react-icons/fi"
 
 import type { CreatorsSearchHistoryItem } from "@/client"
-import { Button } from "@/components/ui/button"
 
 import { ResultSkeletonCard } from "./ResultSkeletonCard"
 import { SearchHistoryCard } from "./SearchHistoryCard"
 
 export const SearchHistoryPanel = ({
+  collapsed = false,
   isError,
   isLoading,
   items,
   onReuseReadyUsernames,
-  onViewAll,
+  onToggleCollapsed,
 }: {
+  collapsed?: boolean
   isError: boolean
   isLoading: boolean
   items: CreatorsSearchHistoryItem[]
   onReuseReadyUsernames: (usernames: string[]) => void
-  onViewAll: () => void
+  onToggleCollapsed?: () => void
 }) => {
   const { t } = useTranslation("creatorsSearch")
 
   return (
     <Box
       layerStyle="dashboardCard"
-      p={{ base: 6, md: 8 }}
-      mb={{ base: 7, lg: 8 }}
+      p={{ base: 5, md: 6 }}
+      mb={{ base: 6, lg: 7 }}
     >
       <Flex
-        alignItems={{ base: "flex-start", md: "center" }}
+        as={onToggleCollapsed ? "button" : "div"}
+        w="full"
+        alignItems="center"
         justifyContent="space-between"
-        gap={4}
-        direction={{ base: "column", md: "row" }}
+        gap={3}
+        textAlign="left"
+        onClick={onToggleCollapsed}
       >
-        <Box>
-          <Text
-            fontSize="sm"
+        <Flex alignItems="center" gap={2.5}>
+          <Icon
+            as={collapsed ? FiChevronRight : FiChevronDown}
+            boxSize={4}
             color="ui.mutedText"
-            fontWeight="bold"
-            letterSpacing="0.08em"
-          >
-            {t("history.eyebrow")}
-          </Text>
-          <Heading mt={2} size="md">
-            {t("history.title")}
-          </Heading>
-          <Text mt={2} color="ui.secondaryText">
-            {t("history.description")}
-          </Text>
-        </Box>
-
-        {items.length ? (
-          <Button
-            variant="outline"
-            alignSelf={{ base: "stretch", md: "flex-start" }}
-            onClick={onViewAll}
-          >
-            {t("history.viewAll")}
-          </Button>
-        ) : null}
+          />
+          <Text textStyle="eyebrow">{t("history.title")}</Text>
+        </Flex>
+        <Badge
+          rounded="full"
+          borderWidth="1px"
+          borderColor="ui.borderSoft"
+          bg="ui.surfaceSoft"
+          color="ui.secondaryText"
+          px={3}
+          py={1.5}
+        >
+          {t("history.count", { count: items.length, max: 20 })}
+        </Badge>
       </Flex>
 
-      {isLoading ? (
-        <Flex mt={5} direction="column" gap={3}>
+      {collapsed ? null : isLoading ? (
+        <Flex
+          mt={4}
+          direction="row"
+          gap={3}
+          overflowX="auto"
+          overflowY="hidden"
+          pb={1}
+        >
           <ResultSkeletonCard />
         </Flex>
       ) : isError ? (
         <Box
-          mt={5}
+          mt={4}
           rounded="2xl"
           borderWidth="1px"
           borderColor="ui.border"
@@ -82,7 +87,7 @@ export const SearchHistoryPanel = ({
         </Box>
       ) : items.length === 0 ? (
         <Box
-          mt={5}
+          mt={4}
           rounded="2xl"
           borderWidth="1px"
           borderColor="ui.border"
@@ -95,17 +100,15 @@ export const SearchHistoryPanel = ({
           </Text>
         </Box>
       ) : (
-        <Box mt={7} overflowX="auto" overflowY="hidden" pb={2}>
+        <Box mt={4} overflowX="auto" overflowY="hidden" pb={1}>
           <Box
             display="grid"
             gridAutoFlow="column"
             gridAutoColumns={{
-              base: "minmax(220px, 85%)",
-              md: "minmax(210px, calc((100% - 2rem) / 3))",
-              lg: "minmax(200px, calc((100% - 3rem) / 4))",
-              xl: "minmax(190px, calc((100% - 4rem) / 5))",
+              base: "210px",
+              md: "220px",
             }}
-            gap={4}
+            gap={3}
             alignItems="stretch"
           >
             {items.map((item) => (

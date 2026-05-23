@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from kiizama_scrape_core.ig_scraper.utils import should_refresh_profile
+from kiizama_scrape_core.ig_scraper_v2.utils import should_refresh_profile
 
 from app.features.openai.classes import (
     render_creator_strategy_sections_html,

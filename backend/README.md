@@ -16,8 +16,8 @@ docker compose watch
 
 Backend API will be available at:
 
-- http://localhost:8000
-- http://localhost:8000/docs
+- [http://localhost:8000](http://localhost:8000)
+- [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ## Stripe billing
 
@@ -68,13 +68,42 @@ backend/.venv/bin/python -m scrape_worker.main
 Related endpoints:
 
 - `POST /api/v1/ig-scraper/jobs`
+- `POST /api/v1/ig-scraper/jobs/apify`
 - `GET /api/v1/ig-scraper/jobs/{job_id}`
-- `POST /api/v1/ig-scraper/profiles/batch` (synchronous flow)
+
+Jobs carry an execution mode. `worker` jobs are consumed by the standalone
+`scrape_worker` process (Playwright scraping). `apify` jobs are consumed by an
+in-process runner inside the backend (`app/features/ig_scraper_jobs/apify_runner.py`)
+that scrapes through the Apify API and requires `APIFY_API_TOKEN`. Each flow has
+its own toggle: `IG_SCRAPER_WORKER_JOBS_ENABLED` and `IG_SCRAPER_APIFY_JOBS_ENABLED`
+(both default to `true`; a disabled flow returns `503` on its enqueue endpoint).
+Apify runner tuning lives in the `IG_SCRAPER_APIFY_*` variables in `.env.example`.
 
 Optional Docker profile:
 
 ```bash
 docker compose --profile worker watch
+```
+
+In Docker, the worker must connect through Compose service names: `redis`, `postgres`, and `backend`. The local Compose override sets those URLs explicitly so `.env` can still use `localhost`/`127.0.0.1` for host-run processes. Recreate containers after changing Compose env wiring:
+
+```bash
+docker compose down
+docker compose --profile worker watch
+```
+
+### Scraper v2 manual validation scripts
+
+`backend/scripts/` includes standalone scripts to validate the scraper v2 runtime
+against real Instagram, real Postgres, and the configured env (`IG_SCRAPER_V2_*`).
+They are manual operational tools, not part of the automated test suites. Run them
+from `./backend` (each supports `--help`):
+
+```bash
+uv run python -m scripts.validate_ig_v2_login
+uv run python -m scripts.validate_ig_v2_scrape
+uv run python -m scripts.validate_ig_v2_profiles
+uv run python -m scripts.validate_ig_v2_persist
 ```
 
 ## Backend Feature Modules
@@ -159,11 +188,12 @@ bash scripts/test-local.sh backend
 ```
 
 Run a specific backend test file or selection by passing pytest args through the
-harness:
+harness. Paths are relative to `backend/` because the harness runs pytest from
+there:
 
 ```bash
-bash scripts/test-local.sh backend backend/tests/integration/api/test_health_api.py
-bash scripts/test-local.sh backend backend/tests/unit/core/test_config.py -x
+bash scripts/test-local.sh backend tests/integration/api/test_health_api.py
+bash scripts/test-local.sh backend tests/unit/core/test_config.py -x
 ```
 
 The backend harness starts isolated local Postgres and Redis containers, runs

@@ -30,11 +30,12 @@ describe("current jobs panel", () => {
     )
 
     // Assert
+    expect(screen.getByText("Consultas")).toBeVisible()
     expect(screen.getByText("Todavía no hay jobs de scraping.")).toBeVisible()
     expect(screen.getByText("0 / 10 trabajos")).toBeVisible()
   })
 
-  test("current_jobs_panel_queued_job_renders_waiting_progress", () => {
+  test("current_jobs_panel_queued_job_renders_status_and_query_count", () => {
     // Arrange / Act
     renderWithProviders(
       <CurrentJobsPanel currentJobs={[createJob()]} onSelectJob={vi.fn()} />,
@@ -43,7 +44,7 @@ describe("current jobs panel", () => {
     // Assert
     expect(screen.getByText("job_123")).toBeVisible()
     expect(screen.getByText("En cola")).toBeVisible()
-    expect(screen.getByText("Esperando a que termine.")).toBeVisible()
+    expect(screen.getByText("Consultas: 1")).toBeVisible()
   })
 
   test("current_jobs_panel_done_job_click_calls_select_job", async () => {
@@ -67,5 +68,20 @@ describe("current jobs panel", () => {
 
     // Assert
     expect(onSelectJob).toHaveBeenCalledWith("job_123")
+  })
+
+  test("current_jobs_panel_collapsed_hides_cards", () => {
+    // Arrange / Act
+    renderWithProviders(
+      <CurrentJobsPanel
+        collapsed
+        currentJobs={[createJob()]}
+        onSelectJob={vi.fn()}
+      />,
+    )
+
+    // Assert
+    expect(screen.getByText("Consultas")).toBeVisible()
+    expect(screen.queryByText("job_123")).toBeNull()
   })
 })

@@ -7,7 +7,7 @@ from sqlmodel import Session, delete, select
 
 from app.core.db import engine
 from app.crud.ig_credentials import create_ig_credential
-from app.features.ig_scraper_runtime import BackendInstagramCredentialsStore
+from app.features.ig_scraper_v2_runtime import BackendInstagramCredentialsStoreV2
 from app.models import IgCredential
 from app.schemas import IgCredential as IgCredentialSchema
 from tests.utils.utils import random_email, random_password
@@ -42,7 +42,7 @@ def test_backend_instagram_credentials_store_lists_and_persists_sessions(
     )
     credential_id = created["_id"]
 
-    store = BackendInstagramCredentialsStore(lambda: Session(engine))
+    store = BackendInstagramCredentialsStoreV2(lambda: Session(engine))
     credentials = asyncio.run(store.list_credentials(limit=10))
 
     candidate = next(item for item in credentials if item.id == credential_id)

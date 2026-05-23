@@ -3,6 +3,8 @@
   "venv": ".venv",
   "include": [
     "backend",
+    "scrape_worker",
+    "packages/core/src",
     "packages/scrape_core/src"
   ],
   "executionEnvironments": [
@@ -11,12 +13,29 @@
       "extraPaths": [
         ".",
         "backend",
+        "packages/core/src",
         "packages/scrape_core/src"
+      ]
+    },
+    {
+      "root": "scrape_worker",
+      "extraPaths": [
+        ".",
+        "scrape_worker",
+        "packages/core/src",
+        "packages/scrape_core/src"
+      ]
+    },
+    {
+      "root": "packages/core/src",
+      "extraPaths": [
+        "packages/core/src"
       ]
     },
     {
       "root": "packages/scrape_core/src",
       "extraPaths": [
+        "packages/core/src",
         "packages/scrape_core/src"
       ]
     }

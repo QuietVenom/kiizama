@@ -1,8 +1,8 @@
 import asyncio
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, Literal, cast
 
-from kiizama_scrape_core.ig_scraper.schemas import (
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramBatchCountersSchema,
     InstagramBatchProfileResult,
     InstagramBatchScrapeRequest,
@@ -14,6 +14,8 @@ from kiizama_scrape_core.ig_scraper.schemas import (
 from redis.exceptions import RedisError
 
 from app.features.ig_scraper_jobs import apify_runner as runner_module
+
+UsernameStatus = Literal["success", "failed", "skipped", "not_found"]
 
 
 class _FakeJobControlRepository:
@@ -82,7 +84,7 @@ class _FakeJobHandle:
 def _summary(
     *,
     username: str = "alpha",
-    status: str = "success",
+    status: UsernameStatus = "success",
     error: str | None = None,
 ) -> InstagramBatchScrapeSummaryResponse:
     counters = (
@@ -117,11 +119,6 @@ def test_apify_runner_start_is_idempotent(monkeypatch) -> None:
     async def run() -> None:
         # Arrange
         monkeypatch.setattr(runner_module, "JobWorkerRuntime", fake_runtime_factory)
-        monkeypatch.setattr(
-            runner_module,
-            "configure_backend_instagram_scraper_runtime",
-            lambda: None,
-        )
         runner = runner_module.ApifyInstagramJobRunner()
         runner._run_loop = idle_run_loop
 
@@ -147,11 +144,6 @@ def test_apify_runner_start_surfaces_loop_startup_failure(monkeypatch) -> None:
             runner_module,
             "JobWorkerRuntime",
             lambda **kwargs: _FakeApifyRuntime(**kwargs),
-        )
-        monkeypatch.setattr(
-            runner_module,
-            "configure_backend_instagram_scraper_runtime",
-            lambda: None,
         )
         runner = runner_module.ApifyInstagramJobRunner()
         runner._run_loop = failing_run_loop
@@ -199,7 +191,7 @@ def test_apify_runner_run_loop_releases_semaphore_when_no_messages() -> None:
                 runner._stop_event.set()
                 return []
 
-        runner._runtime = RuntimeWithoutMessages()
+        cast(Any, runner)._runtime = RuntimeWithoutMessages()
 
         # Act
         await runner._run_loop()
@@ -226,7 +218,7 @@ def test_apify_runner_run_loop_backs_off_on_dependency_error(monkeypatch) -> Non
             sleeps.append(seconds)
             runner._stop_event.set()
 
-        runner._runtime = FailingRuntime()
+        cast(Any, runner)._runtime = FailingRuntime()
         monkeypatch.setattr(runner_module.asyncio, "sleep", fake_sleep)
 
         # Act
@@ -245,10 +237,10 @@ def test_apify_runner_process_message_ignores_missing_handle() -> None:
         runner = runner_module.ApifyInstagramJobRunner()
         runtime = _FakeApifyRuntime()
         runtime.start_result = None
-        runner._runtime = runtime
+        cast(Any, runner)._runtime = runtime
 
         # Act
-        await runner._process_message(SimpleNamespace())
+        await runner._process_message(cast(Any, SimpleNamespace()))
 
         # Assert
         assert runtime.finish_calls == []
@@ -265,7 +257,7 @@ def test_apify_runner_process_message_retries_non_terminal_failure_without_ack(
         runtime = _FakeApifyRuntime()
         handle = _FakeJobHandle(attempt=1)
         runtime.start_result = handle
-        runner._runtime = runtime
+        cast(Any, runner)._runtime = runtime
         monkeypatch.setattr(
             runner_module.settings,
             "IG_SCRAPER_APIFY_MAX_ATTEMPTS",
@@ -279,7 +271,7 @@ def test_apify_runner_process_message_retries_non_terminal_failure_without_ack(
         runner._execute_job_payload = failing_execute
 
         # Act
-        await runner._process_message(SimpleNamespace())
+        await runner._process_message(cast(Any, SimpleNamespace()))
 
         # Assert
         assert runtime.finish_calls == [(handle, False)]
@@ -297,7 +289,7 @@ def test_apify_runner_process_message_terminal_failure_builds_summary_and_comple
         runtime = _FakeApifyRuntime()
         handle = _FakeJobHandle(attempt=1)
         runtime.start_result = handle
-        runner._runtime = runtime
+        cast(Any, runner)._runtime = runtime
         monkeypatch.setattr(
             runner_module.settings,
             "IG_SCRAPER_APIFY_MAX_ATTEMPTS",
@@ -325,7 +317,7 @@ def test_apify_runner_process_message_terminal_failure_builds_summary_and_comple
         runner._complete_job = complete_job
 
         # Act
-        await runner._process_message(SimpleNamespace())
+        await runner._process_message(cast(Any, SimpleNamespace()))
 
         # Assert
         assert runtime.finish_calls == [(handle, True)]
@@ -345,7 +337,7 @@ def test_apify_runner_process_message_skips_completion_when_lease_lost() -> None
         runtime = _FakeApifyRuntime()
         handle = _FakeJobHandle(lease_lost=True)
         runtime.start_result = handle
-        runner._runtime = runtime
+        cast(Any, runner)._runtime = runtime
 
         async def execute(payload: dict[str, Any]) -> tuple[Any, str | None]:
             del payload
@@ -359,7 +351,7 @@ def test_apify_runner_process_message_skips_completion_when_lease_lost() -> None
         runner._complete_job = complete_job
 
         # Act
-        await runner._process_message(SimpleNamespace())
+        await runner._process_message(cast(Any, SimpleNamespace()))
 
         # Assert
         assert completions == []
@@ -368,25 +360,18 @@ def test_apify_runner_process_message_skips_completion_when_lease_lost() -> None
     asyncio.run(run())
 
 
-def test_apify_runner_scrape_profiles_batch_requires_apify_token(monkeypatch) -> None:
-    async def run() -> None:
-        # Arrange
-        monkeypatch.setattr(runner_module.settings, "APIFY_API_TOKEN", None)
-        runner = runner_module.ApifyInstagramJobRunner()
+def test_apify_runner_build_scraper_backend_requires_apify_token(monkeypatch) -> None:
+    # Arrange
+    monkeypatch.setattr(runner_module.settings, "APIFY_API_TOKEN", None)
+    runner = runner_module.ApifyInstagramJobRunner()
 
-        # Act / Assert
-        try:
-            await runner._scrape_profiles_batch(
-                InstagramBatchScrapeRequest(usernames=["alpha"])
-            )
-        except RuntimeError as exc:
-            assert str(exc) == "APIFY_API_TOKEN is not configured."
-        else:  # pragma: no cover - explicit failure path
-            raise AssertionError(
-                "_scrape_profiles_batch() did not reject missing token"
-            )
-
-    asyncio.run(run())
+    # Act / Assert
+    try:
+        runner._build_scraper_backend()
+    except RuntimeError as exc:
+        assert str(exc) == "APIFY_API_TOKEN is not configured."
+    else:  # pragma: no cover - explicit failure path
+        raise AssertionError("_build_scraper_backend() did not reject missing token")
 
 
 def test_apify_runner_terminal_failure_summary_uses_early_response_or_exhausted_fallback(
@@ -423,7 +408,7 @@ def test_apify_runner_terminal_failure_summary_uses_early_response_or_exhausted_
         )
         monkeypatch.setattr(
             runner_module,
-            "SqlInstagramScrapePersistence",
+            "SqlInstagramScrapePersistenceV2",
             lambda *, session: {"session": session},
         )
         monkeypatch.setattr(

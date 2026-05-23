@@ -16,6 +16,8 @@ primary_region = "dfw"
 # #secret OPENAI_API_KEY
 # #secret SYSTEM_ADMIN_EMAIL
 # #secret SYSTEM_ADMIN_PASSWORD
+# #secret IG_SCRAPER_V2_ISP_PROXY_URLS (required when ENVIRONMENT=production:
+#   scraper v2 forces ISP proxy mode and fails without it)
 #
 # IG_SCRAPE_WORKER_BACKEND_BASE_URL is required and is not a secret.
 
@@ -23,7 +25,6 @@ primary_region = "dfw"
   dockerfile = "Dockerfile.worker"
 
 [env]
-  IG_SCRAPER_MAX_CONCURRENT = "2"
   IG_SCRAPE_WORKER_BACKEND_BASE_URL = "http://kiizama-backend.internal:8000"
   IG_SCRAPE_WORKER_POLL_SECONDS = "1"
   IG_SCRAPE_WORKER_HEARTBEAT_SECONDS = "20"

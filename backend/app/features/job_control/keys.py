@@ -1,4 +1,4 @@
-from kiizama_scrape_core.job_control.keys import (
+from kiizama_core.job_control.keys import (
     build_consumer_group,
     build_dedupe_key,
     build_lease_key,

@@ -4,7 +4,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
-from kiizama_scrape_core.ig_scraper.schemas import InstagramPostSchema
+from kiizama_scrape_core.ig_scraper_v2.schemas import InstagramPostSchema
 
 
 @dataclass(slots=True)

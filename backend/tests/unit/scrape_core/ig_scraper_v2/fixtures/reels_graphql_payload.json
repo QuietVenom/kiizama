@@ -1,0 +1,41 @@
+{
+  "data": {
+    "xdt_api__v1__clips__user__connection_v2": {
+      "edges": [
+        {
+          "node": {
+            "media": {
+              "code": "reel_one",
+              "owner": {
+                "username": "example"
+              },
+              "play_count": 1000,
+              "like_count": 100,
+              "comment_count": 10,
+              "media_type": 2,
+              "product_type": "clips"
+            }
+          }
+        },
+        {
+          "node": {
+            "media": {
+              "code": "reel_two",
+              "owner": {
+                "username": "example"
+              },
+              "play_count": 2000,
+              "like_count": 200,
+              "comment_count": 20,
+              "media_type": 2,
+              "product_type": "clips"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "extensions": {
+    "is_final": true
+  }
+}

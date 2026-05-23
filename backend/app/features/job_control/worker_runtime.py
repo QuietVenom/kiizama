@@ -1,4 +1,4 @@
-from kiizama_scrape_core.job_control.worker_runtime import (
+from kiizama_core.job_control.worker_runtime import (
     TERMINAL_JOB_STATUSES,
     JobRuntimeHandle,
     JobWorkerRuntime,

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from kiizama_scrape_core.user_events.repository import (
+from kiizama_core.user_events.repository import (
     UserEventsRepository as CoreUserEventsRepository,
 )
-from kiizama_scrape_core.user_events.repository import (
+from kiizama_core.user_events.repository import (
     UserEventsUnavailableError,
     build_user_events_stream_key,
 )

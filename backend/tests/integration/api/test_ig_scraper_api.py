@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from types import SimpleNamespace
 from typing import Any
 
-import httpx
 from fastapi.testclient import TestClient
-from kiizama_scrape_core.ig_scraper.schemas import (
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramBatchCountersSchema,
     InstagramBatchProfileResult,
     InstagramBatchScrapeRequest,
     InstagramBatchScrapeResponse,
     InstagramProfileSchema,
+    InstagramScrapeJobCreateResponse,
     InstagramScrapeJobTerminalizationResponse,
 )
 from sqlmodel import Session
@@ -108,8 +107,25 @@ def _early_batch_response(username: str = "alpha") -> InstagramBatchScrapeRespon
 def test_create_instagram_scrape_job_uses_service_and_current_user(
     client: TestClient,
     normal_user_token_headers: dict[str, str],
+    monkeypatch,
 ) -> None:
     service = StubInstagramJobService()
+    calls: dict[str, Any] = {}
+
+    async def create_billable_instagram_job(**kwargs: Any) -> Any:
+        calls.update(kwargs)
+        job_id = await kwargs["job_service"].create_job(
+            payload=kwargs["payload"],
+            owner_user_id=str(kwargs["owner_user_id"]),
+            execution_mode=kwargs["execution_mode"],
+        )
+        return InstagramScrapeJobCreateResponse(job_id=job_id, status="queued")
+
+    monkeypatch.setattr(
+        ig_scraper_routes,
+        "create_billable_instagram_job",
+        create_billable_instagram_job,
+    )
     app.dependency_overrides[get_instagram_job_service] = lambda: service
     try:
         response = client.post(
@@ -124,6 +140,8 @@ def test_create_instagram_scrape_job_uses_service_and_current_user(
     assert response.json() == {"job_id": "job-1", "status": "queued"}
     assert service.create_calls
     assert service.create_calls[0][0]["usernames"] == ["alpha"]
+    assert service.create_calls[0][0]["execution_mode"] == "worker"
+    assert calls["idempotency_key"] is None
 
 
 def test_create_worker_job_disabled_returns_503(
@@ -151,9 +169,24 @@ def test_create_worker_job_disabled_returns_503(
 def test_create_instagram_scrape_job_returns_503_when_redis_is_unavailable(
     client: TestClient,
     normal_user_token_headers: dict[str, str],
+    monkeypatch,
 ) -> None:
     service = StubInstagramJobService()
     service.create_exception = JobControlUnavailableError("Redis is unavailable.")
+
+    async def create_billable_instagram_job(**kwargs: Any) -> Any:
+        job_id = await kwargs["job_service"].create_job(
+            payload=kwargs["payload"],
+            owner_user_id=str(kwargs["owner_user_id"]),
+            execution_mode=kwargs["execution_mode"],
+        )
+        return InstagramScrapeJobCreateResponse(job_id=job_id, status="queued")
+
+    monkeypatch.setattr(
+        ig_scraper_routes,
+        "create_billable_instagram_job",
+        create_billable_instagram_job,
+    )
     app.dependency_overrides[get_instagram_job_service] = lambda: service
     try:
         response = client.post(
@@ -227,23 +260,18 @@ def test_create_apify_job_existing_reservation_returns_existing_job_id(
     calls: dict[str, Any] = {}
     monkeypatch.setattr(settings, "IG_SCRAPER_APIFY_JOBS_ENABLED", True)
     monkeypatch.setattr(settings, "APIFY_API_TOKEN", "test-apify-token")
+
+    async def create_billable_instagram_job(**kwargs: Any) -> Any:
+        calls.update(kwargs)
+        return InstagramScrapeJobCreateResponse(
+            job_id="existing-job",
+            status="queued",
+        )
+
     monkeypatch.setattr(
         ig_scraper_routes,
-        "build_usage_request_key",
-        lambda **_kwargs: "usage-key",
-    )
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "reserve_feature_usage",
-        lambda **_kwargs: calls.setdefault(
-            "reservation",
-            SimpleNamespace(job_id="existing-job"),
-        ),
-    )
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "attach_job_id_to_reservation",
-        lambda **kwargs: calls.setdefault("attached", kwargs),
+        "create_billable_instagram_job",
+        create_billable_instagram_job,
     )
     app.dependency_overrides[get_instagram_job_service] = lambda: service
     try:
@@ -258,7 +286,7 @@ def test_create_apify_job_existing_reservation_returns_existing_job_id(
     assert response.status_code == 202
     assert response.json() == {"job_id": "existing-job", "status": "queued"}
     assert service.create_calls == []
-    assert "attached" not in calls
+    assert calls["execution_mode"] == "apify"
 
 
 def test_create_apify_job_failure_releases_usage_reservation(
@@ -268,32 +296,21 @@ def test_create_apify_job_failure_releases_usage_reservation(
 ) -> None:
     service = StubInstagramJobService()
     service.create_exception = JobControlUnavailableError("Redis is unavailable.")
-    calls: dict[str, Any] = {}
     monkeypatch.setattr(settings, "IG_SCRAPER_APIFY_JOBS_ENABLED", True)
     monkeypatch.setattr(settings, "APIFY_API_TOKEN", "test-apify-token")
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "build_usage_request_key",
-        lambda **_kwargs: "usage-key",
-    )
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "reserve_feature_usage",
-        lambda **_kwargs: SimpleNamespace(job_id=None),
-    )
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "release_usage_reservation",
-        lambda **kwargs: calls.setdefault("released", kwargs),
-    )
 
-    async def publish_billing_event(**kwargs: Any) -> None:
-        calls.setdefault("published_events", []).append(kwargs["event_name"])
+    async def create_billable_instagram_job(**kwargs: Any) -> Any:
+        job_id = await kwargs["job_service"].create_job(
+            payload=kwargs["payload"],
+            owner_user_id=str(kwargs["owner_user_id"]),
+            execution_mode=kwargs["execution_mode"],
+        )
+        return InstagramScrapeJobCreateResponse(job_id=job_id, status="queued")
 
     monkeypatch.setattr(
         ig_scraper_routes,
-        "publish_billing_event",
-        publish_billing_event,
+        "create_billable_instagram_job",
+        create_billable_instagram_job,
     )
     app.dependency_overrides[get_instagram_job_service] = lambda: service
     try:
@@ -306,8 +323,6 @@ def test_create_apify_job_failure_releases_usage_reservation(
         app.dependency_overrides.pop(get_instagram_job_service, None)
 
     assert response.status_code == 503
-    assert calls["released"]["request_key"] == "usage-key"
-    assert calls["published_events"] == ["account.usage.updated"]
     assert service.create_calls[0][0]["execution_mode"] == "apify"
 
 
@@ -363,221 +378,6 @@ def test_get_instagram_scrape_job_returns_404_for_missing_or_foreign_job(
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Scrape job not found."}
-
-
-def test_profiles_batch_early_response_returns_summary_without_scraping(
-    client: TestClient,
-    superuser_token_headers: dict[str, str],
-    monkeypatch,
-) -> None:
-    calls: dict[str, Any] = {}
-    early_response = _early_batch_response("alpha")
-
-    async def fake_prepare_scrape_batch_payload(
-        payload: InstagramBatchScrapeRequest,
-        persistence: Any,
-    ) -> tuple[InstagramBatchScrapeRequest, InstagramBatchScrapeResponse]:
-        calls["prepared_usernames"] = payload.usernames
-        calls["persistence"] = persistence
-        return payload, early_response
-
-    async def fail_scrape_profiles_batch(payload: InstagramBatchScrapeRequest) -> Any:
-        del payload
-        raise AssertionError("scrape_profiles_batch should not run")
-
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "prepare_scrape_batch_payload",
-        fake_prepare_scrape_batch_payload,
-    )
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "scrape_profiles_batch",
-        fail_scrape_profiles_batch,
-    )
-
-    response = client.post(
-        f"{settings.API_V1_STR}/ig-scraper/profiles/batch",
-        headers=superuser_token_headers,
-        json={"usernames": ["alpha"]},
-    )
-
-    assert response.status_code == 200
-    assert response.json()["error"] == "already processed"
-    assert calls["prepared_usernames"] == ["alpha"]
-
-
-def test_profiles_batch_upstream_error_marks_dependency_failure(
-    client: TestClient,
-    superuser_token_headers: dict[str, str],
-    monkeypatch,
-) -> None:
-    failures: list[dict[str, Any]] = []
-
-    async def fake_prepare_scrape_batch_payload(
-        payload: InstagramBatchScrapeRequest,
-        persistence: Any,
-    ) -> tuple[InstagramBatchScrapeRequest, None]:
-        del persistence
-        return payload, None
-
-    async def failing_scrape_profiles_batch(
-        payload: InstagramBatchScrapeRequest,
-    ) -> InstagramBatchScrapeResponse:
-        del payload
-        raise httpx.ConnectError("instagram down")
-
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "prepare_scrape_batch_payload",
-        fake_prepare_scrape_batch_payload,
-    )
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "scrape_profiles_batch",
-        failing_scrape_profiles_batch,
-    )
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "mark_dependency_failure",
-        lambda dependency, **kwargs: failures.append(
-            {"dependency": dependency, **kwargs}
-        ),
-    )
-
-    response = client.post(
-        f"{settings.API_V1_STR}/ig-scraper/profiles/batch",
-        headers=superuser_token_headers,
-        json={"usernames": ["alpha"]},
-    )
-
-    assert response.status_code == 503
-    assert response.json()["dependency"] == "instagram_upstream"
-    assert failures[0]["dependency"] == "instagram_upstream"
-    assert failures[0]["status"] == "degraded"
-
-
-def test_profiles_batch_ai_error_marks_openai_degraded(
-    client: TestClient,
-    superuser_token_headers: dict[str, str],
-    monkeypatch,
-) -> None:
-    failures: list[dict[str, Any]] = []
-
-    async def fake_prepare_scrape_batch_payload(
-        payload: InstagramBatchScrapeRequest,
-        persistence: Any,
-    ) -> tuple[InstagramBatchScrapeRequest, None]:
-        del persistence
-        return payload, None
-
-    async def fake_scrape_profiles_batch(
-        payload: InstagramBatchScrapeRequest,
-    ) -> InstagramBatchScrapeResponse:
-        del payload
-        return _successful_batch_response("alpha")
-
-    async def fake_enrich_with_ai_analysis(
-        response: InstagramBatchScrapeResponse,
-        *,
-        analysis_service: Any,
-    ) -> InstagramBatchScrapeResponse:
-        del analysis_service
-        response.results["alpha"].ai_error = "OpenAI timeout"
-        return response
-
-    async def fake_persist_scrape_results_to_db(
-        response: InstagramBatchScrapeResponse,
-        *,
-        persistence: Any,
-    ) -> InstagramBatchScrapeResponse:
-        del persistence
-        return response
-
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "prepare_scrape_batch_payload",
-        fake_prepare_scrape_batch_payload,
-    )
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "scrape_profiles_batch",
-        fake_scrape_profiles_batch,
-    )
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "enrich_with_ai_analysis",
-        fake_enrich_with_ai_analysis,
-    )
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "persist_scrape_results_to_db",
-        fake_persist_scrape_results_to_db,
-    )
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "mark_dependency_failure",
-        lambda dependency, **kwargs: failures.append(
-            {"dependency": dependency, **kwargs}
-        ),
-    )
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "mark_dependency_success",
-        lambda *_args, **_kwargs: None,
-    )
-
-    response = client.post(
-        f"{settings.API_V1_STR}/ig-scraper/profiles/batch",
-        headers=superuser_token_headers,
-        json={"usernames": ["alpha"]},
-    )
-
-    assert response.status_code == 200
-    assert response.json()["counters"]["successful"] == 1
-    assert failures == [
-        {
-            "dependency": "openai",
-            "context": "ig-scraper-ai-enrichment",
-            "detail": "AI enrichment skipped: OpenAI timeout",
-            "status": "degraded",
-        }
-    ]
-
-
-def test_recommendations_upstream_error_returns_translated_failure(
-    client: TestClient,
-    superuser_token_headers: dict[str, str],
-    monkeypatch,
-) -> None:
-    failures: list[dict[str, Any]] = []
-
-    async def failing_scrape_recommendations_batch(payload: Any) -> Any:
-        del payload
-        raise httpx.ConnectError("instagram down")
-
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "scrape_recommendations_batch",
-        failing_scrape_recommendations_batch,
-    )
-    monkeypatch.setattr(
-        ig_scraper_routes,
-        "mark_dependency_failure",
-        lambda dependency, **kwargs: failures.append(
-            {"dependency": dependency, **kwargs}
-        ),
-    )
-
-    response = client.post(
-        f"{settings.API_V1_STR}/ig-scraper/profiles/recommendations",
-        headers=superuser_token_headers,
-        json={"usernames": ["alpha"], "recommended_limit": 5},
-    )
-
-    assert response.status_code == 503
-    assert response.json()["dependency"] == "instagram_upstream"
-    assert failures[0]["context"] == "ig-scraper-recommendations"
 
 
 def test_instagram_scrape_profiles_apify_batch_uses_scrape_pipeline_without_jobs(

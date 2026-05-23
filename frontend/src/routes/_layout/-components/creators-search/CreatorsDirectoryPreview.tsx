@@ -800,78 +800,81 @@ export function CreatorsDirectoryPreview({
             ) : null}
           </Flex>
 
-          {resultState === "idle" ? (
-            <Box
-              mt={5}
-              rounded="26px"
-              borderWidth="1px"
-              borderColor="ui.borderSoft"
-              bg="ui.surfaceSoft"
-              px={5}
-              py={8}
-              textAlign="center"
-            >
-              <Text fontWeight="black">
-                {t("directoryPreview.results.idleTitle")}
-              </Text>
-              <Text mt={2} color="ui.secondaryText">
-                {t("directoryPreview.results.idleDescription")}
-              </Text>
-            </Box>
-          ) : null}
+          <Box
+            mt={5}
+            pt={2}
+            maxH={{ base: "none", xl: "960px" }}
+            overflowY={{ base: "visible", xl: "auto" }}
+            pr={{ base: 0, xl: 1 }}
+          >
+            {resultState === "idle" ? (
+              <Box
+                rounded="26px"
+                borderWidth="1px"
+                borderColor="ui.borderSoft"
+                bg="ui.surfaceSoft"
+                px={5}
+                py={8}
+                textAlign="center"
+              >
+                <Text fontWeight="black">
+                  {t("directoryPreview.results.idleTitle")}
+                </Text>
+                <Text mt={2} color="ui.secondaryText">
+                  {t("directoryPreview.results.idleDescription")}
+                </Text>
+              </Box>
+            ) : null}
 
-          {resultState === "loading" ? (
-            <SimpleGrid mt={5} columns={{ base: 1, lg: 2, "2xl": 3 }} gap={4}>
-              {Array.from({ length: 3 }).map((_, index) => (
-                <Skeleton key={index} h="260px" rounded="3xl" />
-              ))}
-            </SimpleGrid>
-          ) : null}
+            {resultState === "loading" ? (
+              <SimpleGrid columns={{ base: 1, lg: 2, "2xl": 3 }} gap={4}>
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <Skeleton key={index} h="260px" rounded="3xl" />
+                ))}
+              </SimpleGrid>
+            ) : null}
 
-          {resultState === "error" ? (
-            <Box
-              mt={5}
-              rounded="26px"
-              borderWidth="1px"
-              borderColor="ui.danger"
-              bg="ui.dangerSoft"
-              px={5}
-              py={6}
-            >
-              <Text color="ui.dangerText" fontWeight="black">
-                {t("directoryPreview.results.errorTitle")}
-              </Text>
-              <Text mt={2} color="ui.secondaryText">
-                {extractApiErrorMessage(
-                  searchQuery.error,
-                  t("directoryPreview.results.errorFallback"),
-                )}
-              </Text>
-            </Box>
-          ) : null}
+            {resultState === "error" ? (
+              <Box
+                rounded="26px"
+                borderWidth="1px"
+                borderColor="ui.danger"
+                bg="ui.dangerSoft"
+                px={5}
+                py={6}
+              >
+                <Text color="ui.dangerText" fontWeight="black">
+                  {t("directoryPreview.results.errorTitle")}
+                </Text>
+                <Text mt={2} color="ui.secondaryText">
+                  {extractApiErrorMessage(
+                    searchQuery.error,
+                    t("directoryPreview.results.errorFallback"),
+                  )}
+                </Text>
+              </Box>
+            ) : null}
 
-          {resultState === "empty" ? (
-            <Box
-              mt={5}
-              rounded="26px"
-              borderWidth="1px"
-              borderColor="ui.borderSoft"
-              bg="ui.surfaceSoft"
-              px={5}
-              py={8}
-              textAlign="center"
-            >
-              <Text fontWeight="black">
-                {t("directoryPreview.results.emptyTitle")}
-              </Text>
-              <Text mt={2} color="ui.secondaryText">
-                {t("directoryPreview.results.emptyDescription")}
-              </Text>
-            </Box>
-          ) : null}
+            {resultState === "empty" ? (
+              <Box
+                rounded="26px"
+                borderWidth="1px"
+                borderColor="ui.borderSoft"
+                bg="ui.surfaceSoft"
+                px={5}
+                py={8}
+                textAlign="center"
+              >
+                <Text fontWeight="black">
+                  {t("directoryPreview.results.emptyTitle")}
+                </Text>
+                <Text mt={2} color="ui.secondaryText">
+                  {t("directoryPreview.results.emptyDescription")}
+                </Text>
+              </Box>
+            ) : null}
 
-          {resultState === "success" && searchQuery.data ? (
-            <>
+            {resultState === "success" && searchQuery.data ? (
               <SimpleGrid mt={5} columns={{ base: 1, lg: 2, "2xl": 3 }} gap={4}>
                 {searchQuery.data.profiles.map((profile) => (
                   <Box
@@ -1037,42 +1040,44 @@ export function CreatorsDirectoryPreview({
                   </Box>
                 ))}
               </SimpleGrid>
+            ) : null}
+          </Box>
 
-              {searchQuery.data.pagination.total_pages > 1 ? (
-                <Flex
-                  mt={5}
-                  justify="space-between"
-                  align={{ base: "flex-start", md: "center" }}
-                  gap={3}
-                  direction={{ base: "column", md: "row" }}
+          {resultState === "success" && searchQuery.data ? (
+            searchQuery.data.pagination.total_pages > 1 ? (
+              <Flex
+                mt={5}
+                justify="space-between"
+                align={{ base: "flex-start", md: "center" }}
+                gap={3}
+                direction={{ base: "column", md: "row" }}
+              >
+                <PaginationRoot
+                  count={searchQuery.data.pagination.total}
+                  page={searchQuery.data.pagination.page}
+                  pageSize={searchQuery.data.pagination.page_size}
+                  onPageChange={({ page: nextPage }) => setPage(nextPage)}
                 >
-                  <PaginationRoot
-                    count={searchQuery.data.pagination.total}
-                    page={searchQuery.data.pagination.page}
-                    pageSize={searchQuery.data.pagination.page_size}
-                    onPageChange={({ page: nextPage }) => setPage(nextPage)}
+                  <Flex
+                    justify="space-between"
+                    align={{ base: "flex-start", md: "center" }}
+                    gap={3}
+                    direction={{ base: "column", md: "row" }}
+                    width="full"
                   >
-                    <Flex
-                      justify="space-between"
-                      align={{ base: "flex-start", md: "center" }}
-                      gap={3}
-                      direction={{ base: "column", md: "row" }}
-                      width="full"
-                    >
-                      <HStack>
-                        <PaginationPrevTrigger />
-                        <PaginationItems />
-                        <PaginationNextTrigger />
-                      </HStack>
-                      <PaginationPageText
-                        format="compact"
-                        color="ui.secondaryText"
-                      />
-                    </Flex>
-                  </PaginationRoot>
-                </Flex>
-              ) : null}
-            </>
+                    <HStack>
+                      <PaginationPrevTrigger />
+                      <PaginationItems />
+                      <PaginationNextTrigger />
+                    </HStack>
+                    <PaginationPageText
+                      format="compact"
+                      color="ui.secondaryText"
+                    />
+                  </Flex>
+                </PaginationRoot>
+              </Flex>
+            ) : null
           ) : null}
         </Box>
       </Grid>

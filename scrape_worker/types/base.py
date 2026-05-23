@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from kiizama_scrape_core.ig_scraper.schemas import (
+from kiizama_core.job_control import JobRuntimeHandle, QueuedJobMessage
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramScrapeJobTerminalizationRequest,
 )
-from kiizama_scrape_core.job_control import JobRuntimeHandle, QueuedJobMessage
 
 from scrape_worker.backend_client import WorkerBackendCompletionResult
 

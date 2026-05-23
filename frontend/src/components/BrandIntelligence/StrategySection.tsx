@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 
 type StrategySectionProps = {
   children: ReactNode
-  description: string
+  description?: string
   eyebrow: string
   title: string
 }
@@ -35,9 +35,11 @@ const StrategySection = ({
       <Text mt={2} fontSize={{ base: "lg", lg: "xl" }} fontWeight="black">
         {title}
       </Text>
-      <Text mt={2} color="ui.secondaryText" maxW="62ch">
-        {description}
-      </Text>
+      {description ? (
+        <Text mt={2} color="ui.secondaryText" maxW="62ch">
+          {description}
+        </Text>
+      ) : null}
       <Box mt={5}>{children}</Box>
     </Box>
   )

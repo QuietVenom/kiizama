@@ -26,8 +26,7 @@
     "helpAria": "Ayuda de búsqueda",
     "tooltip": "Pega una lista, presiona Enter o separa los usernames con comas. También puedes pegar URLs de perfil de Instagram. Antes de ejecutar la búsqueda, los usernames se normalizan a minúsculas y cualquier @ inicial o URL de perfil compatible se convierte automáticamente al username.",
     "label": "Usernames de Instagram",
-    "helper": "Hasta 50 usernames por solicitud.",
-    "placeholder": "creator_one, brand.partner, another_creator",
+    "placeholder": "creator_one, brand.partner, ...",
     "staleBadge": "La entrada cambió. Busca de nuevo para actualizar",
     "searchButton": "Buscar creadores",
     "count_one": "{{count}} / {{max}} username",
@@ -45,6 +44,16 @@
       "found_other": "Perfiles encontrados",
       "updateNeeded": "Actualización necesaria",
       "notFound": "Usernames no encontrados"
+    },
+    "panel": {
+      "eyebrow": "RESULTADOS DE BÚSQUEDA",
+      "title": "Perfiles encontrados",
+      "descriptionIdle": "Los perfiles encontrados aparecerán aquí en cuanto ejecutes una búsqueda.",
+      "descriptionActive": "Revisa perfiles guardados, abre el detalle completo y genera reportes desde este panel."
+    },
+    "idle": {
+      "title": "Aún no hay resultados para mostrar.",
+      "description": "Agrega usernames en el panel izquierdo y ejecuta la búsqueda para poblar esta vista."
     },
     "empty": {
       "eyebrow": "RESULTADO VACÍO",
@@ -65,12 +74,11 @@
     }
   },
   "jobs": {
-    "eyebrow": "JOBS ACTUALES",
-    "title": "Buscando creadores.",
-    "description": "Los jobs de scraping activos y recientes se conservan localmente en este navegador.",
+    "title": "Consultas",
     "empty": "Todavía no hay jobs de scraping.",
     "count_one": "{{count}} / {{max}} trabajo",
     "count_other": "{{count}} / {{max}} trabajos",
+    "queries": "Consultas: {{count}}",
     "status": {
       "queued": "En cola",
       "done": "Completado",
@@ -79,10 +87,6 @@
     "errors": {
       "duplicateActiveJob": "Ya existe un job de scraping activo para estos usernames.",
       "unableToCreate": "No se pudieron crear los jobs de scraping."
-    },
-    "progress": {
-      "review": "Haz clic para revisar el resultado final.",
-      "waiting": "Esperando a que termine."
     }
   },
   "jobDetail": {
@@ -110,9 +114,10 @@
     "workerError": "Error del worker"
   },
   "history": {
-    "eyebrow": "HISTORIAL DE BÚSQUEDA",
     "title": "Historial de búsqueda",
-    "description": "Mantén a un clic las últimas listas de usernames listos.",
+    "count_one": "{{count}} / {{max}} historial",
+    "count_other": "{{count}} / {{max}} historiales",
+    "items": "Consultas: {{count}}",
     "viewAll": "Ver todo",
     "unavailable": "El historial de búsqueda no está disponible temporalmente.",
     "empty": "Todavía no hay historial de búsqueda.",
@@ -248,7 +253,7 @@
     "noSnapshotDate": "Sin fecha de snapshot",
     "report": "Reporte",
     "externalUrl": "URL externa",
-    "viewDetail": "Ver detalle"
+    "viewDetail": "Abrir"
   },
   "detail": {
     "fallbackTitle": "Detalle del snapshot del creador",
@@ -271,7 +276,7 @@
     },
     "metrics": {
       "title": "Métricas",
-      "description": "Métricas guardadas del creador organizadas para coincidir con la vista de reporte usada en el producto.",
+      "description": "Métricas documentadas al momento de la consulta. El Engagement Rate (ER) expresa la proporción de interacciones frente a la audiencia o las reproducciones, según el formato. El ER promedio resume el rendimiento medio por pieza guardada y el ER general refleja el comportamiento agregado del conjunto consultado.",
       "empty": "Todavía no se guardaron métricas para este creador.",
       "postsTitle": "Posts",
       "postsDescription_one": "Métricas basadas en {{count}} post guardado.",

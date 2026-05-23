@@ -54,6 +54,7 @@ FEATURE_ENDPOINT_KEYS = {
     "social_media_report": "social-media-report.instagram",
     "reputation_strategy.campaign": "brand-intelligence.reputation-campaign-strategy",
     "reputation_strategy.creator": "brand-intelligence.reputation-creator-strategy",
+    "ig_scraper_worker": "ig-scraper.jobs.worker",
     "ig_scraper_apify": "ig-scraper.jobs.apify",
 }
 PUBLIC_FEATURE_CODE_ALIASES = {

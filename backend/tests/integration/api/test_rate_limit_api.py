@@ -60,6 +60,11 @@ class StubEventStreamService:
         return iterator()
 
 
+async def _stub_billable_instagram_job(**kwargs: Any) -> dict[str, str]:
+    del kwargs
+    return {"job_id": "job-1", "status": "queued"}
+
+
 class FailingRateLimitRedis:
     async def evalsha(self, *_: Any) -> object:
         raise RuntimeError("redis unavailable")
@@ -285,22 +290,29 @@ def test_jobs_write_limit_is_user_based_not_ip_based(
         StubInstagramJobService()
     )
     try:
-        for index in range(12):
-            response = client.post(
+        with patch(
+            "app.api.routes.ig_scraper.create_billable_instagram_job",
+            new=_stub_billable_instagram_job,
+        ):
+            for index in range(12):
+                response = client.post(
+                    f"{settings.API_V1_STR}/ig-scraper/jobs",
+                    headers={
+                        **normal_user_token_headers,
+                        "X-Forwarded-For": f"203.0.113.{70 + index}",
+                    },
+                    json={"usernames": ["alpha"]},
+                )
+                assert response.status_code == 202
+
+            blocked = client.post(
                 f"{settings.API_V1_STR}/ig-scraper/jobs",
                 headers={
                     **normal_user_token_headers,
-                    "X-Forwarded-For": f"203.0.113.{70 + index}",
+                    "X-Forwarded-For": "198.51.100.1",
                 },
                 json={"usernames": ["alpha"]},
             )
-            assert response.status_code == 202
-
-        blocked = client.post(
-            f"{settings.API_V1_STR}/ig-scraper/jobs",
-            headers={**normal_user_token_headers, "X-Forwarded-For": "198.51.100.1"},
-            json={"usernames": ["alpha"]},
-        )
     finally:
         app.dependency_overrides.pop(get_instagram_job_service, None)
 
@@ -387,11 +399,15 @@ def test_jobs_write_fail_open_allows_request_when_redis_fails(
         StubInstagramJobService()
     )
     try:
-        response = client.post(
-            f"{settings.API_V1_STR}/ig-scraper/jobs",
-            headers=normal_user_token_headers,
-            json={"usernames": ["alpha"]},
-        )
+        with patch(
+            "app.api.routes.ig_scraper.create_billable_instagram_job",
+            new=_stub_billable_instagram_job,
+        ):
+            response = client.post(
+                f"{settings.API_V1_STR}/ig-scraper/jobs",
+                headers=normal_user_token_headers,
+                json={"usernames": ["alpha"]},
+            )
     finally:
         app.dependency_overrides.pop(get_instagram_job_service, None)
 

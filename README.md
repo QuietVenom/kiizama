@@ -130,6 +130,15 @@ Fallback split Postgres variables:
 - `REPUTATION_OPENAI_TIMEOUT_SECONDS`
 - `REPUTATION_OPENAI_MAX_RETRIES`
 
+### Apify scrape jobs
+
+The backend can run scrape jobs through the Apify API with an in-process runner (`POST /api/v1/ig-scraper/jobs/apify`):
+
+- `APIFY_API_TOKEN` (required for the Apify flow)
+- `IG_SCRAPER_APIFY_JOBS_ENABLED` toggles the Apify flow (default `true`)
+- `IG_SCRAPER_WORKER_JOBS_ENABLED` toggles the worker-based flow (default `true`)
+- `IG_SCRAPER_APIFY_WORKER_ID`, `IG_SCRAPER_APIFY_LEASE_SECONDS`, `IG_SCRAPER_APIFY_HEARTBEAT_SECONDS`, `IG_SCRAPER_APIFY_POLL_SECONDS`, `IG_SCRAPER_APIFY_MAX_ATTEMPTS`, and `IG_SCRAPER_APIFY_MAX_CONCURRENT_JOBS` tune the runner
+
 ### Billing and Stripe
 
 - `STRIPE_SECRET_KEY`
@@ -151,6 +160,7 @@ Stripe secret or webhook variables.
 
 Required (or fallback-compatible):
 
+- `IG_SCRAPE_WORKER_DATABASE_URL` (fallback: `DATABASE_URL`)
 - `IG_SCRAPE_WORKER_REDIS_URL` (fallback: `REDIS_URL`)
 - `IG_SCRAPE_WORKER_BACKEND_BASE_URL`
 - `IG_SCRAPE_WORKER_SECRET_KEY_IG_CREDENTIALS` (fallback: `SECRET_KEY_IG_CREDENTIALS`)
@@ -166,6 +176,26 @@ Optional tuning:
 - `IG_SCRAPE_WORKER_LEASE_SECONDS`
 - `IG_SCRAPE_WORKER_MAX_ATTEMPTS`
 - `IG_SCRAPE_WORKER_ERROR_MAX_LEN`
+- `IG_SCRAPE_WORKER_JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS` (fallback: `JOB_CONTROL_TERMINAL_STATE_TTL_SECONDS`)
+- `IG_SCRAPE_WORKER_JOB_CONTROL_QUEUE_MAXLEN` (fallback: `JOB_CONTROL_QUEUE_MAXLEN`)
+
+Instagram scraper v2 runtime:
+
+- `IG_SCRAPER_V2_USE_ISP_PROXY` toggles DECODO/ISP proxy mode. Default is `false` outside production.
+- `IG_SCRAPER_V2_ISP_PROXY_URLS` is a comma-separated list of proxy URLs. Required when proxy mode is enabled.
+- `IG_SCRAPER_V2_MAX_CONCURRENT`, `IG_SCRAPER_V2_MAX_POSTS`, `IG_SCRAPER_V2_HEADLESS`, `IG_SCRAPER_V2_TIMEOUT_MS`, and `IG_SCRAPER_V2_LOCALE` control runtime behavior without exposing those values in API payloads.
+- `IG_SCRAPER_V2_PACING_ENABLED`, `IG_SCRAPER_V2_PACING_MIN_SECONDS`, `IG_SCRAPER_V2_PACING_MAX_SECONDS`, `IG_SCRAPER_V2_WARMUP_MIN_SECONDS`, and `IG_SCRAPER_V2_WARMUP_MAX_SECONDS` control human-like pacing and cold browser warm-up.
+
+Example DECODO configuration:
+
+```bash
+IG_SCRAPER_V2_USE_ISP_PROXY=true
+IG_SCRAPER_V2_ISP_PROXY_URLS=http://<decodo-user>:<decodo-password>@<decodo-host>:<decodo-port>
+```
+
+In `ENVIRONMENT=production`, scraper v2 always uses ISP proxy mode. `IG_SCRAPER_V2_USE_ISP_PROXY=false` is ignored in production, and missing `IG_SCRAPER_V2_ISP_PROXY_URLS` fails startup/config creation with a `ValueError`.
+
+Do not send proxy, timeout, locale, user agent, or concurrency values in `/api/v1/ig-scraper/*` request bodies. Public scrape job payloads only include `usernames`; the worker reads runtime settings from environment variables.
 
 ### Observability and images
 

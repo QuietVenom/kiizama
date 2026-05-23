@@ -39,9 +39,11 @@ const scrollPageTopIntoView = (targetRef: RefObject<HTMLElement | null>) => {
 }
 
 export const useCreatorsSearchJobs = ({
+  onJobsEnqueued,
   pageTopRef,
   persistSearchHistoryEntry,
 }: {
+  onJobsEnqueued?: () => void
   pageTopRef: RefObject<HTMLElement | null>
   persistSearchHistoryEntry: (
     payload: CreatorsSearchHistoryCreateRequest,
@@ -138,6 +140,7 @@ export const useCreatorsSearchJobs = ({
         setExpiredJobsError(t("jobs.errors.duplicateActiveJob"))
       }
 
+      onJobsEnqueued?.()
       scrollPageTopIntoView(pageTopRef)
     },
     onError: (error) => {
@@ -159,6 +162,7 @@ export const useCreatorsSearchJobs = ({
         setMissingJobsError(t("jobs.errors.duplicateActiveJob"))
       }
 
+      onJobsEnqueued?.()
       scrollPageTopIntoView(pageTopRef)
     },
     onError: (error) => {
