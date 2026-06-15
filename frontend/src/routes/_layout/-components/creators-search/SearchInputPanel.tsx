@@ -1,8 +1,7 @@
 import {
   Badge,
   Box,
-  Flex,
-  Heading,
+  Grid,
   IconButton,
   Portal,
   Text,
@@ -55,16 +54,14 @@ export const SearchInputPanel = ({
       h="100%"
     >
       <Box>
-        <Text
-          fontSize="sm"
-          color="ui.mutedText"
-          fontWeight="bold"
-          letterSpacing="0.08em"
+        <Grid
+          templateColumns={{ base: "1fr auto", md: "minmax(0, 1fr) auto" }}
+          alignItems="start"
+          gap={3}
         >
-          {t("input.eyebrow")}
-        </Text>
-        <Flex mt={2} alignItems="center" gap={2} wrap="wrap">
-          <Heading size="lg">{t("input.title")}</Heading>
+          <Text textStyle="eyebrow" flex="1" minW={0}>
+            {t("input.title")}
+          </Text>
           <Tooltip.Root openDelay={160} positioning={{ placement: "top" }}>
             <Tooltip.Trigger asChild>
               <IconButton
@@ -100,14 +97,80 @@ export const SearchInputPanel = ({
               </Tooltip.Positioner>
             </Portal>
           </Tooltip.Root>
-        </Flex>
+        </Grid>
+        <Button
+          mt={4}
+          w="full"
+          layerStyle="brandGradientButton"
+          loading={isSearchPending}
+          onClick={onSearch}
+          alignSelf="stretch"
+          disabled={
+            usernames.length === 0 ||
+            invalidUsernames.length > 0 ||
+            isSearchPending
+          }
+        >
+          <FiSearch />
+          {t("input.searchButton")}
+        </Button>
       </Box>
 
       <Field
         mt={5}
         flex="1"
-        label={t("input.label")}
-        helperText={hasValidationIssue ? undefined : t("input.helper")}
+        label={
+          <Box w="full">
+            <Grid
+              templateColumns={{ base: "1fr", md: "minmax(0, 1fr) auto" }}
+              alignItems="center"
+              gap={3}
+            >
+              <Text>{t("input.label")}</Text>
+              <Badge
+                rounded="full"
+                borderWidth="1px"
+                borderColor="ui.borderSoft"
+                bg="ui.surfaceSoft"
+                color="ui.secondaryText"
+                px={3}
+                py={1.5}
+                flexShrink={0}
+                textAlign="center"
+                whiteSpace="nowrap"
+              >
+                {t("input.count", {
+                  count: usernames.length,
+                  max: maxUsernames,
+                })}
+              </Badge>
+            </Grid>
+            {isSearchStale ? (
+              <Box
+                mt={3}
+                display="inline-flex"
+                alignSelf="center"
+                justifyContent="center"
+                maxW="min(100%, 32rem)"
+                rounded="full"
+                bg="ui.infoSoft"
+                px={4}
+                py={2}
+              >
+                <Text
+                  color="ui.infoText"
+                  fontSize="sm"
+                  fontWeight="medium"
+                  lineHeight="1.4"
+                  textAlign="center"
+                  textWrap="balance"
+                >
+                  {t("input.staleBadge")}
+                </Text>
+              </Box>
+            ) : null}
+          </Box>
+        }
         errorText={validationMessage}
         invalid={hasValidationIssue}
       >
@@ -122,55 +185,6 @@ export const SearchInputPanel = ({
           value={usernames}
         />
       </Field>
-
-      <Flex
-        alignItems={{ base: "stretch", md: "center" }}
-        justifyContent="space-between"
-        gap={3}
-        direction={{ base: "column", md: "row" }}
-        mt="auto"
-        pt={6}
-      >
-        <Flex alignItems="center" gap={2} wrap="wrap">
-          <Badge
-            rounded="full"
-            borderWidth="1px"
-            borderColor="ui.borderSoft"
-            bg="ui.surfaceSoft"
-            color="ui.secondaryText"
-            px={3}
-            py={1.5}
-          >
-            {t("input.count", { count: usernames.length, max: maxUsernames })}
-          </Badge>
-          {isSearchStale ? (
-            <Badge
-              rounded="full"
-              bg="ui.infoSoft"
-              color="ui.infoText"
-              px={3}
-              py={1.5}
-            >
-              {t("input.staleBadge")}
-            </Badge>
-          ) : null}
-        </Flex>
-
-        <Button
-          layerStyle="brandGradientButton"
-          loading={isSearchPending}
-          onClick={onSearch}
-          alignSelf={{ base: "stretch", md: "flex-start" }}
-          disabled={
-            usernames.length === 0 ||
-            invalidUsernames.length > 0 ||
-            isSearchPending
-          }
-        >
-          <FiSearch />
-          {t("input.searchButton")}
-        </Button>
-      </Flex>
     </Box>
   )
 }

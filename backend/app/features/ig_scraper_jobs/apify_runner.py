@@ -8,8 +8,16 @@ from contextlib import suppress
 from datetime import UTC, datetime
 from typing import Any, Literal
 
-from kiizama_scrape_core.ig_scraper.persistence import SqlInstagramScrapePersistence
-from kiizama_scrape_core.ig_scraper.schemas import (
+from kiizama_core.job_control import JobControlUnavailableError, JobWorkerRuntime
+from kiizama_core.job_control.schemas import QueuedJobMessage
+from kiizama_scrape_core.ig_scraper_v2 import (
+    ApifyInstagramScraperBackend,
+    execute_scrape_job_payload,
+)
+from kiizama_scrape_core.ig_scraper_v2.persistence import (
+    SqlInstagramScrapePersistenceV2,
+)
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramBatchCountersSchema,
     InstagramBatchProfileResult,
     InstagramBatchScrapeRequest,
@@ -19,15 +27,10 @@ from kiizama_scrape_core.ig_scraper.schemas import (
     InstagramProfileSchema,
     InstagramScrapeJobTerminalizationRequest,
 )
-from kiizama_scrape_core.ig_scraper.service import (
+from kiizama_scrape_core.ig_scraper_v2.service import (
     build_batch_scrape_summary,
-    enrich_with_ai_analysis,
-    persist_scrape_results_to_db,
     prepare_scrape_batch_payload,
 )
-from kiizama_scrape_core.ig_scraper.types import ApifyInstagramProfileScraper
-from kiizama_scrape_core.job_control import JobControlUnavailableError, JobWorkerRuntime
-from kiizama_scrape_core.job_control.schemas import QueuedJobMessage
 from redis.exceptions import RedisError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Session
@@ -41,9 +44,8 @@ from app.features.ig_scraper_jobs.service import (
     get_instagram_job_control_repository,
     get_instagram_user_events_repository,
 )
-from app.features.ig_scraper_runtime import (
-    BackendInstagramProfileAnalysisService,
-    configure_backend_instagram_scraper_runtime,
+from app.features.ig_scraper_v2_runtime import (
+    BackendInstagramProfileAnalysisServiceV2,
 )
 
 logger = logging.getLogger(__name__)
@@ -116,7 +118,6 @@ class ApifyInstagramJobRunner:
     async def start(self) -> None:
         if self._loop_task is not None:
             return
-        configure_backend_instagram_scraper_runtime()
         await self._runtime.ensure_consumer_group()
         self._loop_task = asyncio.create_task(self._run_loop())
         await asyncio.sleep(0)
@@ -247,42 +248,13 @@ class ApifyInstagramJobRunner:
         self,
         payload: dict[str, Any],
     ) -> tuple[InstagramBatchScrapeSummaryResponse, str | None]:
-        original_request = InstagramBatchScrapeRequest.model_validate(payload)
-        request = original_request.model_copy(deep=True)
-
-        with Session(engine) as session:
-            persistence = SqlInstagramScrapePersistence(session=session)
-            analysis_service = BackendInstagramProfileAnalysisService()
-
-            request, early_response = await prepare_scrape_batch_payload(
-                request,
-                persistence,
-            )
-            if early_response is not None:
-                summary = build_batch_scrape_summary(
-                    original_request,
-                    request,
-                    response=None,
-                    early_response=early_response,
-                )
-                return summary, summary.error
-
-            response = await self._scrape_profiles_batch(request)
-            response = await enrich_with_ai_analysis(
-                response,
-                analysis_service=analysis_service,
-            )
-            response = await persist_scrape_results_to_db(
-                response,
-                persistence=persistence,
-            )
-
-            summary = build_batch_scrape_summary(
-                original_request,
-                request,
-                response=response,
-            )
-            return summary, response.error or summary.error
+        scraper_backend = self._build_scraper_backend()
+        return await execute_scrape_job_payload(
+            payload,
+            session_factory=lambda: Session(engine),
+            scraper_backend=scraper_backend,
+            analysis_service=BackendInstagramProfileAnalysisServiceV2(),
+        )
 
     async def _build_terminal_failure_summary(
         self,
@@ -294,7 +266,7 @@ class ApifyInstagramJobRunner:
 
         try:
             with Session(engine) as session:
-                persistence = SqlInstagramScrapePersistence(session=session)
+                persistence = SqlInstagramScrapePersistenceV2(session=session)
                 scrape_request, early_response = await prepare_scrape_batch_payload(
                     original_request.model_copy(deep=True),
                     persistence,
@@ -331,19 +303,14 @@ class ApifyInstagramJobRunner:
             response=failed_response,
         )
 
-    async def _scrape_profiles_batch(
-        self,
-        request: InstagramBatchScrapeRequest,
-    ) -> InstagramBatchScrapeResponse:
+    def _build_scraper_backend(self) -> ApifyInstagramScraperBackend:
         if not settings.APIFY_API_TOKEN:
             raise RuntimeError("APIFY_API_TOKEN is not configured.")
 
-        scraper = ApifyInstagramProfileScraper(
+        return ApifyInstagramScraperBackend(
             api_token=settings.APIFY_API_TOKEN,
-            usernames=request.usernames,
             include_about_section=False,
         )
-        return InstagramBatchScrapeResponse.model_validate(await scraper.run())
 
     async def _complete_job(
         self,

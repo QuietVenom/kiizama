@@ -1,12 +1,20 @@
 from __future__ import annotations
 
 import uuid
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from typing import Annotated, Any, Protocol
 
 from fastapi import Depends
-from kiizama_scrape_core.ig_scraper.jobs import (
+from kiizama_core.job_control.keys import build_dedupe_key
+from kiizama_core.job_control.schemas import (
+    JobStatus,
+    JobTransientState,
+    QueuedJobMessage,
+    TerminalizationDecision,
+)
+from kiizama_core.user_events.schemas import UserEventEnvelope
+from kiizama_scrape_core.ig_scraper_v2.jobs import (
     APIFY_JOB_EXECUTION_MODE,
     JOB_STATUS_VALUES,
     WORKER_JOB_EXECUTION_MODE,
@@ -16,7 +24,8 @@ from kiizama_scrape_core.ig_scraper.jobs import (
     default_job_expires_at,
     serialize_job_document,
 )
-from kiizama_scrape_core.ig_scraper.schemas import (
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
+    InstagramBatchScrapeSummaryResponse,
     InstagramScrapeJobCreateRequest,
     InstagramScrapeJobExecutionMode,
     InstagramScrapeJobStatusResponse,
@@ -24,24 +33,12 @@ from kiizama_scrape_core.ig_scraper.schemas import (
     InstagramScrapeJobTerminalizationRequest,
     InstagramScrapeJobTerminalizationResponse,
 )
-from kiizama_scrape_core.job_control.keys import build_dedupe_key
-from kiizama_scrape_core.job_control.schemas import (
-    JobStatus,
-    JobTransientState,
-    QueuedJobMessage,
-    TerminalizationDecision,
-)
-from kiizama_scrape_core.user_events.schemas import UserEventEnvelope
 from sqlmodel import Session
 
 from app.api.deps import SessionDep
 from app.core.config import settings
 from app.core.ids import generate_uuid7
-from app.features.billing import (
-    finalize_usage_reservation,
-    publish_billing_event,
-    release_usage_reservation,
-)
+from app.features.ig_scraper_jobs.billing import finalize_instagram_job_billing
 from app.features.ig_scraper_jobs.repository import SqlJobProjectionRepository
 from app.features.job_control.repository import (
     JobControlRepository,
@@ -116,8 +113,39 @@ class UserEventsPort(Protocol):
     ) -> tuple[str, bool]: ...
 
 
+InstagramJobBillingFinalizer = Callable[
+    [
+        Session,
+        uuid.UUID,
+        str,
+        InstagramScrapeJobExecutionMode,
+        str,
+        InstagramBatchScrapeSummaryResponse,
+    ],
+    Awaitable[None],
+]
+
+
 def utcnow() -> datetime:
     return datetime.now(UTC)
+
+
+async def _finalize_instagram_job_billing(
+    session: Session,
+    owner_user_id: uuid.UUID,
+    job_id: str,
+    execution_mode: InstagramScrapeJobExecutionMode,
+    job_status: str,
+    summary: InstagramBatchScrapeSummaryResponse,
+) -> None:
+    await finalize_instagram_job_billing(
+        session=session,
+        owner_user_id=owner_user_id,
+        job_id=job_id,
+        execution_mode=execution_mode,
+        job_status=job_status,
+        summary=summary,
+    )
 
 
 def get_instagram_job_queue_spec() -> JobQueueSpec:
@@ -163,12 +191,16 @@ class InstagramJobService:
         job_control_repositories: dict[InstagramScrapeJobExecutionMode, JobControlPort],
         user_events_repository: UserEventsPort,
         clock: Callable[[], datetime] = utcnow,
+        billing_finalizer: InstagramJobBillingFinalizer = (
+            _finalize_instagram_job_billing
+        ),
     ) -> None:
         self._session = session
         self._jobs_collection = jobs_collection
         self._job_control_repositories = job_control_repositories
         self._user_events_repository = user_events_repository
         self._clock = clock
+        self._billing_finalizer = billing_finalizer
 
     async def create_job(
         self,
@@ -300,25 +332,15 @@ class InstagramJobService:
             payload=payload,
             notification_id=notification_id,
         )
-        if str(doc.get("executionMode") or "") == APIFY_JOB_EXECUTION_MODE:
-            if payload.summary.counters.successful > 0:
-                finalize_usage_reservation(
-                    session=self._session,
-                    job_id=job_id,
-                    quantity_consumed=payload.summary.counters.successful,
-                    metadata={"job_status": payload.status},
-                )
-            else:
-                release_usage_reservation(
-                    session=self._session,
-                    job_id=job_id,
-                    metadata={"job_status": payload.status},
-                )
-            await publish_billing_event(
-                session=self._session,
-                user_id=uuid.UUID(owner_user_id),
-                event_name="account.usage.updated",
-            )
+        execution_mode = self._resolve_execution_mode_from_doc(doc)
+        await self._billing_finalizer(
+            self._session,
+            uuid.UUID(owner_user_id),
+            job_id,
+            execution_mode,
+            payload.status,
+            payload.summary,
+        )
         event_id, _published = await self._user_events_repository.publish_event(
             user_id=owner_user_id,
             event_name=self._build_event_name(payload.status),
@@ -394,10 +416,17 @@ class InstagramJobService:
         self,
         doc: dict[str, Any],
     ) -> JobControlPort:
+        execution_mode = self._resolve_execution_mode_from_doc(doc)
+        return self._resolve_job_control_repository(execution_mode)
+
+    @staticmethod
+    def _resolve_execution_mode_from_doc(
+        doc: dict[str, Any],
+    ) -> InstagramScrapeJobExecutionMode:
         execution_mode = doc.get("executionMode") or WORKER_JOB_EXECUTION_MODE
         if execution_mode not in {WORKER_JOB_EXECUTION_MODE, APIFY_JOB_EXECUTION_MODE}:
             raise RuntimeError(f"Unsupported job execution mode: {execution_mode!r}")
-        return self._resolve_job_control_repository(execution_mode)
+        return execution_mode
 
     @staticmethod
     def _build_terminal_event_payload(

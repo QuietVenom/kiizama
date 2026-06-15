@@ -4,7 +4,7 @@ import asyncio
 import json
 
 from fastapi import APIRouter, Depends, HTTPException
-from kiizama_scrape_core.ig_scraper.schemas import InstagramPostSchema
+from kiizama_scrape_core.ig_scraper_v2.schemas import InstagramPostSchema
 from pydantic import BaseModel, Field
 
 from app.api.deps import get_current_active_superuser

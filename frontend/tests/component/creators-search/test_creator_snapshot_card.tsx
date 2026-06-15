@@ -100,7 +100,7 @@ describe("creator snapshot card", () => {
 
     // Act
     await user.click(screen.getByRole("button", { name: "Reporte" }))
-    await user.click(screen.getByRole("button", { name: "Ver detalle" }))
+    await user.click(screen.getByRole("button", { name: "Abrir" }))
 
     // Assert
     expect(onGenerateReport).toHaveBeenCalled()

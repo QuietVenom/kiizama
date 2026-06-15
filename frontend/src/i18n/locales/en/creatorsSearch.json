@@ -26,8 +26,7 @@
     "helpAria": "Search help",
     "tooltip": "Paste a list, press Enter, or separate usernames with commas. You can also paste Instagram profile URLs. Before the search runs, usernames are normalized to lowercase and any leading @ or supported profile URL is converted automatically into the username.",
     "label": "Instagram usernames",
-    "helper": "Up to 50 usernames per request.",
-    "placeholder": "creator_one, brand.partner, another_creator",
+    "placeholder": "creator_one, brand.partner, ...",
     "staleBadge": "Input changed, search again to refresh",
     "searchButton": "Search creators",
     "count_one": "{{count}} / {{max}} username",
@@ -45,6 +44,16 @@
       "found_other": "Profiles found",
       "updateNeeded": "Update Needed",
       "notFound": "Usernames not found"
+    },
+    "panel": {
+      "eyebrow": "SEARCH RESULTS",
+      "title": "Matching profiles",
+      "descriptionIdle": "Saved creator profiles will appear here once you run a search.",
+      "descriptionActive": "Review saved profiles, open the full detail view, and generate reports from this panel."
+    },
+    "idle": {
+      "title": "No results to show yet.",
+      "description": "Add usernames in the left panel and run a search to populate this view."
     },
     "empty": {
       "eyebrow": "EMPTY RESULT",
@@ -65,12 +74,11 @@
     }
   },
   "jobs": {
-    "eyebrow": "CURRENT JOBS",
-    "title": "Mining for creators.",
-    "description": "Active and recent scrape jobs are kept locally on this browser.",
+    "title": "Queries",
     "empty": "No scrape jobs yet.",
     "count_one": "{{count}} / {{max}} job",
     "count_other": "{{count}} / {{max}} jobs",
+    "queries": "Queries: {{count}}",
     "status": {
       "queued": "Queued",
       "done": "Done",
@@ -79,10 +87,6 @@
     "errors": {
       "duplicateActiveJob": "An active scrape job already exists for these usernames.",
       "unableToCreate": "Unable to create scrape jobs."
-    },
-    "progress": {
-      "review": "Click to review the terminal result.",
-      "waiting": "Waiting for completion."
     }
   },
   "jobDetail": {
@@ -110,9 +114,10 @@
     "workerError": "Worker error"
   },
   "history": {
-    "eyebrow": "SEARCH HISTORY",
     "title": "Search history",
-    "description": "Keep the last ready username lists one click away.",
+    "count_one": "{{count}} / {{max}} history item",
+    "count_other": "{{count}} / {{max}} history items",
+    "items": "Queries: {{count}}",
     "viewAll": "View all",
     "unavailable": "Search history is temporarily unavailable.",
     "empty": "No search history available yet.",
@@ -248,7 +253,7 @@
     "noSnapshotDate": "No snapshot date",
     "report": "Report",
     "externalUrl": "External URL",
-    "viewDetail": "View detail"
+    "viewDetail": "Open"
   },
   "detail": {
     "fallbackTitle": "Creator snapshot detail",
@@ -271,7 +276,7 @@
     },
     "metrics": {
       "title": "Metrics",
-      "description": "Saved creator metrics arranged to match the report view used across the product.",
+      "description": "Metrics documented at the time of the query. Engagement Rate (ER) expresses the share of interactions relative to the audience or to plays, depending on the format. Average ER summarizes the typical performance per saved piece, while overall ER reflects the aggregated behavior of the full queried set.",
       "empty": "No metrics were saved for this creator yet.",
       "postsTitle": "Posts",
       "postsDescription_one": "Metrics based on {{count}} saved post.",

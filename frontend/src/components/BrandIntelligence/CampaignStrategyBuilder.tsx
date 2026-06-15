@@ -69,6 +69,7 @@ import MultiSelectOptionGroup from "./MultiSelectOptionGroup"
 import ProfileValidationPanel from "./ProfileValidationPanel"
 import StrategySection from "./StrategySection"
 import StrategySummaryCard from "./StrategySummaryCard"
+import { validationAttentionCss } from "./validationAttention"
 
 type CampaignStrategyBuilderProps = {
   form: UseFormReturn<CampaignFormValues>
@@ -348,23 +349,26 @@ const CampaignSubmitPanel = ({
     Boolean(timeframe) &&
     (audience?.length ?? 0) > 0
 
-  const submitDisabledReason =
+  const isMissingCreatorUsernames =
     !isNotUsingCreators && normalizedProfiles.length === 0
-      ? t("campaign.submitDisabledReason.missingUsernames")
-      : !isNotUsingCreators && invalidUsernames.length > 0
-        ? t("campaign.submitDisabledReason.invalidUsernames")
-        : hasInvalidBrandUrls
-          ? t("campaign.submitDisabledReason.invalidUrls")
-          : !hasRequiredFields
-            ? t("campaign.submitDisabledReason.requiredFields")
-            : !isNotUsingCreators && isValidationPending
-              ? t("campaign.submitDisabledReason.validationPending")
-              : !isNotUsingCreators &&
-                  (isValidationStale || orderedProfilesCount === 0)
-                ? t("campaign.submitDisabledReason.validationRequired")
-                : !isNotUsingCreators && missingUsernames.length > 0
-                  ? t("campaign.submitDisabledReason.missingProfiles")
-                  : null
+  const submitDisabledReason = isMissingCreatorUsernames
+    ? null
+    : !isNotUsingCreators && invalidUsernames.length > 0
+      ? t("campaign.submitDisabledReason.invalidUsernames")
+      : hasInvalidBrandUrls
+        ? t("campaign.submitDisabledReason.invalidUrls")
+        : !hasRequiredFields
+          ? t("campaign.submitDisabledReason.requiredFields")
+          : !isNotUsingCreators && isValidationPending
+            ? t("campaign.submitDisabledReason.validationPending")
+            : !isNotUsingCreators &&
+                (isValidationStale || orderedProfilesCount === 0)
+              ? t("campaign.submitDisabledReason.validationRequired")
+              : !isNotUsingCreators && missingUsernames.length > 0
+                ? t("campaign.submitDisabledReason.missingProfiles")
+                : null
+  const isSubmitDisabled =
+    isMissingCreatorUsernames || Boolean(submitDisabledReason)
 
   return (
     <Box
@@ -396,7 +400,7 @@ const CampaignSubmitPanel = ({
           type="submit"
           layerStyle="brandGradientButton"
           loading={reportIsPending}
-          disabled={Boolean(submitDisabledReason)}
+          disabled={isSubmitDisabled}
           alignSelf={{ base: "stretch", lg: "center" }}
         >
           <FiFileText />
@@ -478,6 +482,8 @@ const CampaignStrategyBuilder = ({
     normalizedProfiles.length > 0 &&
     invalidUsernames.length === 0 &&
     !isValidationPending
+  const needsValidation =
+    canRunValidation && (orderedProfiles.length === 0 || isValidationStale)
   const brandGoalOptions = useMemo(() => getBrandGoalTypeOptions(t), [t])
   const timeframeOptions = useMemo(() => getTimeframeOptions(t), [t])
   const campaignTypeOptions = useMemo(() => getCampaignTypeOptions(t), [t])
@@ -669,9 +675,7 @@ const CampaignStrategyBuilder = ({
           <Field
             mt={4}
             helperText={
-              isCrisisGoal
-                ? t("campaign.helperText.crisisOnly")
-                : t("campaign.helperText.enableCrisisOnly")
+              isCrisisGoal ? t("campaign.helperText.crisisOnly") : undefined
             }
           >
             <Checkbox
@@ -681,7 +685,21 @@ const CampaignStrategyBuilder = ({
                 setNotUsingCreators(Boolean(checked))
               }
             >
-              {t("campaign.fields.notUsingCreators")}
+              <HStack gap={2}>
+                <Text as="span">{t("campaign.fields.notUsingCreators")}</Text>
+                <Badge
+                  rounded="full"
+                  borderWidth="1px"
+                  borderColor={isCrisisGoal ? "ui.warning" : "ui.border"}
+                  bg={isCrisisGoal ? "ui.warningSoft" : "ui.surfaceSoft"}
+                  color={isCrisisGoal ? "ui.warningText" : "ui.secondaryText"}
+                  px={2.5}
+                  py={0.5}
+                  fontSize="xs"
+                >
+                  {t("campaign.badges.crisisMode")}
+                </Badge>
+              </HStack>
             </Checkbox>
           </Field>
 
@@ -739,6 +757,7 @@ const CampaignStrategyBuilder = ({
                 onClick={handleValidateProfiles}
                 disabled={!canRunValidation}
                 loading={isValidationPending}
+                css={needsValidation ? validationAttentionCss : undefined}
               >
                 <FiSearch />
                 {t("campaign.actions.validateProfiles")}

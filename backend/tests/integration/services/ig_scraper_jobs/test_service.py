@@ -3,23 +3,28 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
+from uuid import UUID
 
-from kiizama_scrape_core.ig_scraper.schemas import (
+from kiizama_core.job_control.schemas import (
+    JobQueueSpec,
+    JobTransientState,
+    TerminalizationDecision,
+)
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramBatchCountersSchema,
     InstagramBatchScrapeSummaryResponse,
     InstagramBatchUsernameStatus,
     InstagramScrapeJobCreateRequest,
     InstagramScrapeJobTerminalizationRequest,
 )
-from kiizama_scrape_core.job_control.schemas import (
-    JobQueueSpec,
-    JobTransientState,
-    TerminalizationDecision,
-)
+from sqlmodel import Session
 
 from app.features.ig_scraper_jobs.service import InstagramJobService
 from app.features.job_control.repository import JobControlUnavailableError
+
+OWNER_USER_ID = "00000000-0000-4000-8000-000000000001"
+FOREIGN_USER_ID = "00000000-0000-4000-8000-000000000002"
 
 
 def _run(coro: Any) -> Any:
@@ -134,6 +139,31 @@ class FakeUserEventsRepository:
         return "1-0", True
 
 
+class FakeBillingFinalizer:
+    def __init__(self) -> None:
+        self.calls: list[dict[str, Any]] = []
+
+    async def __call__(
+        self,
+        session: Session,
+        owner_user_id: UUID,
+        job_id: str,
+        execution_mode: str,
+        job_status: str,
+        summary: InstagramBatchScrapeSummaryResponse,
+    ) -> None:
+        self.calls.append(
+            {
+                "session": session,
+                "owner_user_id": owner_user_id,
+                "job_id": job_id,
+                "execution_mode": execution_mode,
+                "job_status": job_status,
+                "summary": summary,
+            }
+        )
+
+
 def _payload() -> InstagramScrapeJobCreateRequest:
     return InstagramScrapeJobCreateRequest(usernames=["alpha", "beta"])
 
@@ -154,10 +184,11 @@ def _service(
     jobs_collection: FakeJobsCollection | None = None,
     job_control_repository: FakeJobControlRepository | None = None,
     user_events_repository: FakeUserEventsRepository | None = None,
+    billing_finalizer: FakeBillingFinalizer | None = None,
 ) -> InstagramJobService:
     repository = job_control_repository or FakeJobControlRepository()
     return InstagramJobService(
-        session=object(),
+        session=cast(Session, object()),
         jobs_collection=jobs_collection or FakeJobsCollection(),
         job_control_repositories={
             "worker": repository,
@@ -165,6 +196,7 @@ def _service(
         },
         user_events_repository=user_events_repository or FakeUserEventsRepository(),
         clock=lambda: datetime(2026, 3, 21, 12, 0, tzinfo=UTC),
+        billing_finalizer=billing_finalizer or FakeBillingFinalizer(),
     )
 
 
@@ -176,11 +208,11 @@ def test_create_job_inserts_projection_and_enqueues_message() -> None:
         job_control_repository=job_control_repository,
     )
 
-    job_id = _run(service.create_job(payload=_payload(), owner_user_id="user-1"))
+    job_id = _run(service.create_job(payload=_payload(), owner_user_id=OWNER_USER_ID))
 
     assert job_id in jobs_collection.docs
     doc = jobs_collection.docs[job_id]
-    assert doc["ownerUserId"] == "user-1"
+    assert doc["ownerUserId"] == OWNER_USER_ID
     assert doc["status"] == "queued"
     assert len(job_control_repository.enqueued_messages) == 1
     assert job_control_repository.enqueued_messages[0].job_id == job_id
@@ -196,7 +228,7 @@ def test_create_job_rolls_back_projection_when_enqueue_fails() -> None:
     )
 
     try:
-        _run(service.create_job(payload=_payload(), owner_user_id="user-1"))
+        _run(service.create_job(payload=_payload(), owner_user_id=OWNER_USER_ID))
     except JobControlUnavailableError as exc:
         assert str(exc) == "redis down"
     else:  # pragma: no cover - defensive assertion
@@ -214,7 +246,7 @@ def test_get_job_merges_redis_state_over_persisted_projection() -> None:
     )
     jobs_collection.docs["job-1"] = {
         "_id": "job-1",
-        "ownerUserId": "user-1",
+        "ownerUserId": OWNER_USER_ID,
         "status": "queued",
         "createdAt": datetime(2026, 3, 21, 12, 0, tzinfo=UTC),
         "updatedAt": datetime(2026, 3, 21, 12, 0, tzinfo=UTC),
@@ -232,7 +264,7 @@ def test_get_job_merges_redis_state_over_persisted_projection() -> None:
         updated_at=datetime(2026, 3, 21, 12, 5, tzinfo=UTC),
     )
 
-    response = _run(service.get_job(job_id="job-1", owner_user_id="user-1"))
+    response = _run(service.get_job(job_id="job-1", owner_user_id=OWNER_USER_ID))
 
     assert response is not None
     assert response.status == "running"
@@ -247,7 +279,7 @@ def test_get_job_returns_queued_projection_when_redis_state_is_not_created_yet()
     service = _service(jobs_collection=jobs_collection)
     jobs_collection.docs["job-1"] = {
         "_id": "job-1",
-        "ownerUserId": "user-1",
+        "ownerUserId": OWNER_USER_ID,
         "status": "queued",
         "createdAt": datetime(2026, 3, 21, 12, 0, tzinfo=UTC),
         "updatedAt": datetime(2026, 3, 21, 12, 0, tzinfo=UTC),
@@ -257,7 +289,7 @@ def test_get_job_returns_queued_projection_when_redis_state_is_not_created_yet()
         "error": None,
     }
 
-    response = _run(service.get_job(job_id="job-1", owner_user_id="user-1"))
+    response = _run(service.get_job(job_id="job-1", owner_user_id=OWNER_USER_ID))
 
     assert response is not None
     assert response.status == "queued"
@@ -270,7 +302,7 @@ def test_get_job_returns_none_for_foreign_owner() -> None:
     service = _service(jobs_collection=jobs_collection)
     jobs_collection.docs["job-1"] = {
         "_id": "job-1",
-        "ownerUserId": "user-1",
+        "ownerUserId": OWNER_USER_ID,
         "status": "queued",
         "createdAt": datetime(2026, 3, 21, 12, 0, tzinfo=UTC),
         "updatedAt": datetime(2026, 3, 21, 12, 0, tzinfo=UTC),
@@ -280,7 +312,7 @@ def test_get_job_returns_none_for_foreign_owner() -> None:
         "error": None,
     }
 
-    response = _run(service.get_job(job_id="job-1", owner_user_id="user-2"))
+    response = _run(service.get_job(job_id="job-1", owner_user_id=FOREIGN_USER_ID))
 
     assert response is None
 
@@ -290,7 +322,7 @@ def test_get_job_rejects_stale_transient_projection_without_live_redis_state() -
     service = _service(jobs_collection=jobs_collection)
     jobs_collection.docs["job-1"] = {
         "_id": "job-1",
-        "ownerUserId": "user-1",
+        "ownerUserId": OWNER_USER_ID,
         "status": "running",
         "createdAt": datetime(2026, 3, 21, 12, 0, tzinfo=UTC),
         "updatedAt": datetime(2026, 3, 21, 12, 0, tzinfo=UTC),
@@ -301,7 +333,7 @@ def test_get_job_rejects_stale_transient_projection_without_live_redis_state() -
     }
 
     try:
-        _run(service.get_job(job_id="job-1", owner_user_id="user-1"))
+        _run(service.get_job(job_id="job-1", owner_user_id=OWNER_USER_ID))
     except RuntimeError as exc:
         assert "Unexpected transient job projection without live Redis state." in str(
             exc
@@ -314,14 +346,16 @@ def test_complete_job_publishes_terminal_event_once_and_updates_projection() -> 
     jobs_collection = FakeJobsCollection()
     job_control_repository = FakeJobControlRepository()
     user_events_repository = FakeUserEventsRepository()
+    billing_finalizer = FakeBillingFinalizer()
     service = _service(
         jobs_collection=jobs_collection,
         job_control_repository=job_control_repository,
         user_events_repository=user_events_repository,
+        billing_finalizer=billing_finalizer,
     )
     jobs_collection.docs["job-1"] = {
         "_id": "job-1",
-        "ownerUserId": "user-1",
+        "ownerUserId": OWNER_USER_ID,
         "status": "queued",
         "createdAt": datetime(2026, 3, 21, 12, 0, tzinfo=UTC),
         "updatedAt": datetime(2026, 3, 21, 12, 0, tzinfo=UTC),
@@ -355,6 +389,12 @@ def test_complete_job_publishes_terminal_event_once_and_updates_projection() -> 
     assert envelope.payload["ready_usernames"] == ["alpha", "beta"]
     assert jobs_collection.docs["job-1"]["status"] == "done"
     assert job_control_repository.complete_terminal_calls == [("job-1", "1-0")]
+    assert len(billing_finalizer.calls) == 1
+    assert billing_finalizer.calls[0]["owner_user_id"] == UUID(OWNER_USER_ID)
+    assert billing_finalizer.calls[0]["job_id"] == "job-1"
+    assert billing_finalizer.calls[0]["execution_mode"] == "worker"
+    assert billing_finalizer.calls[0]["job_status"] == "done"
+    assert billing_finalizer.calls[0]["summary"].counters.successful == 1
 
 
 def test_complete_job_duplicate_does_not_publish_event_twice() -> None:
@@ -370,14 +410,16 @@ def test_complete_job_duplicate_does_not_publish_event_twice() -> None:
         terminal_event_id="1-0",
     )
     user_events_repository = FakeUserEventsRepository()
+    billing_finalizer = FakeBillingFinalizer()
     service = _service(
         jobs_collection=jobs_collection,
         job_control_repository=job_control_repository,
         user_events_repository=user_events_repository,
+        billing_finalizer=billing_finalizer,
     )
     jobs_collection.docs["job-1"] = {
         "_id": "job-1",
-        "ownerUserId": "user-1",
+        "ownerUserId": OWNER_USER_ID,
         "status": "done",
         "createdAt": datetime(2026, 3, 21, 12, 0, tzinfo=UTC),
         "updatedAt": datetime(2026, 3, 21, 12, 1, tzinfo=UTC),
@@ -405,6 +447,7 @@ def test_complete_job_duplicate_does_not_publish_event_twice() -> None:
     assert response.decision == "duplicate"
     assert user_events_repository.publish_calls == []
     assert job_control_repository.complete_terminal_calls == []
+    assert billing_finalizer.calls == []
 
 
 def test_complete_job_duplicate_does_not_publish_again() -> None:
@@ -420,14 +463,16 @@ def test_complete_job_duplicate_does_not_publish_again() -> None:
         terminal_event_id="1-0",
     )
     user_events_repository = FakeUserEventsRepository()
+    billing_finalizer = FakeBillingFinalizer()
     service = _service(
         jobs_collection=jobs_collection,
         job_control_repository=job_control_repository,
         user_events_repository=user_events_repository,
+        billing_finalizer=billing_finalizer,
     )
     jobs_collection.docs["job-1"] = {
         "_id": "job-1",
-        "ownerUserId": "user-1",
+        "ownerUserId": OWNER_USER_ID,
         "status": "done",
         "createdAt": datetime(2026, 3, 21, 12, 0, tzinfo=UTC),
         "updatedAt": datetime(2026, 3, 21, 12, 1, tzinfo=UTC),
@@ -455,3 +500,4 @@ def test_complete_job_duplicate_does_not_publish_again() -> None:
     assert response.decision == "duplicate"
     assert response.terminal_event_id == "1-0"
     assert user_events_repository.publish_calls == []
+    assert billing_finalizer.calls == []

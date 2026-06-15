@@ -1,0 +1,15 @@
+[project]
+name = "kiizama-core"
+version = "0.1.0"
+description = "Shared core infrastructure primitives for Kiizama runtimes."
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "pydantic>2.0",
+    "redis>=5.2.1,<6.0.0",
+    "psycopg[binary]<4.0.0,>=3.1.13",
+    "sqlmodel<1.0.0,>=0.0.21",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

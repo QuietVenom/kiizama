@@ -7,16 +7,16 @@ from datetime import UTC, datetime
 from typing import Any, cast
 
 import pytest
-from kiizama_scrape_core.ig_scraper.schemas import (
+from kiizama_core.job_control.schemas import (
+    JobQueueSpec,
+    TerminalizationDecision,
+)
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramBatchCountersSchema,
     InstagramBatchScrapeSummaryResponse,
     InstagramBatchUsernameStatus,
     InstagramScrapeJobCreateRequest,
     InstagramScrapeJobTerminalizationRequest,
-)
-from kiizama_scrape_core.job_control.schemas import (
-    JobQueueSpec,
-    TerminalizationDecision,
 )
 from sqlmodel import Session, delete, select
 

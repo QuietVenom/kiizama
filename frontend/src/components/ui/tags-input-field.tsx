@@ -81,7 +81,8 @@ export const TagsInputField = ({
             minH="58px"
             w="full"
             flexWrap="wrap"
-            alignItems="center"
+            alignItems="flex-start"
+            alignContent="flex-start"
             gap={2}
             rounded="2xl"
             borderWidth="1px"
@@ -97,6 +98,27 @@ export const TagsInputField = ({
                 : "0 0 0 1px var(--chakra-colors-ui-brandBorderSoft)",
             }}
           >
+            <TagsInput.Input asChild required={false}>
+              <Input
+                {...autofillIgnoreProps}
+                aria-describedby={field?.ariaDescribedby}
+                aria-labelledby={field?.ids.label}
+                minW="0"
+                w="full"
+                order={-1}
+                flex="1 1 100%"
+                borderWidth="0"
+                bg="transparent"
+                px={1}
+                py={0}
+                maxLength={inputMaxLength}
+                placeholder={placeholder}
+                required={false}
+                _placeholder={{ color: "ui.mutedText" }}
+                _focusVisible={{ boxShadow: "none", outline: "none" }}
+              />
+            </TagsInput.Input>
+
             {value.map((item, index) => {
               const palette = getTagPalette?.(item) ?? defaultTagPalette
 
@@ -146,28 +168,8 @@ export const TagsInputField = ({
                     </TagsInput.ItemDeleteTrigger>
                   </Tag.Root>
                 </TagsInput.Item>
-              )
+                )
             })}
-
-            <TagsInput.Input asChild required={false}>
-              <Input
-                {...autofillIgnoreProps}
-                aria-describedby={field?.ariaDescribedby}
-                aria-labelledby={field?.ids.label}
-                minW="0"
-                w="full"
-                flex="1 1 100%"
-                borderWidth="0"
-                bg="transparent"
-                px={1}
-                py={0}
-                maxLength={inputMaxLength}
-                placeholder={placeholder}
-                required={false}
-                _placeholder={{ color: "ui.mutedText" }}
-                _focusVisible={{ boxShadow: "none", outline: "none" }}
-              />
-            </TagsInput.Input>
           </Flex>
         </TagsInput.Control>
       </TagsInput.Root>

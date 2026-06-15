@@ -1,35 +1,46 @@
-import { Badge, Box, Flex, Heading, Text } from "@chakra-ui/react"
+import { Badge, Box, Flex, Icon, Text } from "@chakra-ui/react"
 import { useTranslation } from "react-i18next"
+import { FiChevronDown, FiChevronRight, FiEye } from "react-icons/fi"
 
 import {
   type CreatorsSearchLocalJob,
-  getCreatorsSearchJobProgressText,
   getCreatorsSearchJobStatusLabel,
 } from "@/lib/creators-search-jobs"
 
 import { getJobStatusStyles } from "./creators-search.logic"
 
 export const CurrentJobsPanel = ({
+  collapsed = false,
   currentJobs,
   onSelectJob,
+  onToggleCollapsed,
 }: {
+  collapsed?: boolean
   currentJobs: CreatorsSearchLocalJob[]
   onSelectJob: (jobId: string) => void
+  onToggleCollapsed?: () => void
 }) => {
   const { t } = useTranslation("creatorsSearch")
 
   return (
-    <Box layerStyle="dashboardCard" p={{ base: 6, md: 8 }}>
-      <Text
-        fontSize="sm"
-        color="ui.mutedText"
-        fontWeight="bold"
-        letterSpacing="0.08em"
+    <Box layerStyle="dashboardCard" p={{ base: 5, md: 6 }}>
+      <Flex
+        as={onToggleCollapsed ? "button" : "div"}
+        w="full"
+        alignItems="center"
+        justifyContent="space-between"
+        gap={3}
+        textAlign="left"
+        onClick={onToggleCollapsed}
       >
-        {t("jobs.eyebrow")}
-      </Text>
-      <Flex mt={2} alignItems="center" justifyContent="space-between" gap={3}>
-        <Heading size="md">{t("jobs.title")}</Heading>
+        <Flex alignItems="center" gap={2.5}>
+          <Icon
+            as={collapsed ? FiChevronRight : FiChevronDown}
+            boxSize={4}
+            color="ui.mutedText"
+          />
+          <Text textStyle="eyebrow">{t("jobs.title")}</Text>
+        </Flex>
         <Badge
           rounded="full"
           borderWidth="1px"
@@ -42,149 +53,135 @@ export const CurrentJobsPanel = ({
           {t("jobs.count", { count: currentJobs.length, max: 10 })}
         </Badge>
       </Flex>
-      <Text mt={3} color="ui.secondaryText" fontSize="sm">
-        {t("jobs.description")}
-      </Text>
 
-      <Flex
-        mt={5}
-        direction="column"
-        gap={3}
-        maxH="560px"
-        overflowY="auto"
-        pr={1}
-      >
-        {currentJobs.length === 0 ? (
-          <Box
-            rounded="2xl"
-            borderWidth="1px"
-            borderColor="ui.border"
-            bg="ui.surfaceSoft"
-            px={4}
-            py={4}
-          >
-            <Text color="ui.secondaryText" fontSize="sm" fontWeight="bold">
-              {t("jobs.empty")}
-            </Text>
-          </Box>
-        ) : (
-          currentJobs.map((job) => {
-            const statusStyles = getJobStatusStyles(job.status)
-            const visibleUsernames = job.requestedUsernames.slice(0, 5)
-            const hiddenUsernamesCount = Math.max(
-              job.requestedUsernames.length - visibleUsernames.length,
-              0,
-            )
-            const canOpenDetail =
-              (job.status === "done" || job.status === "failed") &&
-              (job.terminalPayload !== null ||
-                job.readyUsernames.length > 0 ||
-                Boolean(job.error))
+      {collapsed ? null : (
+        <Flex mt={4} gap={3} overflowX="auto" overflowY="hidden" pb={1}>
+          {currentJobs.length === 0 ? (
+            <Box
+              rounded="2xl"
+              borderWidth="1px"
+              borderColor="ui.border"
+              bg="ui.surfaceSoft"
+              px={4}
+              py={4}
+            >
+              <Text color="ui.secondaryText" fontSize="sm" fontWeight="bold">
+                {t("jobs.empty")}
+              </Text>
+            </Box>
+          ) : (
+            currentJobs.map((job) => {
+              const statusStyles = getJobStatusStyles(job.status)
+              const canOpenDetail =
+                (job.status === "done" || job.status === "failed") &&
+                (job.terminalPayload !== null ||
+                  job.readyUsernames.length > 0 ||
+                  Boolean(job.error))
 
-            return (
-              <Box
-                key={job.jobId}
-                as={canOpenDetail ? "button" : "div"}
-                rounded="2xl"
-                borderWidth="1px"
-                borderColor={statusStyles.borderColor}
-                bg={statusStyles.bg}
-                px={4}
-                py={4}
-                textAlign="left"
-                transition="transform 180ms ease, box-shadow 180ms ease"
-                cursor={canOpenDetail ? "pointer" : "default"}
-                _hover={
-                  canOpenDetail
-                    ? {
-                        boxShadow: "md",
-                      }
-                    : undefined
-                }
-                onClick={
-                  canOpenDetail ? () => onSelectJob(job.jobId) : undefined
-                }
-              >
-                <Flex
-                  alignItems="flex-start"
-                  justifyContent="space-between"
-                  gap={3}
+              return (
+                <Box
+                  key={job.jobId}
+                  as={canOpenDetail ? "button" : "div"}
+                  rounded="2xl"
+                  borderWidth="1px"
+                  borderColor={statusStyles.borderColor}
+                  bg={statusStyles.bg}
+                  px={3.5}
+                  py={3.5}
+                  minW={{ base: "210px", md: "220px" }}
+                  maxW={{ base: "240px", md: "240px" }}
+                  textAlign="left"
+                  transition="transform 180ms ease, box-shadow 180ms ease"
+                  cursor={canOpenDetail ? "pointer" : "default"}
+                  _hover={
+                    canOpenDetail
+                      ? {
+                          boxShadow: "md",
+                        }
+                      : undefined
+                  }
+                  onClick={
+                    canOpenDetail ? () => onSelectJob(job.jobId) : undefined
+                  }
                 >
-                  <Box minW={0}>
-                    <Text
-                      color={statusStyles.textColor}
-                      fontSize="xs"
-                      fontWeight="black"
-                      lineClamp={2}
-                    >
-                      {job.jobId}
-                    </Text>
-                  </Box>
-
-                  <Badge
-                    rounded="full"
-                    borderWidth="1px"
-                    borderColor="rgba(255,255,255,0.18)"
-                    bg="ui.panel"
-                    color={statusStyles.textColor}
-                    px={3}
-                    py={1.5}
+                  <Flex
+                    alignItems="flex-start"
+                    justifyContent="space-between"
+                    gap={2}
                   >
-                    {getCreatorsSearchJobStatusLabel(job.status, (key) =>
-                      t(key),
-                    )}
-                  </Badge>
-                </Flex>
+                    <Box minW={0} flex="1">
+                      <Text
+                        color={statusStyles.textColor}
+                        fontSize="2xs"
+                        fontWeight="black"
+                        lineClamp={2}
+                      >
+                        {job.jobId}
+                      </Text>
+                    </Box>
 
-                <Flex mt={3} gap={2} wrap="wrap">
-                  {visibleUsernames.map((username) => (
+                    {canOpenDetail ? (
+                      <Flex
+                        boxSize="7"
+                        flexShrink={0}
+                        alignItems="center"
+                        justifyContent="center"
+                        rounded="full"
+                        bg="ui.panel"
+                        color={statusStyles.textColor}
+                      >
+                        <Icon as={FiEye} boxSize={3.5} />
+                      </Flex>
+                    ) : null}
+                  </Flex>
+
+                  <Flex
+                    mt={2.5}
+                    alignItems="center"
+                    justifyContent="space-between"
+                    gap={2}
+                  >
                     <Badge
-                      key={`${job.jobId}-${username}`}
                       rounded="full"
                       borderWidth="1px"
-                      borderColor="ui.borderSoft"
+                      borderColor="rgba(255,255,255,0.18)"
                       bg="ui.panel"
-                      color="ui.text"
-                      px={2.0}
-                      py={0.5}
-                      fontSize="2xs"
-                    >
-                      @{username}
-                    </Badge>
-                  ))}
-                  {hiddenUsernamesCount > 0 ? (
-                    <Badge
-                      rounded="full"
-                      borderWidth="1px"
-                      borderColor="ui.borderSoft"
-                      bg="ui.panel"
-                      color="ui.secondaryText"
+                      color={statusStyles.textColor}
                       px={2.5}
                       py={1}
-                      fontSize="xs"
+                      fontSize="2xs"
                     >
-                      +{hiddenUsernamesCount}
+                      {getCreatorsSearchJobStatusLabel(job.status, (key) =>
+                        t(key),
+                      )}
                     </Badge>
+                    <Text
+                      color="ui.secondaryText"
+                      fontSize="xs"
+                      fontWeight="bold"
+                    >
+                      {t("jobs.queries", {
+                        count: job.requestedUsernames.length,
+                      })}
+                    </Text>
+                  </Flex>
+
+                  {job.error ? (
+                    <Text
+                      mt={2.5}
+                      color={statusStyles.textColor}
+                      fontSize="xs"
+                      lineClamp={2}
+                    >
+                      {job.error}
+                    </Text>
                   ) : null}
-                </Flex>
-
-                {job.error ? (
-                  <Text mt={3} color={statusStyles.textColor} fontSize="sm">
-                    {job.error}
-                  </Text>
-                ) : null}
-
-                <Text mt={3} color="ui.secondaryText" fontSize="sm">
-                  {getCreatorsSearchJobProgressText({
-                    canOpenDetail,
-                    t: (key) => t(key),
-                  })}
-                </Text>
-              </Box>
-            )
-          })
-        )}
-      </Flex>
+                </Box>
+              )
+            })
+          )}
+        </Flex>
+      )}
     </Box>
   )
 }

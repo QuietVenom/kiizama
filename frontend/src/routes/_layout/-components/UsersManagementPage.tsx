@@ -1,7 +1,17 @@
-import { Badge, Container, Flex, Heading, Table } from "@chakra-ui/react"
+import {
+  Badge,
+  Box,
+  Container,
+  Flex,
+  Heading,
+  Table,
+  Tabs,
+} from "@chakra-ui/react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { type ReactNode, useMemo } from "react"
 import { type AdminUserPublic, type UserPublic, UsersService } from "@/client"
 import AddUser from "@/components/Admin/AddUser"
+import EnqueueInstagramWorkerJobs from "@/components/Admin/EnqueueInstagramWorkerJobs"
 import { UserActionsMenu } from "@/components/Common/UserActionsMenu"
 import PendingUsers from "@/components/Pending/PendingUsers"
 import {
@@ -11,6 +21,7 @@ import {
   PaginationRoot,
 } from "@/components/ui/pagination.tsx"
 import { rethrowCriticalQueryError } from "@/features/errors/http"
+import useAuth from "@/hooks/useAuth"
 
 const PER_PAGE = 5
 
@@ -124,18 +135,68 @@ type UsersManagementPageProps = {
   page: number
 }
 
+function UsersManagementPanel({
+  onPageChange,
+  page,
+}: UsersManagementPageProps) {
+  return (
+    <Box pt={4}>
+      <AddUser />
+      <UsersTable onPageChange={onPageChange} page={page} />
+    </Box>
+  )
+}
+
 export function UsersManagementPage({
   onPageChange,
   page,
 }: UsersManagementPageProps) {
+  const { user: currentUser } = useAuth()
+  const tabs = useMemo(
+    () =>
+      [
+        {
+          value: "users",
+          title: "Users",
+          content: (
+            <UsersManagementPanel onPageChange={onPageChange} page={page} />
+          ),
+        },
+        currentUser?.is_superuser
+          ? {
+              value: "worker-jobs",
+              title: "Worker Jobs",
+              content: <EnqueueInstagramWorkerJobs />,
+            }
+          : null,
+      ].filter(Boolean) as Array<{
+        value: string
+        title: string
+        content: ReactNode
+      }>,
+    [currentUser?.is_superuser, onPageChange, page],
+  )
+
   return (
     <Container maxW="full">
       <Heading size="lg" pt={12}>
         Users Management
       </Heading>
 
-      <AddUser />
-      <UsersTable onPageChange={onPageChange} page={page} />
+      <Tabs.Root defaultValue="users" variant="subtle" mt={6}>
+        <Tabs.List>
+          {tabs.map((tab) => (
+            <Tabs.Trigger key={tab.value} value={tab.value}>
+              {tab.title}
+            </Tabs.Trigger>
+          ))}
+        </Tabs.List>
+        {tabs.map((tab) => (
+          <Tabs.Content key={tab.value} value={tab.value}>
+            {tab.content}
+          </Tabs.Content>
+        ))}
+      </Tabs.Root>
     </Container>
   )
 }

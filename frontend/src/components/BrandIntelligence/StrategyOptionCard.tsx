@@ -3,7 +3,6 @@ import type { ComponentPropsWithoutRef } from "react"
 import type { IconType } from "react-icons"
 
 type StrategyOptionCardProps = {
-  description: string
   icon: IconType
   isActive: boolean
   onClick: () => void
@@ -11,7 +10,6 @@ type StrategyOptionCardProps = {
 } & Pick<ComponentPropsWithoutRef<"button">, "onFocus" | "onMouseEnter">
 
 const StrategyOptionCard = ({
-  description,
   icon,
   isActive,
   onFocus,
@@ -31,22 +29,22 @@ const StrategyOptionCard = ({
       onFocus={onFocus}
       onMouseEnter={onMouseEnter}
     >
-      <Flex
-        boxSize="11"
-        alignItems="center"
-        justifyContent="center"
-        rounded="2xl"
-        bg={isActive ? "ui.panel" : "ui.surfaceSoft"}
-        color={isActive ? "ui.brandText" : "ui.link"}
-      >
-        <Icon as={icon} boxSize={5} />
+      <Flex alignItems="center" gap={3}>
+        <Flex
+          boxSize="11"
+          flexShrink={0}
+          alignItems="center"
+          justifyContent="center"
+          rounded="2xl"
+          bg={isActive ? "ui.panel" : "ui.surfaceSoft"}
+          color={isActive ? "ui.brandText" : "ui.link"}
+        >
+          <Icon as={icon} boxSize={5} />
+        </Flex>
+        <Text fontSize={{ base: "lg", lg: "xl" }} fontWeight="black">
+          {title}
+        </Text>
       </Flex>
-      <Text mt={4} fontSize={{ base: "lg", lg: "xl" }} fontWeight="black">
-        {title}
-      </Text>
-      <Text mt={2} color="ui.secondaryText" fontSize="sm">
-        {description}
-      </Text>
     </chakra.button>
   )
 }

@@ -181,8 +181,8 @@ describe("creator strategy builder", () => {
 
     // Assert
     expect(
-      screen.getByText("Add the creator username to unlock the workflow."),
-    ).toBeVisible()
+      screen.queryByText("Add the creator username to unlock the workflow."),
+    ).not.toBeInTheDocument()
     expect(
       screen.getByRole("button", { name: "Generate PDF report" }),
     ).toBeDisabled()

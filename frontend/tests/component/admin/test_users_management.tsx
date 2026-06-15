@@ -1,13 +1,33 @@
 import { QueryClient } from "@tanstack/react-query"
 import { screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, test, vi } from "vitest"
 
 import type { AdminUserPublic, UserPublic } from "../../../src/client"
 import { UsersService } from "../../../src/client"
 import { renderWithProviders } from "../helpers/render"
 
+const { router } = vi.hoisted(() => ({
+  router: {
+    invalidate: vi.fn(),
+    latestLocation: {
+      href: "/admin?page=1",
+    },
+    navigate: vi.fn(),
+  },
+}))
+
+vi.mock("@tanstack/react-router", () => ({
+  useNavigate: () => router.navigate,
+  useRouter: () => router,
+}))
+
 vi.mock("@/components/Admin/AddUser", () => ({
   default: () => <button type="button">Add User</button>,
+}))
+
+vi.mock("@/components/Admin/EnqueueInstagramWorkerJobs", () => ({
+  default: () => <button type="button">Queue Worker Jobs</button>,
 }))
 
 vi.mock("@/components/Common/UserActionsMenu", () => ({
@@ -48,9 +68,11 @@ const currentUser: UserPublic = {
 describe("users management admin page", () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+    router.invalidate.mockClear()
+    router.navigate.mockClear()
   })
 
-  test("users_management_loading_state_renders_pending_users_table", () => {
+  test("users_management_loading_state_renders_pending_users_table", async () => {
     // Arrange
     vi.spyOn(UsersService, "readUsers").mockReturnValue(
       new Promise(() => {}) as never,
@@ -61,8 +83,9 @@ describe("users management admin page", () => {
 
     // Assert
     expect(
-      screen.getByRole("heading", { name: "Users Management" }),
+      await screen.findByRole("heading", { name: "Users Management" }),
     ).toBeVisible()
+    expect(screen.getByRole("tab", { name: "Users" })).toBeVisible()
     expect(screen.getByRole("button", { name: "Add User" })).toBeVisible()
     expect(
       screen.getByRole("columnheader", { name: "Full name" }),
@@ -124,5 +147,37 @@ describe("users management admin page", () => {
     expect(
       screen.getAllByRole("button", { name: "User actions" })[1],
     ).toBeEnabled()
+  })
+
+  test("users_management_superuser_can_switch_to_worker_jobs_tab", async () => {
+    const user = userEvent.setup()
+    vi.spyOn(UsersService, "readUsers").mockResolvedValue({
+      count: 0,
+      data: [],
+    })
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        mutations: { retry: false },
+        queries: { gcTime: Number.POSITIVE_INFINITY, retry: false },
+      },
+    })
+    queryClient.setQueryData(["currentUser"], currentUser)
+
+    renderWithProviders(
+      <UsersManagementPage onPageChange={vi.fn()} page={1} />,
+      { queryClient },
+    )
+
+    expect(await screen.findByRole("tab", { name: "Users" })).toBeVisible()
+    expect(screen.getByRole("tab", { name: "Worker Jobs" })).toBeVisible()
+    expect(
+      screen.queryByRole("button", { name: "Queue Worker Jobs" }),
+    ).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole("tab", { name: "Worker Jobs" }))
+
+    expect(
+      await screen.findByRole("button", { name: "Queue Worker Jobs" }),
+    ).toBeVisible()
   })
 })

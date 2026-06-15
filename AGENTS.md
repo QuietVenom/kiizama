@@ -17,7 +17,8 @@ Use this file as a map, not a manual. Follow the linked project docs for full se
 - `backend`: FastAPI API and backend business logic
 - `frontend`: React/Vite app, authenticated UI, and blog build
 - `scrape_worker`: standalone async scrape worker runtime
-- `packages/scrape_core`: shared scraping, persistence, Redis, and job-control primitives
+- `packages/core`: shared SQL, Redis, job-control, and user-event primitives
+- `packages/scrape_core`: shared Instagram scraping, persistence, and scrape-domain primitives
 - `scripts`: repo-standard orchestration entrypoints
 
 Backend code is feature-oriented and generally follows route/service/repository boundaries.

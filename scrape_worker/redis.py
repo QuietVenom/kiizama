@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from kiizama_scrape_core.redis import RedisClient, create_redis_client
+from kiizama_core.redis import RedisClient, create_redis_client
 
 from scrape_worker.config import get_settings
 

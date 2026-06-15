@@ -1,4 +1,4 @@
-from kiizama_scrape_core.job_control.scripts import (
+from kiizama_core.job_control.scripts import (
     LEASE_RELEASE_SCRIPT,
     LEASE_RENEW_SCRIPT,
     TERMINALIZATION_CLAIM_SCRIPT,

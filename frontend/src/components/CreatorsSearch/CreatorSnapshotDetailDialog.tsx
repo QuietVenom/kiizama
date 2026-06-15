@@ -9,7 +9,7 @@ import {
   Table,
   Text,
 } from "@chakra-ui/react"
-import type { ReactNode } from "react"
+import { type ReactNode, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { FiArrowUpRight } from "react-icons/fi"
 
@@ -328,6 +328,7 @@ const CreatorSnapshotDetailDialog = ({
   const latestReelsUpdatedAt = getLatestUpdatedAt(reelsDocuments)
   const hasPostItems = postItems.length > 0
   const hasReelItems = reelItems.length > 0
+  const initialFocusRef = useRef<HTMLDivElement | null>(null)
   const profileUrl = profile?.username
     ? `https://www.instagram.com/${profile.username}/`
     : undefined
@@ -343,9 +344,12 @@ const CreatorSnapshotDetailDialog = ({
     <DialogRoot
       open={isOpen}
       placement="center"
+      initialFocusEl={() => initialFocusRef.current}
       onOpenChange={({ open }) => onOpenChange(open)}
     >
       <DialogContent
+        ref={initialFocusRef}
+        tabIndex={-1}
         maxW={{ base: "calc(100vw - 1rem)", lg: "1100px" }}
         maxH={{ base: "calc(100vh - 1rem)", lg: "90vh" }}
         overflow="hidden"
@@ -787,28 +791,6 @@ const CreatorSnapshotDetailDialog = ({
                           value={
                             formatPercent(
                               snapshot.metrics.post_metrics.avg_engagement_rate,
-                              language,
-                            ) ?? t("creatorsSearch:detail.notAvailable")
-                          }
-                        />
-                        <MetricTile
-                          label={t(
-                            "creatorsSearch:detail.metrics.tiles.hashtagsPerPost",
-                          )}
-                          value={
-                            formatMetricNumber(
-                              snapshot.metrics.post_metrics.hashtags_per_post,
-                              language,
-                            ) ?? t("creatorsSearch:detail.notAvailable")
-                          }
-                        />
-                        <MetricTile
-                          label={t(
-                            "creatorsSearch:detail.metrics.tiles.mentionsPerPost",
-                          )}
-                          value={
-                            formatMetricNumber(
-                              snapshot.metrics.post_metrics.mentions_per_post,
                               language,
                             ) ?? t("creatorsSearch:detail.notAvailable")
                           }

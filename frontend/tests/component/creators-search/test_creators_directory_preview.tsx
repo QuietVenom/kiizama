@@ -43,6 +43,9 @@ const createSearchResponse = (
   ...overrides,
 })
 
+const createRecentUpdatedDate = () =>
+  new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+
 describe("creators directory preview", () => {
   beforeEach(() => {
     searchCreatorsDirectoryMock.mockReset()
@@ -201,7 +204,7 @@ describe("creators directory preview", () => {
             is_private: false,
             is_verified: true,
             profile_pic_url: "",
-            updated_date: "2026-05-15T12:00:00Z",
+            updated_date: createRecentUpdatedDate(),
             follower_count: 45200,
             following_count: 210,
             media_count: 184,

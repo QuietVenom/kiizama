@@ -18,16 +18,11 @@ export const SearchOverviewCard = ({
   const toneStyle = overviewToneStyles[tone]
 
   return (
-    <Box layerStyle="dashboardCard" px={5} py={5}>
-      <Flex
-        alignItems="flex-start"
-        justifyContent="space-between"
-        gap={4}
-        direction="column"
-      >
+    <Box layerStyle="dashboardCard" px={5} py={4}>
+      <Flex alignItems="center" justifyContent="space-between" gap={4}>
         <Flex alignItems="center" gap={3} minW={0}>
           <Flex
-            boxSize="11"
+            boxSize="9"
             flexShrink={0}
             alignItems="center"
             justifyContent="center"
@@ -45,7 +40,7 @@ export const SearchOverviewCard = ({
                       ? FiUsers
                       : FiTarget
               }
-              boxSize={5}
+              boxSize={4}
             />
           </Flex>
           <Text color={toneStyle.labelColor} fontSize="sm" fontWeight="bold">
@@ -54,9 +49,10 @@ export const SearchOverviewCard = ({
         </Flex>
 
         <Text
-          w="full"
-          textAlign="center"
-          fontSize={{ base: "3xl", lg: "4xl" }}
+          flexShrink={0}
+          textAlign="right"
+          color="ui.text"
+          fontSize={{ base: "2xl", lg: "3xl" }}
           fontWeight="black"
           lineHeight="1"
         >

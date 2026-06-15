@@ -177,7 +177,7 @@ test.describe("Creators search scrape jobs", () => {
     // Act
     await page.goto("/creators-search")
     await page
-      .getByPlaceholder("creator_one, brand.partner, another_creator")
+      .getByPlaceholder("creator_one, brand.partner, ...")
       .fill(requestedUsername)
     await page.keyboard.press("Enter")
     await page.getByRole("button", { name: "Buscar creadores" }).click()
@@ -190,14 +190,11 @@ test.describe("Creators search scrape jobs", () => {
     // Assert
     await expect(page.getByText(jobId)).toBeVisible()
     await expect(page.getByText("En cola")).toBeVisible()
-    await expect(page.getByText("Esperando a que termine.")).toBeVisible()
+    await expect(page.getByText("Consultas: 1")).toBeVisible()
 
     await page.evaluate(() => window.dispatchEvent(new Event("online")))
 
     await expect(page.getByText("Completado")).toBeVisible()
-    await expect(
-      page.getByText("Haz clic para revisar el resultado final."),
-    ).toBeVisible()
 
     await page.getByText(jobId).click()
 

@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from typing import Any, cast
 
 import pytest
-from kiizama_scrape_core.ig_scraper.schemas import (
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramBatchCountersSchema,
     InstagramBatchProfileResult,
     InstagramBatchScrapeRequest,
@@ -18,11 +18,11 @@ from kiizama_scrape_core.ig_scraper.schemas import (
     InstagramReelMetricsSchema,
     InstagramReelSchema,
 )
-from kiizama_scrape_core.ig_scraper.service import build_batch_scrape_summary
+from kiizama_scrape_core.ig_scraper_v2.service import build_batch_scrape_summary
 from sqlmodel import Session, delete, select
 
 from app.crud.profile_snapshots import list_profile_snapshots_full
-from app.features.ig_scraper_runtime import BackendInstagramScrapePersistence
+from app.features.ig_scraper_v2_runtime import BackendInstagramScrapePersistenceV2
 from app.models import (
     IgMetrics,
     IgPostsDocument,
@@ -32,8 +32,8 @@ from app.models import (
 )
 
 
-def _persistence(db: Session) -> BackendInstagramScrapePersistence:
-    return BackendInstagramScrapePersistence(
+def _persistence(db: Session) -> BackendInstagramScrapePersistenceV2:
+    return BackendInstagramScrapePersistenceV2(
         profiles_collection=db,
         posts_collection=db,
         reels_collection=db,
@@ -134,7 +134,7 @@ def ensure_instagram_tables(db: Session) -> Generator[None, None, None]:
 def test_backend_instagram_scrape_persistence_writes_full_snapshot_to_postgres(
     db: Session,
 ) -> None:
-    persistence = BackendInstagramScrapePersistence(
+    persistence = BackendInstagramScrapePersistenceV2(
         profiles_collection=db,
         posts_collection=db,
         reels_collection=db,
@@ -357,7 +357,7 @@ def test_backend_instagram_scrape_persistence_adds_profile_id_suffix_when_stale_
 def test_backend_instagram_scrape_persistence_marks_profile_failed_on_write_error(
     db: Session,
 ) -> None:
-    persistence = BackendInstagramScrapePersistence(
+    persistence = BackendInstagramScrapePersistenceV2(
         profiles_collection=db,
         posts_collection=db,
         reels_collection=db,

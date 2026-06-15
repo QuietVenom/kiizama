@@ -1,37 +1,24 @@
 {
   "shell": {
     "navigation": {
-      "title": "Inteligencia de marca",
+      "title": "Objetivos",
       "reputationStrategy": "Estrategia reputacional"
     }
   },
   "page": {
-    "eyebrow": "Inteligencia de marca",
-    "title": "Construye reportes modulares de estrategia reputacional.",
-    "description": "Empieza con usernames de creadores, valídalos contra el dataset guardado de perfiles y luego genera la estrategia reputacional seleccionada como reporte PDF.",
-    "badges": {
-      "validationFirst": "Validación de perfiles primero",
-      "pdfOnly": "Solo PDF",
-      "localReportsSynced": "Reportes locales sincronizados"
-    },
+    "eyebrow": "Estrategia reputacional",
+    "title": "Construye reportes de estrategia reputacional.",
     "strategyOptions": {
       "campaign": {
-        "title": "Estrategia reputacional de campaña",
-        "description": "Primero valida una lista de creadores y luego genera una estrategia reputacional de campaña alrededor del modelo de campaña seleccionado."
+        "title": "Estrategia reputacional de campaña"
       },
       "creator": {
-        "title": "Estrategia reputacional de creador",
-        "description": "Primero valida el perfil del creador y luego genera una estrategia reputacional centrada en el creador con señales, plataformas y colaboradores."
+        "title": "Estrategia reputacional de creador"
       }
-    },
-    "mandatoryGate": {
-      "title": "La validación es obligatoria",
-      "description": "Antes de generar cualquier reporte, el flujo siempre vuelve a ejecutar <strong>la validación de existencia de perfiles</strong>. Los usernames faltantes bloquean la generación del reporte, los perfiles que requieren actualización pueden continuar con una advertencia visible y los PDFs exitosos se guardan en local storage para el dashboard."
     }
   },
   "summary": {
     "eyebrow": "Resumen en vivo",
-    "description": "Revisa la información capturada antes de generar el reporte PDF.",
     "empty": {
       "title": "Todavía no hay información capturada.",
       "description": "Empieza con los usernames de creadores y el resumen se irá actualizando conforme se llene el formulario."
@@ -76,14 +63,12 @@
   },
   "validationPanel": {
     "title": "Filtro de validación de perfiles",
-    "initialDescription": "Agrega primero los usernames requeridos de creadores para habilitar la validación y el resto del flujo.",
     "loadingTitle": "Validando perfiles",
     "loadingDescription": "Revisando si estos usernames ya existen en el dataset guardado de perfiles.",
     "errorTitle": "La validación falló",
     "staleTitle": "La validación está desactualizada",
     "staleDescription": "Los usernames cambiaron después de la última revisión. Vuelve a validar antes de generar el reporte.",
     "readyDescription": "Los perfiles existentes pueden continuar. Los perfiles marcados como actualización necesaria también pueden continuar, pero los usernames faltantes bloquean la generación del reporte.",
-    "preValidationDescription": "Ejecuta la validación de perfiles antes de generar el reporte. Este paso siempre es obligatorio antes de cualquier endpoint de estrategia.",
     "refreshing": "Actualizando",
     "checkedCount": "{{count}} revisados",
     "status": {
@@ -111,7 +96,7 @@
     "step1": {
       "eyebrow": "Paso 1",
       "title": "Define el goal de marca y los creadores",
-      "description": "Elige primero el goal de marca. Si esta es una campaña de Crisis, puedes decidir explícitamente no usar creadores; en cualquier otro caso, agrega usernames de creadores para desbloquear el resto del formulario de estrategia de campaña."
+      "description": "Elige el goal de marca y agrega los usernames de creadores. Solo en campañas de Crisis puedes optar por no usar creadores."
     },
     "step2": {
       "eyebrow": "Paso 2",
@@ -151,7 +136,7 @@
       "brandName": "Acme Skincare",
       "brandContext": "Comparte el contexto actual del negocio, el posicionamiento y qué está ocurriendo alrededor de la marca.",
       "goalContext": "Agrega contexto para el goal y que la recomendación pueda ponderar los tradeoffs correctos.",
-      "brandUrls": "https://brand.com, https://instagram.com/brand"
+      "brandUrls": "https://brand.com, https://website.com/brand"
     },
     "select": {
       "goal": "Selecciona un goal",
@@ -162,11 +147,11 @@
       "creatorsDisabled": "Los creadores están deshabilitados para esta campaña de Crisis mientras esta opción permanezca activa.",
       "creatorUsernames": "Pega una lista, presiona Enter o separa los usernames con comas. También puedes pegar URLs de perfil de Instagram.",
       "crisisOnly": "Disponible para campañas de Crisis. Cuando se habilita, el reporte se generará sin usernames de creadores ni validación de perfiles.",
-      "enableCrisisOnly": "Selecciona Goal de marca = Crisis para habilitar esta opción.",
       "brandUrls": "Opcional. Agrega hasta 3 URLs relevantes para la marca.",
       "audience": "Selecciona hasta 5 segmentos de audiencia."
     },
     "badges": {
+      "crisisMode": "Modo Crisis",
       "creatorsNotRequired": "Los creadores no son obligatorios para Crisis",
       "creatorUsernamesCount": "{{count}} / {{limit}} usernames de creadores",
       "workflowUnlocked": "Flujo desbloqueado"
@@ -179,7 +164,6 @@
       "description": "Esta campaña de Crisis está configurada para no usar creadores, así que la validación de usernames de creadores no es necesaria y el reporte se generará con una lista vacía de creadores."
     },
     "submitDisabledReason": {
-      "missingUsernames": "Agrega al menos 1 username de creador para desbloquear el flujo.",
       "invalidUsernames": "Corrige los usernames inválidos antes de continuar.",
       "invalidUrls": "Usa URLs válidas con http o https.",
       "requiredFields": "Completa los campos requeridos para habilitar la generación del reporte.",
@@ -224,8 +208,7 @@
     },
     "step1": {
       "eyebrow": "Paso 1",
-      "title": "Agrega el username del creador",
-      "description": "El username del creador es el primer dato obligatorio. Desbloquea el resto del flujo y debe validarse antes de generar el reporte."
+      "title": "Agrega el username del creador"
     },
     "step2": {
       "eyebrow": "Paso 2",
@@ -271,7 +254,7 @@
       "creatorUsername": "creator_one",
       "creatorContext": "Describe la narrativa actual del creador, su posicionamiento y la percepción pública que existe alrededor de él.",
       "goalContext": "Explica qué debería cambiar en la reputación del creador durante el timeframe seleccionado.",
-      "creatorUrls": "https://instagram.com/creator, https://youtube.com/@creator",
+      "creatorUrls": "https://website.com/creator, https://website.com/@creator",
       "primaryPlatforms": "Instagram\nYouTube\nTikTok",
       "collaborators": "Brand One\nBrand Two\nManagement Partner",
       "strengths": "Transparencia\nConsistencia\nVoz clara",
@@ -298,7 +281,6 @@
       "validateProfile": "Validar perfil"
     },
     "submitDisabledReason": {
-      "missingUsername": "Agrega el username del creador para desbloquear el flujo.",
       "invalidUsername": "Corrige el username del creador antes de continuar.",
       "invalidUrls": "Usa URLs válidas con http o https.",
       "requiredFields": "Completa los campos requeridos para habilitar la generación del reporte.",

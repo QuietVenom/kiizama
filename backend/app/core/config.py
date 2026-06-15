@@ -106,6 +106,7 @@ class Settings(BaseSettings):
         )
 
     RESEND_API_KEY: str | None = None
+    OPENAI_API_KEY: str | None = None
     EMAILS_FROM_EMAIL: EmailStr | None = None
     EMAILS_FROM_NAME: str | None = None
 

@@ -1,37 +1,24 @@
 {
   "shell": {
     "navigation": {
-      "title": "Brand Intelligence",
+      "title": "Goals",
       "reputationStrategy": "Reputation Strategy"
     }
   },
   "page": {
-    "eyebrow": "Brand Intelligence",
-    "title": "Build modular reputation strategy reports.",
-    "description": "Start with creator usernames, validate them against the saved profile dataset, and then generate the selected reputation strategy as a PDF report.",
-    "badges": {
-      "validationFirst": "Profile validation first",
-      "pdfOnly": "PDF only",
-      "localReportsSynced": "Local reports synced"
-    },
+    "eyebrow": "Reputation Strategy",
+    "title": "Build reputation strategy reports.",
     "strategyOptions": {
       "campaign": {
-        "title": "Reputation Campaign Strategy",
-        "description": "Validate a list of creators first, then generate a reputation campaign strategy around the selected campaign model."
+        "title": "Reputation Campaign Strategy"
       },
       "creator": {
-        "title": "Reputation Creator Strategy",
-        "description": "Validate the creator profile first, then generate a creator-centered reputation strategy with signals, platforms, and collaborators."
+        "title": "Reputation Creator Strategy"
       }
-    },
-    "mandatoryGate": {
-      "title": "Validation gate is mandatory",
-      "description": "Before any report is generated, the flow always re-runs <strong>profile existence validation</strong>. Missing usernames block report generation, profiles with update needed are allowed with a visible warning, and successful PDFs are stored in local storage for the dashboard."
     }
   },
   "summary": {
     "eyebrow": "Live Summary",
-    "description": "Review the captured information before generating the PDF report.",
     "empty": {
       "title": "Nothing captured yet.",
       "description": "Start with creator usernames and the summary will update as the form fills in."
@@ -76,14 +63,12 @@
   },
   "validationPanel": {
     "title": "Profile validation gate",
-    "initialDescription": "Add the required creator usernames first to enable validation and the rest of the workflow.",
     "loadingTitle": "Validating profiles",
     "loadingDescription": "Checking whether these usernames already exist in the saved profile dataset.",
     "errorTitle": "Validation failed",
     "staleTitle": "Validation is outdated",
     "staleDescription": "Usernames changed after the last check. Validate again before generating the report.",
     "readyDescription": "Existing profiles can continue. Profiles marked as update needed can also continue, but missing usernames block report generation.",
-    "preValidationDescription": "Run profile validation before report generation. This step is always required before any strategy endpoint.",
     "refreshing": "Refreshing",
     "checkedCount": "{{count}} checked",
     "status": {
@@ -111,7 +96,7 @@
     "step1": {
       "eyebrow": "Step 1",
       "title": "Set the brand goal and creators",
-      "description": "Choose the brand goal first. If this is a Crisis campaign, you can explicitly decide not to use creators; otherwise, add creator usernames to unlock the rest of the campaign strategy form."
+      "description": "Choose the brand goal and add creator usernames. Only Crisis campaigns can opt out of using creators."
     },
     "step2": {
       "eyebrow": "Step 2",
@@ -151,7 +136,7 @@
       "brandName": "Acme Skincare",
       "brandContext": "Share the current business context, positioning, and what is happening around the brand.",
       "goalContext": "Add context for the goal so the recommendation can weigh the right tradeoffs.",
-      "brandUrls": "https://brand.com, https://instagram.com/brand"
+      "brandUrls": "https://brand.com, https://website.com/brand"
     },
     "select": {
       "goal": "Select a goal",
@@ -162,11 +147,11 @@
       "creatorsDisabled": "Creators are disabled for this Crisis campaign while this option is active.",
       "creatorUsernames": "Paste a list, press Enter, or separate usernames with commas. You can also paste Instagram profile URLs.",
       "crisisOnly": "Available for Crisis campaigns. When enabled, the report will be generated without creator usernames or profile validation.",
-      "enableCrisisOnly": "Select Brand goal = Crisis to enable this option.",
       "brandUrls": "Optional. Add up to 3 relevant URLs for the brand.",
       "audience": "Select up to 5 audience segments."
     },
     "badges": {
+      "crisisMode": "Crisis mode",
       "creatorsNotRequired": "Creators not required for Crisis",
       "creatorUsernamesCount": "{{count}} / {{limit}} creator usernames",
       "workflowUnlocked": "Workflow unlocked"
@@ -179,7 +164,6 @@
       "description": "This Crisis campaign is set to not use creators, so creator username validation is not required and the report will be generated with an empty creators list."
     },
     "submitDisabledReason": {
-      "missingUsernames": "Add at least 1 creator username to unlock the workflow.",
       "invalidUsernames": "Fix invalid usernames before continuing.",
       "invalidUrls": "Use valid http or https URLs.",
       "requiredFields": "Complete the required fields to enable report generation.",
@@ -224,8 +208,7 @@
     },
     "step1": {
       "eyebrow": "Step 1",
-      "title": "Add the creator username",
-      "description": "The creator username is the first required input. It unlocks the rest of the workflow and must be validated before report generation."
+      "title": "Add the creator username"
     },
     "step2": {
       "eyebrow": "Step 2",
@@ -271,7 +254,7 @@
       "creatorUsername": "creator_one",
       "creatorContext": "Describe the creator's current narrative, positioning, and public perception.",
       "goalContext": "Explain what should change in the creator's reputation over the selected timeframe.",
-      "creatorUrls": "https://instagram.com/creator, https://youtube.com/@creator",
+      "creatorUrls": "https://website.com/creator, https://website.com/@creator",
       "primaryPlatforms": "Instagram\nYouTube\nTikTok",
       "collaborators": "Brand One\nBrand Two\nManagement Partner",
       "strengths": "Transparency\nConsistency\nClear voice",
@@ -298,7 +281,6 @@
       "validateProfile": "Validate profile"
     },
     "submitDisabledReason": {
-      "missingUsername": "Add the creator username to unlock the workflow.",
       "invalidUsername": "Fix the creator username before continuing.",
       "invalidUrls": "Use valid http or https URLs.",
       "requiredFields": "Complete the required fields to enable report generation.",

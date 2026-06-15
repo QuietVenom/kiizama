@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from kiizama_scrape_core.ig_scraper.metrics import calculate_metrics_from_scrape
+from kiizama_scrape_core.ig_scraper_v2.metrics import calculate_metrics_from_scrape
 
 from app.features.general.types import HtmlPdfReportGenerator, enrich_profile_picture
 

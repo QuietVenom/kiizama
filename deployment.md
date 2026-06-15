@@ -57,6 +57,7 @@ The backend app serves `https://api.kiizama.com` and expects:
 - SMTP provider credentials
 - app/user/admin secrets
 - Stripe billing secrets and price configuration
+- `APIFY_API_TOKEN` when the Apify scrape job flow is enabled (`IG_SCRAPER_APIFY_JOBS_ENABLED`, default `true`)
 
 Stripe billing values live only in the backend app. Do not put Stripe secret or
 webhook variables in the frontend Fly app.
@@ -115,12 +116,14 @@ python -m scrape_worker.main
 
 Required worker-focused vars:
 
+- `IG_SCRAPE_WORKER_DATABASE_URL` (the worker persists scrape results directly to Postgres)
 - `IG_SCRAPE_WORKER_REDIS_URL`
 - `IG_SCRAPE_WORKER_BACKEND_BASE_URL`
 - `IG_SCRAPE_WORKER_SECRET_KEY_IG_CREDENTIALS`
 - `IG_SCRAPE_WORKER_OPENAI_API_KEY`
 - `IG_SCRAPE_WORKER_SYSTEM_ADMIN_EMAIL`
 - `IG_SCRAPE_WORKER_SYSTEM_ADMIN_PASSWORD`
+- `IG_SCRAPER_V2_ISP_PROXY_URLS` — in `ENVIRONMENT=production` scraper v2 always uses ISP proxy mode and fails job config creation without it
 
 Optional tuning vars:
 

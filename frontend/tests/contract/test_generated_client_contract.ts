@@ -10,7 +10,9 @@ import type {
   FeatureFlagPublic,
   FeatureFlagsPublic,
   InstagramBatchScrapeSummaryResponse,
+  InstagramPublicScrapeRequest,
   InstagramReportRequest,
+  InstagramScrapeJobCreateRequest,
   InstagramScrapeJobCreateResponse,
   InstagramScrapeJobStatusResponse,
   ProfileExistenceCollection,
@@ -73,10 +75,6 @@ describe("generated client contract", () => {
       "function",
     )
     expect(InstagramService.getInstagramScrapeJob).toBeTypeOf("function")
-    expect(InstagramService.instagramScrapeProfilesBatch).toBeTypeOf("function")
-    expect(InstagramService.instagramProfilesRecommendations).toBeTypeOf(
-      "function",
-    )
     expect(InstagramService.instagramScrapeProfilesApifyBatch).toBeTypeOf(
       "function",
     )
@@ -179,6 +177,12 @@ describe("generated client contract", () => {
       job_id: "job-id",
       status: "queued",
     } satisfies InstagramScrapeJobCreateResponse
+    const createJobRequest = {
+      usernames: ["creator"],
+    } satisfies InstagramScrapeJobCreateRequest
+    const apifyBatchRequest = {
+      usernames: ["creator"],
+    } satisfies InstagramPublicScrapeRequest
     const jobStatus = {
       attempts: 1,
       created_at: "2026-04-25T00:00:00Z",
@@ -212,6 +216,8 @@ describe("generated client contract", () => {
       key: "public.waiting_list",
     })
     expect(createdJob.status).toBe("queued")
+    expect(createJobRequest.usernames).toEqual(["creator"])
+    expect(apifyBatchRequest.usernames).toEqual(["creator"])
     expect(jobStatus).toMatchObject({
       execution_mode: "apify",
       job_id: "job-id",

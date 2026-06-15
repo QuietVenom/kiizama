@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "actions/labeler v6 configuration",
+  "type": "object",
+  "additionalProperties": true
+}

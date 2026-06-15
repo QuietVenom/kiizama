@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, Text } from "@chakra-ui/react"
+import { Box, Flex, Text } from "@chakra-ui/react"
 import { useTranslation } from "react-i18next"
 import { FiInfo } from "react-icons/fi"
 
@@ -16,24 +16,15 @@ export const SearchHeader = ({ onOpenGuide }: { onOpenGuide: () => void }) => {
       direction={{ base: "column", lg: "row" }}
     >
       <Box flex="1" minW={0}>
-        <Text textStyle="eyebrow">{t("header.eyebrow")}</Text>
-        <Heading
-          mt={3}
-          textStyle="pageTitle"
-          fontSize={{ base: "3xl", lg: "4xl" }}
-          fontWeight="black"
-          lineHeight="1.05"
-          maxW="24ch"
-        >
-          {t("header.title")}
-        </Heading>
         <Text
-          mt={3}
-          color="ui.secondaryText"
-          fontSize={{ base: "md", lg: "lg" }}
-          maxW="68ch"
+          color="ui.text"
+          fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
+          fontWeight="black"
+          letterSpacing="-0.03em"
+          lineHeight="1.05"
+          maxW="20ch"
         >
-          {t("header.description")}
+          {t("header.eyebrow")}
         </Text>
       </Box>
 

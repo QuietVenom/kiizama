@@ -44,45 +44,48 @@
 
     header.profile{
       display:flex;
-      align-items:flex-start;
-      gap:16px;
+      justify-content:center;
       margin:0 0 14px;
-      padding:18px 20px;
+    }
+    .report-title-block{
+      width:min(100%, 760px);
+      padding:24px 28px;
       border:1px solid var(--border);
       border-radius:28px;
       background:var(--surface);
-    }
-    .brand-logo-placeholder{
-      width:108px;
-      height:108px;
-      padding:10px;
-      border-radius:18px;
-      border:1px solid #f9d7ae;
-      display:grid;
-      place-items:center;
-      flex-shrink:0;
       text-align:center;
-      line-height:1.3;
-      font-size:13px;
+    }
+    .report-kicker{
+      margin:0 0 8px;
+      color:var(--text-secondary);
+      font-size:12px;
       font-weight:900;
-      color:#92400e;
-      background:#fff5e8;
+      text-transform:uppercase;
+      letter-spacing:0.1em;
     }
     .h1{
       margin:0;
       color:var(--navy);
-      font-size:30px;
+      font-size:34px;
       font-weight:900;
       letter-spacing:-0.03em;
       line-height:1.06;
     }
     .sub{
-      margin-top:4px;
+      margin:10px auto 0;
+      max-width:520px;
       color:var(--text-secondary);
-      font-size:13px;
+      font-size:14px;
       font-weight:700;
+      line-height:1.45;
     }
-    .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .pills{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:8px;
+      margin-top:14px;
+    }
     .tag{
       display:inline-block;
       padding:0.34rem 0.72rem;
@@ -329,10 +332,9 @@
     .reputation-strategy-ai li{margin:0 0 6px;line-height:1.5}
     .reputation-strategy-ai li:last-child{margin-bottom:0}
     .powered-by{
-      margin-top:18px;
+      margin-top:12px;
       display:flex;
       justify-content:flex-end;
-      break-inside:avoid;
     }
     .powered-by a{
       display:inline-flex;
@@ -382,24 +384,21 @@
       {% set campaign_value = campaign_type if campaign_type is defined else none %}
 
       <header class="profile">
-        <div class="brand-logo-placeholder">Brand Placeholder.</div>
-        <div>
+        <div class="report-title-block">
+          <div class="report-kicker">Reputation Campaign Strategy</div>
           <h1 class="h1">{{ brand_name or 'Brand Name' }}</h1>
-          <div class="sub">Reputation Campaign Strategy</div>
-
           {% if brand_urls %}
+          <div class="sub">Brand references included in this report.</div>
           <div class="pills">
             {% if brand_urls is string %}
               {% set href = brand_urls|string %}
-              {% set domain = href.replace('https://', '').replace('http://', '').replace('www.', '').split('/')[0] %}
-              <a class="tag url-tag" href="{{ href }}" target="_blank" rel="noopener" title="{{ href }}">{{ domain or href }}</a>
+              <a class="tag url-tag" href="{{ href }}" target="_blank" rel="noopener" title="{{ href }}">{{ href }}</a>
             {% else %}
               {% for item in brand_urls %}
                 {% set href = item.url if item.url is defined else (item.href if item.href is defined else item) %}
                 {% if href %}
                   {% set href_text = href|string %}
-                  {% set domain = href_text.replace('https://', '').replace('http://', '').replace('www.', '').split('/')[0] %}
-                  <a class="tag url-tag" href="{{ href_text }}" target="_blank" rel="noopener" title="{{ href_text }}">{{ domain or href_text }}</a>
+                  <a class="tag url-tag" href="{{ href_text }}" target="_blank" rel="noopener" title="{{ href_text }}">{{ href_text }}</a>
                 {% endif %}
               {% endfor %}
             {% endif %}
@@ -608,9 +607,9 @@
         </table>
         {% endif %}
       </section>
-    </div>
-    <div class="powered-by">
-      <a href="https://kiizama.com/" target="_blank" rel="noopener">Powered by kiizama.com</a>
+      <div class="powered-by">
+        <a href="https://kiizama.com/" target="_blank" rel="noopener">Powered by kiizama.com</a>
+      </div>
     </div>
   </div>
 </body>

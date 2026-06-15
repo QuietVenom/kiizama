@@ -120,12 +120,18 @@ describe("creator snapshot detail dialog", () => {
     expect(screen.getAllByText(/@creator_one/)[0]).toBeVisible()
     expect(screen.getByText("Análisis de IA")).toBeVisible()
     expect(screen.getByText("Métricas")).toBeVisible()
+    expect(
+      screen.getByText(/Métricas documentadas al momento de la consulta\./),
+    ).toBeVisible()
     expect(screen.getByText("Posts (1)")).toBeVisible()
     expect(screen.getByText("Reels (1)")).toBeVisible()
     expect(screen.getByText("Fitness")).toBeVisible()
     expect(screen.getByText("Coach")).toBeVisible()
     expect(screen.getByText("Posts totales")).toBeVisible()
     expect(screen.getByText("Reels totales")).toBeVisible()
+    expect(
+      screen.getByRole("link", { name: /@creator_one/i }),
+    ).not.toHaveFocus()
   })
 
   test("creator_snapshot_detail_dialog_empty_posts_reels_and_metrics_render_empty_copy", () => {

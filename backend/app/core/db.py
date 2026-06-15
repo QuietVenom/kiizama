@@ -1,5 +1,5 @@
-from kiizama_scrape_core.sql import create_sqlmodel_engine
-from kiizama_scrape_core.sql import ping_postgres as core_ping_postgres
+from kiizama_core.sql import create_sqlmodel_engine
+from kiizama_core.sql import ping_postgres as core_ping_postgres
 from sqlmodel import Session, select
 
 from app import crud_admin

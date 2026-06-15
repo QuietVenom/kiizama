@@ -44,9 +44,6 @@ const StrategySummaryCard = ({ sections, title }: StrategySummaryCardProps) => {
       <Text mt={2} fontSize={{ base: "xl", lg: "2xl" }} fontWeight="black">
         {title}
       </Text>
-      <Text mt={2} color="ui.secondaryText">
-        {t("summary.description")}
-      </Text>
 
       {visibleSections.length === 0 ? (
         <Box

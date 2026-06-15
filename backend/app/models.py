@@ -2,7 +2,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any, Literal, cast
 
-from kiizama_scrape_core.ig_scraper.sqlmodels import (
+from kiizama_scrape_core.ig_scraper_v2.sqlmodels import (
     PRIVATE_SCHEMA,
     IgCredential,
     IgMetrics,

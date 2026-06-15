@@ -68,7 +68,7 @@ describe("sidebar navigation", () => {
     // Assert
     expect(screen.getAllByText("Overview").length).toBeGreaterThan(0)
     expect(screen.getAllByText("Creators Search").length).toBeGreaterThan(0)
-    expect(screen.getAllByText("Brand Intelligence").length).toBeGreaterThan(0)
+    expect(screen.getAllByText("Goals").length).toBeGreaterThan(0)
     expect(screen.getAllByText("Settings").length).toBeGreaterThan(0)
     expect(screen.queryByText("Admin")).not.toBeInTheDocument()
     expect(screen.getAllByText("Test User").length).toBeGreaterThan(0)
@@ -108,9 +108,7 @@ describe("sidebar navigation", () => {
     expect(screen.getAllByText("Búsqueda de creadores").length).toBeGreaterThan(
       0,
     )
-    expect(screen.getAllByText("Inteligencia de marca").length).toBeGreaterThan(
-      0,
-    )
+    expect(screen.getAllByText("Objetivos").length).toBeGreaterThan(0)
   })
 
   test("sidebar_logout_calls_auth_logout", async () => {

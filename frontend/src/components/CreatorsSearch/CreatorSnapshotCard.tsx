@@ -83,7 +83,7 @@ const CreatorSnapshotCard = ({
       borderColor={isExpired ? "ui.warning" : undefined}
       bg={isExpired ? "ui.warningSoft" : undefined}
     >
-      <Flex alignItems="flex-start" gap={4}>
+      <Grid templateColumns="auto 1fr" gap={4} alignItems="start">
         <Box
           boxSize={{ base: "16", lg: "18" }}
           flexShrink={0}
@@ -116,64 +116,76 @@ const CreatorSnapshotCard = ({
           )}
         </Box>
 
-        <Box minW={0} flex="1">
-          <Flex
-            alignItems="flex-start"
-            justifyContent="space-between"
-            gap={3}
-            wrap="wrap"
+        <Flex
+          gridColumn="2"
+          flexShrink={0}
+          alignItems="center"
+          gap={2}
+          wrap="wrap"
+          justifyContent="flex-end"
+          minW={0}
+        >
+          {profile?.username ? (
+            <Button
+              variant="ghost"
+              loading={isGeneratingReport}
+              onClick={onGenerateReport}
+            >
+              <FiFileText />
+              {t("card.report")}
+            </Button>
+          ) : null}
+          <Button variant="ghost" onClick={onOpenDetails}>
+            <FiEye />
+            {t("card.viewDetail")}
+          </Button>
+        </Flex>
+
+        <Box gridColumn="1 / -1" minW={0}>
+          <Text
+            fontSize={{ base: "lg", lg: "xl" }}
+            fontWeight="black"
+            letterSpacing="-0.02em"
+            lineClamp={2}
           >
-            <Box minW={0}>
-              <Text
-                fontSize={{ base: "lg", lg: "xl" }}
-                fontWeight="black"
-                letterSpacing="-0.02em"
-                lineClamp={2}
+            {profile?.full_name || profile?.username || t("card.fallbackName")}
+          </Text>
+          <Flex mt={1.5} alignItems="center" gap={2} wrap="wrap">
+            <Text color="ui.link" fontSize="sm" fontWeight="bold">
+              @{profile?.username || snapshot.profile_id}
+            </Text>
+            {isExpired ? (
+              <Badge
+                rounded="full"
+                borderWidth="1px"
+                borderColor="ui.warning"
+                bg="ui.panel"
+                color="ui.warningText"
+                px={2.5}
+                py={1}
               >
-                {profile?.full_name ||
-                  profile?.username ||
-                  t("card.fallbackName")}
-              </Text>
-              <Text color="ui.link" fontSize="sm" fontWeight="bold">
-                @{profile?.username || snapshot.profile_id}
-              </Text>
-            </Box>
-
-            <Flex alignItems="center" gap={2} wrap="wrap">
-              {isExpired ? (
-                <Badge
-                  rounded="full"
-                  borderWidth="1px"
-                  borderColor="ui.warning"
-                  bg="ui.panel"
-                  color="ui.warningText"
-                  px={2.5}
-                  py={1}
-                >
-                  {t("card.updateNeeded")}
-                </Badge>
-              ) : null}
-              {profile?.is_verified ? (
-                <Badge colorPalette="design" rounded="full" px={2.5} py={1}>
-                  {t("card.verified")}
-                </Badge>
-              ) : null}
-              {profile?.is_private ? (
-                <Badge
-                  rounded="full"
-                  borderWidth="1px"
-                  borderColor="ui.borderSoft"
-                  bg="ui.surfaceSoft"
-                  color="ui.secondaryText"
-                  px={2.5}
-                  py={1}
-                >
-                  {t("card.private")}
-                </Badge>
-              ) : null}
-            </Flex>
+                {t("card.updateNeeded")}
+              </Badge>
+            ) : null}
+            {profile?.is_verified ? (
+              <Badge colorPalette="design" rounded="full" px={2.5} py={1}>
+                {t("card.verified")}
+              </Badge>
+            ) : null}
+            {profile?.is_private ? (
+              <Badge
+                rounded="full"
+                borderWidth="1px"
+                borderColor="ui.borderSoft"
+                bg="ui.surfaceSoft"
+                color="ui.secondaryText"
+                px={2.5}
+                py={1}
+              >
+                {t("card.private")}
+              </Badge>
+            ) : null}
           </Flex>
-
           <Text
             mt={3}
             color="ui.secondaryText"
@@ -184,7 +196,7 @@ const CreatorSnapshotCard = ({
             {profile?.biography?.trim() || t("card.noBiography")}
           </Text>
         </Box>
-      </Flex>
+      </Grid>
 
       <Grid
         mt={5}
@@ -252,34 +264,18 @@ const CreatorSnapshotCard = ({
       <Flex
         mt={5}
         alignItems="center"
-        justifyContent="space-between"
+        justifyContent="flex-end"
         gap={3}
         borderTopWidth="1px"
         borderTopColor="ui.border"
         pt={5}
         wrap="wrap"
       >
-        <Box>
-          <Text color="ui.mutedText" fontSize="xs" fontWeight="bold">
-            {t("card.snapshotCaptured")}
-          </Text>
-          <Text color="ui.secondaryText" fontWeight="semibold">
+        <Flex alignItems="center" gap={3} wrap="wrap">
+          <Text color="ui.secondaryText" fontSize="sm" fontWeight="semibold">
             {formatSnapshotDate(snapshot.scraped_at, language) ??
               t("card.noSnapshotDate")}
           </Text>
-        </Box>
-
-        <Flex alignItems="center" gap={2} wrap="wrap">
-          {profile?.username ? (
-            <Button
-              variant="ghost"
-              loading={isGeneratingReport}
-              onClick={onGenerateReport}
-            >
-              <FiFileText />
-              {t("card.report")}
-            </Button>
-          ) : null}
           {profile?.external_url ? (
             <Link
               href={profile.external_url}
@@ -297,11 +293,6 @@ const CreatorSnapshotCard = ({
               <FiArrowUpRight />
             </Link>
           ) : null}
-
-          <Button variant="ghost" onClick={onOpenDetails}>
-            <FiEye />
-            {t("card.viewDetail")}
-          </Button>
         </Flex>
       </Flex>
     </Box>

@@ -250,61 +250,9 @@ export type InstagramBatchProfileResult = {
     success?: boolean;
     error?: (string | null);
     metrics?: InstagramMetricsSchema;
-    /**
-     * OpenAI-predicted categories for the profile content.
-     */
     ai_categories?: Array<(string)>;
-    /**
-     * OpenAI-predicted roles for the profile tone/positioning.
-     */
     ai_roles?: Array<(string)>;
-    /**
-     * Error details when AI analysis fails.
-     */
     ai_error?: (string | null);
-};
-
-export type InstagramBatchRecommendationsRequest = {
-    usernames: Array<(string)>;
-    timeout_ms?: number;
-    headless?: boolean;
-    user_agent?: string;
-    locale?: string;
-    max_posts?: number;
-    max_concurrent?: number;
-    /**
-     * When true, tracks total downloaded bytes from Playwright responses (session validation + scraping).
-     */
-    measure_network_bytes?: boolean;
-    proxy?: (string | null);
-    /**
-     * Maximum recommended users returned per profile.
-     */
-    recommended_limit?: number;
-};
-
-export type InstagramBatchRecommendationsResponse = {
-    usernames?: Array<InstagramBatchUsernameStatus>;
-    recommendations?: {
-        [key: string]: Array<InstagramSuggestedUserSchema>;
-    };
-    counters?: InstagramBatchCountersSchema;
-    error?: (string | null);
-};
-
-export type InstagramBatchScrapeRequest = {
-    usernames: Array<(string)>;
-    timeout_ms?: number;
-    headless?: boolean;
-    user_agent?: string;
-    locale?: string;
-    max_posts?: number;
-    max_concurrent?: number;
-    /**
-     * When true, tracks total downloaded bytes from Playwright responses (session validation + scraping).
-     */
-    measure_network_bytes?: boolean;
-    proxy?: (string | null);
 };
 
 export type InstagramBatchScrapeResponse = {
@@ -330,7 +278,6 @@ export type InstagramBatchUsernameStatus = {
 export type status2 = 'success' | 'failed' | 'skipped' | 'not_found';
 
 export type InstagramMetricsSchema = {
-    user?: InstagramProfileSchema;
     post_metrics?: InstagramPostMetricsSchema;
     reel_metrics?: InstagramReelMetricsSchema;
     overall_post_engagement_rate?: number;
@@ -340,7 +287,6 @@ export type InstagramMetricsSchema = {
     media_count?: number;
     is_verified?: boolean;
     is_private?: boolean;
-    recommended_users?: Array<InstagramSuggestedUserSchema>;
 };
 
 export type InstagramPostMetricsSchema = {
@@ -396,6 +342,10 @@ export type InstagramProfileSchema = {
     has_guides?: (boolean | null);
 };
 
+export type InstagramPublicScrapeRequest = {
+    usernames: Array<(string)>;
+};
+
 export type InstagramReelMetricsSchema = {
     total_reels?: number;
     total_plays?: number;
@@ -437,17 +387,6 @@ export type InstagramReportRequest = {
 
 export type InstagramScrapeJobCreateRequest = {
     usernames: Array<(string)>;
-    timeout_ms?: number;
-    headless?: boolean;
-    user_agent?: string;
-    locale?: string;
-    max_posts?: number;
-    max_concurrent?: number;
-    /**
-     * When true, tracks total downloaded bytes from Playwright responses (session validation + scraping).
-     */
-    measure_network_bytes?: boolean;
-    proxy?: (string | null);
 };
 
 export type InstagramScrapeJobCreateResponse = {
@@ -1378,6 +1317,7 @@ export type IgReelsDeleteIgReelData = {
 export type IgReelsDeleteIgReelResponse = (ReelsDocument);
 
 export type InstagramCreateInstagramScrapeJobData = {
+    idempotencyKey?: (string | null);
     requestBody: InstagramScrapeJobCreateRequest;
 };
 
@@ -1396,20 +1336,8 @@ export type InstagramGetInstagramScrapeJobData = {
 
 export type InstagramGetInstagramScrapeJobResponse = (InstagramScrapeJobStatusResponse);
 
-export type InstagramInstagramScrapeProfilesBatchData = {
-    requestBody: InstagramBatchScrapeRequest;
-};
-
-export type InstagramInstagramScrapeProfilesBatchResponse = (InstagramBatchScrapeSummaryResponse);
-
-export type InstagramInstagramProfilesRecommendationsData = {
-    requestBody: InstagramBatchRecommendationsRequest;
-};
-
-export type InstagramInstagramProfilesRecommendationsResponse = (InstagramBatchRecommendationsResponse);
-
 export type InstagramInstagramScrapeProfilesApifyBatchData = {
-    requestBody: InstagramBatchScrapeRequest;
+    requestBody: InstagramPublicScrapeRequest;
 };
 
 export type InstagramInstagramScrapeProfilesApifyBatchResponse = (InstagramBatchScrapeResponse);

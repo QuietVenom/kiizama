@@ -1238,16 +1238,14 @@ export const InstagramBatchProfileResultSchema = {
                 type: 'string'
             },
             type: 'array',
-            title: 'Ai Categories',
-            description: 'OpenAI-predicted categories for the profile content.'
+            title: 'Ai Categories'
         },
         ai_roles: {
             items: {
                 type: 'string'
             },
             type: 'array',
-            title: 'Ai Roles',
-            description: 'OpenAI-predicted roles for the profile tone/positioning.'
+            title: 'Ai Roles'
         },
         ai_error: {
             anyOf: [
@@ -1258,186 +1256,11 @@ export const InstagramBatchProfileResultSchema = {
                     type: 'null'
                 }
             ],
-            title: 'Ai Error',
-            description: 'Error details when AI analysis fails.'
+            title: 'Ai Error'
         }
     },
     type: 'object',
     title: 'InstagramBatchProfileResult'
-} as const;
-
-export const InstagramBatchRecommendationsRequestSchema = {
-    properties: {
-        usernames: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            maxItems: 10,
-            minItems: 1,
-            title: 'Usernames'
-        },
-        timeout_ms: {
-            type: 'integer',
-            title: 'Timeout Ms',
-            default: 30000
-        },
-        headless: {
-            type: 'boolean',
-            title: 'Headless',
-            default: true
-        },
-        user_agent: {
-            type: 'string',
-            title: 'User Agent',
-            default: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
-        },
-        locale: {
-            type: 'string',
-            title: 'Locale',
-            default: 'en-US'
-        },
-        max_posts: {
-            type: 'integer',
-            title: 'Max Posts',
-            default: 12
-        },
-        max_concurrent: {
-            type: 'integer',
-            minimum: 1,
-            title: 'Max Concurrent'
-        },
-        measure_network_bytes: {
-            type: 'boolean',
-            title: 'Measure Network Bytes',
-            description: 'When true, tracks total downloaded bytes from Playwright responses (session validation + scraping).',
-            default: false
-        },
-        proxy: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Proxy'
-        },
-        recommended_limit: {
-            type: 'integer',
-            maximum: 50,
-            minimum: 1,
-            title: 'Recommended Limit',
-            description: 'Maximum recommended users returned per profile.',
-            default: 10
-        }
-    },
-    type: 'object',
-    required: ['usernames'],
-    title: 'InstagramBatchRecommendationsRequest'
-} as const;
-
-export const InstagramBatchRecommendationsResponseSchema = {
-    properties: {
-        usernames: {
-            items: {
-                '$ref': '#/components/schemas/InstagramBatchUsernameStatus'
-            },
-            type: 'array',
-            title: 'Usernames'
-        },
-        recommendations: {
-            additionalProperties: {
-                items: {
-                    '$ref': '#/components/schemas/InstagramSuggestedUserSchema'
-                },
-                type: 'array'
-            },
-            type: 'object',
-            title: 'Recommendations'
-        },
-        counters: {
-            '$ref': '#/components/schemas/InstagramBatchCountersSchema'
-        },
-        error: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Error'
-        }
-    },
-    type: 'object',
-    title: 'InstagramBatchRecommendationsResponse'
-} as const;
-
-export const InstagramBatchScrapeRequestSchema = {
-    properties: {
-        usernames: {
-            items: {
-                type: 'string'
-            },
-            type: 'array',
-            maxItems: 10,
-            minItems: 1,
-            title: 'Usernames'
-        },
-        timeout_ms: {
-            type: 'integer',
-            title: 'Timeout Ms',
-            default: 30000
-        },
-        headless: {
-            type: 'boolean',
-            title: 'Headless',
-            default: true
-        },
-        user_agent: {
-            type: 'string',
-            title: 'User Agent',
-            default: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
-        },
-        locale: {
-            type: 'string',
-            title: 'Locale',
-            default: 'en-US'
-        },
-        max_posts: {
-            type: 'integer',
-            title: 'Max Posts',
-            default: 12
-        },
-        max_concurrent: {
-            type: 'integer',
-            minimum: 1,
-            title: 'Max Concurrent'
-        },
-        measure_network_bytes: {
-            type: 'boolean',
-            title: 'Measure Network Bytes',
-            description: 'When true, tracks total downloaded bytes from Playwright responses (session validation + scraping).',
-            default: false
-        },
-        proxy: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Proxy'
-        }
-    },
-    type: 'object',
-    required: ['usernames'],
-    title: 'InstagramBatchScrapeRequest'
 } as const;
 
 export const InstagramBatchScrapeResponseSchema = {
@@ -1526,9 +1349,6 @@ export const InstagramBatchUsernameStatusSchema = {
 
 export const InstagramMetricsSchemaSchema = {
     properties: {
-        user: {
-            '$ref': '#/components/schemas/InstagramProfileSchema'
-        },
         post_metrics: {
             '$ref': '#/components/schemas/InstagramPostMetricsSchema'
         },
@@ -1569,13 +1389,6 @@ export const InstagramMetricsSchemaSchema = {
             type: 'boolean',
             title: 'Is Private',
             default: false
-        },
-        recommended_users: {
-            items: {
-                '$ref': '#/components/schemas/InstagramSuggestedUserSchema'
-            },
-            type: 'array',
-            title: 'Recommended Users'
         }
     },
     type: 'object',
@@ -1962,6 +1775,23 @@ export const InstagramProfileSchemaSchema = {
     title: 'InstagramProfileSchema'
 } as const;
 
+export const InstagramPublicScrapeRequestSchema = {
+    properties: {
+        usernames: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            maxItems: 10,
+            minItems: 1,
+            title: 'Usernames'
+        }
+    },
+    type: 'object',
+    required: ['usernames'],
+    title: 'InstagramPublicScrapeRequest'
+} as const;
+
 export const InstagramReelMetricsSchemaSchema = {
     properties: {
         total_reels: {
@@ -2114,53 +1944,6 @@ export const InstagramScrapeJobCreateRequestSchema = {
             maxItems: 10,
             minItems: 1,
             title: 'Usernames'
-        },
-        timeout_ms: {
-            type: 'integer',
-            title: 'Timeout Ms',
-            default: 30000
-        },
-        headless: {
-            type: 'boolean',
-            title: 'Headless',
-            default: true
-        },
-        user_agent: {
-            type: 'string',
-            title: 'User Agent',
-            default: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
-        },
-        locale: {
-            type: 'string',
-            title: 'Locale',
-            default: 'en-US'
-        },
-        max_posts: {
-            type: 'integer',
-            title: 'Max Posts',
-            default: 12
-        },
-        max_concurrent: {
-            type: 'integer',
-            minimum: 1,
-            title: 'Max Concurrent'
-        },
-        measure_network_bytes: {
-            type: 'boolean',
-            title: 'Measure Network Bytes',
-            description: 'When true, tracks total downloaded bytes from Playwright responses (session validation + scraping).',
-            default: false
-        },
-        proxy: {
-            anyOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Proxy'
         }
     },
     type: 'object',

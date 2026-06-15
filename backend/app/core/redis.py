@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import cast
 
-from kiizama_scrape_core.redis import RedisClient, create_redis_client
+from kiizama_core.redis import RedisClient, create_redis_client
 
 from app.core.config import settings
 

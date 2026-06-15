@@ -1,4 +1,4 @@
-from kiizama_scrape_core.job_control.schemas import (
+from kiizama_core.job_control.schemas import (
     JobLeaseStatus,
     JobQueueSpec,
     JobStatus,

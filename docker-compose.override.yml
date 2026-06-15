@@ -34,7 +34,8 @@ services:
       redis:
         condition: service_healthy
     environment:
-      DATABASE_URL: "postgresql+psycopg://postgres:postgres@postgres:5432/app"
+      # DATABASE_URL: "postgresql+psycopg://postgres:postgres@postgres:5432/app"
+      DATABASE_URL: "postgresql://postgres.pjdkddyuwymtewoefhfy:virgiaVirgia53$1@aws-1-us-east-1.pooler.supabase.com:5432/postgres"
       POSTGRES_SERVER: "postgres"
       POSTGRES_PORT: "5432"
       POSTGRES_DB: "app"
@@ -73,8 +74,12 @@ services:
         - path: ./packages/scrape_core
           action: sync
           target: /app/packages/scrape_core
+        - path: ./packages/core
+          action: sync
+          target: /app/packages/core
     environment:
-      DATABASE_URL: "postgresql+psycopg://postgres:postgres@postgres:5432/app"
+      # DATABASE_URL: "postgresql+psycopg://postgres:postgres@postgres:5432/app"
+      DATABASE_URL: "postgresql://postgres.pjdkddyuwymtewoefhfy:virgiaVirgia53$1@aws-1-us-east-1.pooler.supabase.com:5432/postgres"
       POSTGRES_SERVER: "postgres"
       POSTGRES_PORT: "5432"
       POSTGRES_DB: "app"
@@ -89,9 +94,21 @@ services:
       context: .
       dockerfile: Dockerfile.worker
     depends_on:
-      - backend
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
     env_file:
       - .env
+    environment:
+      # DATABASE_URL: "postgresql+psycopg://postgres:postgres@postgres:5432/app"
+      DATABASE_URL: "postgresql://postgres.pjdkddyuwymtewoefhfy:virgiaVirgia53$1@aws-1-us-east-1.pooler.supabase.com:5432/postgres"
+      # IG_SCRAPE_WORKER_DATABASE_URL: "postgresql+psycopg://postgres:postgres@postgres:5432/app"
+      REDIS_URL: "redis://redis:6379/0"
+      IG_SCRAPE_WORKER_REDIS_URL: "redis://redis:6379/0"
+      IG_SCRAPE_WORKER_BACKEND_BASE_URL: "http://backend:8000"
     develop:
       watch:
         - path: ./backend
@@ -103,6 +120,12 @@ services:
         - path: ./scrape_worker
           action: sync
           target: /app/scrape_worker
+        - path: ./packages/scrape_core
+          action: sync
+          target: /app/packages/scrape_core
+        - path: ./packages/core
+          action: sync
+          target: /app/packages/core
 
   frontend:
     restart: "no"

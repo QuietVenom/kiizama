@@ -15,7 +15,7 @@ const createProfile = (
 })
 
 describe("profile validation panel", () => {
-  test("profile_validation_panel_without_usernames_renders_initial_gate", () => {
+  test("profile_validation_panel_without_usernames_renders_nothing", () => {
     // Arrange / Act
     renderWithProviders(
       <ProfileValidationPanel profiles={[]} usernames={[]} />,
@@ -25,10 +25,22 @@ describe("profile validation panel", () => {
     )
 
     // Assert
-    expect(screen.getByText("Profile validation gate")).toBeVisible()
     expect(
-      screen.getByText(/Add the required creator usernames first/i),
-    ).toBeVisible()
+      screen.queryByText("Profile validation gate"),
+    ).not.toBeInTheDocument()
+  })
+
+  test("profile_validation_panel_pending_validation_renders_nothing", () => {
+    // Arrange / Act
+    renderWithProviders(
+      <ProfileValidationPanel profiles={[]} usernames={["creator_one"]} />,
+      { language: "en" },
+    )
+
+    // Assert
+    expect(
+      screen.queryByText("Profile validation gate"),
+    ).not.toBeInTheDocument()
   })
 
   test("profile_validation_panel_loading_without_profiles_renders_loading_state", () => {

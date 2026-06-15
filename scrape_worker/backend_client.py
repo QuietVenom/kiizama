@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import httpx
-from kiizama_scrape_core.ig_scraper.schemas import (
+from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramScrapeJobTerminalizationRequest,
     InstagramScrapeJobTerminalizationResponse,
 )

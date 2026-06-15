@@ -64,6 +64,7 @@ import MultiSelectOptionGroup from "./MultiSelectOptionGroup"
 import ProfileValidationPanel from "./ProfileValidationPanel"
 import StrategySection from "./StrategySection"
 import StrategySummaryCard from "./StrategySummaryCard"
+import { validationAttentionCss } from "./validationAttention"
 
 type CreatorStrategyBuilderProps = {
   creatorTextInputValues: CreatorTextInputValues
@@ -392,7 +393,7 @@ const CreatorSubmitPanel = ({
     normalizedPlatforms.length > 0
 
   const submitDisabledReason = !creatorUsername
-    ? t("creator.submitDisabledReason.missingUsername")
+    ? null
     : invalidCreatorUsername
       ? t("creator.submitDisabledReason.invalidUsername")
       : hasInvalidCreatorUrls
@@ -406,6 +407,7 @@ const CreatorSubmitPanel = ({
               : missingUsernames.length > 0
                 ? t("creator.submitDisabledReason.missingProfiles")
                 : null
+  const isSubmitDisabled = !creatorUsername || Boolean(submitDisabledReason)
 
   return (
     <Box
@@ -437,7 +439,7 @@ const CreatorSubmitPanel = ({
           type="submit"
           layerStyle="brandGradientButton"
           loading={reportIsPending}
-          disabled={Boolean(submitDisabledReason)}
+          disabled={isSubmitDisabled}
           alignSelf={{ base: "stretch", lg: "center" }}
         >
           <FiFileText />
@@ -488,6 +490,8 @@ const CreatorStrategyBuilder = ({
   const isWorkflowUnlocked = Boolean(creatorUsername)
   const canRunValidation =
     Boolean(creatorUsername) && !invalidCreatorUsername && !isValidationPending
+  const needsValidation =
+    canRunValidation && (orderedProfiles.length === 0 || isValidationStale)
   const creatorGoalOptions = useMemo(() => getCreatorGoalTypeOptions(t), [t])
   const timeframeOptions = useMemo(() => getTimeframeOptions(t), [t])
   const audienceOptions = useMemo(() => getAudienceOptions(t), [t])
@@ -574,7 +578,6 @@ const CreatorStrategyBuilder = ({
         <StrategySection
           eyebrow={t("creator.step1.eyebrow")}
           title={t("creator.step1.title")}
-          description={t("creator.step1.description")}
         >
           <Controller
             control={control}
@@ -671,6 +674,7 @@ const CreatorStrategyBuilder = ({
               onClick={handleValidateProfiles}
               disabled={!canRunValidation}
               loading={isValidationPending}
+              css={needsValidation ? validationAttentionCss : undefined}
             >
               <FiSearch />
               {t("creator.actions.validateProfile")}

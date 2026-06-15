@@ -1,4 +1,4 @@
-import { Box, Grid } from "@chakra-ui/react"
+import { Box, Grid, SimpleGrid } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -28,6 +28,7 @@ import { SearchHistoryDialog } from "./SearchHistoryDialog"
 import { SearchHistoryPanel } from "./SearchHistoryPanel"
 import { SearchInputPanel } from "./SearchInputPanel"
 import { SearchOutcomeAlerts } from "./SearchOutcomeAlerts"
+import { SearchOverviewCard } from "./SearchOverviewCard"
 import { SearchResultsSection } from "./SearchResultsSection"
 import { useCreatorReport } from "./useCreatorReport"
 import { useCreatorsSearchHistory } from "./useCreatorsSearchHistory"
@@ -45,6 +46,8 @@ export function DirectCreatorsSearchTab() {
     useState<ProfileSnapshotExpandedCollection | null>(null)
   const [selectedSnapshot, setSelectedSnapshot] =
     useState<ProfileSnapshotExpanded | null>(null)
+  const [isCurrentJobsCollapsed, setIsCurrentJobsCollapsed] = useState(true)
+  const [isSearchHistoryCollapsed, setIsSearchHistoryCollapsed] = useState(true)
   const pageTopRef = useRef<HTMLDivElement | null>(null)
 
   const { persistSearchHistoryEntry, previewQuery, viewAllQuery } =
@@ -62,6 +65,7 @@ export function DirectCreatorsSearchTab() {
     selectCurrentJob,
     selectedCurrentJob,
   } = useCreatorsSearchJobs({
+    onJobsEnqueued: () => setIsCurrentJobsCollapsed(false),
     pageTopRef,
     persistSearchHistoryEntry,
   })
@@ -118,6 +122,9 @@ export function DirectCreatorsSearchTab() {
     submittedUsernames.length > 0 ||
     searchResult !== null ||
     searchError !== null
+  const shouldShowCurrentJobsPanel = currentJobs.length > 0
+  const historyItems = previewQuery.data?.items ?? []
+  const shouldShowHistoryPanel = previewQuery.isError || historyItems.length > 0
 
   const searchMutation = useMutation({
     mutationFn: (requestedUsernames: string[]) =>
@@ -185,13 +192,81 @@ export function DirectCreatorsSearchTab() {
 
   return (
     <Box ref={pageTopRef}>
+      {shouldShowCurrentJobsPanel ? (
+        <Box mb={{ base: 6, lg: 7 }}>
+          <CurrentJobsPanel
+            collapsed={isCurrentJobsCollapsed}
+            currentJobs={currentJobs}
+            onSelectJob={selectCurrentJob}
+            onToggleCollapsed={() =>
+              setIsCurrentJobsCollapsed((current) => !current)
+            }
+          />
+        </Box>
+      ) : null}
+
+      {shouldShowHistoryPanel ? (
+        <SearchHistoryPanel
+          collapsed={isSearchHistoryCollapsed}
+          isError={previewQuery.isError}
+          isLoading={previewQuery.isLoading}
+          items={historyItems}
+          onReuseReadyUsernames={handleReuseReadyUsernames}
+          onToggleCollapsed={() =>
+            setIsSearchHistoryCollapsed((current) => !current)
+          }
+        />
+      ) : null}
+
+      <SearchOutcomeAlerts
+        expiredJobsError={expiredJobsError}
+        expiredJobsMutation={expiredJobsMutation}
+        expiredUsernames={expiredUsernames}
+        missingJobsError={missingJobsError}
+        missingJobsMutation={missingJobsMutation}
+        missingUsernames={missingUsernames}
+        reportError={reportError}
+        searchError={searchError}
+      />
+
+      {hasSearched && !searchMutation.isPending ? (
+        <SimpleGrid
+          columns={{ base: 1, md: 2, xl: 4 }}
+          gap={5}
+          mb={{ base: 6, lg: 7 }}
+        >
+          <SearchOverviewCard
+            label={t("results.overview.requested")}
+            tone="brand"
+            value={String(submittedUsernames.length)}
+          />
+          <SearchOverviewCard
+            label={t("results.overview.found", {
+              count: sortedSnapshots.length,
+            })}
+            tone="success"
+            value={String(sortedSnapshots.length)}
+          />
+          <SearchOverviewCard
+            label={t("results.overview.updateNeeded")}
+            tone="warning"
+            value={String(expiredUsernames.length)}
+          />
+          <SearchOverviewCard
+            label={t("results.overview.notFound")}
+            tone="danger"
+            value={String(missingUsernames.length)}
+          />
+        </SimpleGrid>
+      ) : null}
+
       <Grid
         templateColumns={{
           base: "1fr",
-          "2xl": "minmax(0, 3fr) minmax(320px, 1fr)",
+          xl: "minmax(280px, 0.55fr) minmax(0, 1.75fr)",
         }}
         gap={6}
-        mb={{ base: 7, lg: 8 }}
+        alignItems="start"
       >
         <SearchInputPanel
           expiredSet={expiredSet}
@@ -209,43 +284,16 @@ export function DirectCreatorsSearchTab() {
           onUsernamesChange={handleUsernamesChange}
         />
 
-        <CurrentJobsPanel
-          currentJobs={currentJobs}
-          onSelectJob={selectCurrentJob}
+        <SearchResultsSection
+          expiredSet={expiredSet}
+          hasSearched={hasSearched}
+          isSearchPending={searchMutation.isPending}
+          reportMutation={reportMutation}
+          searchError={searchError}
+          snapshots={sortedSnapshots}
+          onOpenSnapshot={setSelectedSnapshot}
         />
       </Grid>
-
-      <SearchHistoryPanel
-        isError={previewQuery.isError}
-        isLoading={previewQuery.isLoading}
-        items={previewQuery.data?.items ?? []}
-        onReuseReadyUsernames={handleReuseReadyUsernames}
-        onViewAll={() => setIsSearchHistoryOpen(true)}
-      />
-
-      <SearchOutcomeAlerts
-        expiredJobsError={expiredJobsError}
-        expiredJobsMutation={expiredJobsMutation}
-        expiredUsernames={expiredUsernames}
-        missingJobsError={missingJobsError}
-        missingJobsMutation={missingJobsMutation}
-        missingUsernames={missingUsernames}
-        reportError={reportError}
-        searchError={searchError}
-      />
-
-      <SearchResultsSection
-        expiredSet={expiredSet}
-        expiredUsernames={expiredUsernames}
-        hasSearched={hasSearched}
-        isSearchPending={searchMutation.isPending}
-        missingUsernames={missingUsernames}
-        reportMutation={reportMutation}
-        searchError={searchError}
-        snapshots={sortedSnapshots}
-        submittedUsernames={submittedUsernames}
-        onOpenSnapshot={setSelectedSnapshot}
-      />
 
       <CreatorSnapshotDetailDialog
         snapshot={selectedSnapshot}
