@@ -188,6 +188,8 @@ test.describe("Creators search scrape jobs", () => {
     await page.getByRole("button", { exact: true, name: "Buscar" }).click()
 
     // Assert
+    await expect(page.getByText("Búsqueda iniciada")).toBeVisible()
+    await expect(page.getByText("1 perfil en 1 trabajo")).toBeVisible()
     await expect(page.getByText(jobId)).toBeVisible()
     await expect(page.getByText("En cola")).toBeVisible()
     await expect(page.getByText("Consultas: 1")).toBeVisible()
@@ -195,6 +197,12 @@ test.describe("Creators search scrape jobs", () => {
     await page.evaluate(() => window.dispatchEvent(new Event("online")))
 
     await expect(page.getByText("Completado")).toBeVisible()
+
+    // The started toast (top-end) can overlap the header jobs widget; wait for
+    // it to expire before interacting with the job card.
+    await expect(page.getByText("Búsqueda iniciada")).toBeHidden({
+      timeout: 10_000,
+    })
 
     await page.getByText(jobId).click()
 

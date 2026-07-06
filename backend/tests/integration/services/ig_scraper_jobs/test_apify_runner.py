@@ -2,6 +2,9 @@ import asyncio
 from types import SimpleNamespace
 from typing import Any, Literal, cast
 
+from kiizama_scrape_core.ig_scraper_v2.executor import (
+    InstagramScrapeJobExecutionResult,
+)
 from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramBatchCountersSchema,
     InstagramBatchProfileResult,
@@ -51,7 +54,7 @@ class _FakeApifyRuntime:
     def __init__(self, **kwargs: Any) -> None:
         self.kwargs = kwargs
         self.ensure_calls = 0
-        self.finish_calls: list[tuple[Any, bool]] = []
+        self.finish_calls: list[tuple[Any, bool, bool]] = []
         self.start_result: Any = None
 
     async def ensure_consumer_group(self) -> None:
@@ -61,8 +64,14 @@ class _FakeApifyRuntime:
         del message
         return self.start_result
 
-    async def finish_job(self, handle: Any, *, ack: bool) -> None:
-        self.finish_calls.append((handle, ack))
+    async def finish_job(
+        self,
+        handle: Any,
+        *,
+        ack: bool,
+        expire_state: bool = False,
+    ) -> None:
+        self.finish_calls.append((handle, ack, expire_state))
 
 
 class _FakeJobHandle:
@@ -264,8 +273,12 @@ def test_apify_runner_process_message_retries_non_terminal_failure_without_ack(
             2,
         )
 
-        async def failing_execute(payload: dict[str, Any]) -> tuple[Any, str | None]:
-            del payload
+        async def failing_execute(
+            payload: dict[str, Any],
+            *,
+            job_id: str,
+        ) -> InstagramScrapeJobExecutionResult:
+            del payload, job_id
             raise RuntimeError("temporary upstream failure")
 
         runner._execute_job_payload = failing_execute
@@ -274,7 +287,7 @@ def test_apify_runner_process_message_retries_non_terminal_failure_without_ack(
         await runner._process_message(cast(Any, SimpleNamespace()))
 
         # Assert
-        assert runtime.finish_calls == [(handle, False)]
+        assert runtime.finish_calls == [(handle, False, False)]
 
     asyncio.run(run())
 
@@ -296,8 +309,12 @@ def test_apify_runner_process_message_terminal_failure_builds_summary_and_comple
             1,
         )
 
-        async def failing_execute(payload: dict[str, Any]) -> tuple[Any, str | None]:
-            del payload
+        async def failing_execute(
+            payload: dict[str, Any],
+            *,
+            job_id: str,
+        ) -> InstagramScrapeJobExecutionResult:
+            del payload, job_id
             raise RuntimeError("terminal upstream failure")
 
         async def terminal_summary(
@@ -320,7 +337,7 @@ def test_apify_runner_process_message_terminal_failure_builds_summary_and_comple
         await runner._process_message(cast(Any, SimpleNamespace()))
 
         # Assert
-        assert runtime.finish_calls == [(handle, True)]
+        assert runtime.finish_calls == [(handle, True, False)]
         assert completions[0]["job_id"] == "job-123"
         assert completions[0]["status"] == "failed"
         assert completions[0]["summary"].counters.failed == 1
@@ -339,9 +356,13 @@ def test_apify_runner_process_message_skips_completion_when_lease_lost() -> None
         runtime.start_result = handle
         cast(Any, runner)._runtime = runtime
 
-        async def execute(payload: dict[str, Any]) -> tuple[Any, str | None]:
-            del payload
-            return _summary(), None
+        async def execute(
+            payload: dict[str, Any],
+            *,
+            job_id: str,
+        ) -> InstagramScrapeJobExecutionResult:
+            del payload, job_id
+            return InstagramScrapeJobExecutionResult(summary=_summary(), error=None)
 
         async def complete_job(**kwargs: Any) -> bool:
             completions.append(kwargs)
@@ -355,7 +376,166 @@ def test_apify_runner_process_message_skips_completion_when_lease_lost() -> None
 
         # Assert
         assert completions == []
-        assert runtime.finish_calls == [(handle, False)]
+        assert runtime.finish_calls == [(handle, False, False)]
+
+    asyncio.run(run())
+
+
+def test_apify_runner_process_message_enqueues_recommended_for_normal_job() -> None:
+    async def run() -> None:
+        # Arrange
+        enqueue_calls: list[tuple[str, list[str]]] = []
+        completions: list[dict[str, Any]] = []
+        runner = runner_module.ApifyInstagramJobRunner()
+        runtime = _FakeApifyRuntime()
+        handle = _FakeJobHandle()
+        runtime.start_result = handle
+        cast(Any, runner)._runtime = runtime
+
+        async def execute(
+            payload: dict[str, Any],
+            *,
+            job_id: str,
+        ) -> InstagramScrapeJobExecutionResult:
+            del payload, job_id
+            return InstagramScrapeJobExecutionResult(
+                summary=_summary(),
+                error=None,
+                recommended_usernames=["related_one", "related_two"],
+            )
+
+        async def enqueue_recommended(
+            handle: Any,
+            *,
+            execution_result: InstagramScrapeJobExecutionResult,
+        ) -> None:
+            enqueue_calls.append(
+                (handle.job_id, execution_result.recommended_usernames)
+            )
+
+        async def complete_job(**kwargs: Any) -> bool:
+            completions.append(kwargs)
+            return True
+
+        runner._execute_job_payload = execute
+        runner._enqueue_recommended_jobs = enqueue_recommended
+        runner._complete_job = complete_job
+
+        # Act
+        await runner._process_message(cast(Any, SimpleNamespace()))
+
+        # Assert
+        assert enqueue_calls == [("job-123", ["related_one", "related_two"])]
+        assert completions[0]["job_id"] == "job-123"
+        assert runtime.finish_calls == [(handle, True, False)]
+
+    asyncio.run(run())
+
+
+def test_apify_runner_process_message_internal_job_skips_completion_and_reenqueue() -> (
+    None
+):
+    async def run() -> None:
+        # Arrange
+        enqueue_calls: list[str] = []
+        completions: list[dict[str, Any]] = []
+        runner = runner_module.ApifyInstagramJobRunner()
+        runtime = _FakeApifyRuntime()
+        handle = _FakeJobHandle(
+            payload={
+                "usernames": ["related_one"],
+                "internal_source": "ig-recommended-background",
+                "enqueue_recommended": False,
+            }
+        )
+        runtime.start_result = handle
+        cast(Any, runner)._runtime = runtime
+
+        async def execute(
+            payload: dict[str, Any],
+            *,
+            job_id: str,
+        ) -> InstagramScrapeJobExecutionResult:
+            del payload, job_id
+            return InstagramScrapeJobExecutionResult(
+                summary=_summary(username="related_one"),
+                error=None,
+                recommended_usernames=["should_not_enqueue"],
+            )
+
+        async def enqueue_recommended(*args: Any, **kwargs: Any) -> None:
+            del args, kwargs
+            enqueue_calls.append("called")
+
+        async def complete_job(**kwargs: Any) -> bool:
+            completions.append(kwargs)
+            return True
+
+        runner._execute_job_payload = execute
+        runner._enqueue_recommended_jobs = enqueue_recommended
+        runner._complete_job = complete_job
+
+        # Act
+        await runner._process_message(cast(Any, SimpleNamespace()))
+
+        # Assert
+        assert enqueue_calls == []
+        assert completions == []
+        assert runtime.finish_calls == [(handle, True, True)]
+
+    asyncio.run(run())
+
+
+def test_apify_runner_execute_job_payload_passes_recommended_feature_flag(
+    monkeypatch,
+) -> None:
+    async def run() -> None:
+        # Arrange
+        captured: dict[str, Any] = {}
+        runner = runner_module.ApifyInstagramJobRunner()
+        monkeypatch.setattr(
+            runner_module,
+            "is_recommended_background_jobs_enabled",
+            lambda **kwargs: True,
+        )
+
+        class FakeBackend:
+            pass
+
+        async def execute_payload_result(
+            payload: dict[str, Any],
+            **kwargs: Any,
+        ) -> InstagramScrapeJobExecutionResult:
+            captured["payload"] = payload
+            captured.update(kwargs)
+            return InstagramScrapeJobExecutionResult(summary=_summary(), error=None)
+
+        runner._build_scraper_backend = lambda: cast(Any, FakeBackend())
+        monkeypatch.setattr(
+            runner_module,
+            "execute_scrape_job_payload_result",
+            execute_payload_result,
+        )
+
+        # Act
+        result = await runner._execute_job_payload(
+            {"usernames": ["alpha"]},
+            job_id="job-123",
+        )
+
+        # Assert
+        assert result.summary.usernames[0].username == "alpha"
+        assert captured["collect_recommended_usernames"] is True
+
+        captured.clear()
+        await runner._execute_job_payload(
+            {
+                "usernames": ["alpha"],
+                "internal_source": "ig-recommended-background",
+            },
+            job_id="internal-job",
+        )
+        assert captured["collect_recommended_usernames"] is False
 
     asyncio.run(run())
 

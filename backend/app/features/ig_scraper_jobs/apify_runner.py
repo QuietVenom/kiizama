@@ -12,10 +12,20 @@ from kiizama_core.job_control import JobControlUnavailableError, JobWorkerRuntim
 from kiizama_core.job_control.schemas import QueuedJobMessage
 from kiizama_scrape_core.ig_scraper_v2 import (
     ApifyInstagramScraperBackend,
-    execute_scrape_job_payload,
+    InstagramScrapeJobExecutionResult,
+    execute_scrape_job_payload_result,
 )
+from kiizama_scrape_core.ig_scraper_v2.feature_flags import (
+    is_recommended_background_jobs_enabled,
+)
+from kiizama_scrape_core.ig_scraper_v2.jobs import APIFY_JOB_EXECUTION_MODE
 from kiizama_scrape_core.ig_scraper_v2.persistence import (
     SqlInstagramScrapePersistenceV2,
+)
+from kiizama_scrape_core.ig_scraper_v2.recommended_jobs import (
+    enqueue_internal_recommended_jobs,
+    is_internal_recommended_job_payload,
+    should_collect_recommended_usernames,
 )
 from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramBatchCountersSchema,
@@ -93,6 +103,13 @@ def _is_dependency_error(exc: Exception) -> bool:
             RedisError,
         ),
     )
+
+
+def _coerce_execution_result(result: Any) -> InstagramScrapeJobExecutionResult:
+    if isinstance(result, InstagramScrapeJobExecutionResult):
+        return result
+    summary, error = result
+    return InstagramScrapeJobExecutionResult(summary=summary, error=error)
 
 
 class ApifyInstagramJobRunner:
@@ -192,6 +209,8 @@ class ApifyInstagramJobRunner:
             return
 
         ack = False
+        expire_state = False
+        is_internal_job = is_internal_recommended_job_payload(handle.message.payload)
         try:
             if handle.attempt > settings.IG_SCRAPER_APIFY_MAX_ATTEMPTS:
                 summary = await self._build_terminal_failure_summary(
@@ -204,9 +223,19 @@ class ApifyInstagramJobRunner:
                 error = summary.error
             else:
                 try:
-                    summary, error = await self._execute_job_payload(
-                        handle.message.payload
+                    execution_result = _coerce_execution_result(
+                        await self._execute_job_payload(
+                            handle.message.payload,
+                            job_id=handle.job_id,
+                        )
                     )
+                    summary = execution_result.summary
+                    error = execution_result.error
+                    if not is_internal_job:
+                        await self._enqueue_recommended_jobs(
+                            handle,
+                            execution_result=execution_result,
+                        )
                     status = "done"
                 except asyncio.CancelledError:
                     raise
@@ -234,27 +263,72 @@ class ApifyInstagramJobRunner:
                 )
                 return
 
-            ack = await self._complete_job(
-                job_id=handle.job_id,
-                attempt=handle.attempt,
-                status=status,
-                summary=summary,
-                error=error,
-            )
+            if is_internal_job:
+                ack = True
+                expire_state = True
+            else:
+                ack = await self._complete_job(
+                    job_id=handle.job_id,
+                    attempt=handle.attempt,
+                    status=status,
+                    summary=summary,
+                    error=error,
+                )
         finally:
-            await self._runtime.finish_job(handle, ack=ack)
+            await self._runtime.finish_job(handle, ack=ack, expire_state=expire_state)
 
     async def _execute_job_payload(
         self,
         payload: dict[str, Any],
-    ) -> tuple[InstagramBatchScrapeSummaryResponse, str | None]:
+        *,
+        job_id: str,
+    ) -> InstagramScrapeJobExecutionResult:
         scraper_backend = self._build_scraper_backend()
-        return await execute_scrape_job_payload(
+        recommended_background_jobs_enabled = is_recommended_background_jobs_enabled(
+            session_factory=lambda: Session(engine),
+            logger=logger,
+        )
+        return await execute_scrape_job_payload_result(
             payload,
             session_factory=lambda: Session(engine),
             scraper_backend=scraper_backend,
             analysis_service=BackendInstagramProfileAnalysisServiceV2(),
+            collect_recommended_usernames=should_collect_recommended_usernames(
+                payload,
+                feature_enabled=recommended_background_jobs_enabled,
+            ),
         )
+
+    async def _enqueue_recommended_jobs(
+        self,
+        handle: Any,
+        *,
+        execution_result: InstagramScrapeJobExecutionResult,
+    ) -> None:
+        if not execution_result.recommended_usernames:
+            return
+        try:
+            count = await enqueue_internal_recommended_jobs(
+                repository=self._repository,
+                usernames=execution_result.recommended_usernames,
+                origin_job_id=handle.job_id,
+                origin_execution_mode=APIFY_JOB_EXECUTION_MODE,
+                logger=logger,
+            )
+        except Exception:
+            logger.exception(
+                "Failed to enqueue recommended jobs for Apify scrape job %s.",
+                handle.job_id,
+            )
+            return
+        if count:
+            logger.info(
+                "Enqueued %s internal recommended Apify scrape jobs "
+                "(origin_job_id=%s, usernames=%s).",
+                count,
+                handle.job_id,
+                len(execution_result.recommended_usernames),
+            )
 
     async def _build_terminal_failure_summary(
         self,

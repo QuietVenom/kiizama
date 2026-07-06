@@ -1,0 +1,66 @@
+{
+  "topbar": {
+    "button": "Notas y tableros"
+  },
+  "dialog": {
+    "title": "Notas y tableros",
+    "empty": {
+      "title": "Tu espacio de notas y tareas",
+      "description": "Crea una nota o un tablero kanban desde la barra lateral, o abre uno existente. Todo se guarda solo en este navegador."
+    }
+  },
+  "sidebar": {
+    "notesSection": "Notas",
+    "boardsSection": "Kanban",
+    "newNote": "Nueva nota",
+    "newBoard": "Nuevo tablero",
+    "emptyNotes": "Aún no hay notas.",
+    "emptyBoards": "Aún no hay tableros.",
+    "delete": "Borrar",
+    "confirmDelete": "¿Confirmar?"
+  },
+  "note": {
+    "untitled": "Nota sin título",
+    "titlePlaceholder": "Título de la nota...",
+    "createdAt": "Creada el {{date}}",
+    "tagLabel": "Tag",
+    "noTag": "Sin tag",
+    "customTagPlaceholder": "Tu propio tag...",
+    "customTagApply": "Agregar",
+    "tags": {
+      "work": "Trabajo",
+      "ideas": "Ideas",
+      "meeting": "Reunión",
+      "followUp": "Seguimiento",
+      "personal": "Personal",
+      "urgent": "Urgente"
+    },
+    "blockPlaceholder": "Escribe algo...",
+    "lineTypeToggle": "Cambiar tipo de línea",
+    "checkAria": "Marcar como hecha",
+    "addLine": "Agregar línea"
+  },
+  "kanban": {
+    "untitled": "Tablero sin título",
+    "titlePlaceholder": "Título del tablero...",
+    "presets": {
+      "todo": "To Do",
+      "inProgress": "In Progress",
+      "review": "Review",
+      "done": "Done"
+    },
+    "addColumn": "Agregar columna",
+    "columnLimit": "Máximo {{max}} columnas",
+    "columnNamePlaceholder": "Nombre de la etapa...",
+    "addTask": "Agregar tarea",
+    "taskTitlePlaceholder": "Título de la tarea...",
+    "taskDescriptionPlaceholder": "Descripción (opcional)...",
+    "moveLeft": "Mover a la izquierda",
+    "moveRight": "Mover a la derecha",
+    "deleteTask": "Borrar tarea",
+    "deleteColumn": "Borrar columna",
+    "confirmDelete": "¿Confirmar?",
+    "tasksCount_one": "{{count}} tarea",
+    "tasksCount_other": "{{count}} tareas"
+  }
+}

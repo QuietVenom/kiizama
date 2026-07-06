@@ -79,6 +79,7 @@ export const enqueueCreatorsSearchScrapeJobs = async (
 ) => {
   const batches = createBalancedUsernameBatches(requestedUsernames)
   let createdCount = 0
+  let createdUsernamesCount = 0
   let skippedCount = 0
 
   for (const batch of batches) {
@@ -133,11 +134,13 @@ export const enqueueCreatorsSearchScrapeJobs = async (
       terminalPayload: null,
     })
     createdCount += 1
+    createdUsernamesCount += batch.length
   }
 
   return {
     batchCount: batches.length,
     createdCount,
+    createdUsernamesCount,
     skippedCount,
   }
 }

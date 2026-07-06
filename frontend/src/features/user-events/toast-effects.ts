@@ -1,4 +1,5 @@
 import { toaster } from "@/components/ui/toaster"
+import i18n from "@/i18n"
 import { registerUserEventEffect } from "./effects"
 import { buildCompletedDescription } from "./toast-descriptions"
 import {
@@ -11,12 +12,12 @@ import {
 const TERMINAL_TOAST_DURATION_MS = 7000
 
 const buildFailedDescription = (payload: IgScrapeTerminalEventPayload) =>
-  payload.error || "The Instagram scrape job failed."
+  payload.error || i18n.t("creatorsSearch:toasts.failed.fallback")
 
 const createTerminalToast = (event: UserEvent) => {
   if (isIgScrapeJobCompletedEvent(event)) {
     toaster.create({
-      title: "Scrape completed",
+      title: i18n.t("creatorsSearch:toasts.completed.title"),
       description: buildCompletedDescription(event.envelope.payload),
       duration: TERMINAL_TOAST_DURATION_MS,
       type: "success",
@@ -29,7 +30,7 @@ const createTerminalToast = (event: UserEvent) => {
 
   if (isIgScrapeJobFailedEvent(event)) {
     toaster.create({
-      title: "Scrape failed",
+      title: i18n.t("creatorsSearch:toasts.failed.title"),
       description: buildFailedDescription(event.envelope.payload),
       duration: TERMINAL_TOAST_DURATION_MS,
       type: "error",

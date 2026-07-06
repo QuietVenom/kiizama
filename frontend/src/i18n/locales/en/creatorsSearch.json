@@ -7,8 +7,7 @@
   "header": {
     "eyebrow": "Creators Search",
     "title": "Search saved creator profiles in one request.",
-    "description": "Add multiple Instagram usernames, review which creators are already stored in the platform, and open a complete view for each match.",
-    "guideButton": "Search guide"
+    "description": "Add multiple Instagram usernames, review which creators are already stored in the platform, and open a complete view for each match."
   },
   "tabs": {
     "direct": {
@@ -29,6 +28,8 @@
     "placeholder": "creator_one, brand.partner, ...",
     "staleBadge": "Input changed, search again to refresh",
     "searchButton": "Search creators",
+    "historyButton": "History",
+    "clearButton": "Clear",
     "count_one": "{{count}} / {{max}} username",
     "count_other": "{{count}} / {{max}} usernames"
   },
@@ -78,6 +79,7 @@
     "empty": "No scrape jobs yet.",
     "count_one": "{{count}} / {{max}} job",
     "count_other": "{{count}} / {{max}} jobs",
+    "viewAll": "View all ({{count}})",
     "queries": "Queries: {{count}}",
     "status": {
       "queued": "Queued",
@@ -87,6 +89,10 @@
     "errors": {
       "duplicateActiveJob": "An active scrape job already exists for these usernames.",
       "unableToCreate": "Unable to create scrape jobs."
+    },
+    "dialog": {
+      "title": "Queries",
+      "description": "Your latest scrape jobs, newest first. Open a finished job to review its results."
     }
   },
   "jobDetail": {
@@ -114,12 +120,6 @@
     "workerError": "Worker error"
   },
   "history": {
-    "title": "Search history",
-    "count_one": "{{count}} / {{max}} history item",
-    "count_other": "{{count}} / {{max}} history items",
-    "items": "Queries: {{count}}",
-    "viewAll": "View all",
-    "unavailable": "Search history is temporarily unavailable.",
     "empty": "No search history available yet.",
     "dialog": {
       "title": "Search history",
@@ -129,24 +129,6 @@
       "directSearch": "Direct search",
       "fromJob": "Ready usernames from scrape job",
       "fromDirect": "Ready usernames from direct search"
-    }
-  },
-  "guide": {
-    "title": "Search guide",
-    "description": "Quick guidance for how creator search works and how results are presented.",
-    "items": {
-      "multiCreator": {
-        "title": "Multi-creator search",
-        "description": "Search the saved creator records for the usernames you enter, up to 50 at a time."
-      },
-      "savedDetails": {
-        "title": "Saved profile details",
-        "description": "Each result card opens a detailed view with profile information, metrics, posts, and reels when they are available."
-      },
-      "issueHighlighting": {
-        "title": "Immediate issue highlighting",
-        "description": "Invalid usernames and names that are not found are highlighted directly in the tags input and listed in a dedicated block below."
-      }
     }
   },
   "directoryPreview": {
@@ -238,6 +220,33 @@
         "current": "Current",
         "update": "Update"
       }
+    }
+  },
+  "directoryPaywall": {
+    "lockedIndicator": "Requires an active subscription",
+    "eyebrow": "SUBSCRIPTION REQUIRED",
+    "title": "Unlock the creators directory",
+    "description": "Browse creators by category, role, and follower range. Activate your subscription to explore the full directory.",
+    "ctaTrial": "Start your 7-day trial",
+    "ctaSubscribe": "Activate your subscription"
+  },
+  "toasts": {
+    "started": {
+      "title": "Search started",
+      "description": "{{profiles}} in {{jobs}}",
+      "profiles_one": "{{count}} profile",
+      "profiles_other": "{{count}} profiles",
+      "jobs_one": "{{count}} job",
+      "jobs_other": "{{count}} jobs"
+    },
+    "completed": {
+      "title": "Scrape completed",
+      "description": "{{readyCount}} of {{requestedCount}} usernames are ready.",
+      "fallback": "The Instagram scrape job completed successfully."
+    },
+    "failed": {
+      "title": "Scrape failed",
+      "fallback": "The Instagram scrape job failed."
     }
   },
   "card": {

@@ -12,6 +12,9 @@ from typing import TYPE_CHECKING, Any, cast
 
 import httpx
 import pytest
+from kiizama_scrape_core.ig_scraper_v2.executor import (
+    InstagramScrapeJobExecutionResult,
+)
 from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramBatchCountersSchema,
     InstagramBatchScrapeSummaryResponse,
@@ -375,6 +378,131 @@ def test_process_message_skips_backend_completion_when_lease_is_lost(
     assert runtime.finished == [(runtime.handle, False)]
 
 
+def test_process_message_enqueues_recommended_for_normal_worker_job(
+    monkeypatch: Any,
+) -> None:
+    runtime = FakeRuntime(_handle())
+    runtime._repository = object()
+    backend_client = FakeBackendClient(_completion_result(status_code=200))
+    enqueue_calls: list[tuple[Any, str, list[str]]] = []
+
+    async def fake_execute_job_payload(
+        payload: dict[str, Any],
+        *,
+        job_id: str | None = None,
+    ) -> InstagramScrapeJobExecutionResult:
+        del payload
+        assert job_id == "job-1"
+        return InstagramScrapeJobExecutionResult(
+            summary=_summary(),
+            error=None,
+            recommended_usernames=["related_one", "related_two"],
+        )
+
+    async def fake_enqueue_recommended_jobs_for_worker(**kwargs: Any) -> None:
+        enqueue_calls.append(
+            (
+                kwargs["repository"],
+                kwargs["job_id"],
+                kwargs["execution_result"].recommended_usernames,
+            )
+        )
+
+    _worker_modules()
+    monkeypatch.setattr(
+        "scrape_worker.worker.execute_job_payload",
+        fake_execute_job_payload,
+    )
+    monkeypatch.setattr(
+        "scrape_worker.worker.enqueue_recommended_jobs_for_worker",
+        fake_enqueue_recommended_jobs_for_worker,
+    )
+
+    _run(
+        _process_message(
+            runtime=runtime,
+            backend_client=backend_client,
+            message=_message(),
+        )
+    )
+
+    assert enqueue_calls == [
+        (runtime._repository, "job-1", ["related_one", "related_two"])
+    ]
+    assert len(backend_client.calls) == 1
+    assert runtime.finished == [(runtime.handle, True)]
+
+
+def test_process_message_internal_worker_job_skips_backend_completion_and_reenqueue(
+    monkeypatch: Any,
+) -> None:
+    handle = _handle()
+    handle.message.payload = {
+        "usernames": ["related_one"],
+        "internal_source": "ig-recommended-background",
+        "enqueue_recommended": False,
+    }
+    finished: list[tuple[JobRuntimeHandle, bool, bool]] = []
+
+    class InternalRuntime:
+        async def start_job(
+            self,
+            message: QueuedJobMessage,
+        ) -> JobRuntimeHandle | None:
+            del message
+            return handle
+
+        async def finish_job(
+            self,
+            handle: JobRuntimeHandle,
+            *,
+            ack: bool,
+            expire_state: bool = False,
+        ) -> None:
+            finished.append((handle, ack, expire_state))
+
+    backend_client = FakeBackendClient(_completion_result(status_code=200))
+    enqueue_calls: list[str] = []
+
+    async def fake_execute_job_payload(
+        payload: dict[str, Any],
+        *,
+        job_id: str | None = None,
+    ) -> InstagramScrapeJobExecutionResult:
+        del payload, job_id
+        return InstagramScrapeJobExecutionResult(
+            summary=_summary(),
+            error=None,
+            recommended_usernames=["should_not_enqueue"],
+        )
+
+    async def fake_enqueue_recommended_jobs_for_worker(**kwargs: Any) -> None:
+        del kwargs
+        enqueue_calls.append("called")
+
+    _worker_modules()
+    monkeypatch.setattr(
+        "scrape_worker.worker.execute_job_payload",
+        fake_execute_job_payload,
+    )
+    monkeypatch.setattr(
+        "scrape_worker.worker.enqueue_recommended_jobs_for_worker",
+        fake_enqueue_recommended_jobs_for_worker,
+    )
+
+    _run(
+        _process_message(
+            runtime=InternalRuntime(),
+            backend_client=backend_client,
+            message=handle.message,
+        )
+    )
+
+    assert enqueue_calls == []
+    assert backend_client.calls == []
+    assert finished == [(handle, True, True)]
+
+
 def test_process_message_leaves_job_pending_when_backend_transport_is_unavailable(
     monkeypatch: Any,
 ) -> None:
@@ -508,20 +636,27 @@ def test_execute_job_payload_uses_v2_executor_with_worker_config(
         error=None,
     )
 
-    async def fake_execute_scrape_job_payload(
+    async def fake_execute_scrape_job_payload_result(
         payload: dict[str, Any],
         *,
         session_factory: Any,
         scraper_backend: Any,
         analysis_service: Any,
-    ) -> tuple[Any, str | None]:
+        collect_recommended_usernames: bool,
+    ) -> InstagramScrapeJobExecutionResult:
         captured["payload"] = payload
         captured["session_factory"] = session_factory
         captured["scraper_backend"] = scraper_backend
         captured["analysis_service"] = analysis_service
-        return expected_summary, None
+        captured["collect_recommended_usernames"] = collect_recommended_usernames
+        return InstagramScrapeJobExecutionResult(summary=expected_summary, error=None)
 
     monkeypatch.setattr(worker_module, "Session", FakeSession)
+    monkeypatch.setattr(
+        worker_module,
+        "is_recommended_background_jobs_enabled",
+        lambda **kwargs: True,
+    )
     monkeypatch.setattr(
         worker_module, "SqlInstagramCredentialsStoreV2", FakeCredentialsStore
     )
@@ -530,7 +665,9 @@ def test_execute_job_payload_uses_v2_executor_with_worker_config(
     )
     monkeypatch.setattr(worker_module, "InstagramScraperV2Backend", FakeScraperBackend)
     monkeypatch.setattr(
-        worker_module, "execute_scrape_job_payload", fake_execute_scrape_job_payload
+        worker_module,
+        "execute_scrape_job_payload_result",
+        fake_execute_scrape_job_payload_result,
     )
 
     summary, error = _run(
@@ -551,6 +688,7 @@ def test_execute_job_payload_uses_v2_executor_with_worker_config(
     assert captured["job_id"] == "job-1"
     assert isinstance(captured["scraper_backend"], FakeScraperBackend)
     assert isinstance(captured["analysis_service"], FakeAnalysisService)
+    assert captured["collect_recommended_usernames"] is True
     captured["session_factory"]()
     assert captured["session_bind"] is worker_module.engine
 

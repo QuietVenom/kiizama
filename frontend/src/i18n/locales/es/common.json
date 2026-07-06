@@ -4,6 +4,7 @@
     "cancel": "Cancelar",
     "close": "Cerrar",
     "confirm": "Confirmar",
+    "copyUsername": "Copiar username",
     "delete": "Eliminar",
     "dismiss": "Descartar",
     "edit": "Editar",
@@ -18,6 +19,28 @@
     "emptyDescription": "Aquí aparecerán las próximas renovaciones y recordatorios de prueba.",
     "emptyTitle": "No hay avisos de facturación",
     "trigger": "Avisos de facturación"
+  },
+  "guide": {
+    "items": {
+      "dashboard": {
+        "description": "Revisa el estado general de tu cuenta, créditos, reportes disponibles y plan activo.",
+        "imageAlt": "Guía visual del resumen de Kiizama",
+        "title": "Resumen"
+      },
+      "directSearch": {
+        "description": "Busca perfiles cuando ya tienes usernames específicos para consultar.",
+        "imageAlt": "Guía visual de búsqueda directa de creadores",
+        "title": "Búsqueda directa"
+      },
+      "explore": {
+        "description": "Explora perfiles guardados usando filtros de categoría, rol, seguidores y orden.",
+        "imageAlt": "Guía visual de exploración por categoría o rol",
+        "title": "Explorar"
+      }
+    },
+    "sectionsLabel": "Guía de uso",
+    "title": "Guía rápida de Kiizama",
+    "trigger": "Abrir guía de uso"
   },
   "labels": {
     "adminPlan": "Plan Admin",

@@ -9,6 +9,7 @@ import type {
 import {
   getBillingPeriodPresentation,
   getBillingPlanLabel,
+  hasActiveBillingAccess,
   hasManagedAccess,
   hasUsablePlan,
   renderFeatureUsageValue,
@@ -127,6 +128,106 @@ describe("billing presentation", () => {
       expect(hasUsablePlan(summary)).toBe(expected)
     },
   )
+
+  test.each([
+    ["missing summary", undefined, false],
+    [
+      "managed admin",
+      createBillingSummary({ managed_access_source: "admin" }),
+      true,
+    ],
+    [
+      "managed ambassador",
+      createBillingSummary({
+        access_profile: "ambassador",
+        managed_access_source: "ambassador",
+        plan_status: "ambassador",
+      }),
+      true,
+    ],
+    [
+      "pending ambassador without subscription",
+      createBillingSummary({
+        access_profile: "ambassador",
+        managed_access_source: null,
+        pending_ambassador_activation: true,
+        plan_status: "none",
+      }),
+      true,
+    ],
+    [
+      "active subscription",
+      createBillingSummary({
+        plan_status: "base",
+        subscription_status: "active",
+      }),
+      true,
+    ],
+    [
+      "trialing subscription",
+      createBillingSummary({
+        plan_status: "trial",
+        subscription_status: "trialing",
+      }),
+      true,
+    ],
+    [
+      "revoked active subscription",
+      createBillingSummary({
+        access_revoked_reason: "refunded",
+        plan_status: "base",
+        subscription_status: "active",
+      }),
+      false,
+    ],
+    [
+      "paused subscription after trial",
+      createBillingSummary({
+        plan_status: "base",
+        subscription_status: "paused",
+      }),
+      false,
+    ],
+    [
+      "canceled subscription",
+      createBillingSummary({
+        plan_status: "base",
+        subscription_status: "canceled",
+      }),
+      false,
+    ],
+    [
+      "unpaid subscription",
+      createBillingSummary({
+        plan_status: "base",
+        subscription_status: "unpaid",
+      }),
+      false,
+    ],
+    [
+      "no subscription",
+      createBillingSummary({ plan_status: "none", subscription_status: null }),
+      false,
+    ],
+  ])(
+    "billing_active_access_%s_returns_expected_result",
+    (_scenario, summary, expected) => {
+      // Arrange / Act / Assert
+      expect(hasActiveBillingAccess(summary)).toBe(expected)
+    },
+  )
+
+  test("billing_active_access_paused_plan_diverges_from_usable_plan", () => {
+    // Arrange: post-trial paused subscriptions still report plan_status "base".
+    const summary = createBillingSummary({
+      plan_status: "base",
+      subscription_status: "paused",
+    })
+
+    // Act / Assert
+    expect(hasUsablePlan(summary)).toBe(true)
+    expect(hasActiveBillingAccess(summary)).toBe(false)
+  })
 
   test("billing_period_managed_access_returns_usage_reset_copy", () => {
     // Arrange

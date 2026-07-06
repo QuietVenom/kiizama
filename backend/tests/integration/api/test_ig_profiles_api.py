@@ -1,5 +1,6 @@
+import uuid
 from collections.abc import Generator
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 from unittest.mock import patch
 
@@ -7,17 +8,22 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, delete
 
+from app import crud_users as crud
 from app.core.config import settings
 from app.crud.metrics import create_metrics
 from app.crud.posts import create_post
 from app.crud.profile_snapshots import create_profile_snapshot
 from app.crud.reels import create_reel
+from app.features.billing import AMBASSADOR_OVERRIDE_CODE, set_access_profile
+from app.features.billing.models import BillingSubscription, UserAccessOverride
 from app.models import (
     IgMetrics,
     IgPostsDocument,
     IgProfile,
     IgProfileSnapshot,
     IgReelsDocument,
+    User,
+    UserCreate,
 )
 from app.schemas import (
     Metrics,
@@ -29,6 +35,10 @@ from app.schemas import (
     ReelItem,
     ReelMetrics,
 )
+from tests.utils.user import user_authentication_headers
+from tests.utils.utils import random_email, random_password
+
+NO_ACTIVE_PLAN_DETAIL = "No active plan is available for this user."
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -52,6 +62,52 @@ def ensure_instagram_tables(db: Session) -> Generator[None, None, None]:
     db.exec(delete(IgMetrics))
     db.exec(delete(IgProfile))
     db.commit()
+
+
+def _create_user_with_headers(
+    client: TestClient,
+    db: Session,
+) -> tuple[User, dict[str, str]]:
+    email = random_email()
+    password = random_password()
+    user = crud.create_user(
+        session=db,
+        user_create=UserCreate(email=email, password=password),
+    )
+    headers = user_authentication_headers(client=client, email=email, password=password)
+    return user, headers
+
+
+def _add_billing_subscription(
+    db: Session,
+    *,
+    user_id: uuid.UUID,
+    **overrides: Any,
+) -> None:
+    now = datetime.now(UTC)
+    values: dict[str, Any] = {
+        "user_id": user_id,
+        "stripe_subscription_id": f"sub_{user_id}",
+        "stripe_customer_id": f"cus_{user_id}",
+        "stripe_price_id": "price_base",
+        "plan_code": "base",
+        "status": "active",
+        "current_period_start": now,
+        "current_period_end": now + timedelta(days=30),
+    }
+    values.update(overrides)
+    db.add(BillingSubscription(**values))
+    db.commit()
+
+
+@pytest.fixture(scope="module")
+def subscribed_user_token_headers(
+    client: TestClient,
+    db: Session,
+) -> dict[str, str]:
+    user, headers = _create_user_with_headers(client, db)
+    _add_billing_subscription(db, user_id=user.id)
+    return headers
 
 
 def _profile_payload(
@@ -215,7 +271,7 @@ def test_ig_profiles_route_uses_postgres(
 def test_ig_profiles_search_returns_filtered_paginated_results(
     client: TestClient,
     superuser_token_headers: dict[str, str],
-    normal_user_token_headers: dict[str, str],
+    subscribed_user_token_headers: dict[str, str],
 ) -> None:
     payloads = [
         _profile_payload(
@@ -266,7 +322,7 @@ def test_ig_profiles_search_returns_filtered_paginated_results(
 
     response = client.get(
         f"{settings.API_V1_STR}/ig-profiles/search",
-        headers=normal_user_token_headers,
+        headers=subscribed_user_token_headers,
         params=[
             ("query", "ugc"),
             ("ai_categories", "Fitness"),
@@ -299,11 +355,11 @@ def test_ig_profiles_search_returns_filtered_paginated_results(
 
 def test_ig_profiles_search_rejects_invalid_follower_range(
     client: TestClient,
-    normal_user_token_headers: dict[str, str],
+    subscribed_user_token_headers: dict[str, str],
 ) -> None:
     response = client.get(
         f"{settings.API_V1_STR}/ig-profiles/search",
-        headers=normal_user_token_headers,
+        headers=subscribed_user_token_headers,
         params={"follower_count_min": 5000, "follower_count_max": 1000},
     )
 
@@ -315,7 +371,7 @@ def test_ig_profiles_search_rejects_invalid_follower_range(
 def test_ig_profiles_search_matches_partial_username_and_full_name(
     client: TestClient,
     superuser_token_headers: dict[str, str],
-    normal_user_token_headers: dict[str, str],
+    subscribed_user_token_headers: dict[str, str],
 ) -> None:
     payloads = [
         _profile_payload(
@@ -348,7 +404,7 @@ def test_ig_profiles_search_matches_partial_username_and_full_name(
 
     username_response = client.get(
         f"{settings.API_V1_STR}/ig-profiles/search",
-        headers=normal_user_token_headers,
+        headers=subscribed_user_token_headers,
         params={"query": "sign"},
     )
     assert username_response.status_code == 200
@@ -358,7 +414,7 @@ def test_ig_profiles_search_matches_partial_username_and_full_name(
 
     full_name_response = client.get(
         f"{settings.API_V1_STR}/ig-profiles/search",
-        headers=normal_user_token_headers,
+        headers=subscribed_user_token_headers,
         params={"query": "focus"},
     )
     assert full_name_response.status_code == 200
@@ -369,11 +425,11 @@ def test_ig_profiles_search_matches_partial_username_and_full_name(
 
 def test_ig_profiles_search_rejects_query_shorter_than_three_characters(
     client: TestClient,
-    normal_user_token_headers: dict[str, str],
+    subscribed_user_token_headers: dict[str, str],
 ) -> None:
     response = client.get(
         f"{settings.API_V1_STR}/ig-profiles/search",
-        headers=normal_user_token_headers,
+        headers=subscribed_user_token_headers,
         params={"query": "ug"},
     )
 
@@ -386,7 +442,7 @@ def test_ig_profiles_full_profile_returns_expanded_snapshot_with_update_required
     client: TestClient,
     db: Session,
     superuser_token_headers: dict[str, str],
-    normal_user_token_headers: dict[str, str],
+    subscribed_user_token_headers: dict[str, str],
 ) -> None:
     create_response = client.post(
         f"{settings.API_V1_STR}/ig-profiles/",
@@ -426,7 +482,7 @@ def test_ig_profiles_full_profile_returns_expanded_snapshot_with_update_required
     ):
         response = client.get(
             f"{settings.API_V1_STR}/ig-profiles/{created['_id']}/full-profile",
-            headers=normal_user_token_headers,
+            headers=subscribed_user_token_headers,
         )
 
     assert response.status_code == 200
@@ -444,7 +500,7 @@ def test_ig_profiles_full_profile_returns_update_required_false_when_current(
     client: TestClient,
     db: Session,
     superuser_token_headers: dict[str, str],
-    normal_user_token_headers: dict[str, str],
+    subscribed_user_token_headers: dict[str, str],
 ) -> None:
     create_response = client.post(
         f"{settings.API_V1_STR}/ig-profiles/",
@@ -472,7 +528,7 @@ def test_ig_profiles_full_profile_returns_update_required_false_when_current(
     with patch("app.api.routes.ig_profile.should_refresh_profile", return_value=False):
         response = client.get(
             f"{settings.API_V1_STR}/ig-profiles/{created['_id']}/full-profile",
-            headers=normal_user_token_headers,
+            headers=subscribed_user_token_headers,
         )
 
     assert response.status_code == 200
@@ -481,11 +537,11 @@ def test_ig_profiles_full_profile_returns_update_required_false_when_current(
 
 def test_ig_profiles_full_profile_returns_404_when_profile_is_missing(
     client: TestClient,
-    normal_user_token_headers: dict[str, str],
+    subscribed_user_token_headers: dict[str, str],
 ) -> None:
     response = client.get(
         f"{settings.API_V1_STR}/ig-profiles/00000000-0000-0000-0000-000000000000/full-profile",
-        headers=normal_user_token_headers,
+        headers=subscribed_user_token_headers,
     )
 
     assert response.status_code == 404
@@ -494,7 +550,7 @@ def test_ig_profiles_full_profile_returns_404_when_profile_is_missing(
 
 def test_ig_profiles_full_profile_returns_404_when_snapshot_is_missing(
     client: TestClient,
-    normal_user_token_headers: dict[str, str],
+    subscribed_user_token_headers: dict[str, str],
     superuser_token_headers: dict[str, str],
 ) -> None:
     create_response = client.post(
@@ -515,8 +571,136 @@ def test_ig_profiles_full_profile_returns_404_when_snapshot_is_missing(
 
     response = client.get(
         f"{settings.API_V1_STR}/ig-profiles/{created['_id']}/full-profile",
-        headers=normal_user_token_headers,
+        headers=subscribed_user_token_headers,
     )
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Profile snapshot not found"}
+
+
+def test_ig_profiles_search_returns_402_without_active_subscription(
+    client: TestClient,
+    normal_user_token_headers: dict[str, str],
+) -> None:
+    response = client.get(
+        f"{settings.API_V1_STR}/ig-profiles/search",
+        headers=normal_user_token_headers,
+    )
+
+    assert response.status_code == 402
+    assert response.json() == {"detail": NO_ACTIVE_PLAN_DETAIL}
+
+
+def test_ig_profiles_full_profile_returns_402_without_active_subscription(
+    client: TestClient,
+    normal_user_token_headers: dict[str, str],
+) -> None:
+    response = client.get(
+        f"{settings.API_V1_STR}/ig-profiles/00000000-0000-0000-0000-000000000000/full-profile",
+        headers=normal_user_token_headers,
+    )
+
+    assert response.status_code == 402
+    assert response.json() == {"detail": NO_ACTIVE_PLAN_DETAIL}
+
+
+def test_ig_profiles_search_allows_superuser(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+) -> None:
+    response = client.get(
+        f"{settings.API_V1_STR}/ig-profiles/search",
+        headers=superuser_token_headers,
+    )
+
+    assert response.status_code == 200
+    assert "profiles" in response.json()
+
+
+def test_ig_profiles_search_allows_active_ambassador_override(
+    client: TestClient,
+    db: Session,
+) -> None:
+    user, headers = _create_user_with_headers(client, db)
+    set_access_profile(session=db, user_id=user.id, access_profile="ambassador")
+
+    response = client.get(
+        f"{settings.API_V1_STR}/ig-profiles/search",
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    assert "profiles" in response.json()
+
+
+def test_ig_profiles_search_allows_pending_ambassador_override(
+    client: TestClient,
+    db: Session,
+) -> None:
+    user, headers = _create_user_with_headers(client, db)
+    db.add(
+        UserAccessOverride(
+            user_id=user.id,
+            code=AMBASSADOR_OVERRIDE_CODE,
+            is_unlimited=True,
+            starts_at=datetime.now(UTC) + timedelta(days=7),
+        )
+    )
+    db.commit()
+
+    response = client.get(
+        f"{settings.API_V1_STR}/ig-profiles/search",
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    assert "profiles" in response.json()
+
+
+def test_ig_profiles_search_allows_trialing_subscription(
+    client: TestClient,
+    db: Session,
+) -> None:
+    user, headers = _create_user_with_headers(client, db)
+    _add_billing_subscription(db, user_id=user.id, status="trialing")
+
+    response = client.get(
+        f"{settings.API_V1_STR}/ig-profiles/search",
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    assert "profiles" in response.json()
+
+
+@pytest.mark.parametrize(
+    "subscription_overrides",
+    [
+        {"status": "paused"},
+        {"status": "canceled"},
+        {"status": "unpaid"},
+        {"status": "incomplete"},
+        {
+            "status": "active",
+            "access_revoked_at": datetime(2026, 1, 1, tzinfo=UTC),
+            "access_revoked_reason": "refunded",
+            "latest_invoice_status": "refunded",
+        },
+    ],
+    ids=["paused", "canceled", "unpaid", "incomplete", "revoked"],
+)
+def test_ig_profiles_search_blocks_inactive_or_revoked_subscription(
+    client: TestClient,
+    db: Session,
+    subscription_overrides: dict[str, Any],
+) -> None:
+    user, headers = _create_user_with_headers(client, db)
+    _add_billing_subscription(db, user_id=user.id, **subscription_overrides)
+
+    response = client.get(
+        f"{settings.API_V1_STR}/ig-profiles/search",
+        headers=headers,
+    )
+
+    assert response.status_code == 402
+    assert response.json() == {"detail": NO_ACTIVE_PLAN_DETAIL}

@@ -5,6 +5,7 @@ import commonEn from "./locales/en/common.json"
 import creatorsSearchEn from "./locales/en/creatorsSearch.json"
 import dashboardEn from "./locales/en/dashboard.json"
 import landingEn from "./locales/en/landing.json"
+import notesEn from "./locales/en/notes.json"
 import settingsEn from "./locales/en/settings.json"
 import authEs from "./locales/es/auth.json"
 import billingEs from "./locales/es/billing.json"
@@ -13,6 +14,7 @@ import commonEs from "./locales/es/common.json"
 import creatorsSearchEs from "./locales/es/creatorsSearch.json"
 import dashboardEs from "./locales/es/dashboard.json"
 import landingEs from "./locales/es/landing.json"
+import notesEs from "./locales/es/notes.json"
 import settingsEs from "./locales/es/settings.json"
 import authPtBr from "./locales/pt-BR/auth.json"
 import billingPtBr from "./locales/pt-BR/billing.json"
@@ -21,6 +23,7 @@ import commonPtBr from "./locales/pt-BR/common.json"
 import creatorsSearchPtBr from "./locales/pt-BR/creatorsSearch.json"
 import dashboardPtBr from "./locales/pt-BR/dashboard.json"
 import landingPtBr from "./locales/pt-BR/landing.json"
+import notesPtBr from "./locales/pt-BR/notes.json"
 import settingsPtBr from "./locales/pt-BR/settings.json"
 
 export const resources = {
@@ -33,6 +36,7 @@ export const resources = {
     billing: billingEs,
     creatorsSearch: creatorsSearchEs,
     brandIntelligence: brandIntelligenceEs,
+    notes: notesEs,
   },
   en: {
     common: commonEn,
@@ -43,6 +47,7 @@ export const resources = {
     billing: billingEn,
     creatorsSearch: creatorsSearchEn,
     brandIntelligence: brandIntelligenceEn,
+    notes: notesEn,
   },
   "pt-BR": {
     common: commonPtBr,
@@ -53,5 +58,6 @@ export const resources = {
     billing: billingPtBr,
     creatorsSearch: creatorsSearchPtBr,
     brandIntelligence: brandIntelligencePtBr,
+    notes: notesPtBr,
   },
 } as const

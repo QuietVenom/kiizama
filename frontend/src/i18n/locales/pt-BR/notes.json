@@ -1,0 +1,66 @@
+{
+  "topbar": {
+    "button": "Notas e quadros"
+  },
+  "dialog": {
+    "title": "Notas e quadros",
+    "empty": {
+      "title": "Seu espaço de notas e tarefas",
+      "description": "Crie uma nota ou um quadro kanban na barra lateral, ou abra um existente. Tudo é salvo apenas neste navegador."
+    }
+  },
+  "sidebar": {
+    "notesSection": "Notas",
+    "boardsSection": "Kanban",
+    "newNote": "Nova nota",
+    "newBoard": "Novo quadro",
+    "emptyNotes": "Ainda não há notas.",
+    "emptyBoards": "Ainda não há quadros.",
+    "delete": "Excluir",
+    "confirmDelete": "Confirmar?"
+  },
+  "note": {
+    "untitled": "Nota sem título",
+    "titlePlaceholder": "Título da nota...",
+    "createdAt": "Criada em {{date}}",
+    "tagLabel": "Tag",
+    "noTag": "Sem tag",
+    "customTagPlaceholder": "Sua própria tag...",
+    "customTagApply": "Adicionar",
+    "tags": {
+      "work": "Trabalho",
+      "ideas": "Ideias",
+      "meeting": "Reunião",
+      "followUp": "Acompanhamento",
+      "personal": "Pessoal",
+      "urgent": "Urgente"
+    },
+    "blockPlaceholder": "Escreva algo...",
+    "lineTypeToggle": "Alterar tipo de linha",
+    "checkAria": "Marcar como concluída",
+    "addLine": "Adicionar linha"
+  },
+  "kanban": {
+    "untitled": "Quadro sem título",
+    "titlePlaceholder": "Título do quadro...",
+    "presets": {
+      "todo": "To Do",
+      "inProgress": "In Progress",
+      "review": "Review",
+      "done": "Done"
+    },
+    "addColumn": "Adicionar coluna",
+    "columnLimit": "Máximo de {{max}} colunas",
+    "columnNamePlaceholder": "Nome da etapa...",
+    "addTask": "Adicionar tarefa",
+    "taskTitlePlaceholder": "Título da tarefa...",
+    "taskDescriptionPlaceholder": "Descrição (opcional)...",
+    "moveLeft": "Mover para a esquerda",
+    "moveRight": "Mover para a direita",
+    "deleteTask": "Excluir tarefa",
+    "deleteColumn": "Excluir coluna",
+    "confirmDelete": "Confirmar?",
+    "tasksCount_one": "{{count}} tarefa",
+    "tasksCount_other": "{{count}} tarefas"
+  }
+}

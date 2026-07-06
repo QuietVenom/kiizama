@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { FiArrowUpRight, FiEye, FiFileText } from "react-icons/fi"
 
 import type { ProfileSnapshotExpanded } from "@/client"
+import { CopyUsernameButton } from "@/components/CreatorsSearch/CopyUsernameButton"
 import { Button } from "@/components/ui/button"
 import { formatDate, getLocaleForLanguage } from "@/i18n"
 
@@ -151,9 +152,12 @@ const CreatorSnapshotCard = ({
             {profile?.full_name || profile?.username || t("card.fallbackName")}
           </Text>
           <Flex mt={1.5} alignItems="center" gap={2} wrap="wrap">
-            <Text color="ui.link" fontSize="sm" fontWeight="bold">
+            <Text color="ui.secondaryText" fontSize="sm" fontWeight="bold">
               @{profile?.username || snapshot.profile_id}
             </Text>
+            <CopyUsernameButton
+              username={profile?.username || snapshot.profile_id}
+            />
             {isExpired ? (
               <Badge
                 rounded="full"

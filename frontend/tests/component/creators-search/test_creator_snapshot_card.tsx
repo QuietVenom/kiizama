@@ -40,6 +40,28 @@ const createSnapshot = (
   }) as ProfileSnapshotExpanded
 
 describe("creator snapshot card", () => {
+  test("creator_snapshot_card_copy_button_copies_username_without_at", async () => {
+    // Arrange
+    const user = userEvent.setup()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    })
+    renderWithProviders(
+      <CreatorSnapshotCard
+        onOpenDetails={vi.fn()}
+        snapshot={createSnapshot()}
+      />,
+    )
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Copiar username" }))
+
+    // Assert
+    expect(writeText).toHaveBeenCalledWith("creator_one")
+  })
+
   test("creator_snapshot_card_profile_data_metrics_and_badges_render", () => {
     // Arrange / Act
     renderWithProviders(

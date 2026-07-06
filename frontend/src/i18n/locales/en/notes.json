@@ -1,0 +1,66 @@
+{
+  "topbar": {
+    "button": "Notes and boards"
+  },
+  "dialog": {
+    "title": "Notes and boards",
+    "empty": {
+      "title": "Your notes and tasks space",
+      "description": "Create a note or a kanban board from the sidebar, or open an existing one. Everything is stored only in this browser."
+    }
+  },
+  "sidebar": {
+    "notesSection": "Notes",
+    "boardsSection": "Kanban",
+    "newNote": "New note",
+    "newBoard": "New board",
+    "emptyNotes": "No notes yet.",
+    "emptyBoards": "No boards yet.",
+    "delete": "Delete",
+    "confirmDelete": "Confirm?"
+  },
+  "note": {
+    "untitled": "Untitled note",
+    "titlePlaceholder": "Note title...",
+    "createdAt": "Created on {{date}}",
+    "tagLabel": "Tag",
+    "noTag": "No tag",
+    "customTagPlaceholder": "Your own tag...",
+    "customTagApply": "Add",
+    "tags": {
+      "work": "Work",
+      "ideas": "Ideas",
+      "meeting": "Meeting",
+      "followUp": "Follow-up",
+      "personal": "Personal",
+      "urgent": "Urgent"
+    },
+    "blockPlaceholder": "Write something...",
+    "lineTypeToggle": "Change line type",
+    "checkAria": "Mark as done",
+    "addLine": "Add line"
+  },
+  "kanban": {
+    "untitled": "Untitled board",
+    "titlePlaceholder": "Board title...",
+    "presets": {
+      "todo": "To Do",
+      "inProgress": "In Progress",
+      "review": "Review",
+      "done": "Done"
+    },
+    "addColumn": "Add column",
+    "columnLimit": "Max {{max}} columns",
+    "columnNamePlaceholder": "Stage name...",
+    "addTask": "Add task",
+    "taskTitlePlaceholder": "Task title...",
+    "taskDescriptionPlaceholder": "Description (optional)...",
+    "moveLeft": "Move left",
+    "moveRight": "Move right",
+    "deleteTask": "Delete task",
+    "deleteColumn": "Delete column",
+    "confirmDelete": "Confirm?",
+    "tasksCount_one": "{{count}} task",
+    "tasksCount_other": "{{count}} tasks"
+  }
+}

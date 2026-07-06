@@ -12,6 +12,8 @@ import { useTranslation } from "react-i18next"
 import { FiBell, FiCalendar } from "react-icons/fi"
 
 import LanguageSwitcher from "@/components/Common/LanguageSwitcher"
+import { DashboardGuideButton } from "@/components/Dashboard/DashboardGuideButton"
+import { NotesWorkspaceButton } from "@/components/Notes/NotesWorkspaceButton"
 import {
   billingNoticesQueryKey,
   billingSummaryQueryKey,
@@ -77,6 +79,8 @@ const DashboardTopbar = () => {
     >
       <Flex alignItems="center" gap={3}>
         <LanguageSwitcher variant="dashboard" />
+        <DashboardGuideButton />
+        <NotesWorkspaceButton />
         <MenuRoot>
           <MenuTrigger asChild>
             <Box position="relative">

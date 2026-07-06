@@ -25,6 +25,7 @@ import {
   FiStar,
   FiX,
 } from "react-icons/fi"
+import { CopyUsernameButton } from "@/components/CreatorsSearch/CopyUsernameButton"
 import CreatorSnapshotDetailDialog from "@/components/CreatorsSearch/CreatorSnapshotDetailDialog"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -69,6 +70,7 @@ import {
 } from "@/features/creators-directory/utils"
 import { extractApiErrorMessage } from "@/lib/api-errors"
 import { enqueueCreatorsSearchScrapeJobs } from "@/routes/_layout/-components/creators-search/creators-search.api"
+import { showSearchStartedToast } from "@/routes/_layout/-components/creators-search/creators-search.toasts"
 
 type FilterDialogKind = "categories" | "roles" | "range" | "sort" | null
 type UpdateQueueItem = {
@@ -88,11 +90,7 @@ const filterCardProps = {
 const DEFAULT_PAGE_SIZE = 20
 const MAX_UPDATE_QUEUE_ITEMS = 50
 
-export function CreatorsDirectoryPreview({
-  onRequestDirectSearchFocus,
-}: {
-  onRequestDirectSearchFocus?: () => void
-}) {
+export function CreatorsDirectoryPreview() {
   const { t, i18n } = useTranslation("creatorsSearch")
   const [updateQueue, setUpdateQueue] = useState<UpdateQueueItem[]>([])
   const [updateQueueError, setUpdateQueueError] = useState<string | null>(null)
@@ -172,14 +170,25 @@ export function CreatorsDirectoryPreview({
     onMutate: () => {
       setUpdateQueueError(null)
     },
-    onSuccess: ({ batchCount, createdCount, skippedCount }) => {
+    onSuccess: ({
+      batchCount,
+      createdCount,
+      createdUsernamesCount,
+      skippedCount,
+    }) => {
       if (batchCount > 0 && createdCount === 0 && skippedCount === batchCount) {
         setUpdateQueueError(t("jobs.errors.duplicateActiveJob"))
         return
       }
 
+      if (createdCount > 0) {
+        showSearchStartedToast({
+          jobCount: createdCount,
+          profileCount: createdUsernamesCount,
+        })
+      }
+
       setUpdateQueue([])
-      onRequestDirectSearchFocus?.()
     },
     onError: (error) => {
       setUpdateQueueError(
@@ -912,13 +921,14 @@ export function CreatorsDirectoryPreview({
                               >
                                 {profile.full_name || t("card.fallbackName")}
                               </Text>
-                              <Text
-                                mt={1}
-                                color="ui.secondaryText"
-                                lineClamp={1}
-                              >
-                                @{profile.username}
-                              </Text>
+                              <Flex mt={1} align="center" gap={1.5}>
+                                <Text color="ui.secondaryText" lineClamp={1}>
+                                  @{profile.username}
+                                </Text>
+                                <CopyUsernameButton
+                                  username={profile.username}
+                                />
+                              </Flex>
                             </Box>
                             <Box
                               px={2.5}

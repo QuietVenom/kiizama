@@ -1,3 +1,5 @@
+import i18n from "@/i18n"
+
 import type { IgScrapeTerminalEventPayload } from "./types"
 
 export const buildCompletedDescription = (
@@ -6,8 +8,11 @@ export const buildCompletedDescription = (
   const requested = payload.counters.requested
   if (requested > 0) {
     const readyCount = payload.ready_usernames.length
-    return `${readyCount} of ${requested} usernames are ready.`
+    return i18n.t("creatorsSearch:toasts.completed.description", {
+      readyCount,
+      requestedCount: requested,
+    })
   }
 
-  return "The Instagram scrape job completed successfully."
+  return i18n.t("creatorsSearch:toasts.completed.fallback")
 }

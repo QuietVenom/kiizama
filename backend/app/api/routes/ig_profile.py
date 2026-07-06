@@ -24,6 +24,7 @@ from app.crud.profile import (
     update_profile,
 )
 from app.crud.profile_snapshots import get_profile_snapshot_full_by_profile_id
+from app.features.billing.deps import require_active_billing_access
 from app.features.general.types import (
     is_allowed_profile_picture_url,
     resolve_profile_picture_data_uri,
@@ -167,7 +168,10 @@ def read_ig_profiles_by_usernames(
 @router.get(
     "/search",
     response_model=ProfileSearchResponse,
-    dependencies=[Depends(rate_limit(POLICIES.private_basic))],
+    dependencies=[
+        Depends(rate_limit(POLICIES.private_basic)),
+        Depends(require_active_billing_access),
+    ],
 )
 def search_ig_profiles(
     filters: Annotated[ProfileSearchFilters, Depends(_build_profile_search_filters)],
@@ -197,7 +201,10 @@ def read_ig_profiles(
 @router.get(
     "/{profile_id}/full-profile",
     response_model=ProfileSnapshotFull,
-    dependencies=[Depends(rate_limit(POLICIES.private_expensive))],
+    dependencies=[
+        Depends(rate_limit(POLICIES.private_expensive)),
+        Depends(require_active_billing_access),
+    ],
 )
 def read_ig_profile_full_profile(
     profile_id: str,

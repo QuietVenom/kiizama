@@ -4,6 +4,7 @@
     "cancel": "Cancel",
     "close": "Close",
     "confirm": "Confirm",
+    "copyUsername": "Copy username",
     "delete": "Delete",
     "dismiss": "Dismiss",
     "edit": "Edit",
@@ -18,6 +19,28 @@
     "emptyDescription": "Upcoming renewals and trial reminders will appear here.",
     "emptyTitle": "No billing notices",
     "trigger": "Billing notices"
+  },
+  "guide": {
+    "items": {
+      "dashboard": {
+        "description": "Review your account overview, credits, available reports, and active plan.",
+        "imageAlt": "Visual guide for the Kiizama overview",
+        "title": "Overview"
+      },
+      "directSearch": {
+        "description": "Search profiles when you already have specific usernames to review.",
+        "imageAlt": "Visual guide for direct creator search",
+        "title": "Direct search"
+      },
+      "explore": {
+        "description": "Explore saved profiles using category, role, follower, and sorting filters.",
+        "imageAlt": "Visual guide for exploring by category or role",
+        "title": "Explore"
+      }
+    },
+    "sectionsLabel": "Usage guide",
+    "title": "Kiizama quick guide",
+    "trigger": "Open usage guide"
   },
   "labels": {
     "adminPlan": "Admin Plan",

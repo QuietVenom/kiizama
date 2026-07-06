@@ -290,6 +290,7 @@ class InstagramSessionBootstrapper:
         kwargs = {
             "timeout_ms": self.config.browser.timeout_ms,
             "retryable_goto": browser.retryable_goto,
+            "allow_manual_checkpoint": not self.config.browser.headless,
             "logger": self.logger,
             "sleeper": self.sleeper,
             "rng": self.rng,

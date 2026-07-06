@@ -2,9 +2,26 @@ import {
   createSystem,
   defaultConfig,
   defineLayerStyles,
+  defineSlotRecipe,
   defineTextStyles,
 } from "@chakra-ui/react"
 import { buttonRecipe } from "./theme/button.recipe"
+
+// Info toasts mirror the in-progress query card styling (ui.infoSoft/infoText)
+// instead of Chakra's default solid-blue toast palette.
+const toastSlotRecipe = defineSlotRecipe({
+  slots: ["root"],
+  base: {
+    root: {
+      "&[data-type=info]": {
+        bg: "ui.infoSoft",
+        color: "ui.infoText",
+        borderWidth: "1px",
+        borderColor: "ui.infoText",
+      },
+    },
+  },
+})
 
 const brandGradient =
   "linear-gradient(to right, var(--chakra-colors-ui-brand-gradient-start), var(--chakra-colors-ui-brand-gradient-end))"
@@ -534,6 +551,9 @@ export const system = createSystem(defaultConfig, {
     layerStyles,
     recipes: {
       button: buttonRecipe,
+    },
+    slotRecipes: {
+      toast: toastSlotRecipe,
     },
   },
 })

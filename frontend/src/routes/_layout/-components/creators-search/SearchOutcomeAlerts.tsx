@@ -4,7 +4,7 @@ import { FiAlertCircle, FiSearch } from "react-icons/fi"
 
 import { Button } from "@/components/ui/button"
 
-type JobsMutation = {
+export type JobsMutation = {
   isPending: boolean
   mutate: (usernames: string[]) => void
 }

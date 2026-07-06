@@ -1,7 +1,8 @@
-import { screen, waitFor, within } from "@testing-library/react"
+import { act, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 
+import { toaster } from "../../../src/components/ui/toaster"
 import type { CreatorDirectorySearchResponse } from "../../../src/features/creators-directory/types"
 import { CreatorsDirectoryPreview } from "../../../src/routes/_layout/-components/creators-search/CreatorsDirectoryPreview"
 import { renderWithProviders } from "../helpers/render"
@@ -53,8 +54,12 @@ describe("creators directory preview", () => {
     enqueueCreatorsSearchScrapeJobsMock.mockReset()
   })
 
-  afterEach(() => {
+  afterEach(async () => {
     vi.clearAllMocks()
+    await act(async () => {
+      toaster.dismiss()
+      await Promise.resolve()
+    })
   })
 
   test("creators_directory_preview_initial_state_renders_idle_results", () => {
@@ -481,9 +486,8 @@ describe("creators directory preview", () => {
     expect(screen.getByRole("button", { name: "Update list" })).toBeEnabled()
   })
 
-  test("creators_directory_preview_update_queue_submits_jobs_and_requests_direct_tab_focus", async () => {
+  test("creators_directory_preview_update_queue_submits_jobs_and_shows_started_toast", async () => {
     const user = userEvent.setup()
-    const onRequestDirectSearchFocus = vi.fn()
 
     searchCreatorsDirectoryMock.mockResolvedValue(
       createSearchResponse({
@@ -534,15 +538,11 @@ describe("creators directory preview", () => {
     enqueueCreatorsSearchScrapeJobsMock.mockResolvedValue({
       batchCount: 1,
       createdCount: 1,
+      createdUsernamesCount: 2,
       skippedCount: 0,
     })
 
-    renderWithProviders(
-      <CreatorsDirectoryPreview
-        onRequestDirectSearchFocus={onRequestDirectSearchFocus}
-      />,
-      { language: "en" },
-    )
+    renderWithProviders(<CreatorsDirectoryPreview />, { language: "en" })
 
     await user.click(screen.getByRole("button", { name: "SEARCH" }))
     expect(await screen.findByText("Travel Alpha")).toBeVisible()
@@ -559,10 +559,114 @@ describe("creators directory preview", () => {
       )
     })
 
-    expect(onRequestDirectSearchFocus).toHaveBeenCalledTimes(1)
+    expect(await screen.findByText("Search started")).toBeVisible()
+    expect(screen.getByText("2 profiles in 1 job")).toBeVisible()
     expect(
       screen.queryByTestId("directory-update-queue-card"),
     ).not.toBeInTheDocument()
+  })
+
+  test("creators_directory_preview_copy_button_copies_username_without_at", async () => {
+    const user = userEvent.setup()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    })
+    searchCreatorsDirectoryMock.mockResolvedValue(
+      createSearchResponse({
+        profiles: [
+          {
+            _id: "profile_1",
+            ig_id: "ig_1",
+            username: "travel_alpha",
+            full_name: "Travel Alpha",
+            biography: "",
+            is_private: false,
+            is_verified: false,
+            profile_pic_url: "",
+            updated_date: createRecentUpdatedDate(),
+            follower_count: 25000,
+            following_count: 120,
+            media_count: 40,
+            ai_categories: ["Travel"],
+            ai_roles: ["UGC Creator"],
+          },
+        ],
+        pagination: {
+          page: 1,
+          page_size: 20,
+          total: 1,
+          total_pages: 1,
+          has_next: false,
+          has_previous: false,
+        },
+      }),
+    )
+
+    renderWithProviders(<CreatorsDirectoryPreview />, { language: "en" })
+    await user.click(screen.getByRole("button", { name: "SEARCH" }))
+    expect(await screen.findByText("@travel_alpha")).toBeVisible()
+
+    await user.click(screen.getByRole("button", { name: "Copy username" }))
+
+    expect(writeText).toHaveBeenCalledWith("travel_alpha")
+  })
+
+  test("creators_directory_preview_update_queue_duplicate_jobs_skip_started_toast", async () => {
+    const user = userEvent.setup()
+
+    searchCreatorsDirectoryMock.mockResolvedValue(
+      createSearchResponse({
+        profiles: [
+          {
+            _id: "profile_1",
+            ig_id: "ig_1",
+            username: "travel_alpha",
+            full_name: "Travel Alpha",
+            biography: "",
+            is_private: false,
+            is_verified: false,
+            profile_pic_url: "",
+            updated_date: "2026-05-01T12:00:00Z",
+            follower_count: 25000,
+            following_count: 120,
+            media_count: 40,
+            ai_categories: ["Travel"],
+            ai_roles: ["UGC Creator"],
+          },
+        ],
+        pagination: {
+          page: 1,
+          page_size: 20,
+          total: 1,
+          total_pages: 1,
+          has_next: false,
+          has_previous: false,
+        },
+      }),
+    )
+    enqueueCreatorsSearchScrapeJobsMock.mockResolvedValue({
+      batchCount: 1,
+      createdCount: 0,
+      createdUsernamesCount: 0,
+      skippedCount: 1,
+    })
+
+    renderWithProviders(<CreatorsDirectoryPreview />, { language: "en" })
+
+    await user.click(screen.getByRole("button", { name: "SEARCH" }))
+    expect(await screen.findByText("Travel Alpha")).toBeVisible()
+
+    await user.click(screen.getByRole("button", { name: "Update list" }))
+    await user.click(screen.getByRole("button", { name: "Update" }))
+
+    expect(
+      await screen.findByText(
+        "An active scrape job already exists for these usernames.",
+      ),
+    ).toBeVisible()
+    expect(screen.queryByText("Search started")).toBeNull()
   })
 
   test("creators_directory_preview_view_full_profile_loads_snapshot_detail", async () => {

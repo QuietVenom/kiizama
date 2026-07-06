@@ -25,6 +25,7 @@ vi.mock("@/features/user-events/effects", () => ({
 const { registerToastUserEventEffects } = await import(
   "../../../../src/features/user-events/toast-effects"
 )
+const { default: i18n } = await import("../../../../src/i18n")
 
 const createTerminalPayload = (
   overrides: Partial<IgScrapeTerminalEventPayload> = {},
@@ -68,9 +69,10 @@ const createEvent = (
   }) as UserEvent
 
 describe("user event toast effects", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     effects.registerUserEventEffect.mockReset()
     toaster.create.mockClear()
+    await i18n.changeLanguage("en")
   })
 
   test("toast_effects_completed_job_creates_success_toast", () => {

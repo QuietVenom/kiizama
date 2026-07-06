@@ -1,9 +1,10 @@
 import { Box, Grid, SimpleGrid } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
+  type CreatorsSearchHistoryCreateRequest,
   IgProfileSnapshotsService,
   type ProfileSnapshotExpanded,
   type ProfileSnapshotExpandedCollection,
@@ -16,29 +17,43 @@ import {
   sanitizeInstagramUsernames,
 } from "@/lib/instagram-usernames"
 
-import { CurrentJobDetailDialog } from "./CurrentJobDetailDialog"
-import { CurrentJobsPanel } from "./CurrentJobsPanel"
 import {
   getReadyUsernamesFromSearchResult,
   getValidationMessage,
   MAX_USERNAMES,
   sortSnapshotsByUsernames,
 } from "./creators-search.logic"
-import { SearchHistoryDialog } from "./SearchHistoryDialog"
-import { SearchHistoryPanel } from "./SearchHistoryPanel"
 import { SearchInputPanel } from "./SearchInputPanel"
-import { SearchOutcomeAlerts } from "./SearchOutcomeAlerts"
+import { type JobsMutation, SearchOutcomeAlerts } from "./SearchOutcomeAlerts"
 import { SearchOverviewCard } from "./SearchOverviewCard"
 import { SearchResultsSection } from "./SearchResultsSection"
 import { useCreatorReport } from "./useCreatorReport"
-import { useCreatorsSearchHistory } from "./useCreatorsSearchHistory"
-import { useCreatorsSearchJobs } from "./useCreatorsSearchJobs"
 
-export function DirectCreatorsSearchTab() {
+export function DirectCreatorsSearchTab({
+  clearJobErrors,
+  expiredJobsError,
+  expiredJobsMutation,
+  missingJobsError,
+  missingJobsMutation,
+  onOpenHistory,
+  onUsernamesChange,
+  persistSearchHistoryEntry,
+  usernames,
+}: {
+  clearJobErrors: () => void
+  expiredJobsError: string | null
+  expiredJobsMutation: JobsMutation
+  missingJobsError: string | null
+  missingJobsMutation: JobsMutation
+  onOpenHistory: () => void
+  onUsernamesChange: (usernames: string[]) => void
+  persistSearchHistoryEntry: (
+    payload: CreatorsSearchHistoryCreateRequest,
+  ) => void
+  usernames: string[]
+}) {
   const { t } = useTranslation("creatorsSearch")
   const queryClient = useQueryClient()
-  const [isSearchHistoryOpen, setIsSearchHistoryOpen] = useState(false)
-  const [usernames, setUsernames] = useState<string[]>([])
   const [submittedUsernames, setSubmittedUsernames] = useState<string[]>([])
   const [overflowAttempted, setOverflowAttempted] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
@@ -46,32 +61,16 @@ export function DirectCreatorsSearchTab() {
     useState<ProfileSnapshotExpandedCollection | null>(null)
   const [selectedSnapshot, setSelectedSnapshot] =
     useState<ProfileSnapshotExpanded | null>(null)
-  const [isCurrentJobsCollapsed, setIsCurrentJobsCollapsed] = useState(true)
-  const [isSearchHistoryCollapsed, setIsSearchHistoryCollapsed] = useState(true)
-  const pageTopRef = useRef<HTMLDivElement | null>(null)
 
-  const { persistSearchHistoryEntry, previewQuery, viewAllQuery } =
-    useCreatorsSearchHistory({
-      isViewAllOpen: isSearchHistoryOpen,
-    })
-  const {
-    clearJobErrors,
-    clearSelectedCurrentJob,
-    currentJobs,
-    expiredJobsError,
-    expiredJobsMutation,
-    missingJobsError,
-    missingJobsMutation,
-    selectCurrentJob,
-    selectedCurrentJob,
-  } = useCreatorsSearchJobs({
-    onJobsEnqueued: () => setIsCurrentJobsCollapsed(false),
-    pageTopRef,
-    persistSearchHistoryEntry,
-  })
   const { clearReportError, reportError, reportMutation } = useCreatorReport({
     queryClient,
   })
+
+  useEffect(() => {
+    if (usernames.length < MAX_USERNAMES) {
+      setOverflowAttempted(false)
+    }
+  }, [usernames])
 
   const invalidUsernames = useMemo(
     () => usernames.filter((username) => !isValidInstagramUsername(username)),
@@ -122,9 +121,6 @@ export function DirectCreatorsSearchTab() {
     submittedUsernames.length > 0 ||
     searchResult !== null ||
     searchError !== null
-  const shouldShowCurrentJobsPanel = currentJobs.length > 0
-  const historyItems = previewQuery.data?.items ?? []
-  const shouldShowHistoryPanel = previewQuery.isError || historyItems.length > 0
 
   const searchMutation = useMutation({
     mutationFn: (requestedUsernames: string[]) =>
@@ -160,7 +156,7 @@ export function DirectCreatorsSearchTab() {
 
   const handleUsernamesChange = (nextValue: string[]) => {
     const sanitizedValue = sanitizeInstagramUsernames(nextValue)
-    setUsernames(sanitizedValue)
+    onUsernamesChange(sanitizedValue)
 
     if (sanitizedValue.length < MAX_USERNAMES) {
       setOverflowAttempted(false)
@@ -173,7 +169,7 @@ export function DirectCreatorsSearchTab() {
       (username) => !isValidInstagramUsername(username),
     )
 
-    setUsernames(nextUsernames)
+    onUsernamesChange(nextUsernames)
     setOverflowAttempted(false)
 
     if (nextUsernames.length === 0 || nextInvalidUsernames.length > 0) {
@@ -183,41 +179,8 @@ export function DirectCreatorsSearchTab() {
     searchMutation.mutate(nextUsernames)
   }
 
-  const handleReuseReadyUsernames = (readyUsernames: string[]) => {
-    setUsernames(sanitizeInstagramUsernames(readyUsernames))
-    setOverflowAttempted(false)
-    clearSelectedCurrentJob()
-    setIsSearchHistoryOpen(false)
-  }
-
   return (
-    <Box ref={pageTopRef}>
-      {shouldShowCurrentJobsPanel ? (
-        <Box mb={{ base: 6, lg: 7 }}>
-          <CurrentJobsPanel
-            collapsed={isCurrentJobsCollapsed}
-            currentJobs={currentJobs}
-            onSelectJob={selectCurrentJob}
-            onToggleCollapsed={() =>
-              setIsCurrentJobsCollapsed((current) => !current)
-            }
-          />
-        </Box>
-      ) : null}
-
-      {shouldShowHistoryPanel ? (
-        <SearchHistoryPanel
-          collapsed={isSearchHistoryCollapsed}
-          isError={previewQuery.isError}
-          isLoading={previewQuery.isLoading}
-          items={historyItems}
-          onReuseReadyUsernames={handleReuseReadyUsernames}
-          onToggleCollapsed={() =>
-            setIsSearchHistoryCollapsed((current) => !current)
-          }
-        />
-      ) : null}
-
+    <Box>
       <SearchOutcomeAlerts
         expiredJobsError={expiredJobsError}
         expiredJobsMutation={expiredJobsMutation}
@@ -280,6 +243,7 @@ export function DirectCreatorsSearchTab() {
           usernames={usernames}
           validationMessage={validationMessage}
           onMaxExceeded={() => setOverflowAttempted(true)}
+          onOpenHistory={onOpenHistory}
           onSearch={handleSearch}
           onUsernamesChange={handleUsernamesChange}
         />
@@ -302,22 +266,6 @@ export function DirectCreatorsSearchTab() {
             setSelectedSnapshot(null)
           }
         }}
-      />
-      <CurrentJobDetailDialog
-        job={selectedCurrentJob}
-        onOpenChange={(open) => {
-          if (!open) {
-            clearSelectedCurrentJob()
-          }
-        }}
-        onReuseReadyUsernames={handleReuseReadyUsernames}
-      />
-      <SearchHistoryDialog
-        items={viewAllQuery.data?.items ?? []}
-        loading={viewAllQuery.isLoading}
-        open={isSearchHistoryOpen}
-        onOpenChange={setIsSearchHistoryOpen}
-        onReuseReadyUsernames={handleReuseReadyUsernames}
       />
     </Box>
   )
