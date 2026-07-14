@@ -1,16 +1,20 @@
 import { Box, Flex, Text } from "@chakra-ui/react"
+import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { FiInfo } from "react-icons/fi"
 
-import { Button } from "@/components/ui/button"
-
-export const SearchHeader = ({ onOpenGuide }: { onOpenGuide: () => void }) => {
+export const SearchHeader = ({
+  children,
+  rightSlot,
+}: {
+  children?: ReactNode
+  rightSlot?: ReactNode
+}) => {
   const { t } = useTranslation("creatorsSearch")
 
   return (
     <Flex
       mb={{ base: 7, lg: 8 }}
-      alignItems={{ base: "flex-start", lg: "flex-start" }}
+      alignItems="flex-start"
       justifyContent="space-between"
       gap={{ base: 4, lg: 6 }}
       direction={{ base: "column", lg: "row" }}
@@ -26,16 +30,11 @@ export const SearchHeader = ({ onOpenGuide }: { onOpenGuide: () => void }) => {
         >
           {t("header.eyebrow")}
         </Text>
+
+        {children}
       </Box>
 
-      <Button
-        variant="outline"
-        alignSelf={{ base: "stretch", lg: "flex-start" }}
-        onClick={onOpenGuide}
-      >
-        <FiInfo />
-        {t("header.guideButton")}
-      </Button>
+      {rightSlot}
     </Flex>
   )
 }

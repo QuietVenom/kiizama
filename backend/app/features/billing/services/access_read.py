@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from collections.abc import Callable
 from datetime import datetime
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from sqlmodel import Session
 
@@ -15,6 +15,9 @@ from . import access_state
 from . import cycle_features as cycle_features_service
 from . import cycle_lifecycle as cycle_lifecycle_service
 from . import notices as notices_service
+
+if TYPE_CHECKING:
+    from app.models import User
 
 UtcNowCallable = Callable[[], datetime]
 
@@ -194,6 +197,46 @@ def get_access_snapshot(
     )
 
 
+def has_active_billing_access(
+    *,
+    session: Session,
+    user: User,
+    utcnow_fn: UtcNowCallable = utcnow,
+) -> bool:
+    """Binary access check. Read-only: unlike `get_access_snapshot`, it must not
+    open usage cycles or produce any other write."""
+    if user.is_superuser:
+        return True
+    if (
+        access_state.get_active_access_override(
+            session=session,
+            user_id=user.id,
+            utcnow_fn=utcnow_fn,
+        )
+        is not None
+    ):
+        return True
+    if (
+        access_state.get_pending_access_override(
+            session=session,
+            user_id=user.id,
+            utcnow_fn=utcnow_fn,
+        )
+        is not None
+    ):
+        return True
+
+    subscription = cycle_lifecycle_service.get_latest_billing_subscription(
+        session=session,
+        user_id=user.id,
+    )
+    return (
+        subscription is not None
+        and subscription.status in STRIPE_ALLOWED_ACTIVE_STATUSES
+        and subscription.access_revoked_at is None
+    )
+
+
 def _subscription_plan_status(status_value: str) -> str:
     if status_value == "trialing":
         return TRIAL_PLAN_CODE
@@ -211,4 +254,5 @@ def _scheduled_cancel_at(subscription: BillingSubscription) -> datetime | None:
 __all__ = [
     "build_billing_summary",
     "get_access_snapshot",
+    "has_active_billing_access",
 ]

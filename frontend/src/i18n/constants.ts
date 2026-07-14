@@ -15,6 +15,7 @@ export const I18N_NAMESPACES = [
   "billing",
   "creatorsSearch",
   "brandIntelligence",
+  "notes",
 ] as const
 
 export type I18nNamespace = (typeof I18N_NAMESPACES)[number]

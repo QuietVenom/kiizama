@@ -65,12 +65,14 @@ class InstagramLoginFlow:
         *,
         timeout_ms: int,
         retryable_goto: RetryableGoto,
+        allow_manual_checkpoint: bool = False,
         logger: logging.Logger | None = None,
         sleeper: Sleeper = asyncio.sleep,
         rng: random.Random | None = None,
     ) -> None:
         self.timeout_ms = timeout_ms
         self.retryable_goto = retryable_goto
+        self.allow_manual_checkpoint = allow_manual_checkpoint
         self.logger = logger or logging.getLogger(
             "kiizama_scrape_core.ig_scraper_v2.login_flow"
         )
@@ -112,6 +114,23 @@ class InstagramLoginFlow:
                 message=f"Login failed: {failure_reason}",
                 error=failure_reason,
             )
+
+        if self.requires_recaptcha(page):
+            if not self.allow_manual_checkpoint:
+                return LoginFlowResult(
+                    success=False,
+                    status="recaptcha",
+                    message="Instagram reCAPTCHA required",
+                    error="Instagram reCAPTCHA required; rerun with --headed",
+                )
+
+            if not await self._wait_for_manual_recaptcha_completion(page):
+                return LoginFlowResult(
+                    success=False,
+                    status="recaptcha",
+                    message="Instagram reCAPTCHA was not completed",
+                    error="Instagram reCAPTCHA was not completed before timeout",
+                )
 
         if self.requires_challenge(page):
             return LoginFlowResult(
@@ -329,6 +348,33 @@ class InstagramLoginFlow:
             except Exception:
                 continue
         return None
+
+    @staticmethod
+    def requires_recaptcha(page: Page) -> bool:
+        current_url = page.url.lower()
+        return "/auth_platform/recaptcha" in current_url
+
+    async def _wait_for_manual_recaptcha_completion(self, page: Page) -> bool:
+        poll_seconds = 2.0
+        max_attempts = max(1, int((self.timeout_ms / 1000) / poll_seconds))
+        self.logger.warning(
+            "Instagram reCAPTCHA checkpoint detected. Waiting for manual "
+            "completion in headed browser (timeout_ms=%s)",
+            self.timeout_ms,
+        )
+
+        for attempt in range(max_attempts):
+            if not self.requires_recaptcha(page):
+                self.logger.info(
+                    "Instagram reCAPTCHA page cleared after manual action "
+                    "(attempt=%s/%s)",
+                    attempt + 1,
+                    max_attempts,
+                )
+                return True
+            await self.sleeper(poll_seconds)
+
+        return not self.requires_recaptcha(page)
 
     @staticmethod
     def requires_challenge(page: Page) -> bool:

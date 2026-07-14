@@ -11,6 +11,7 @@ from kiizama_scrape_core.ig_scraper_v2 import (
     InstagramBatchScrapeResponse,
     InstagramProfileSchema,
     InstagramScrapeJobExecutor,
+    InstagramSuggestedUserSchema,
 )
 from kiizama_scrape_core.ig_scraper_v2.service import NOT_FOUND_ERROR
 from pydantic import ValidationError
@@ -196,6 +197,44 @@ async def test_executor_preserves_ai_error_and_persists_response() -> None:
     assert result.summary.usernames[0].status == "success"
     assert response.results["alpha"].ai_error == "AI unavailable"
     assert persistence.persisted_response is response
+
+
+@pytest.mark.anyio
+async def test_executor_collects_recommended_usernames_when_requested() -> None:
+    response = InstagramBatchScrapeResponse(
+        results={
+            "alpha": InstagramBatchProfileResult(
+                success=True,
+                user=InstagramProfileSchema(username="alpha"),
+                recommended_users=[
+                    InstagramSuggestedUserSchema(username="related"),
+                    InstagramSuggestedUserSchema(username="fresh"),
+                ],
+            )
+        },
+        counters=InstagramBatchCountersSchema(requested=1, successful=1),
+    )
+    persistence = FakePersistence(
+        [
+            {
+                "username": "fresh",
+                "profile_pic_url": expiring_cdn_url(seconds_from_now=3600),
+            }
+        ]
+    )
+    executor = InstagramScrapeJobExecutor(
+        scraper_backend=FakeScraperBackend(response),
+        persistence=persistence,
+        analysis_service=FakeAnalysisService(),
+    )
+
+    result = await executor.execute(
+        {"usernames": ["alpha"]},
+        collect_recommended_usernames=True,
+    )
+
+    assert result.summary.usernames[0].status == "success"
+    assert result.recommended_usernames == ["related"]
 
 
 @pytest.mark.anyio

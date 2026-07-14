@@ -52,6 +52,7 @@ from .schemas import (
     InstagramScrapeJobCreateRequest,
     InstagramScrapeJobCreateResponse,
     InstagramScrapeJobTerminalizationRequest,
+    InstagramSuggestedUserSchema,
 )
 from .scrape_collector import InstagramScrapeCollector
 from .service import (
@@ -62,7 +63,7 @@ from .service import (
 )
 from .session import InstagramSessionBootstrapper
 from .session_context import build_effective_session_context, extract_session_info
-from .workflow import execute_scrape_job_payload
+from .workflow import execute_scrape_job_payload, execute_scrape_job_payload_result
 
 __all__ = [
     "BatchScrapeCounters",
@@ -91,6 +92,7 @@ __all__ = [
     "InstagramScrapeJobExecutionResult",
     "InstagramScrapeJobExecutor",
     "InstagramScrapeJobTerminalizationRequest",
+    "InstagramSuggestedUserSchema",
     "InstagramScraperV2Backend",
     "InstagramSessionBootstrapper",
     "LoginFlowResult",
@@ -113,6 +115,7 @@ __all__ = [
     "build_scraper_v2_config",
     "enrich_with_ai_analysis",
     "execute_scrape_job_payload",
+    "execute_scrape_job_payload_result",
     "extract_session_info",
     "next_delay_seconds",
     "next_warmup_delay_seconds",

@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=./labeler.schema.json
+# yaml-language-server: $schema=https://json.schemastore.org/pull-request-labeler-5.json
 
 docs:
   - all:

@@ -7,7 +7,6 @@ import type { CreatorsSearchJobStatus } from "@/lib/creators-search-jobs"
 import { MAX_INSTAGRAM_USERNAMES } from "@/lib/instagram-usernames"
 
 export const MAX_USERNAMES = MAX_INSTAGRAM_USERNAMES
-export const SEARCH_HISTORY_PREVIEW_LIMIT = 5
 export const SEARCH_HISTORY_VIEW_ALL_LIMIT = 20
 
 export type OverviewCardTone = "brand" | "success" | "warning" | "danger"

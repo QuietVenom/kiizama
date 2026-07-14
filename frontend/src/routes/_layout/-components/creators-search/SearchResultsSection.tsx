@@ -32,7 +32,17 @@ export const SearchResultsSection = ({
 
   return (
     <Box layerStyle="dashboardCard" p={{ base: 5, md: 6, lg: 7 }} h="100%">
-      <Text textStyle="eyebrow">{t("results.panel.eyebrow")}</Text>
+      <Text color="ui.mutedText" fontSize="xs" fontWeight="bold">
+        {t("results.panel.eyebrow")}
+      </Text>
+      <Heading mt={2} fontSize="xl">
+        {t("results.panel.title")}
+      </Heading>
+      <Text mt={2} color="ui.secondaryText" fontSize="sm">
+        {hasSearched
+          ? t("results.panel.descriptionActive")
+          : t("results.panel.descriptionIdle")}
+      </Text>
 
       <Box
         mt={4}
@@ -72,39 +82,31 @@ export const SearchResultsSection = ({
           </SimpleGrid>
         ) : hasSearched && !searchError ? (
           <Box
-            rounded="2xl"
+            rounded="26px"
             borderWidth="1px"
-            borderColor="ui.border"
+            borderColor="ui.borderSoft"
             bg="ui.surfaceSoft"
-            px={{ base: 5, md: 6 }}
-            py={{ base: 6, md: 7 }}
+            px={5}
+            py={8}
+            textAlign="center"
           >
-            <Text
-              fontSize="sm"
-              color="ui.mutedText"
-              fontWeight="bold"
-              letterSpacing="0.08em"
-            >
-              {t("results.empty.eyebrow")}
-            </Text>
-            <Heading mt={2} size="md">
-              {t("results.empty.title")}
-            </Heading>
-            <Text mt={3} color="ui.secondaryText" maxW="56ch">
+            <Text fontWeight="black">{t("results.empty.title")}</Text>
+            <Text mt={2} color="ui.secondaryText">
               {t("results.empty.description")}
             </Text>
           </Box>
         ) : (
           <Box
-            rounded="2xl"
+            rounded="26px"
             borderWidth="1px"
-            borderColor="ui.border"
+            borderColor="ui.borderSoft"
             bg="ui.surfaceSoft"
-            px={{ base: 5, md: 6 }}
-            py={{ base: 6, md: 7 }}
+            px={5}
+            py={8}
+            textAlign="center"
           >
-            <Heading size="sm">{t("results.idle.title")}</Heading>
-            <Text mt={2} color="ui.secondaryText" maxW="56ch">
+            <Text fontWeight="black">{t("results.idle.title")}</Text>
+            <Text mt={2} color="ui.secondaryText">
               {t("results.idle.description")}
             </Text>
           </Box>

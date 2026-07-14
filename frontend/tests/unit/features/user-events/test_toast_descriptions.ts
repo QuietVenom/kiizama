@@ -1,10 +1,11 @@
-import { describe, expect, test } from "vitest"
+import { beforeEach, describe, expect, test } from "vitest"
 
 import { buildCompletedDescription } from "../../../../src/features/user-events/toast-descriptions"
 import type {
   IgScrapeTerminalEventCounters,
   IgScrapeTerminalEventPayload,
 } from "../../../../src/features/user-events/types"
+import i18n from "../../../../src/i18n"
 
 const createCounters = (
   overrides: Partial<IgScrapeTerminalEventCounters> = {},
@@ -37,6 +38,21 @@ const createPayload = (
 })
 
 describe("user event toast descriptions", () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage("en")
+  })
+
+  test("toast_description_spanish_language_localizes_ready_count", async () => {
+    // Arrange
+    await i18n.changeLanguage("es")
+
+    // Act
+    const description = buildCompletedDescription(createPayload())
+
+    // Assert
+    expect(description).toBe("1 de 3 usernames están listos.")
+  })
+
   test("toast_description_skipped_ready_usernames_count_as_ready", () => {
     // Arrange / Act
     const description = buildCompletedDescription(

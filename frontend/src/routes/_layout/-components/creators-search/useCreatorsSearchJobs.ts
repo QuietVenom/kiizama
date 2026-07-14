@@ -1,12 +1,5 @@
 import { useMutation } from "@tanstack/react-query"
-import {
-  type RefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -33,18 +26,11 @@ import {
 } from "@/lib/creators-search-jobs"
 
 import { enqueueCreatorsSearchScrapeJobs } from "./creators-search.api"
-
-const scrollPageTopIntoView = (targetRef: RefObject<HTMLElement | null>) => {
-  targetRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-}
+import { showSearchStartedToast } from "./creators-search.toasts"
 
 export const useCreatorsSearchJobs = ({
-  onJobsEnqueued,
-  pageTopRef,
   persistSearchHistoryEntry,
 }: {
-  onJobsEnqueued?: () => void
-  pageTopRef: RefObject<HTMLElement | null>
   persistSearchHistoryEntry: (
     payload: CreatorsSearchHistoryCreateRequest,
   ) => void
@@ -135,19 +121,27 @@ export const useCreatorsSearchJobs = ({
     onMutate: () => {
       setExpiredJobsError(null)
     },
-    onSuccess: ({ batchCount, createdCount, skippedCount }) => {
+    onSuccess: ({
+      batchCount,
+      createdCount,
+      createdUsernamesCount,
+      skippedCount,
+    }) => {
       if (batchCount > 0 && createdCount === 0 && skippedCount === batchCount) {
         setExpiredJobsError(t("jobs.errors.duplicateActiveJob"))
       }
 
-      onJobsEnqueued?.()
-      scrollPageTopIntoView(pageTopRef)
+      if (createdCount > 0) {
+        showSearchStartedToast({
+          jobCount: createdCount,
+          profileCount: createdUsernamesCount,
+        })
+      }
     },
     onError: (error) => {
       setExpiredJobsError(
         extractApiErrorMessage(error, t("jobs.errors.unableToCreate")),
       )
-      scrollPageTopIntoView(pageTopRef)
     },
   })
 
@@ -157,19 +151,27 @@ export const useCreatorsSearchJobs = ({
     onMutate: () => {
       setMissingJobsError(null)
     },
-    onSuccess: ({ batchCount, createdCount, skippedCount }) => {
+    onSuccess: ({
+      batchCount,
+      createdCount,
+      createdUsernamesCount,
+      skippedCount,
+    }) => {
       if (batchCount > 0 && createdCount === 0 && skippedCount === batchCount) {
         setMissingJobsError(t("jobs.errors.duplicateActiveJob"))
       }
 
-      onJobsEnqueued?.()
-      scrollPageTopIntoView(pageTopRef)
+      if (createdCount > 0) {
+        showSearchStartedToast({
+          jobCount: createdCount,
+          profileCount: createdUsernamesCount,
+        })
+      }
     },
     onError: (error) => {
       setMissingJobsError(
         extractApiErrorMessage(error, t("jobs.errors.unableToCreate")),
       )
-      scrollPageTopIntoView(pageTopRef)
     },
   })
 

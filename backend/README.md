@@ -104,7 +104,34 @@ uv run python -m scripts.validate_ig_v2_login
 uv run python -m scripts.validate_ig_v2_scrape
 uv run python -m scripts.validate_ig_v2_profiles
 uv run python -m scripts.validate_ig_v2_persist
+uv run python -m scripts.validate_ig_v2_following kimiish
 ```
+
+`validate_ig_v2_following` logs in, opens `instagram.com/<username>/following/`,
+resolves the profile's friendships id (captured from the page's own XHR, the
+stored `ig_id`, or `--ig-id`), and pages through the private
+`/api/v1/friendships/<id>/following/` endpoint. Raw pages, a deduped
+`following_users.json`, and a `usernames.txt` are written under
+`local_data/ig_following/<username>/<timestamp>/`. Tune the page size and depth
+with `--count` (e.g. `--count 50`) and `--max-pages`.
+
+`ig_following_persist_pipeline` consumes a following export and persists the
+good profiles into the DB using the existing scrape/enrich/persist stack:
+
+```bash
+uv run python -m scripts.ig_following_persist_pipeline \
+  --input ../local_data/ig_following/kimiish/<timestamp>/following_users.json \
+  --min-followers 1500 --max-profiles 150 --batch-size 25 --headed
+```
+
+For each username it runs a lightweight follower micro-scrape (same profile
+navigation and `user_info` extraction as the full scraper, but it stops once the
+profile header is captured — no posts/reels), skips profiles below
+`--min-followers` and those already fresh in the database, then runs the full
+scrape + AI enrichment + persistence on the survivors in throttled batches
+(`--batch-size`, `--sleep-between-batches`). Progress is tracked in a
+`*.persist_status.json` next to the input so re-runs resume without re-scraping.
+`--help` lists all volume/rate controls.
 
 ## Backend Feature Modules
 

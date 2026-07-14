@@ -14,17 +14,26 @@ from kiizama_core.job_control import (
 )
 from kiizama_scrape_core.ig_scraper_v2 import (
     WORKER_JOB_EXECUTION_MODE,
+    InstagramScrapeJobExecutionResult,
     InstagramScraperV2Backend,
     OpenAIInstagramProfileAnalysisServiceV2,
     SqlInstagramCredentialsStoreV2,
     build_instagram_job_queue_spec,
     build_scraper_v2_config,
-    execute_scrape_job_payload,
+    execute_scrape_job_payload_result,
+)
+from kiizama_scrape_core.ig_scraper_v2.feature_flags import (
+    is_recommended_background_jobs_enabled,
 )
 from kiizama_scrape_core.ig_scraper_v2.logging_utils import (
     format_counters,
     proxy_mode_label,
     sanitize_exception_for_log,
+)
+from kiizama_scrape_core.ig_scraper_v2.recommended_jobs import (
+    enqueue_internal_recommended_jobs,
+    is_internal_recommended_job_payload,
+    should_collect_recommended_usernames,
 )
 from kiizama_scrape_core.ig_scraper_v2.schemas import (
     InstagramBatchCountersSchema,
@@ -116,6 +125,13 @@ def _is_dependency_error(exc: Exception) -> bool:
     ) or _is_backend_dependency_error(exc)
 
 
+def _coerce_execution_result(result: Any) -> InstagramScrapeJobExecutionResult:
+    if isinstance(result, InstagramScrapeJobExecutionResult):
+        return result
+    summary, error = result
+    return InstagramScrapeJobExecutionResult(summary=summary, error=error)
+
+
 async def _ensure_worker_dependencies_ready(runtime: WorkerRuntimePort) -> None:
     try:
         await asyncio.to_thread(ping_postgres)
@@ -138,7 +154,7 @@ async def execute_job_payload(
     payload: dict[str, Any],
     *,
     job_id: str | None = None,
-) -> tuple[InstagramBatchScrapeSummaryResponse, str | None]:
+) -> InstagramScrapeJobExecutionResult:
     config = build_scraper_v2_config()
     usernames = payload.get("usernames", [])
     logger.info(
@@ -161,12 +177,51 @@ async def execute_job_payload(
     analysis_service = OpenAIInstagramProfileAnalysisServiceV2(
         api_key=_settings().openai_api_key
     )
-    return await execute_scrape_job_payload(
+    recommended_background_jobs_enabled = is_recommended_background_jobs_enabled(
+        session_factory=lambda: Session(engine),
+        logger=logger,
+    )
+    return await execute_scrape_job_payload_result(
         payload,
         session_factory=lambda: Session(engine),
         scraper_backend=scraper_backend,
         analysis_service=analysis_service,
+        collect_recommended_usernames=should_collect_recommended_usernames(
+            payload,
+            feature_enabled=recommended_background_jobs_enabled,
+        ),
     )
+
+
+async def enqueue_recommended_jobs_for_worker(
+    *,
+    repository: JobControlRepository,
+    job_id: str,
+    execution_result: InstagramScrapeJobExecutionResult,
+) -> None:
+    if not execution_result.recommended_usernames:
+        return
+    try:
+        count = await enqueue_internal_recommended_jobs(
+            repository=repository,
+            usernames=execution_result.recommended_usernames,
+            origin_job_id=job_id,
+            origin_execution_mode=WORKER_JOB_EXECUTION_MODE,
+            logger=logger,
+        )
+    except Exception:
+        logger.exception(
+            "Failed to enqueue recommended jobs for scrape job %s.", job_id
+        )
+        return
+    if count:
+        logger.info(
+            "Enqueued %s internal recommended worker scrape jobs "
+            "(origin_job_id=%s, usernames=%s).",
+            count,
+            job_id,
+            len(execution_result.recommended_usernames),
+        )
 
 
 async def process_message(
@@ -174,6 +229,7 @@ async def process_message(
     runtime: WorkerRuntimePort,
     backend_client: BackendCompletionPort,
     message: QueuedJobMessage,
+    job_control_repository: JobControlRepository | None = None,
 ) -> None:
     if message.execution_mode != WORKER_JOB_EXECUTION_MODE:
         logger.warning(
@@ -189,6 +245,9 @@ async def process_message(
         return
 
     ack = False
+    expire_state = False
+    is_internal_job = is_internal_recommended_job_payload(handle.message.payload)
+    completion_result: WorkerBackendCompletionResult | None = None
     try:
         logger.info(
             "Processing scrape job %s (attempt %s/%s, worker=%s)",
@@ -209,10 +268,32 @@ async def process_message(
             status = "failed"
         else:
             try:
-                summary, error = await execute_job_payload(
-                    handle.message.payload,
-                    job_id=handle.job_id,
+                execution_result = _coerce_execution_result(
+                    await execute_job_payload(
+                        handle.message.payload,
+                        job_id=handle.job_id,
+                    )
                 )
+                summary = execution_result.summary
+                error = execution_result.error
+                if not is_internal_job and execution_result.recommended_usernames:
+                    repository = job_control_repository or getattr(
+                        runtime,
+                        "_repository",
+                        None,
+                    )
+                    if repository is None:
+                        logger.warning(
+                            "Skipping recommended jobs for %s because no "
+                            "job-control repository is available.",
+                            handle.job_id,
+                        )
+                    else:
+                        await enqueue_recommended_jobs_for_worker(
+                            repository=repository,
+                            job_id=handle.job_id,
+                            execution_result=execution_result,
+                        )
                 status = "done"
             except asyncio.CancelledError:
                 raise
@@ -240,25 +321,29 @@ async def process_message(
             )
             return
 
-        try:
-            completion_result = await backend_client.complete_job(
-                job_id=handle.job_id,
-                payload=InstagramScrapeJobTerminalizationRequest(
-                    status=status,
-                    attempt=handle.attempt,
-                    worker_id=settings.worker_id,
-                    completed_at=datetime.now(UTC),
-                    summary=summary,
-                    error=error,
-                ),
-            )
-        except Exception as exc:
-            if _is_dependency_error(exc):
-                raise WorkerDependencyUnavailableError(
-                    f"Dependency unavailable while finalizing job {handle.job_id}."
-                ) from exc
-            raise
-        ack = _should_ack_completion_result(completion_result)
+        if is_internal_job:
+            ack = True
+            expire_state = True
+        else:
+            try:
+                completion_result = await backend_client.complete_job(
+                    job_id=handle.job_id,
+                    payload=InstagramScrapeJobTerminalizationRequest(
+                        status=status,
+                        attempt=handle.attempt,
+                        worker_id=settings.worker_id,
+                        completed_at=datetime.now(UTC),
+                        summary=summary,
+                        error=error,
+                    ),
+                )
+            except Exception as exc:
+                if _is_dependency_error(exc):
+                    raise WorkerDependencyUnavailableError(
+                        f"Dependency unavailable while finalizing job {handle.job_id}."
+                    ) from exc
+                raise
+            ack = _should_ack_completion_result(completion_result)
         logger.info(
             "Completed scrape job %s (status=%s, ack=%s, counters=%s)",
             handle.job_id,
@@ -266,14 +351,14 @@ async def process_message(
             str(ack).lower(),
             format_counters(summary.counters),
         )
-        if not ack:
+        if not ack and completion_result is not None:
             logger.warning(
                 "Backend completion for job %s returned %s; leaving message pending.",
                 handle.job_id,
                 completion_result.status_code,
             )
     finally:
-        await runtime.finish_job(handle, ack=ack)
+        await runtime.finish_job(handle, ack=ack, expire_state=expire_state)
 
 
 async def worker_loop() -> None:
@@ -369,6 +454,7 @@ async def worker_loop() -> None:
                         runtime=runtime,
                         backend_client=backend_client,
                         message=message,
+                        job_control_repository=repository,
                     )
                 except asyncio.CancelledError:
                     raise

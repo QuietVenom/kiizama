@@ -21,6 +21,24 @@ export const hasUsablePlan = (summary?: BillingSummary) =>
   ["trial", "base"].includes(summary?.plan_status ?? "") &&
   summary?.access_revoked_reason == null
 
+// Mirrors the backend `has_active_billing_access` rule. `hasUsablePlan` is not
+// equivalent: paused/canceled subscriptions still report plan_status "base".
+export const hasActiveBillingAccess = (summary?: BillingSummary) => {
+  if (!summary) {
+    return false
+  }
+  if (summary.managed_access_source === "admin") {
+    return true
+  }
+  if (summary.access_profile === "ambassador") {
+    return true
+  }
+  return (
+    ["trialing", "active"].includes(summary.subscription_status ?? "") &&
+    summary.access_revoked_reason == null
+  )
+}
+
 export const getBillingPlanLabel = (summary?: BillingSummary, t?: BillingT) => {
   const translatePlan = (plan: keyof typeof planLabelMap) =>
     t ? t(`plan.${plan}`) : planLabelMap[plan]

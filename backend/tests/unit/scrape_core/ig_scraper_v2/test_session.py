@@ -289,6 +289,47 @@ async def test_session_bootstrapper_invalid_session_logs_in_and_persists_new_sta
     assert store.persist_calls == [("cred_1", persisted_state)]
 
 
+@pytest.mark.parametrize(("headless", "expected"), [(False, True), (True, False)])
+@pytest.mark.anyio
+async def test_session_bootstrapper_allows_manual_checkpoint_only_when_headed(
+    headless: bool,
+    expected: bool,
+) -> None:
+    captured_kwargs: list[dict[str, Any]] = []
+    events: list[str] = []
+    store = FakeStore([credential(session=None)])
+    page = FakePage(session_valid=False)
+
+    def browser_factory(**kwargs: Any) -> FakeBrowser:
+        return FakeBrowser(
+            events=events,
+            page=page,
+            persisted_state={"cookies": [{"name": "new-session"}]},
+            storage_state=kwargs["storage_state"],
+            extra_http_headers=kwargs["extra_http_headers"],
+            credential_id=kwargs["credential_id"],
+        )
+
+    def login_flow_factory(**kwargs: Any) -> FakeLoginFlow:
+        captured_kwargs.append(kwargs)
+        return FakeLoginFlow(
+            page=page,
+            result=LoginFlowResult(success=True, status="ok", message="ok"),
+        )
+
+    bootstrapper = InstagramSessionBootstrapper(
+        config=build_scraper_v2_config(env={}, headless=headless),
+        credentials_store=store,
+        browser_session_factory=browser_factory,
+        login_flow_factory=login_flow_factory,
+    )
+
+    result = await bootstrapper.ensure_session()
+
+    assert result.success is True
+    assert captured_kwargs[0]["allow_manual_checkpoint"] is expected
+
+
 @pytest.mark.anyio
 async def test_session_bootstrapper_persist_failure_keeps_successful_state() -> None:
     events: list[str] = []

@@ -1,14 +1,16 @@
 import {
   Badge,
   Box,
+  Flex,
   Grid,
+  Heading,
   IconButton,
   Portal,
   Text,
   Tooltip,
 } from "@chakra-ui/react"
 import { useTranslation } from "react-i18next"
-import { FiInfo, FiSearch } from "react-icons/fi"
+import { FiClock, FiInfo, FiSearch, FiX } from "react-icons/fi"
 
 import UsernameTagsInput from "@/components/CreatorsSearch/UsernameTagsInput"
 import { Button } from "@/components/ui/button"
@@ -24,6 +26,7 @@ export const SearchInputPanel = ({
   maxUsernames,
   missingSet,
   onMaxExceeded,
+  onOpenHistory,
   onSearch,
   onUsernamesChange,
   usernames,
@@ -38,6 +41,7 @@ export const SearchInputPanel = ({
   maxUsernames: number
   missingSet: ReadonlySet<string>
   onMaxExceeded: () => void
+  onOpenHistory: () => void
   onSearch: () => void
   onUsernamesChange: (value: string[]) => void
   usernames: string[]
@@ -59,9 +63,14 @@ export const SearchInputPanel = ({
           alignItems="start"
           gap={3}
         >
-          <Text textStyle="eyebrow" flex="1" minW={0}>
-            {t("input.title")}
-          </Text>
+          <Box flex="1" minW={0}>
+            <Text color="ui.mutedText" fontSize="xs" fontWeight="bold">
+              {t("input.eyebrow")}
+            </Text>
+            <Heading mt={2} fontSize="xl">
+              {t("input.title")}
+            </Heading>
+          </Box>
           <Tooltip.Root openDelay={160} positioning={{ placement: "top" }}>
             <Tooltip.Trigger asChild>
               <IconButton
@@ -114,6 +123,23 @@ export const SearchInputPanel = ({
           <FiSearch />
           {t("input.searchButton")}
         </Button>
+
+        <Flex mt={3} gap={3}>
+          <Button flex="1" size="sm" variant="outline" onClick={onOpenHistory}>
+            <FiClock />
+            {t("input.historyButton")}
+          </Button>
+          <Button
+            flex="1"
+            size="sm"
+            variant="outline"
+            disabled={usernames.length === 0}
+            onClick={() => onUsernamesChange([])}
+          >
+            <FiX />
+            {t("input.clearButton")}
+          </Button>
+        </Flex>
       </Box>
 
       <Field

@@ -87,6 +87,10 @@ def build_billing_summary(
     return access_read_service.build_billing_summary(session=session, user_id=user_id)
 
 
+def has_active_billing_access(*, session: Session, user: Any) -> bool:
+    return access_read_service.has_active_billing_access(session=session, user=user)
+
+
 async def set_access_profile_async(
     *,
     session: Session,
@@ -268,6 +272,7 @@ __all__ = [
     "create_checkout_session",
     "create_portal_session",
     "finalize_usage_reservation",
+    "has_active_billing_access",
     "list_billing_notice_public",
     "mark_billing_notice_status",
     "process_pending_customer_sync_tasks_async",

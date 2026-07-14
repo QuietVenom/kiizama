@@ -101,11 +101,17 @@ async def fake_goto(page: FakePage, url: str, **_kwargs: Any) -> None:
     page.url = url
 
 
-def build_flow() -> InstagramLoginFlow:
+def build_flow(
+    *,
+    allow_manual_checkpoint: bool = False,
+    sleeper: Any = noop_sleep,
+    timeout_ms: int = 30_000,
+) -> InstagramLoginFlow:
     return InstagramLoginFlow(
-        timeout_ms=30_000,
+        timeout_ms=timeout_ms,
         retryable_goto=fake_goto,
-        sleeper=noop_sleep,
+        allow_manual_checkpoint=allow_manual_checkpoint,
+        sleeper=sleeper,
     )
 
 
@@ -187,3 +193,61 @@ async def test_login_flow_challenge_returns_challenge_status() -> None:
 
     assert result.success is False
     assert result.status == "challenge"
+
+
+@pytest.mark.anyio
+async def test_login_flow_recaptcha_returns_actionable_error_without_manual_checkpoint() -> (
+    None
+):
+    result = await build_flow().execute(
+        FakePage(
+            redirect_url="https://www.instagram.com/auth_platform/recaptcha/?abc=1"
+        ),
+        login_username="ig_user",
+        password="secret",
+    )
+
+    assert result.success is False
+    assert result.status == "recaptcha"
+    assert result.error == "Instagram reCAPTCHA required; rerun with --headed"
+
+
+@pytest.mark.anyio
+async def test_login_flow_headed_recaptcha_waits_for_manual_completion() -> None:
+    page = FakePage(
+        redirect_url="https://www.instagram.com/auth_platform/recaptcha/?abc=1"
+    )
+
+    async def complete_recaptcha(delay: float) -> None:
+        if delay == 2.0:
+            page.url = "https://www.instagram.com/"
+
+    result = await build_flow(
+        allow_manual_checkpoint=True,
+        sleeper=complete_recaptcha,
+    ).execute(
+        page,
+        login_username="ig_user",
+        password="secret",
+    )
+
+    assert result.success is True
+    assert result.status == "ok"
+
+
+@pytest.mark.anyio
+async def test_login_flow_headed_recaptcha_times_out_when_not_completed() -> None:
+    result = await build_flow(
+        allow_manual_checkpoint=True,
+        timeout_ms=1000,
+    ).execute(
+        FakePage(
+            redirect_url="https://www.instagram.com/auth_platform/recaptcha/?abc=1"
+        ),
+        login_username="ig_user",
+        password="secret",
+    )
+
+    assert result.success is False
+    assert result.status == "recaptcha"
+    assert result.error == "Instagram reCAPTCHA was not completed before timeout"

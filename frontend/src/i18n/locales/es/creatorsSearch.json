@@ -7,8 +7,7 @@
   "header": {
     "eyebrow": "Búsqueda de creadores",
     "title": "Busca perfiles de creadores guardados en una sola solicitud.",
-    "description": "Agrega varios usernames de Instagram, revisa qué creadores ya están guardados en la plataforma y abre una vista completa para cada coincidencia.",
-    "guideButton": "Guía de búsqueda"
+    "description": "Agrega varios usernames de Instagram, revisa qué creadores ya están guardados en la plataforma y abre una vista completa para cada coincidencia."
   },
   "tabs": {
     "direct": {
@@ -29,6 +28,8 @@
     "placeholder": "creator_one, brand.partner, ...",
     "staleBadge": "La entrada cambió. Busca de nuevo para actualizar",
     "searchButton": "Buscar creadores",
+    "historyButton": "Historial",
+    "clearButton": "Limpiar",
     "count_one": "{{count}} / {{max}} username",
     "count_other": "{{count}} / {{max}} usernames"
   },
@@ -78,6 +79,7 @@
     "empty": "Todavía no hay jobs de scraping.",
     "count_one": "{{count}} / {{max}} trabajo",
     "count_other": "{{count}} / {{max}} trabajos",
+    "viewAll": "Ver todo ({{count}})",
     "queries": "Consultas: {{count}}",
     "status": {
       "queued": "En cola",
@@ -87,6 +89,10 @@
     "errors": {
       "duplicateActiveJob": "Ya existe un job de scraping activo para estos usernames.",
       "unableToCreate": "No se pudieron crear los jobs de scraping."
+    },
+    "dialog": {
+      "title": "Consultas",
+      "description": "Tus últimos jobs de scraping, del más reciente al más antiguo. Abre un job terminado para revisar sus resultados."
     }
   },
   "jobDetail": {
@@ -114,12 +120,6 @@
     "workerError": "Error del worker"
   },
   "history": {
-    "title": "Historial de búsqueda",
-    "count_one": "{{count}} / {{max}} historial",
-    "count_other": "{{count}} / {{max}} historiales",
-    "items": "Consultas: {{count}}",
-    "viewAll": "Ver todo",
-    "unavailable": "El historial de búsqueda no está disponible temporalmente.",
     "empty": "Todavía no hay historial de búsqueda.",
     "dialog": {
       "title": "Historial de búsqueda",
@@ -129,24 +129,6 @@
       "directSearch": "Búsqueda directa",
       "fromJob": "Usernames listos desde un job de scraping",
       "fromDirect": "Usernames listos desde una búsqueda directa"
-    }
-  },
-  "guide": {
-    "title": "Guía de búsqueda",
-    "description": "Guía rápida sobre cómo funciona la búsqueda de creadores y cómo se presentan los resultados.",
-    "items": {
-      "multiCreator": {
-        "title": "Búsqueda multi-creador",
-        "description": "Busca en los registros guardados de creadores los usernames que ingreses, hasta 50 por vez."
-      },
-      "savedDetails": {
-        "title": "Detalles de perfil guardados",
-        "description": "Cada tarjeta de resultado abre una vista detallada con información de perfil, métricas, posts y reels cuando están disponibles."
-      },
-      "issueHighlighting": {
-        "title": "Señalización inmediata de problemas",
-        "description": "Los usernames inválidos y los nombres que no se encuentran se resaltan directamente en el input de tags y se listan en un bloque dedicado abajo."
-      }
     }
   },
   "directoryPreview": {
@@ -238,6 +220,33 @@
         "current": "Actual",
         "update": "Actualizar"
       }
+    }
+  },
+  "directoryPaywall": {
+    "lockedIndicator": "Requiere una suscripción activa",
+    "eyebrow": "SUSCRIPCIÓN REQUERIDA",
+    "title": "Desbloquea el directorio de creadores",
+    "description": "Explora creadores por categoría, rol y rango de seguidores. Activa tu suscripción para explorar el directorio completo.",
+    "ctaTrial": "Empieza tu prueba de 7 días",
+    "ctaSubscribe": "Activa tu suscripción"
+  },
+  "toasts": {
+    "started": {
+      "title": "Búsqueda iniciada",
+      "description": "{{profiles}} en {{jobs}}",
+      "profiles_one": "{{count}} perfil",
+      "profiles_other": "{{count}} perfiles",
+      "jobs_one": "{{count}} trabajo",
+      "jobs_other": "{{count}} trabajos"
+    },
+    "completed": {
+      "title": "Scraping completado",
+      "description": "{{readyCount}} de {{requestedCount}} usernames están listos.",
+      "fallback": "El job de scraping de Instagram terminó correctamente."
+    },
+    "failed": {
+      "title": "Scraping fallido",
+      "fallback": "El job de scraping de Instagram falló."
     }
   },
   "card": {
