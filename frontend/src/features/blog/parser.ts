@@ -21,6 +21,7 @@ const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const ISO_DATETIME_PATTERN =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/
 const ABSOLUTE_HTTP_URL_PATTERN = /^https?:\/\//i
+const YOUTUBE_VIDEO_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/
 const WORDS_PER_MINUTE = 200
 const SAFE_LINK_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"])
 const SAFE_IMAGE_PROTOCOLS = new Set(["http:", "https:"])
@@ -423,6 +424,21 @@ const parseFrontmatter = (
     )
   }
 
+  const youtubeVideoId = assertOptionalStringField(
+    frontmatter.youtubeVideoId,
+    "youtubeVideoId",
+    sourcePath,
+  )
+
+  if (
+    typeof youtubeVideoId !== "undefined" &&
+    !YOUTUBE_VIDEO_ID_PATTERN.test(youtubeVideoId)
+  ) {
+    throw new Error(
+      `Invalid blog frontmatter in "${sourcePath}": "youtubeVideoId" must be a valid 11-character YouTube video ID.`,
+    )
+  }
+
   return {
     title: assertStringField(frontmatter.title, "title", sourcePath),
     slug: assertStringField(frontmatter.slug, "slug", sourcePath),
@@ -434,6 +450,7 @@ const parseFrontmatter = (
       "coverImage",
       sourcePath,
     ),
+    youtubeVideoId,
     tags: assertOptionalStringArrayField(frontmatter.tags, "tags", sourcePath),
     draft: assertOptionalBooleanField(frontmatter.draft, "draft", sourcePath),
     seoTitle: assertOptionalStringField(

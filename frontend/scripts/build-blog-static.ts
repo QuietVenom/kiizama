@@ -90,6 +90,9 @@ const renderBlogPostRoot = (post: BlogPost) => {
     ? `<p>${post.tags.map((tag) => escapeHtml(tag)).join(" · ")}</p>`
     : ""
   const author = post.author ? `<p>By ${escapeHtml(post.author)}</p>` : ""
+  const video = post.youtubeVideoId
+    ? `<p><a href="https://www.youtube.com/watch?v=${escapeHtml(post.youtubeVideoId)}">Ver el tutorial en YouTube</a></p>`
+    : ""
 
   return `
     <main>
@@ -100,6 +103,7 @@ const renderBlogPostRoot = (post: BlogPost) => {
         <p><small>${escapeHtml(post.publishedAt)} · ${post.readingTime} min read</small></p>
         ${author}
         ${tags}
+        ${video}
         ${post.html}
       </article>
     </main>`

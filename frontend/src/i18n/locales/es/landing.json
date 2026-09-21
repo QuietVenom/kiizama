@@ -127,6 +127,13 @@
     "readMore": "Leer más",
     "readingTime_one": "{{count}} min de lectura",
     "readingTime_other": "{{count}} min de lectura",
+    "video": {
+      "play": "Reproducir tutorial",
+      "playLabel": "Reproducir video: {{title}}",
+      "playerTitle": "Reproductor del video: {{title}}",
+      "privacyNotice": "YouTube se cargará únicamente cuando reproduzcas el video.",
+      "watchOnYouTube": "Ver en YouTube"
+    },
     "index": {
       "title": "Los últimos insights de Kiizama",
       "description": "Product thinking, notas de workflow y perspectivas de inteligencia reputacional desde Kiizama."

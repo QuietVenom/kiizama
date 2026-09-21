@@ -36,6 +36,11 @@ test.describe("Blog routes", () => {
       }),
     ).toBeVisible()
     await expect(
+      page.getByRole("heading", {
+        name: "Tutorial: cómo buscar creators en Kiizama",
+      }),
+    ).toBeVisible()
+    await expect(
       page.getByText(
         "Inside Kiizama: The operating system behind reputation intelligence",
       ),
@@ -85,5 +90,46 @@ test.describe("Blog routes", () => {
     await page.goto("/blog/does-not-exist")
 
     await expect(page.getByTestId("not-found")).toBeVisible()
+  })
+
+  test("opens the creator search tutorial and loads its video on demand", async ({
+    page,
+  }) => {
+    await page.route("https://www.youtube-nocookie.com/**", async (route) => {
+      await route.abort()
+    })
+    await page.goto("/blog")
+
+    await page
+      .getByTestId("blog-card-tutorial-busqueda-creators-kiizama")
+      .getByRole("button", { name: "Leer más" })
+      .click()
+
+    await expect(page).toHaveURL(/\/blog\/tutorial-busqueda-creators-kiizama$/)
+    await expect(page).toHaveTitle(
+      "Cómo buscar creators en Kiizama: tutorial rápido",
+    )
+
+    const playButton = page.getByRole("button", {
+      name: "Reproducir video: Tutorial: cómo buscar creators en Kiizama",
+    })
+    await expect(playButton).toBeVisible()
+    await expect(
+      page.locator('iframe[src*="youtube-nocookie.com"]'),
+    ).toHaveCount(0)
+
+    await playButton.click()
+
+    await expect(
+      page.getByTitle(
+        "Reproductor del video: Tutorial: cómo buscar creators en Kiizama",
+      ),
+    ).toHaveAttribute(
+      "src",
+      "https://www.youtube-nocookie.com/embed/qDZ8lIDJfoA?playsinline=1&rel=0",
+    )
+    await expect(
+      page.getByRole("link", { name: /Ver en YouTube/ }),
+    ).toHaveAttribute("href", "https://www.youtube.com/watch?v=qDZ8lIDJfoA")
   })
 })

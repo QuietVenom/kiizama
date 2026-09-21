@@ -5,6 +5,33 @@ import type { BlogPost } from "./types"
 
 export const blogPosts: BlogPost[] = [
   {
+    title: "Tutorial: cómo buscar creators en Kiizama",
+    slug: "tutorial-busqueda-creators-kiizama",
+    excerpt:
+      "Aprende a buscar creators por username, explorar perfiles con filtros y revisar resultados para tomar decisiones con mayor contexto en Kiizama.",
+    publishedAt: "2026-09-20",
+    author: "Kiko y Kimi [Kiizama Team]",
+    youtubeVideoId: "qDZ8lIDJfoA",
+    tags: [
+      "Kiizama",
+      "tutorial",
+      "búsqueda de creators",
+      "creator intelligence",
+      "influencer marketing",
+    ],
+    seoTitle: "Cómo buscar creators en Kiizama: tutorial rápido",
+    metaDescription:
+      "Tutorial de Kiizama para buscar creators directamente, explorar perfiles con filtros y revisar resultados útiles para campañas y estrategias.",
+    canonicalUrl:
+      "https://www.kiizama.com/blog/tutorial-busqueda-creators-kiizama",
+    ogTitle: "Cómo buscar creators en Kiizama: tutorial rápido",
+    ogDescription:
+      "Tutorial de Kiizama para buscar creators directamente, explorar perfiles con filtros y revisar resultados útiles para campañas y estrategias.",
+    robots: "index,follow",
+    html: "<p>Buscar creators no debería significar saltar entre perfiles, hojas de cálculo y capturas sin contexto. En este tutorial aprenderás a usar las herramientas de búsqueda de Kiizama para encontrar perfiles y convertir los resultados en información útil.</p>\n<h2>Qué aprenderás</h2>\n<ul>\n<li>Buscar perfiles cuando ya conoces sus usernames.</li>\n<li>Explorar creators con filtros cuando todavía estás descubriendo opciones.</li>\n<li>Revisar los resultados con orden antes de avanzar a un análisis o reporte.</li>\n</ul>\n<h2>Antes de comenzar</h2>\n<p>Inicia sesión en Kiizama y abre <strong>Búsqueda de creators</strong> desde la navegación principal. Desde ahí puedes elegir el flujo que mejor corresponde a tu punto de partida.</p>\n<h2>1. Usa la búsqueda directa cuando ya tienes usernames</h2>\n<p>La búsqueda directa es la ruta más rápida si recibiste una lista de perfiles o ya identificaste posibles colaboradores.</p>\n<p>Agrega los usernames que quieres consultar, revisa que estén escritos correctamente e inicia la búsqueda. Kiizama procesa los perfiles y presenta su información en un mismo espacio para que no tengas que revisarlos uno por uno.</p>\n<p>Este flujo funciona especialmente bien para validar una selección inicial, preparar un reporte o comparar perfiles que ya forman parte de un brief.</p>\n<h2>2. Explora creators con filtros</h2>\n<p>Cuando todavía no tienes nombres específicos, utiliza la exploración para recorrer perfiles guardados. Puedes acotar los resultados con criterios como categoría, rol, número de seguidores y ordenamiento.</p>\n<p>Empieza con pocos filtros y refina la búsqueda gradualmente. Así podrás entender mejor qué criterio está ampliando o reduciendo tus opciones.</p>\n<h2>3. Revisa los resultados con contexto</h2>\n<p>Observa los perfiles encontrados, abre los detalles relevantes y compara señales antes de tomar una decisión. El objetivo no es acumular resultados, sino construir una selección que responda a las necesidades de la campaña o estrategia.</p>\n<p>Si una búsqueda todavía se está procesando, puedes consultar su estado y volver a los resultados cuando esté lista. También puedes revisar el historial para recuperar consultas anteriores.</p>\n<h2>Siguientes pasos</h2>\n<p>Una vez que tengas una selección útil, continúa con las herramientas de análisis y reportes de Kiizama para profundizar en los perfiles y compartir hallazgos con tu equipo o clientes.</p>\n",
+    readingTime: 2,
+  },
+  {
     title: "De datos a decisiones que realmente importan.",
     slug: "kiizama-inteligencia-creators-marcas-equipos-comunicacion",
     excerpt:

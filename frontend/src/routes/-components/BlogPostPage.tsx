@@ -11,6 +11,7 @@ import { Link } from "@tanstack/react-router"
 import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import BlogPostContent from "@/components/Blog/BlogPostContent"
+import YouTubeVideo from "@/components/Blog/YouTubeVideo"
 import Footer from "@/components/Landing/Footer"
 import LandingNavbar from "@/components/Landing/Navbar"
 import { formatBlogPublishedAt } from "@/features/blog/format"
@@ -148,6 +149,10 @@ export function BlogPostPage({
                 {post.excerpt}
               </Text>
             </Stack>
+
+            {post.youtubeVideoId ? (
+              <YouTubeVideo title={post.title} videoId={post.youtubeVideoId} />
+            ) : null}
 
             <Box layerStyle="landingCard" p={{ base: 6, md: 8 }}>
               <BlogPostContent html={post.html} />
