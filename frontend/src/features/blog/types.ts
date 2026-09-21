@@ -5,6 +5,7 @@ export type BlogPostFrontmatter = {
   publishedAt: string
   author?: string
   coverImage?: string
+  youtubeVideoId?: string
   tags?: string[]
   draft?: boolean
   seoTitle?: string

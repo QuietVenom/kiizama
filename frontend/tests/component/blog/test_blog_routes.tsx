@@ -127,6 +127,28 @@ describe("blog route presentation", () => {
     expect(screen.getByText("1 min de lectura")).toBeVisible()
   })
 
+  test("blog_detail_route_renders_video_for_video_enabled_post", () => {
+    // Arrange
+    const post = createPost({
+      title: "Tutorial: cómo buscar creators en Kiizama",
+      youtubeVideoId: "qDZ8lIDJfoA",
+    })
+
+    // Act
+    renderWithProviders(
+      <BlogPostPage isWaitingListEnabled={false} post={post} />,
+      { language: "es" },
+    )
+
+    // Assert
+    expect(
+      screen.getByRole("button", {
+        name: "Reproducir video: Tutorial: cómo buscar creators en Kiizama",
+      }),
+    ).toBeVisible()
+    expect(screen.getByText("Alpha body")).toBeVisible()
+  })
+
   test("blog_detail_unknown_slug_is_not_found_by_content_lookup", () => {
     // Arrange / Act
     const post = getBlogPostBySlug("does-not-exist")

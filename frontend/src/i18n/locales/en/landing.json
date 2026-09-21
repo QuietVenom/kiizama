@@ -127,6 +127,13 @@
     "readMore": "Read More",
     "readingTime_one": "{{count}} min read",
     "readingTime_other": "{{count}} min read",
+    "video": {
+      "play": "Play tutorial",
+      "playLabel": "Play video: {{title}}",
+      "playerTitle": "Video player: {{title}}",
+      "privacyNotice": "YouTube will load only when you play the video.",
+      "watchOnYouTube": "Watch on YouTube"
+    },
     "index": {
       "title": "The latest Kiizama insights",
       "description": "Product thinking, workflow notes, and reputation intelligence perspectives from Kiizama."

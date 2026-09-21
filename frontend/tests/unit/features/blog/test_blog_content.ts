@@ -57,6 +57,31 @@ describe("blog content parsing", () => {
     expect(post.tags).toEqual(["creators", "strategy"])
   })
 
+  test("blog_content_youtube_video_id_preserves_valid_value", () => {
+    // Arrange / Act
+    const post = parseBlogPostModule(
+      "/content/blog/video-post.md",
+      createMarkdown(
+        'title: "Video post"\nslug: "video-post"\nexcerpt: "Video excerpt."\npublishedAt: "2026-09-20"\nyoutubeVideoId: "qDZ8lIDJfoA"',
+      ),
+    )
+
+    // Assert
+    expect(post.youtubeVideoId).toBe("qDZ8lIDJfoA")
+  })
+
+  test("blog_content_youtube_video_id_rejects_invalid_value", () => {
+    // Arrange / Act / Assert
+    expect(() =>
+      parseBlogPostModule(
+        "/content/blog/video-post.md",
+        createMarkdown(
+          'title: "Video post"\nslug: "video-post"\nexcerpt: "Video excerpt."\npublishedAt: "2026-09-20"\nyoutubeVideoId: "https://youtube.com/watch?v=invalid"',
+        ),
+      ),
+    ).toThrow(/"youtubeVideoId" must be a valid 11-character YouTube video ID/)
+  })
+
   test("blog_content_markdown_body_sanitizes_html_and_computes_reading_time", () => {
     // Arrange / Act
     const post = parseBlogPostModule(
