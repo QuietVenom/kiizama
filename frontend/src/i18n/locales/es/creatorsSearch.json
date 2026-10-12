@@ -1,4 +1,19 @@
 {
+  "costEstimate": {
+    "title": "Costo estimado",
+    "low": "Rango bajo",
+    "lowDescription": "Precio mínimo estimado para este segmento.",
+    "average": "Promedio",
+    "averageDescription": "Precio promedio para estimaciones más amplias o cotizaciones generales.",
+    "high": "Rango alto",
+    "highDescription": "Precio máximo estimado para este segmento.",
+    "highDescriptionMega": "Precio superior estimado para creadores de 1M o más seguidores.",
+    "deliverable": "Precio orientativo por acción: 1 post o reel equivale aproximadamente a 2–4 stories, según el creador.",
+    "disclaimer": "¡Aviso! Referencia orientativa por seguidores; el precio real puede variar. En creadores de más de 10M de seguidores o celebridades, la diferencia puede ser mayor.",
+    "unavailable": "Sin estimación automática para este tamaño de audiencia.",
+    "loading": "Cargando estimación…",
+    "error": "No se pudo cargar la estimación."
+  },
   "shell": {
     "navigation": {
       "title": "Búsqueda de creadores"

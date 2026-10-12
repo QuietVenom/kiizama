@@ -4,6 +4,9 @@ from typing import Any
 
 from kiizama_scrape_core.ig_scraper_v2.metrics import calculate_metrics_from_scrape
 
+from app.features.brand_intelligence.services.service_costs import (
+    resolve_cost_tier_by_followers,
+)
 from app.features.general.types import HtmlPdfReportGenerator, enrich_profile_picture
 
 
@@ -35,6 +38,9 @@ class InstagramReportGenerator(HtmlPdfReportGenerator):
         metrics = self.calculate_metrics(data)
         profile = dict(metrics["user"])
         enrich_profile_picture(profile, logger=self.logger)
+        cost_tier = resolve_cost_tier_by_followers(
+            self._safe_int(profile.get("follower_count"))
+        )
 
         scrape = self._get_field(data, "scrape", {})
         posts_raw = self._get_field(scrape, "posts", [])
@@ -48,6 +54,7 @@ class InstagramReportGenerator(HtmlPdfReportGenerator):
         return {
             "report_date": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "profile": profile,
+            "cost_tier": cost_tier,
             "profile_url": self._get_field(data, "profile_url"),
             "metrics": metrics,
             "posts": posts,

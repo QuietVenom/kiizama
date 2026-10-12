@@ -117,7 +117,7 @@
       },
       "requestLimits": {
         "question": "¿Existen límites operativos por solicitud?",
-        "answer": "Sí. El plan Base hoy incluye 50 búsquedas de perfiles, 20 reportes de social media y 5 solicitudes de estrategia reputacional por ciclo mensual. Además, siguen aplicando topes por solicitud: hasta 10 usernames por job de scraping, hasta 20 usernames por solicitud de reporte de Instagram y hasta 15 perfiles por solicitud de estrategia de campaña. Iremos agregando nuevos planes o ajustando límites conforme crezca la demanda."
+        "answer": "Sí. El plan Base hoy incluye 50 búsquedas de perfiles, 35 reportes de social media y 20 solicitudes de estrategia reputacional por ciclo mensual. Además, siguen aplicando topes por solicitud: hasta 10 usernames por job de scraping, hasta 20 usernames por solicitud de reporte de Instagram y hasta 20 perfiles por solicitud de estrategia de campaña. Iremos agregando nuevos planes o ajustando límites conforme crezca la demanda."
       }
     }
   },

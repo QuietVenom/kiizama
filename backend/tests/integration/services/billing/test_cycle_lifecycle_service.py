@@ -11,6 +11,7 @@ from app.features.billing.models import (
     UsageCycleFeature,
     UserAccessOverride,
 )
+from app.features.billing.services import cycle_features as cycle_features_service
 from app.features.billing.services import cycle_lifecycle as cycle_lifecycle_service
 from app.models import UserCreate
 from tests.utils.utils import random_email, random_password
@@ -54,6 +55,76 @@ def test_ensure_open_usage_cycle_for_subscription_creates_trial_cycle_feature_ro
     assert cycle.plan_code == "trial"
     assert cycle.status == "open"
     assert cycle_features
+
+
+def test_ensure_open_usage_cycle_for_subscription_refreshes_base_limits_without_resetting_usage(
+    db: Session,
+) -> None:
+    # Arrange
+    user = _create_user(db=db)
+    now = datetime(2026, 4, 17, 12, 0, tzinfo=UTC)
+    subscription = BillingSubscription(
+        user_id=user.id,
+        stripe_subscription_id=f"sub_base_limits_{user.id}",
+        stripe_customer_id=f"cus_{user.id}",
+        stripe_price_id="price_base",
+        plan_code="base",
+        status="active",
+        current_period_start=now,
+        current_period_end=now + timedelta(days=30),
+    )
+    db.add(subscription)
+    db.commit()
+    db.refresh(subscription)
+    cycle = cycle_lifecycle_service.ensure_open_usage_cycle_for_subscription(
+        session=db,
+        subscription=subscription,
+        utcnow_fn=lambda: now,
+    )
+    cycle_features = {
+        feature.feature_code: feature
+        for feature in db.exec(
+            select(UsageCycleFeature).where(
+                UsageCycleFeature.usage_cycle_id == cycle.id
+            )
+        ).all()
+    }
+    social_media_feature = cycle_features["social_media_report"]
+    social_media_feature.limit_count = 20
+    social_media_feature.used_count = 18
+    social_media_feature.reserved_count = 2
+    reputation_feature = cycle_features["reputation_strategy"]
+    reputation_feature.limit_count = 5
+    reputation_feature.used_count = 4
+    reputation_feature.reserved_count = 1
+    db.add(social_media_feature)
+    db.add(reputation_feature)
+    db.commit()
+
+    # Act
+    refreshed_cycle = cycle_lifecycle_service.ensure_open_usage_cycle_for_subscription(
+        session=db,
+        subscription=subscription,
+        utcnow_fn=lambda: now + timedelta(minutes=5),
+    )
+    usage_by_code = {
+        feature.code: feature
+        for feature in cycle_features_service.build_cycle_feature_usage(
+            session=db,
+            cycle=refreshed_cycle,
+        )
+    }
+
+    # Assert
+    assert refreshed_cycle.id == cycle.id
+    assert usage_by_code["social_media_report"].limit == 35
+    assert usage_by_code["social_media_report"].used == 18
+    assert usage_by_code["social_media_report"].reserved == 2
+    assert usage_by_code["social_media_report"].remaining == 15
+    assert usage_by_code["reputation_strategy"].limit == 20
+    assert usage_by_code["reputation_strategy"].used == 4
+    assert usage_by_code["reputation_strategy"].reserved == 1
+    assert usage_by_code["reputation_strategy"].remaining == 15
 
 
 def test_ensure_open_managed_usage_cycle_rolls_month_and_closes_stale_cycle(

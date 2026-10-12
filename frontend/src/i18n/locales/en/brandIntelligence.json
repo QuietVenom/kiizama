@@ -122,7 +122,7 @@
     },
     "fieldHelp": {
       "brandGoal": "Primary brand goal.",
-      "creatorUsernames": "Creator username list (max 15).",
+      "creatorUsernames": "Creator username list (max 20).",
       "brandName": "Brand name.",
       "brandContext": "General brand context.",
       "goalContext": "Additional context for the brand goal.",
@@ -174,7 +174,7 @@
     "validation": {
       "selectBrandGoal": "Select the primary brand goal.",
       "addCreatorUsername": "Add at least 1 creator username.",
-      "creatorUsernamesLimit": "You can include up to 15 creator usernames.",
+      "creatorUsernamesLimit": "You can include up to 20 creator usernames.",
       "instagramUsername": "Use lowercase letters, numbers, periods or underscores, up to 30 characters.",
       "brandNameRequired": "Brand name is required.",
       "brandContextRequired": "Brand context is required.",

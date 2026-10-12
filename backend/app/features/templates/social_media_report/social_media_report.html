@@ -148,6 +148,92 @@
       line-height:1.2;
     }
 
+    .cost-heading{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:12px;
+    }
+    .cost-heading .title{margin-bottom:4px}
+    .cost-subtitle{
+      margin:0;
+      color:var(--text-secondary);
+      font-size:12px;
+      font-weight:600;
+    }
+    .cost-tier{
+      display:inline-flex;
+      align-items:center;
+      min-height:30px;
+      padding:5px 11px;
+      border:1px solid #f9d7ae;
+      border-radius:999px;
+      background:#fff5e8;
+      color:var(--accent-ink);
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .cost-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+      margin-top:16px;
+    }
+    .cost-card{
+      min-width:0;
+      padding:14px 15px;
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:var(--surface-soft);
+    }
+    .cost-card-label{
+      display:block;
+      color:var(--text-secondary);
+      font-size:11px;
+      font-weight:800;
+    }
+    .cost-card-value{
+      display:block;
+      margin-top:6px;
+      color:var(--navy);
+      font-size:21px;
+      font-weight:900;
+      letter-spacing:-0.02em;
+      line-height:1.1;
+      overflow-wrap:anywhere;
+    }
+    .cost-card-currency{
+      display:block;
+      margin-top:3px;
+      color:var(--text-secondary);
+      font-size:11px;
+      font-weight:700;
+    }
+    .cost-card-description{
+      display:block;
+      margin-top:12px;
+      padding-top:10px;
+      border-top:1px solid var(--border);
+      color:var(--text-secondary);
+      font-size:10px;
+      line-height:1.4;
+    }
+    .cost-note{
+      margin:14px 0 0;
+      color:var(--text-secondary);
+      font-size:12px;
+      line-height:1.45;
+    }
+    .cost-disclaimer{
+      margin:14px 0 0;
+      color:var(--text-secondary);
+      font-size:11px;
+      font-weight:600;
+      line-height:1.45;
+    }
+
     table{width:100%;border-collapse:collapse}
     th,td{
       padding:11px 9px;
@@ -225,6 +311,7 @@
       header.profile{padding:16px}
       .top-strip{grid-template-columns:1fr}
       .two{grid-template-columns:1fr}
+      .cost-grid{grid-template-columns:1fr}
     }
 
     @page { margin: 0; }
@@ -291,6 +378,42 @@
             <small>Publicaciones</small>
           </div>
         </div>
+      </section>
+
+      <!-- Estimación editorial por tamaño de audiencia; no es una cotización. -->
+      <section class="section">
+        <div class="cost-heading">
+          <div>
+            <h2 class="title">Costo estimado del creador</h2>
+            <p class="cost-subtitle">Precio orientativo por acción: 1 post o reel equivale aproximadamente a 2-4 stories, según el creador.</p>
+          </div>
+          {% if cost_tier %}<span class="cost-tier">{{ cost_tier.label }}</span>{% endif %}
+        </div>
+        {% if cost_tier %}
+          <div class="cost-grid">
+            <div class="cost-card">
+              <span class="cost-card-label">Rango bajo</span>
+              <strong class="cost-card-value">{{ '{:,}'.format(cost_tier.min_mxn) }}</strong>
+              <span class="cost-card-currency">MXN</span>
+              <span class="cost-card-description">Precio mínimo estimado para este segmento.</span>
+            </div>
+            <div class="cost-card">
+              <span class="cost-card-label">Promedio</span>
+              <strong class="cost-card-value">{{ '{:,}'.format(cost_tier.average_mxn) }}</strong>
+              <span class="cost-card-currency">MXN</span>
+              <span class="cost-card-description">Precio promedio para estimaciones más amplias o cotizaciones generales.</span>
+            </div>
+            <div class="cost-card">
+              <span class="cost-card-label">Rango alto</span>
+              <strong class="cost-card-value">{{ '{:,}'.format(cost_tier.max_mxn) }}</strong>
+              <span class="cost-card-currency">MXN</span>
+              <span class="cost-card-description">{% if cost_tier.key == 'mega' %}Precio superior estimado para creadores de 1M o más seguidores.{% else %}Precio máximo estimado para este segmento.{% endif %}</span>
+            </div>
+          </div>
+          <p class="cost-disclaimer">¡Aviso! Referencia orientativa por seguidores; el precio real puede variar. En creadores de más de 10M de seguidores o celebridades, la diferencia puede ser mayor.</p>
+        {% else %}
+          <p class="cost-note">Sin estimación automática para este tamaño de audiencia.</p>
+        {% endif %}
       </section>
 
       <!-- ====== AI Analysis ====== -->

@@ -129,6 +129,7 @@ describe("creator snapshot detail dialog", () => {
     expect(screen.getByText("Coach")).toBeVisible()
     expect(screen.getByText("Posts totales")).toBeVisible()
     expect(screen.getByText("Reels totales")).toBeVisible()
+    expect(screen.getByRole("region", { name: "Costo estimado" })).toBeVisible()
     expect(
       screen.getByRole("link", { name: /@creator_one/i }),
     ).not.toHaveFocus()

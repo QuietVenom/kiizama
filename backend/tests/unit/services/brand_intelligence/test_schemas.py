@@ -135,6 +135,24 @@ def test_campaign_strategy_request_allows_empty_profiles_only_for_crisis() -> No
         ReputationCampaignStrategyRequest.model_validate(invalid_payload)
 
 
+def test_campaign_strategy_request_accepts_up_to_twenty_profiles() -> None:
+    # Arrange
+    valid_payload = _campaign_payload() | {
+        "profiles_list": [f"creator_{index}" for index in range(20)]
+    }
+    invalid_payload = _campaign_payload() | {
+        "profiles_list": [f"creator_{index}" for index in range(21)]
+    }
+
+    # Act
+    valid_request = ReputationCampaignStrategyRequest.model_validate(valid_payload)
+
+    # Assert
+    assert len(valid_request.profiles_list) == 20
+    with pytest.raises(ValidationError, match="List should have at most 20 items"):
+        ReputationCampaignStrategyRequest.model_validate(invalid_payload)
+
+
 def test_campaign_strategy_request_requires_at_least_one_output_format() -> None:
     # Arrange
     payload = _campaign_payload() | {"generate_html": False, "generate_pdf": False}

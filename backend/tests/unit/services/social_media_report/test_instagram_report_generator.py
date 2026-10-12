@@ -1,10 +1,12 @@
+from typing import Any
+
 from app.features.social_media_report.service import TEMPLATES_DIR
 from app.features.social_media_report.types.instagram_report_generator import (
     InstagramReportGenerator,
 )
 
 
-def _build_report_data(*, reels: list[dict[str, int | str]]) -> dict[str, object]:
+def _build_report_data(*, reels: list[dict[str, int | str]]) -> dict[str, Any]:
     return {
         "scrape": {
             "user": {
@@ -67,3 +69,49 @@ def test_social_media_report_renders_reels_section_when_reels_exist() -> None:
     assert "Reels analizados" in html
     assert "Reproducciones totales (reels)" in html
     assert 'aria-label="Abrir reel REEL1"' in html
+
+
+def test_social_media_report_includes_tier_cost_and_story_equivalence() -> None:
+    generator = InstagramReportGenerator(template_path=str(TEMPLATES_DIR))
+    data = _build_report_data(reels=[])
+    data["scrape"]["user"]["follower_count"] = 75_000
+
+    html = generator.generate_html(data)
+
+    assert "Micro (10k-100k)" in html
+    assert "Rango bajo" in html
+    assert "6,000" in html
+    assert "Promedio" in html
+    assert "10,500" in html
+    assert "Rango alto" in html
+    assert "15,000" in html
+    assert html.count('class="cost-card"') == 3
+    assert 'class="cost-card is-average"' not in html
+    assert "1 post o reel" in html
+    assert "2-4 stories" in html
+    assert "Precio mínimo estimado para este segmento." in html
+    assert "Precio promedio para estimaciones más amplias" in html
+    assert "Precio máximo estimado para este segmento." in html
+    assert "Precio superior estimado para creadores de 1M" not in html
+    assert "¡Aviso! Referencia orientativa por seguidores" in html
+    assert "más de 10M de seguidores o celebridades" in html
+
+
+def test_social_media_report_mega_tier_explains_high_range() -> None:
+    generator = InstagramReportGenerator(template_path=str(TEMPLATES_DIR))
+    data = _build_report_data(reels=[])
+    data["scrape"]["user"]["follower_count"] = 1_500_000
+
+    html = generator.generate_html(data)
+
+    assert "Precio superior estimado para creadores de 1M o más seguidores." in html
+
+
+def test_social_media_report_without_pricing_tier_explains_unavailability() -> None:
+    generator = InstagramReportGenerator(template_path=str(TEMPLATES_DIR))
+    data = _build_report_data(reels=[])
+    data["scrape"]["user"]["follower_count"] = 999
+
+    html = generator.generate_html(data)
+
+    assert "Sin estimación automática" in html

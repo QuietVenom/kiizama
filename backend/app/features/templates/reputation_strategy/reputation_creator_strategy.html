@@ -379,6 +379,7 @@
 
 	        {% set metrics = current_metrics if current_metrics is defined else none %}
 	        {% set reel_metric_keys = ['total_reels', 'total_plays', 'reel_engagement_rate_on_plays'] %}
+	        {% set percentage_metric_keys = ['avg_engagement_rate', 'overall_post_engagement_rate', 'reel_engagement_rate_on_plays'] %}
 	        {% set has_reels = metrics and (metrics.total_reels if metrics.total_reels is defined else 0) > 0 %}
 	        {% if metrics and metrics.items is defined %}
 	          <h3 class="meta" style="font-size:13px;margin:0 0 6px">Current Metrics</h3>
@@ -399,6 +400,8 @@
                       Yes
                     {% elif value is sameas false %}
                       No
+                    {% elif key in percentage_metric_keys and value is number %}
+                      {{ "{:.2f}%".format(value|float * 100) }}
                     {% elif value is integer %}
                       {{ "{:,}".format(value) }}
                     {% elif value is number %}
@@ -468,9 +471,9 @@
           <div class="meta">No collaborators were provided.</div>
         {% endif %}
       </section>
-    </div>
-    <div class="powered-by">
-      <a href="https://kiizama.com/" target="_blank" rel="noopener">Powered by kiizama.com</a>
+      <div class="powered-by">
+        <a href="https://kiizama.com/" target="_blank" rel="noopener">Powered by kiizama.com</a>
+      </div>
     </div>
   </div>
 </body>

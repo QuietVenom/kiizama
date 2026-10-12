@@ -121,6 +121,19 @@ export type Body_login_login_access_token = {
     client_secret?: (string | null);
 };
 
+export type CostTierCatalogItem = {
+    key: string;
+    label: string;
+    min_followers?: (number | null);
+    max_followers?: (number | null);
+    typical_deliverable: string;
+    min_mxn: number;
+    max_mxn: number;
+    average_mxn: number;
+    notes: string;
+    is_manual?: boolean;
+};
+
 export type CreatorsSearchHistoryCreateRequest = {
     source: 'direct-search' | 'ig-scrape-job';
     job_id?: (string | null);
@@ -733,7 +746,7 @@ export type ReputationCampaignStrategyRequest = {
      */
     timeframe: string;
     /**
-     * Lista de creator usernames (max 15). Puede estar vacia solo cuando brand_goals_type es Crisis.
+     * Lista de creator usernames (max 20). Puede estar vacia solo cuando brand_goals_type es Crisis.
      */
     profiles_list: Array<(string)>;
     /**
@@ -957,6 +970,8 @@ export type BillingStripeWebhookData = {
 };
 
 export type BillingStripeWebhookResponse = (BillingWebhookReceipt);
+
+export type BrandIntelligenceReadCostTiersResponse = (Array<CostTierCatalogItem>);
 
 export type BrandIntelligenceReadProfilesExistenceData = {
     usernames?: (Array<(string)> | null);

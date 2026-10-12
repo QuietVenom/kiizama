@@ -82,6 +82,7 @@ describe("creator snapshot card", () => {
     expect(screen.getByText("12,5 mil")).toBeVisible()
     expect(screen.getByText("250")).toBeVisible()
     expect(screen.getByText("88")).toBeVisible()
+    expect(screen.queryByText("Costo estimado")).not.toBeInTheDocument()
   })
 
   test("creator_snapshot_card_missing_metrics_and_image_use_zero_and_initials", () => {

@@ -166,6 +166,14 @@ describe("campaign strategy builder", () => {
     ).toBeDisabled()
   })
 
+  test("campaign_strategy_displays_twenty_profile_request_limit", () => {
+    // Arrange / Act
+    renderWithProviders(<CampaignHarness />, { language: "en" })
+
+    // Assert
+    expect(screen.getByText("1 / 20 creator usernames")).toBeVisible()
+  })
+
   test("campaign_strategy_crisis_without_creators_submits_empty_profiles_payload", async () => {
     // Arrange
     const user = userEvent.setup()

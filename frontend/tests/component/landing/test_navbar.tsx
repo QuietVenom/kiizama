@@ -30,4 +30,20 @@ describe("landing navbar", () => {
     ).toBeGreaterThan(0)
     expect(screen.getAllByText("English").length).toBeGreaterThan(0)
   })
+
+  test("landing_navbar_blog_links_request_the_current_blog_document", () => {
+    renderWithProviders(
+      <LandingNavbar
+        isWaitingListEnabled={false}
+        navbarRef={createRef<HTMLElement>()}
+      />,
+      { language: "en" },
+    )
+
+    const blogLinks = screen.getAllByRole("link", { name: "Blog" })
+    expect(blogLinks.length).toBeGreaterThan(0)
+    for (const link of blogLinks) {
+      expect(link).toHaveAttribute("href", "/blog")
+    }
+  })
 })

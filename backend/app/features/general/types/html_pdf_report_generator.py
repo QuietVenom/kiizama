@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, cast
@@ -146,12 +147,18 @@ class HtmlPdfReportGenerator:
             "margin": {"top": "0", "right": "0", "bottom": "0", "left": "0"},
         }
         if width_in is not None and height_in is not None:
-            pdf_kwargs["width"] = f"{width_in:.2f}in"
-            pdf_kwargs["height"] = f"{height_in:.2f}in"
+            pdf_kwargs["width"] = self._format_pdf_dimension(width_in)
+            pdf_kwargs["height"] = self._format_pdf_dimension(height_in)
         else:
             pdf_kwargs["format"] = "A4"
             pdf_kwargs["prefer_css_page_size"] = True
         return page.pdf(**pdf_kwargs)
+
+    @staticmethod
+    def _format_pdf_dimension(dimension_in: float) -> str:
+        """Round up so fractional CSS pixels cannot spill onto another page."""
+        rounded_up = math.ceil(dimension_in * 100) / 100
+        return f"{rounded_up:.2f}in"
 
 
 __all__ = ["HtmlPdfReportGenerator"]

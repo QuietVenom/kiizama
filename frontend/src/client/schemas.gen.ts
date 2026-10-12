@@ -650,6 +650,69 @@ export const Body_login_login_access_tokenSchema = {
     title: 'Body_login-login_access_token'
 } as const;
 
+export const CostTierCatalogItemSchema = {
+    properties: {
+        key: {
+            type: 'string',
+            title: 'Key'
+        },
+        label: {
+            type: 'string',
+            title: 'Label'
+        },
+        min_followers: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Min Followers'
+        },
+        max_followers: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Max Followers'
+        },
+        typical_deliverable: {
+            type: 'string',
+            title: 'Typical Deliverable'
+        },
+        min_mxn: {
+            type: 'integer',
+            title: 'Min Mxn'
+        },
+        max_mxn: {
+            type: 'integer',
+            title: 'Max Mxn'
+        },
+        average_mxn: {
+            type: 'integer',
+            title: 'Average Mxn'
+        },
+        notes: {
+            type: 'string',
+            title: 'Notes'
+        },
+        is_manual: {
+            type: 'boolean',
+            title: 'Is Manual',
+            default: false
+        }
+    },
+    type: 'object',
+    required: ['key', 'label', 'typical_deliverable', 'min_mxn', 'max_mxn', 'average_mxn', 'notes'],
+    title: 'CostTierCatalogItem'
+} as const;
+
 export const CreatorsSearchHistoryCreateRequestSchema = {
     properties: {
         source: {
@@ -3453,9 +3516,9 @@ export const ReputationCampaignStrategyRequestSchema = {
                 type: 'string'
             },
             type: 'array',
-            maxItems: 15,
+            maxItems: 20,
             title: 'Profiles List',
-            description: 'Lista de creator usernames (max 15). Puede estar vacia solo cuando brand_goals_type es Crisis.'
+            description: 'Lista de creator usernames (max 20). Puede estar vacia solo cuando brand_goals_type es Crisis.'
         },
         campaign_type: {
             type: 'string',
