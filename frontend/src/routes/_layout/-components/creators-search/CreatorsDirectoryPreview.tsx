@@ -122,6 +122,7 @@ export function CreatorsDirectoryPreview() {
   const [appliedFilters, setAppliedFilters] =
     useState<CreatorDirectoryAppliedFilters | null>(null)
   const [requestedQuery, setRequestedQuery] = useState("")
+  const [searchRunId, setSearchRunId] = useState(0)
   const [page, setPage] = useState(1)
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
     null,
@@ -140,7 +141,7 @@ export function CreatorsDirectoryPreview() {
   }, [appliedFilters, page, requestedQuery])
 
   const searchQuery = useQuery({
-    queryKey: ["creator-directory-search", searchRequest],
+    queryKey: ["creator-directory-search", searchRequest, searchRunId],
     queryFn: () => {
       if (!searchRequest) {
         throw new Error("Search request is not ready.")
@@ -272,6 +273,7 @@ export function CreatorsDirectoryPreview() {
     })
     setRequestedQuery(queryInput)
     setPage(1)
+    setSearchRunId((current) => current + 1)
   }
 
   const handleReset = () => {

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from decimal import Decimal
 
 BRAND_GOALS_TYPE_OPTIONS: tuple[str, ...] = (
     "Trust & Credibility Acceleration",
@@ -48,6 +49,19 @@ class CostTierOption:
     average_mxn: int
     notes: str
     is_manual: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class MediaImpactTierOption:
+    key: str
+    min_followers: int
+    max_followers: int | None
+    impression_min_mxn: Decimal
+    impression_average_mxn: Decimal
+    impression_max_mxn: Decimal
+    interaction_min_mxn: Decimal
+    interaction_average_mxn: Decimal
+    interaction_max_mxn: Decimal
 
 
 CAMPAIGN_TYPE_OPTIONS: tuple[CampaignTypeOption, ...] = (
@@ -290,3 +304,66 @@ INFLUENCER_COST_TIER_OPTIONS: tuple[CostTierOption, ...] = (
 INFLUENCER_COST_TIER_OPTIONS_BY_KEY: dict[str, CostTierOption] = {
     option.key: option for option in INFLUENCER_COST_TIER_OPTIONS
 }
+
+
+# TODO: Before using this guide, analyze the distribution of engagement rates by
+# follower tier (and post/Reel format), including percentiles and outliers. Use
+# that evidence to define how a creator's ER selects the low, central, or high
+# rate within each tier. These rates are provisional, not observed market averages.
+MEDIA_IMPACT_TIER_OPTIONS: tuple[MediaImpactTierOption, ...] = (
+    MediaImpactTierOption(
+        key="nano",
+        min_followers=1_000,
+        max_followers=9_999,
+        impression_min_mxn=Decimal("0.025"),
+        impression_average_mxn=Decimal("0.030"),
+        impression_max_mxn=Decimal("0.035"),
+        interaction_min_mxn=Decimal("0.30"),
+        interaction_average_mxn=Decimal("0.525"),
+        interaction_max_mxn=Decimal("0.75"),
+    ),
+    MediaImpactTierOption(
+        key="micro",
+        min_followers=10_000,
+        max_followers=99_999,
+        impression_min_mxn=Decimal("0.025"),
+        impression_average_mxn=Decimal("0.0325"),
+        impression_max_mxn=Decimal("0.040"),
+        interaction_min_mxn=Decimal("0.30"),
+        interaction_average_mxn=Decimal("0.625"),
+        interaction_max_mxn=Decimal("0.95"),
+    ),
+    MediaImpactTierOption(
+        key="mid_tier",
+        min_followers=100_000,
+        max_followers=499_999,
+        impression_min_mxn=Decimal("0.028"),
+        impression_average_mxn=Decimal("0.0365"),
+        impression_max_mxn=Decimal("0.045"),
+        interaction_min_mxn=Decimal("0.40"),
+        interaction_average_mxn=Decimal("0.775"),
+        interaction_max_mxn=Decimal("1.15"),
+    ),
+    MediaImpactTierOption(
+        key="macro",
+        min_followers=500_000,
+        max_followers=999_999,
+        impression_min_mxn=Decimal("0.030"),
+        impression_average_mxn=Decimal("0.039"),
+        impression_max_mxn=Decimal("0.048"),
+        interaction_min_mxn=Decimal("0.50"),
+        interaction_average_mxn=Decimal("0.925"),
+        interaction_max_mxn=Decimal("1.35"),
+    ),
+    MediaImpactTierOption(
+        key="mega",
+        min_followers=1_000_000,
+        max_followers=None,
+        impression_min_mxn=Decimal("0.032"),
+        impression_average_mxn=Decimal("0.041"),
+        impression_max_mxn=Decimal("0.050"),
+        interaction_min_mxn=Decimal("0.60"),
+        interaction_average_mxn=Decimal("1.05"),
+        interaction_max_mxn=Decimal("1.50"),
+    ),
+)

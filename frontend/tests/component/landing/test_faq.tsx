@@ -24,8 +24,11 @@ describe("landing FAQ", () => {
     // Assert
     expect(
       screen.getByText(
-        /The Base plan currently includes 50 profile lookups, 20 social media reports, and 5 reputation strategy requests per monthly cycle./,
+        /The Base plan currently includes 50 profile lookups, 35 social media reports, and 20 reputation strategy requests per monthly cycle./,
       ),
+    ).toBeVisible()
+    expect(
+      screen.getByText(/up to 20 profiles per campaign strategy request./),
     ).toBeVisible()
     expect(
       screen.getByText(

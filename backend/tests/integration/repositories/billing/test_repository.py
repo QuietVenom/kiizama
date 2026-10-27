@@ -54,6 +54,28 @@ def test_seed_billing_catalog_twice_keeps_plan_limits_idempotent(
     assert first_plan_count > 0
     assert first_limit_count > 0
 
+    plans_by_id = {
+        plan.id: plan.code for plan in db.exec(select(SubscriptionPlan)).all()
+    }
+    features_by_id = {
+        feature.id: feature.code for feature in db.exec(select(LuBillingFeature)).all()
+    }
+    limits_by_plan_and_feature = {
+        (plans_by_id[limit.plan_id], features_by_id[limit.feature_id]): (
+            limit.monthly_limit
+        )
+        for limit in db.exec(select(SubscriptionPlanFeatureLimit)).all()
+    }
+
+    assert limits_by_plan_and_feature == {
+        ("trial", "social_media_report"): 3,
+        ("trial", "reputation_strategy"): 2,
+        ("trial", "ig_scraper_apify"): 15,
+        ("base", "social_media_report"): 35,
+        ("base", "reputation_strategy"): 20,
+        ("base", "ig_scraper_apify"): 50,
+    }
+
 
 def test_billing_cleanup_context_collects_and_deletes_user_billing_graph(
     db: Session,

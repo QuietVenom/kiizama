@@ -164,9 +164,9 @@ class ReputationCampaignStrategyRequest(BaseModel):
     )
     profiles_list: list[str] = Field(
         ...,
-        max_length=15,
+        max_length=20,
         description=(
-            "Lista de creator usernames (max 15). "
+            "Lista de creator usernames (max 20). "
             "Puede estar vacia solo cuando brand_goals_type es Crisis."
         ),
     )

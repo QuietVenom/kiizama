@@ -1,4 +1,19 @@
 {
+  "costEstimate": {
+    "title": "Estimated cost",
+    "low": "Low range",
+    "lowDescription": "Lowest estimated price for this tier.",
+    "average": "Average",
+    "averageDescription": "Average price for broader estimates or general quotes.",
+    "high": "High range",
+    "highDescription": "Highest estimated price for this tier.",
+    "highDescriptionMega": "Upper estimated price for creators with 1M or more followers.",
+    "deliverable": "Guide price per action: 1 post or reel is roughly equivalent to 2–4 stories, depending on the creator.",
+    "disclaimer": "Note! Follower-based guide; actual pricing may vary. For creators with over 10M followers or celebrities, the difference may be greater.",
+    "unavailable": "No automatic estimate for this audience size.",
+    "loading": "Loading estimate…",
+    "error": "Could not load the estimate."
+  },
   "shell": {
     "navigation": {
       "title": "Creators Search"

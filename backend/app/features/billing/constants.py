@@ -44,8 +44,8 @@ PLAN_SEED: dict[str, dict[str, Any]] = {
         "name": "Base",
         "billing_source": "stripe",
         "limits": {
-            "social_media_report": 20,
-            "reputation_strategy": 5,
+            "social_media_report": 35,
+            "reputation_strategy": 20,
             "ig_scraper_apify": 50,
         },
     },

@@ -20,6 +20,7 @@ import type {
   ProfileSnapshotFull,
   ReelItem,
 } from "@/client"
+import { CreatorCostEstimate } from "@/components/CreatorsSearch/CreatorCostEstimate"
 import { Button } from "@/components/ui/button"
 import {
   DialogBody,
@@ -612,6 +613,8 @@ const CreatorSnapshotDetailDialog = ({
                   }
                 />
               </SimpleGrid>
+
+              <CreatorCostEstimate followerCount={profile?.follower_count} />
 
               <ContentSection
                 title={t("creatorsSearch:detail.analysis.title")}

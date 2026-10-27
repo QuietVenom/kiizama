@@ -57,6 +57,30 @@ def _clear_brand_collections() -> None:
     app.dependency_overrides.pop(get_profile_snapshots_collection, None)
 
 
+def test_read_cost_tiers_returns_follower_pricing_matrix(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    response = client.get(
+        f"{settings.API_V1_STR}/brand-intelligence/cost-tiers",
+        headers=normal_user_token_headers,
+    )
+
+    assert response.status_code == 200
+    tiers = response.json()
+    assert [tier["key"] for tier in tiers] == [
+        "nano",
+        "micro",
+        "mid_tier",
+        "macro",
+        "mega",
+        "celebrity",
+    ]
+    assert tiers[1]["min_mxn"] == 6_000
+    assert tiers[1]["average_mxn"] == 10_500
+    assert tiers[1]["max_mxn"] == 15_000
+    assert tiers[-1]["is_manual"] is True
+
+
 def test_read_profiles_existence(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:

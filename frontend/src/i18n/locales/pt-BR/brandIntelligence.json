@@ -122,7 +122,7 @@
     },
     "fieldHelp": {
       "brandGoal": "Objetivo principal da marca.",
-      "creatorUsernames": "Lista de usernames de criadores (máximo de 15).",
+      "creatorUsernames": "Lista de usernames de criadores (máximo de 20).",
       "brandName": "Nome da marca.",
       "brandContext": "Contexto geral da marca.",
       "goalContext": "Contexto adicional para o objetivo da marca.",
@@ -174,7 +174,7 @@
     "validation": {
       "selectBrandGoal": "Selecione o objetivo principal da marca.",
       "addCreatorUsername": "Adicione pelo menos 1 username de criador.",
-      "creatorUsernamesLimit": "Você pode incluir até 15 usernames de criadores.",
+      "creatorUsernamesLimit": "Você pode incluir até 20 usernames de criadores.",
       "instagramUsername": "Use letras minúsculas, números, pontos ou sublinhados, com no máximo 30 caracteres.",
       "brandNameRequired": "O nome da marca é obrigatório.",
       "brandContextRequired": "O contexto da marca é obrigatório.",

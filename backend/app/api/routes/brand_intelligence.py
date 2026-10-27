@@ -23,6 +23,7 @@ from app.features.billing import (
     reserve_feature_usage,
 )
 from app.features.brand_intelligence.schemas import (
+    CostTierCatalogItem,
     ProfileExistenceCollection,
     ReputationCampaignStrategyRequest,
     ReputationCreatorStrategyRequest,
@@ -32,6 +33,9 @@ from app.features.brand_intelligence.service import (
     check_profile_usernames_existence,
     generate_reputation_campaign_strategy_report,
     generate_reputation_creator_strategy_report,
+)
+from app.features.brand_intelligence.services.service_costs import (
+    build_cost_tier_directory,
 )
 from app.features.rate_limit import POLICIES, rate_limit
 
@@ -47,6 +51,11 @@ REPORT_FILE_RESPONSES: dict[int | str, dict[str, Any]] = {
         },
     }
 }
+
+
+@router.get("/cost-tiers", response_model=list[CostTierCatalogItem])
+def read_cost_tiers(_current_user: CurrentUser) -> list[CostTierCatalogItem]:
+    return build_cost_tier_directory()
 
 
 @router.get(

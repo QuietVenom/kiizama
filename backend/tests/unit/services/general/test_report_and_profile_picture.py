@@ -218,6 +218,26 @@ def test_html_pdf_report_generator_measures_document_dimensions(
     assert height_in == 1.0
 
 
+def test_html_pdf_report_generator_rounds_dimensions_up_to_prevent_overflow_page(
+    tmp_path: Path,
+) -> None:
+    # Arrange
+    generator = HtmlPdfReportGenerator(
+        template_path=str(tmp_path),
+        template_name="report.html",
+    )
+    page = FakePdfPage({"width": 1280, "height": 5504})
+
+    # Act
+    pdf_bytes = generator._render_pdf_bytes(page, "<main>Report</main>")
+
+    # Assert
+    assert pdf_bytes == b"%PDF"
+    assert page.pdf_kwargs is not None
+    assert page.pdf_kwargs["width"] == "13.34in"
+    assert page.pdf_kwargs["height"] == "57.34in"
+
+
 def test_html_pdf_report_generator_measurement_failure_falls_back_to_a4(
     tmp_path: Path,
 ) -> None:

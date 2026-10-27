@@ -1,7 +1,7 @@
 export const BRAND_INTELLIGENCE_LIMITS = {
   audience: 5,
   brandUrls: 3,
-  campaignProfiles: 15,
+  campaignProfiles: 20,
   collaborators: 10,
   creatorUrls: 3,
   primaryPlatforms: 6,
@@ -17,7 +17,7 @@ export const CAMPAIGN_FIELD_HELP = {
   brand_name: "Nombre de la marca.",
   brand_urls: "Lista de URLs de marca (max 3).",
   campaign_type: "Estrategia de campana seleccionada.",
-  profiles_list: "Lista de usernames de creators (max 15).",
+  profiles_list: "Lista de usernames de creators (max 20).",
   timeframe: "Horizonte temporal de la campana.",
 } as const
 

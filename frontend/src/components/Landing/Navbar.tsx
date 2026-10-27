@@ -187,7 +187,7 @@ const LandingNavbar = ({
                 </ChakraLink>
               ),
             )}
-            <Link to={blogUrl}>
+            <ChakraLink href={blogUrl} _hover={{ textDecoration: "none" }}>
               <Button
                 variant="ghost"
                 color="ui.secondaryText"
@@ -199,7 +199,7 @@ const LandingNavbar = ({
               >
                 {t("navigation.blog")}
               </Button>
-            </Link>
+            </ChakraLink>
           </HStack>
 
           <HStack
@@ -347,7 +347,11 @@ const LandingNavbar = ({
                 </ChakraLink>
               ),
             )}
-            <Link to={blogUrl} onClick={() => setMobileMenuOpen(false)}>
+            <ChakraLink
+              href={blogUrl}
+              onClick={() => setMobileMenuOpen(false)}
+              _hover={{ textDecoration: "none" }}
+            >
               <Button
                 variant="ghost"
                 justifyContent="flex-start"
@@ -360,7 +364,7 @@ const LandingNavbar = ({
               >
                 {t("navigation.blog")}
               </Button>
-            </Link>
+            </ChakraLink>
             <Box
               px={3}
               py={3}

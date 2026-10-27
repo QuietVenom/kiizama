@@ -71,12 +71,12 @@ def test_campaign_strategy_renders_reel_metrics_when_reels_exist() -> None:
                         "total_posts": 4,
                         "total_comments": 12,
                         "total_likes": 220,
-                        "avg_engagement_rate": 0.12,
+                        "avg_engagement_rate": 0.0287,
                         "hashtags_per_post": 1.5,
                         "mentions_per_post": 0.75,
                         "total_reels": 2,
                         "total_plays": 5000,
-                        "overall_post_engagement_rate": 0.13,
+                        "overall_post_engagement_rate": 0.3442,
                         "reel_engagement_rate_on_plays": 0.0475,
                     },
                 }
@@ -87,6 +87,9 @@ def test_campaign_strategy_renders_reel_metrics_when_reels_exist() -> None:
     assert "Total reels" in html
     assert "Total plays" in html
     assert "Reel engagement rate on plays" in html
+    assert "2.87%" in html
+    assert "34.42%" in html
+    assert "4.75%" in html
 
 
 def test_creator_strategy_hides_reel_metrics_when_no_reels() -> None:
@@ -135,12 +138,12 @@ def test_creator_strategy_renders_reel_metrics_when_reels_exist() -> None:
                 "creator_full_name": "Kimi Ish",
                 "creator_follower_count": 1200,
                 "total_likes": 220,
-                "avg_engagement_rate": 0.12,
+                "avg_engagement_rate": 0.0287,
                 "hashtags_per_post": 1.5,
                 "mentions_per_post": 0.75,
                 "total_reels": 2,
                 "total_plays": 5000,
-                "overall_post_engagement_rate": 0.13,
+                "overall_post_engagement_rate": 0.3442,
                 "reel_engagement_rate_on_plays": 0.0475,
                 "reels_metrics_status": "available",
             },
@@ -151,3 +154,23 @@ def test_creator_strategy_renders_reel_metrics_when_reels_exist() -> None:
     assert "<td>total_plays</td>" in html
     assert "<td>reel_engagement_rate_on_plays</td>" in html
     assert "reels_metrics_status" not in html
+    assert "2.87%" in html
+    assert "34.42%" in html
+    assert "4.75%" in html
+
+
+def test_creator_strategy_keeps_powered_by_inside_report_wrapper() -> None:
+    generator = ReputationCreatorStrategyReportGenerator(
+        template_path=str(TEMPLATES_DIR)
+    )
+
+    html = generator.generate_html(
+        {
+            "creator_username": "kimiish",
+            "report_main_body": "<section><h2>Strategy</h2><p>Body</p></section>",
+        }
+    )
+
+    powered_by_position = html.index('<div class="powered-by">')
+
+    assert html[powered_by_position:].count("</div>") == 3

@@ -158,6 +158,41 @@ describe("creators directory preview", () => {
     expect(screen.getByText("No creators matched this search.")).toBeVisible()
   })
 
+  test("creators_directory_preview_repeating_same_search_fetches_fresh_results", async () => {
+    const user = userEvent.setup()
+    searchCreatorsDirectoryMock.mockResolvedValue(createSearchResponse())
+
+    renderWithProviders(<CreatorsDirectoryPreview />, { language: "en" })
+
+    const searchButton = screen.getByRole("button", { name: "SEARCH" })
+    await user.type(
+      screen.getByPlaceholderText("Search by keyword, niche, or creator style"),
+      "travel",
+    )
+    await user.click(searchButton)
+
+    await waitFor(() => {
+      expect(searchCreatorsDirectoryMock).toHaveBeenCalledTimes(1)
+    })
+
+    await user.click(searchButton)
+
+    await waitFor(() => {
+      expect(searchCreatorsDirectoryMock).toHaveBeenCalledTimes(2)
+    })
+    expect(searchCreatorsDirectoryMock).toHaveBeenNthCalledWith(2, {
+      ai_categories: [],
+      ai_roles: [],
+      follower_count_min: 1,
+      follower_count_max: undefined,
+      page: 1,
+      page_size: 20,
+      query: "travel",
+      sort_by: "follower_count",
+      sort_order: "desc",
+    })
+  })
+
   test("creators_directory_preview_loading_and_results_render_real_profiles", async () => {
     const user = userEvent.setup()
     let resolveSearch!: (value: CreatorDirectorySearchResponse) => void
@@ -252,6 +287,9 @@ describe("creators directory preview", () => {
     expect(screen.getByText("No curated category")).toBeVisible()
     expect(screen.getAllByText("Media")).toHaveLength(2)
     expect(screen.getByText("184")).toBeVisible()
+    expect(
+      screen.queryByRole("region", { name: "Estimated cost" }),
+    ).not.toBeInTheDocument()
   })
 
   test("creators_directory_preview_pagination_reuses_applied_filters", async () => {
@@ -745,5 +783,6 @@ describe("creators directory preview", () => {
     expect(await screen.findByRole("dialog")).toBeVisible()
     expect(screen.getAllByText("Travel Alpha").length).toBeGreaterThan(0)
     expect(screen.getByText("Travel creator")).toBeVisible()
+    expect(screen.getByRole("region", { name: "Estimated cost" })).toBeVisible()
   })
 })
