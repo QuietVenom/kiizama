@@ -1,3 +1,5 @@
+import { useOverlaySize } from "@/components/Responsive/useOverlaySize"
+import { overlayBounds } from "@/components/Responsive/layout"
 import { Drawer as ChakraDrawer, Portal } from "@chakra-ui/react"
 import * as React from "react"
 import { CloseButton } from "./close-button"
@@ -12,11 +14,31 @@ export const DrawerContent = React.forwardRef<
   HTMLDivElement,
   DrawerContentProps
 >(function DrawerContent(props, ref) {
-  const { children, portalled = true, portalRef, offset, ...rest } = props
+  const { children, portalled = true, portalRef, offset, css, ...rest } = props
+  const limitSize = useOverlaySize()
   return (
     <Portal disabled={!portalled} container={portalRef}>
       <ChakraDrawer.Positioner padding={offset}>
-        <ChakraDrawer.Content ref={ref} {...rest} asChild={false}>
+        <ChakraDrawer.Content
+          ref={ref}
+          {...rest}
+          asChild={false}
+          css={{
+            ...css,
+            "&": {
+              minWidth: 0,
+              overflowWrap: "anywhere",
+              width: limitSize(
+                rest.w ?? rest.width ?? "100%",
+                overlayBounds.maxWidth,
+              ),
+              maxHeight: limitSize(
+                rest.maxH ?? rest.maxHeight ?? "100dvh",
+                overlayBounds.maxHeight,
+              ),
+            },
+          }}
+        >
           {children}
         </ChakraDrawer.Content>
       </ChakraDrawer.Positioner>

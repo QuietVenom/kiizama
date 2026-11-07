@@ -82,7 +82,9 @@ const UserInformation = () => {
         {t("userInformation.title")}
       </Heading>
       <Box
-        w={{ sm: "full", md: "sm" }}
+        w="full"
+        maxW="sm"
+        minW={0}
         as="form"
         onSubmit={handleSubmit(onSubmit)}
       >
@@ -105,7 +107,7 @@ const UserInformation = () => {
               py={2}
               color={!currentUser?.full_name ? "gray" : "inherit"}
               truncate
-              maxW="sm"
+              maxW="full"
             >
               {currentUser?.full_name || t("userInformation.notAvailable")}
             </Text>
@@ -133,12 +135,12 @@ const UserInformation = () => {
               size="md"
             />
           ) : (
-            <Text fontSize="md" py={2} truncate maxW="sm">
+            <Text fontSize="md" py={2} truncate maxW="full">
               {currentUser?.email}
             </Text>
           )}
         </Field>
-        <Flex mt={4} gap={3}>
+        <Flex mt={4} gap={3} wrap="wrap">
           <Button
             layerStyle="brandGradientButton"
             onClick={editMode ? undefined : openEditMode}

@@ -20,6 +20,7 @@ import {
 } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { FiAlertCircle, FiFileText, FiSearch } from "react-icons/fi"
+import { fluidColumns, formSummaryLayout } from "@/components/Responsive/layout"
 
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
@@ -571,7 +572,7 @@ const CreatorStrategyBuilder = ({
       {...autofillIgnoreProps}
       onSubmit={handleSubmit(onSubmit)}
       display="grid"
-      gridTemplateColumns={{ base: "1fr", xl: "minmax(0, 1.65fr) 360px" }}
+      css={formSummaryLayout}
       gap={6}
     >
       <Flex direction="column" gap={6} minW={0}>
@@ -697,7 +698,7 @@ const CreatorStrategyBuilder = ({
           title={t("creator.step2.title")}
           description={t("creator.step2.description")}
         >
-          <Grid templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} gap={4}>
+          <Grid templateColumns={fluidColumns("18rem")} gap={4}>
             <Field
               required
               invalid={!!errors.goal_type}
@@ -757,11 +758,7 @@ const CreatorStrategyBuilder = ({
             </Field>
           </Grid>
 
-          <Grid
-            mt={4}
-            templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }}
-            gap={4}
-          >
+          <Grid mt={4} templateColumns={fluidColumns("18rem")} gap={4}>
             <Field
               required
               invalid={!!errors.creator_context}
@@ -947,11 +944,7 @@ const CreatorStrategyBuilder = ({
             )}
           />
 
-          <Grid
-            mt={4}
-            templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }}
-            gap={4}
-          >
+          <Grid mt={4} templateColumns={fluidColumns("18rem")} gap={4}>
             <Controller
               control={control}
               name="primary_platforms"
@@ -1071,11 +1064,7 @@ const CreatorStrategyBuilder = ({
             />
           </Grid>
 
-          <Grid
-            mt={4}
-            templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }}
-            gap={4}
-          >
+          <Grid mt={4} templateColumns={fluidColumns("18rem")} gap={4}>
             <Controller
               control={control}
               name="reputation_signals.strengths"

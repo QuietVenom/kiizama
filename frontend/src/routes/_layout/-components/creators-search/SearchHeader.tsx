@@ -19,7 +19,7 @@ export const SearchHeader = ({
       gap={{ base: 4, lg: 6 }}
       direction={{ base: "column", lg: "row" }}
     >
-      <Box flex="1" minW={0}>
+      <Box flex="1" minW={0} w={{ base: "full", lg: "auto" }}>
         <Text
           color="ui.text"
           fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}

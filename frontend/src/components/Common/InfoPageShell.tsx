@@ -17,6 +17,7 @@ const InfoPageShell = ({
   return (
     <Box
       minH="100vh"
+      overflowWrap="anywhere"
       position="relative"
       overflow="hidden"
       layerStyle="publicPage"

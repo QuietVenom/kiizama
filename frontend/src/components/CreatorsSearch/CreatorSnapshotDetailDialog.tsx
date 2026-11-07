@@ -12,7 +12,6 @@ import {
 import { type ReactNode, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { FiArrowUpRight } from "react-icons/fi"
-
 import type {
   BioLink,
   PostItem,
@@ -21,6 +20,7 @@ import type {
   ReelItem,
 } from "@/client"
 import { CreatorCostEstimate } from "@/components/CreatorsSearch/CreatorCostEstimate"
+import { WideContent } from "@/components/Responsive/WideContent"
 import { Button } from "@/components/ui/button"
 import {
   DialogBody,
@@ -897,7 +897,11 @@ const CreatorSnapshotDetailDialog = ({
                       t("creatorsSearch:detail.unknown"),
                   })}
                 >
-                  <Box overflowX="auto">
+                  <WideContent
+                    label={t("creatorsSearch:detail.posts.title", {
+                      count: postItems.length,
+                    })}
+                  >
                     <Table.Root size={{ base: "sm", md: "md" }} minW="920px">
                       <Table.Header>
                         <Table.Row>
@@ -1079,7 +1083,7 @@ const CreatorSnapshotDetailDialog = ({
                         })}
                       </Table.Body>
                     </Table.Root>
-                  </Box>
+                  </WideContent>
                 </ContentSection>
               ) : null}
 
@@ -1095,7 +1099,11 @@ const CreatorSnapshotDetailDialog = ({
                       t("creatorsSearch:detail.unknown"),
                   })}
                 >
-                  <Box overflowX="auto">
+                  <WideContent
+                    label={t("creatorsSearch:detail.reels.title", {
+                      count: reelItems.length,
+                    })}
+                  >
                     <Table.Root size={{ base: "sm", md: "md" }} minW="860px">
                       <Table.Header>
                         <Table.Row>
@@ -1225,7 +1233,7 @@ const CreatorSnapshotDetailDialog = ({
                         })}
                       </Table.Body>
                     </Table.Root>
-                  </Box>
+                  </WideContent>
                 </ContentSection>
               ) : null}
             </Flex>

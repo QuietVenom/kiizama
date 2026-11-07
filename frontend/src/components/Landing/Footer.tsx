@@ -15,13 +15,14 @@ import {
 import { Link } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 import { FaLinkedin } from "react-icons/fa"
-import {
-  cookieBackdropFadeIn,
-  cookieBackdropFadeOut,
-  cookiePanelSlideIn,
-  cookiePanelSlideOut,
-} from "@/components/Landing/cookieConsentAnimations"
 import { Checkbox } from "@/components/ui/checkbox"
+import {
+  DrawerBackdrop,
+  DrawerBody,
+  DrawerContent,
+  DrawerRoot,
+  DrawerTitle,
+} from "@/components/ui/drawer"
 import {
   COOKIE_CONSENT_OPTIONS,
   useCookieConsent,
@@ -47,7 +48,6 @@ const Footer = (_props: FooterProps) => {
     cookiePreferences,
     isCookiePanelMounted,
     isCookiePanelVisible,
-    cookiePanelAnimationMs,
     openCookiePanel,
     updateCookiePreference,
     acceptAllCookies,
@@ -265,91 +265,89 @@ const Footer = (_props: FooterProps) => {
       </Box>
 
       {isCookiePanelMounted && (
-        <Box
-          position="fixed"
-          inset={0}
-          zIndex="overlay"
-          pointerEvents={isCookiePanelVisible ? "auto" : "none"}
+        <DrawerRoot
+          placement="bottom"
+          open={isCookiePanelVisible}
+          closeOnEscape={false}
+          closeOnInteractOutside={false}
         >
-          <Box
-            position="absolute"
-            inset={0}
-            bg="ui.overlayBackdrop"
-            animation={`${isCookiePanelVisible ? cookieBackdropFadeIn : cookieBackdropFadeOut} ${cookiePanelAnimationMs}ms ease forwards`}
-          />
-          <Box
-            position="absolute"
-            bottom={0}
-            insetX={0}
+          <DrawerBackdrop />
+          <DrawerContent
+            maxW="full"
+            aria-label={t("footer.cookiePanel.title")}
             layerStyle="cookiePanel"
+            mx="auto"
             px={{ base: 4, md: 6 }}
             py={{ base: 4, md: 5 }}
-            transformOrigin="bottom center"
-            animation={`${isCookiePanelVisible ? cookiePanelSlideIn : cookiePanelSlideOut} ${cookiePanelAnimationMs}ms cubic-bezier(0.22, 1, 0.36, 1) forwards`}
           >
-            <Stack gap={4}>
-              <Flex justify="flex-end">
-                <Button size="sm" onClick={savePreferencesAndClose}>
-                  {t("footer.cookiePanel.done")}
-                </Button>
-              </Flex>
+            <DrawerBody p={0} minH={0} overflowY="auto">
+              <Stack gap={4}>
+                <Flex justify="flex-end">
+                  <Button size="sm" onClick={savePreferencesAndClose}>
+                    {t("footer.cookiePanel.done")}
+                  </Button>
+                </Flex>
 
-              <Stack gap={1} align="center">
-                <Text textAlign="center" fontSize={{ base: "md", md: "lg" }}>
-                  {t("footer.cookiePanel.title")}
-                </Text>
-                <Text
-                  textAlign="center"
-                  color="ui.secondaryText"
-                  fontSize={{ base: "sm", md: "md" }}
-                  maxW="4xl"
-                >
-                  {t("footer.cookiePanel.description")}
-                </Text>
-              </Stack>
-
-              <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={3}>
-                {COOKIE_CONSENT_OPTIONS.map((option) => (
-                  <HStack
-                    key={option.key}
-                    justify="space-between"
-                    borderWidth="1px"
-                    borderColor="ui.borderSoft"
-                    rounded="xl"
-                    px={4}
-                    py={3}
+                <Stack gap={1} align="center">
+                  <DrawerTitle
+                    textAlign="center"
+                    fontSize={{ base: "md", md: "lg" }}
                   >
-                    <Text color="ui.text" fontWeight="medium">
-                      {t(`footer.cookiePanel.options.${option.key}`)}
-                    </Text>
-                    <Checkbox
-                      checked={cookiePreferences[option.key]}
-                      disabled={!option.editable}
-                      aria-label={t("footer.cookiePanel.aria.cookies", {
-                        label: t(`footer.cookiePanel.options.${option.key}`),
-                      })}
-                      onCheckedChange={({ checked }) => {
-                        if (option.key === "strictlyNecessary") {
-                          return
-                        }
-                        updateCookiePreference(option.key, checked)
-                      }}
-                    />
-                  </HStack>
-                ))}
-              </SimpleGrid>
+                    {t("footer.cookiePanel.title")}
+                  </DrawerTitle>
+                  <Text
+                    textAlign="center"
+                    color="ui.secondaryText"
+                    fontSize={{ base: "sm", md: "md" }}
+                    maxW="4xl"
+                  >
+                    {t("footer.cookiePanel.description")}
+                  </Text>
+                </Stack>
 
-              <Stack gap={1} align="center">
-                <Button variant="outline" onClick={acceptAllCookies}>
-                  {t("footer.cookiePanel.acceptAll")}
-                </Button>
-                <Link to="/cookie-notice" className="legal-link">
-                  {t("footer.cookiePanel.details")}
-                </Link>
+                <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={3}>
+                  {COOKIE_CONSENT_OPTIONS.map((option) => (
+                    <HStack
+                      key={option.key}
+                      justify="space-between"
+                      borderWidth="1px"
+                      borderColor="ui.borderSoft"
+                      rounded="xl"
+                      px={4}
+                      py={3}
+                    >
+                      <Text color="ui.text" fontWeight="medium">
+                        {t(`footer.cookiePanel.options.${option.key}`)}
+                      </Text>
+                      <Checkbox
+                        checked={cookiePreferences[option.key]}
+                        disabled={!option.editable}
+                        aria-label={t("footer.cookiePanel.aria.cookies", {
+                          label: t(`footer.cookiePanel.options.${option.key}`),
+                        })}
+                        onCheckedChange={({ checked }) => {
+                          if (option.key === "strictlyNecessary") {
+                            return
+                          }
+                          updateCookiePreference(option.key, checked)
+                        }}
+                      />
+                    </HStack>
+                  ))}
+                </SimpleGrid>
+
+                <Stack gap={1} align="center">
+                  <Button variant="outline" onClick={acceptAllCookies}>
+                    {t("footer.cookiePanel.acceptAll")}
+                  </Button>
+                  <Link to="/cookie-notice" className="legal-link">
+                    {t("footer.cookiePanel.details")}
+                  </Link>
+                </Stack>
               </Stack>
-            </Stack>
-          </Box>
-        </Box>
+            </DrawerBody>
+          </DrawerContent>
+        </DrawerRoot>
       )}
     </>
   )

@@ -124,7 +124,7 @@ const LandingNavbar = ({
       <Container maxW="full" py={4} px={{ base: 4, md: 8, lg: 12 }}>
         <Box
           display="grid"
-          gridTemplateColumns={{ base: "1fr auto", md: "1fr auto 1fr" }}
+          gridTemplateColumns={{ base: "1fr auto", xl: "1fr auto 1fr" }}
           alignItems="center"
           w="full"
           gap={{ base: 2, md: 8 }}
@@ -150,7 +150,7 @@ const LandingNavbar = ({
           <HStack
             gap={2}
             justifySelf="center"
-            display={{ base: "none", md: "flex" }}
+            display={{ base: "none", xl: "flex" }}
           >
             {sectionLinks.map((link) =>
               sectionRefs?.[link.key] ? (
@@ -204,8 +204,8 @@ const LandingNavbar = ({
 
           <HStack
             gap={2}
-            justifySelf={{ base: "auto", md: "end" }}
-            display={{ base: "none", md: "flex" }}
+            justifySelf={{ base: "auto", xl: "end" }}
+            display={{ base: "none", xl: "flex" }}
           >
             <LanguageSwitcher variant="landing" />
             <LandingThemeToggleButton />
@@ -249,7 +249,7 @@ const LandingNavbar = ({
           </HStack>
 
           <IconButton
-            display={{ base: "inline-flex", md: "none" }}
+            display={{ base: "inline-flex", xl: "none" }}
             aria-label={mobileMenuOpen ? t("menu.close") : t("menu.open")}
             variant="ghost"
             color="ui.text"
@@ -293,7 +293,7 @@ const LandingNavbar = ({
         </Box>
 
         <Box
-          display={{ base: "block", md: "none" }}
+          display={{ base: "block", xl: "none" }}
           mt={mobileMenuOpen ? 3 : 0}
           borderWidth={mobileMenuOpen ? "1px" : "0"}
           borderColor={mobileMenuOpen ? "ui.border" : "transparent"}
@@ -301,7 +301,9 @@ const LandingNavbar = ({
           bg="ui.panel"
           boxShadow={mobileMenuOpen ? "ui.panelSm" : "none"}
           overflow="hidden"
-          maxH={mobileMenuOpen ? "420px" : "0px"}
+          maxH={mobileMenuOpen ? "calc(100dvh - 7rem)" : "0px"}
+          overflowY="auto"
+          inert={!mobileMenuOpen}
           opacity={mobileMenuOpen ? 1 : 0}
           transform={mobileMenuOpen ? "translateY(0)" : "translateY(-8px)"}
           transition="max-height 280ms ease, opacity 220ms ease, transform 280ms ease, margin 280ms ease"

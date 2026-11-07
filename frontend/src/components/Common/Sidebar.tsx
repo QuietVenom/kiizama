@@ -536,11 +536,27 @@ const SidebarBody = ({
   )
 }
 
-const Sidebar = () => {
+type SidebarProps = {
+  navigationId?: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  showTrigger?: boolean
+  triggerRef?: React.RefObject<HTMLButtonElement | null>
+}
+
+const Sidebar = ({
+  navigationId,
+  open: controlledOpen,
+  onOpenChange,
+  showTrigger = true,
+  triggerRef,
+}: SidebarProps) => {
   const { t } = useTranslation("common")
   const { pathname } = useLocation()
   const { logout, user } = useAuth()
-  const [open, setOpen] = useState(false)
+  const [localOpen, setLocalOpen] = useState(false)
+  const open = controlledOpen ?? localOpen
+  const setOpen = onOpenChange ?? setLocalOpen
 
   const handleLogout = () => {
     logout()
@@ -551,29 +567,29 @@ const Sidebar = () => {
     <>
       <DrawerRoot
         placement="start"
+        ids={navigationId ? { content: navigationId } : undefined}
+        finalFocusEl={triggerRef ? () => triggerRef.current : undefined}
         open={open}
         onOpenChange={(e) => setOpen(e.open)}
       >
         <DrawerBackdrop />
-        <DrawerTrigger asChild>
-          <IconButton
-            variant="ghost"
-            color="inherit"
-            display={{ base: "flex", md: "none" }}
-            aria-label={t("menu.open")}
-            position="fixed"
-            top={3}
-            left={3}
-            zIndex={100}
-            bg="ui.panel"
-            borderWidth="1px"
-            borderColor="ui.sidebarBorder"
-            rounded="xl"
-            boxShadow="ui.panelSm"
-          >
-            <FaBars />
-          </IconButton>
-        </DrawerTrigger>
+        {showTrigger ? (
+          <DrawerTrigger asChild>
+            <IconButton
+              variant="ghost"
+              color="inherit"
+              display={{ base: "flex", md: "none" }}
+              aria-label={t("menu.open")}
+              bg="ui.panel"
+              borderWidth="1px"
+              borderColor="ui.sidebarBorder"
+              rounded="xl"
+              boxShadow="ui.panelSm"
+            >
+              <FaBars />
+            </IconButton>
+          </DrawerTrigger>
+        ) : null}
         <DrawerContent maxW="xs" p={0}>
           <DrawerCloseTrigger />
           <DrawerBody p={0}>
@@ -595,7 +611,7 @@ const Sidebar = () => {
         top={0}
         w={{ md: "clamp(245px, 20vw, 270px)" }}
         minW={{ md: "clamp(245px, 20vw, 270px)" }}
-        h="100vh"
+        h="full"
       >
         <SidebarBody
           currentPath={pathname}

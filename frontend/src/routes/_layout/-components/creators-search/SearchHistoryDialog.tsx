@@ -60,7 +60,7 @@ export const SearchHistoryDialog = ({
             fontWeight="black"
             letterSpacing="-0.02em"
             lineHeight="1"
-            whiteSpace="nowrap"
+            whiteSpace="normal"
           >
             {t("creatorsSearch:history.dialog.title")}
           </DialogTitle>

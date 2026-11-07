@@ -225,7 +225,7 @@ export function DirectCreatorsSearchTab({
 
       <Grid
         templateColumns={{
-          base: "1fr",
+          base: "minmax(0, 1fr)",
           xl: "minmax(280px, 0.55fr) minmax(0, 1.75fr)",
         }}
         gap={6}

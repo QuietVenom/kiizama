@@ -23,7 +23,13 @@ const MetricCard = ({ icon, label, value, tone }: MetricCardProps) => {
   const toneStyle = toneStyles[tone]
 
   return (
-    <Box layerStyle="dashboardCardInteractive" px={6} py={6} minH="200px">
+    <Box
+      minW={0}
+      layerStyle="dashboardCardInteractive"
+      px={6}
+      py={6}
+      minH="200px"
+    >
       <Text
         fontSize="sm"
         color="ui.mutedText"
@@ -37,6 +43,7 @@ const MetricCard = ({ icon, label, value, tone }: MetricCardProps) => {
       <Flex alignItems="center" gap={3} mb={5}>
         <Flex
           boxSize="14"
+          flexShrink={0}
           rounded="2xl"
           bg={toneStyle.bg}
           alignItems="center"
@@ -49,6 +56,7 @@ const MetricCard = ({ icon, label, value, tone }: MetricCardProps) => {
           fontSize={{ base: "md", lg: "lg" }}
           color="ui.secondaryText"
           fontWeight="bold"
+          minW={0}
           maxW="30ch"
         >
           {displayLabel}

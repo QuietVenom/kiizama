@@ -37,7 +37,9 @@ Local service URLs:
 - Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
 - ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
-The first startup can take a while because the backend waits for dependencies and runs prestart tasks.
+The first startup can take a while because the backend waits for dependencies and runs prestart tasks. The local override explicitly connects backend, prestart and worker to the Compose Postgres service. Prestart applies Alembic migrations and seeds admin roles, billing features/plans/limits, the configured first superuser and the optional system admin. These seeds do not restore previously scraped profiles or job history.
+
+After rebuilding the frontend, reload existing browser tabs to load the new application. Verify the built Nginx HTML cache policy with `bash scripts/test-frontend-serving.sh` (defaults to localhost:5173).
 
 Useful log commands:
 
@@ -298,3 +300,28 @@ Detect hardcoded secrets.................................................Passed
 backend mypy.............................................................Passed
 biome check..............................................................Passed
 ```
+
+## Home-screen installation
+
+The application can be added to the home screen without a store listing. Settings → Install Kiizama contains localized iOS/Android instructions for every user role. The browser may offer a direct install button; availability is controlled by browser eligibility and user engagement, so manual instructions remain available.
+
+The shared app bootstrap advertises `/manifest.webmanifest` on application/local/preview hosts, excluding the known Kiizama marketing hosts. Production installation should begin at `https://app.kiizama.com/settings?tab=installation`. Manifest identity and scope are `/` on that origin; the launch URL is `/overview`, preserving existing login/return behavior and avoiding the app-root redirect to www. No tokens or user-specific URLs are stored in installation metadata. Installed iOS apps may require a separate login.
+
+This release requires an internet connection. It does not register a service worker, cache private responses or add offline/push support. Production requires HTTPS (localhost is suitable for desktop development; opening a laptop's HTTP LAN IP on a phone is not equivalent to production HTTPS).
+
+Icons come from `frontend/public/assets/images/symbol.svg`, rendered onto an opaque warm background. Regenerate checked-in PNGs with `cd frontend && npx tsx scripts/generate-app-icons.ts` (Playwright Chromium required). The maskable version reserves padding inside the safe circle.
+
+After rebuilding the Docker frontend, verify real serving behavior:
+
+```bash
+bash scripts/test-frontend-serving.sh
+python3 scripts/test-installation-assets.py
+```
+
+Before release, verify on physical devices over HTTPS:
+
+- iPhone/iPad Safari: Share → Add to Home Screen, enable Open as Web App if offered, confirm Kiizama name/icon; launch, sign in, close/reopen and log out.
+- Android Chrome: menu → Install app / Add to Home screen; confirm icon/masking and standalone launch, sign in and reopen. Test the optional native button if the browser offers it.
+- Both: open Settings and search, rotate, use the OS keyboard, follow external links and confirm account actions remain reachable. Confirm that disconnecting does not imply offline support.
+
+Desktop browser fixtures can verify metadata, guide layout and synthetic install events; they do not certify the OS installation flow. Existing open tabs need a reload after a frontend rebuild.

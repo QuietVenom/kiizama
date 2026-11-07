@@ -35,5 +35,57 @@
       "cancel": "Cancel",
       "successToast": "Account deleted successfully."
     }
+  },
+  "installation": {
+    "title": "Kiizama on your home screen",
+    "description": "Open Kiizama from its own icon, like an app, without visiting an app store.",
+    "online": "An internet connection is required. You may need to sign in again when you first open the installed app.",
+    "installed": "Kiizama is already installed or running as an app on this device.",
+    "action": "Install Kiizama",
+    "prompting": "Waiting for confirmation…",
+    "stepsLabel": "Installation steps for {{platform}}",
+    "result": {
+      "accepted": "Request sent. Complete the browser confirmation if it appears.",
+      "dismissed": "Installation cancelled. You can keep using Kiizama and add it later from your browser menu.",
+      "unavailable": "The browser could not start installation. Follow the steps below to add Kiizama manually."
+    },
+    "ios": {
+      "step1": {
+        "title": "Open Kiizama in Safari",
+        "description": "Visit app.kiizama.com on your iPhone or iPad. If you opened the link inside another app, open it in Safari first."
+      },
+      "step2": {
+        "title": "Tap Share",
+        "description": "Find the square with an upward arrow. Its location depends on your Safari version."
+      },
+      "step3": {
+        "title": "Add to Home Screen",
+        "description": "Choose “Add to Home Screen”. Keep “Open as Web App” enabled if shown, check the Kiizama name and confirm “Add”."
+      },
+      "step4": {
+        "title": "Open your new app",
+        "description": "Tap the Kiizama icon on your home screen to go straight to your workspace."
+      },
+      "note": "On iOS, finish installation through the Safari menu. If the option is missing, check “Edit Actions” in Share."
+    },
+    "android": {
+      "step1": {
+        "title": "Open Kiizama in Chrome",
+        "description": "Visit app.kiizama.com on your Android phone or tablet. If you are inside another app, open the link in Chrome."
+      },
+      "step2": {
+        "title": "Open the browser menu",
+        "description": "Tap Chrome’s three-dot menu. Its location may vary with the browser version."
+      },
+      "step3": {
+        "title": "Install or add to your home screen",
+        "description": "Choose “Install app” or “Add to Home screen” and confirm. Wording and options depend on the browser."
+      },
+      "step4": {
+        "title": "Open Kiizama from its icon",
+        "description": "Find Kiizama on your home screen or in your app list and open it to return to your workspace."
+      },
+      "note": "If Chrome offers direct installation, a button also appears above. Otherwise use the browser menu; a shortcut may open as a browser tab."
+    }
   }
 }

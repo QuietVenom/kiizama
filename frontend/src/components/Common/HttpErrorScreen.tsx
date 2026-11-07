@@ -44,7 +44,11 @@ const HttpErrorScreen = ({
 
   return (
     <Flex
-      height="100vh"
+      minH="100vh"
+      css={{ minHeight: "100dvh" }}
+      position="relative"
+      overflow="hidden"
+      overflowWrap="anywhere"
       align="center"
       justify="center"
       flexDir="column"

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { type RenderOptions, render } from "@testing-library/react"
 import type { PropsWithChildren, ReactElement } from "react"
-
+import { AppInstallProvider } from "../../../src/components/Installation/AppInstallProvider"
 import { CustomProvider } from "../../../src/components/ui/provider"
 import type { SupportedLanguage } from "../../../src/i18n"
 import i18n, { DEFAULT_LANGUAGE, LANGUAGE_STORAGE_KEY } from "../../../src/i18n"
@@ -46,7 +46,9 @@ export const renderWithProviders = (
 
   const Wrapper = ({ children }: PropsWithChildren) => (
     <CustomProvider>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <AppInstallProvider>{children}</AppInstallProvider>
+      </QueryClientProvider>
     </CustomProvider>
   )
 

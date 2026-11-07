@@ -9,6 +9,7 @@ import {
 import { Link as RouterLink } from "@tanstack/react-router"
 import { useEffect } from "react"
 import InfoPageShell from "@/components/Common/InfoPageShell"
+import { WideContent } from "@/components/Responsive/WideContent"
 import { LANGUAGE_STORAGE_KEY } from "@/i18n"
 import { COOKIE_CONSENT_NAME } from "@/lib/cookie-settings"
 
@@ -54,7 +55,7 @@ export function CookieTablesPage() {
 
           <Stack as="section" gap={4}>
             <Heading size="lg">Strictly Necessary Cookies</Heading>
-            <Box overflowX="auto">
+            <WideContent label="Cookie tables">
               <Table.Root size={{ base: "sm", md: "md" }} minW="980px">
                 <Table.Header>
                   <Table.Row>
@@ -154,12 +155,12 @@ export function CookieTablesPage() {
                   </Table.Row>
                 </Table.Body>
               </Table.Root>
-            </Box>
+            </WideContent>
           </Stack>
 
           <Stack as="section" gap={4}>
             <Heading size="lg">Functional Cookies</Heading>
-            <Box overflowX="auto">
+            <WideContent label="Cookie tables">
               <Table.Root size={{ base: "sm", md: "md" }} minW="980px">
                 <Table.Header>
                   <Table.Row>
@@ -180,12 +181,12 @@ export function CookieTablesPage() {
                   </Table.Row>
                 </Table.Body>
               </Table.Root>
-            </Box>
+            </WideContent>
           </Stack>
 
           <Stack as="section" gap={4}>
             <Heading size="lg">Analytics Cookies</Heading>
-            <Box overflowX="auto">
+            <WideContent label="Cookie tables">
               <Table.Root size={{ base: "sm", md: "md" }} minW="980px">
                 <Table.Header>
                   <Table.Row>
@@ -206,12 +207,12 @@ export function CookieTablesPage() {
                   </Table.Row>
                 </Table.Body>
               </Table.Root>
-            </Box>
+            </WideContent>
           </Stack>
 
           <Stack as="section" gap={4}>
             <Heading size="lg">Marketing Cookies</Heading>
-            <Box overflowX="auto">
+            <WideContent label="Cookie tables">
               <Table.Root size={{ base: "sm", md: "md" }} minW="980px">
                 <Table.Header>
                   <Table.Row>
@@ -232,7 +233,7 @@ export function CookieTablesPage() {
                   </Table.Row>
                 </Table.Body>
               </Table.Root>
-            </Box>
+            </WideContent>
           </Stack>
 
           <Text color="ui.mutedText" fontSize="sm">

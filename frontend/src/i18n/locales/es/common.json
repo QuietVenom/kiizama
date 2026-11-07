@@ -13,7 +13,8 @@
     "remove": "Quitar",
     "retry": "Reintentar",
     "save": "Guardar",
-    "search": "Buscar"
+    "search": "Buscar",
+    "userActions": "Acciones de {{name}}"
   },
   "billingNotices": {
     "emptyDescription": "Aquí aparecerán las próximas renovaciones y recordatorios de prueba.",
@@ -72,7 +73,8 @@
     "password": "Contraseña",
     "payments": "Pagos",
     "settings": "Configuración",
-    "signUp": "Crear cuenta"
+    "signUp": "Crear cuenta",
+    "installApp": "Instalar Kiizama"
   },
   "theme": {
     "darkMode": "Modo oscuro",
@@ -80,5 +82,16 @@
     "switchToDarkMode": "Cambiar a modo oscuro",
     "switchToLightMode": "Cambiar a modo claro",
     "system": "Sistema"
+  },
+  "pagination": {
+    "navigation": "Paginación",
+    "previous": "Página anterior",
+    "next": "Página siguiente",
+    "pageOf": "{{page}} de {{total}}",
+    "rangeOf": "{{start}}–{{end}} de {{total}}"
+  },
+  "content": {
+    "table": "Tabla",
+    "code": "Código"
   }
 }
