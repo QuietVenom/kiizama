@@ -2,6 +2,7 @@ import { Box, Flex, IconButton, Input, Text, Textarea } from "@chakra-ui/react"
 import { type DragEvent, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { FiChevronLeft, FiChevronRight, FiPlus, FiTrash2 } from "react-icons/fi"
+import { WideContent } from "@/components/Responsive/WideContent"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -232,177 +233,183 @@ export const KanbanBoardView = ({
         onChange={(event) => onChange({ ...board, title: event.target.value })}
       />
 
-      <Flex mt={5} gap={4} align="flex-start" overflowX="auto" pb={2}>
-        {board.columns.map((column, columnIndex) => (
-          <Box
-            key={column.id}
-            w="280px"
-            flexShrink={0}
-            rounded="24px"
-            borderWidth="1px"
-            borderColor="ui.borderSoft"
-            bg="ui.surfaceSoft"
-            p={3.5}
-            data-testid="kanban-column"
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={(event) => handleDrop(event, column.id, null)}
-          >
-            <Flex align="center" gap={1.5}>
-              <Input
-                value={column.name}
-                placeholder={t("kanban.columnNamePlaceholder")}
-                variant="flushed"
-                size="sm"
-                fontWeight="black"
-                onChange={(event) =>
-                  updateColumn(column.id, { name: event.target.value })
-                }
-              />
-              <Text
-                color="ui.mutedText"
-                fontSize="xs"
-                fontWeight="bold"
-                whiteSpace="nowrap"
-              >
-                {column.tasks.length}
-              </Text>
-              <Button
-                size="2xs"
-                variant={confirmingColumnId === column.id ? "solid" : "ghost"}
-                colorPalette={
-                  confirmingColumnId === column.id ? "red" : undefined
-                }
-                color={
-                  confirmingColumnId === column.id ? undefined : "ui.mutedText"
-                }
-                flexShrink={0}
-                aria-label={t("kanban.deleteColumn")}
-                onClick={() => deleteColumn(column)}
-              >
-                {confirmingColumnId === column.id ? (
-                  t("kanban.confirmDelete")
-                ) : (
-                  <FiTrash2 />
-                )}
-              </Button>
-            </Flex>
-
-            <Flex mt={3} direction="column" gap={2.5}>
-              {column.tasks.map((task, taskIndex) => (
-                <Box
-                  key={task.id}
-                  draggable
-                  cursor="grab"
-                  rounded="18px"
-                  borderWidth="1px"
-                  borderColor="ui.border"
-                  bg="ui.panel"
-                  boxShadow="ui.card"
-                  p={3}
-                  data-testid="kanban-task"
-                  onDragStart={() => {
-                    dragSourceRef.current = {
-                      taskId: task.id,
-                      fromColumnId: column.id,
-                    }
-                  }}
-                  onDragEnd={() => {
-                    dragSourceRef.current = null
-                  }}
-                  onDragOver={(event) => event.preventDefault()}
-                  onDrop={(event) => handleDrop(event, column.id, taskIndex)}
+      <WideContent label={t("kanban.untitled")} mt={5}>
+        <Flex gap={4} align="flex-start" pb={2}>
+          {board.columns.map((column, columnIndex) => (
+            <Box
+              key={column.id}
+              w="min(280px, 100%)"
+              flexShrink={0}
+              rounded="24px"
+              borderWidth="1px"
+              borderColor="ui.borderSoft"
+              bg="ui.surfaceSoft"
+              p={3.5}
+              data-testid="kanban-column"
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => handleDrop(event, column.id, null)}
+            >
+              <Flex align="center" gap={1.5}>
+                <Input
+                  value={column.name}
+                  placeholder={t("kanban.columnNamePlaceholder")}
+                  variant="flushed"
+                  size="sm"
+                  fontWeight="black"
+                  onChange={(event) =>
+                    updateColumn(column.id, { name: event.target.value })
+                  }
+                />
+                <Text
+                  color="ui.mutedText"
+                  fontSize="xs"
+                  fontWeight="bold"
+                  whiteSpace="nowrap"
                 >
-                  <Input
-                    value={task.title}
-                    placeholder={t("kanban.taskTitlePlaceholder")}
-                    variant="flushed"
-                    size="sm"
-                    fontWeight="bold"
-                    onChange={(event) =>
-                      updateTask(column.id, task.id, {
-                        title: event.target.value,
-                      })
-                    }
-                  />
-                  <Textarea
-                    mt={1.5}
-                    value={task.description ?? ""}
-                    placeholder={t("kanban.taskDescriptionPlaceholder")}
-                    size="xs"
-                    variant="subtle"
-                    rows={1}
-                    bg="transparent"
-                    color="ui.secondaryText"
-                    onChange={(event) =>
-                      updateTask(column.id, task.id, {
-                        description: event.target.value,
-                      })
-                    }
-                  />
-                  <Flex mt={2} align="center" justify="space-between" gap={1}>
-                    <Flex align="center" gap={1}>
+                  {column.tasks.length}
+                </Text>
+                <Button
+                  size="2xs"
+                  variant={confirmingColumnId === column.id ? "solid" : "ghost"}
+                  colorPalette={
+                    confirmingColumnId === column.id ? "red" : undefined
+                  }
+                  color={
+                    confirmingColumnId === column.id
+                      ? undefined
+                      : "ui.mutedText"
+                  }
+                  flexShrink={0}
+                  aria-label={t("kanban.deleteColumn")}
+                  onClick={() => deleteColumn(column)}
+                >
+                  {confirmingColumnId === column.id ? (
+                    t("kanban.confirmDelete")
+                  ) : (
+                    <FiTrash2 />
+                  )}
+                </Button>
+              </Flex>
+
+              <Flex mt={3} direction="column" gap={2.5}>
+                {column.tasks.map((task, taskIndex) => (
+                  <Box
+                    key={task.id}
+                    draggable
+                    cursor="grab"
+                    rounded="18px"
+                    borderWidth="1px"
+                    borderColor="ui.border"
+                    bg="ui.panel"
+                    boxShadow="ui.card"
+                    p={3}
+                    data-testid="kanban-task"
+                    onDragStart={() => {
+                      dragSourceRef.current = {
+                        taskId: task.id,
+                        fromColumnId: column.id,
+                      }
+                    }}
+                    onDragEnd={() => {
+                      dragSourceRef.current = null
+                    }}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={(event) => handleDrop(event, column.id, taskIndex)}
+                  >
+                    <Input
+                      value={task.title}
+                      placeholder={t("kanban.taskTitlePlaceholder")}
+                      variant="flushed"
+                      size="sm"
+                      fontWeight="bold"
+                      onChange={(event) =>
+                        updateTask(column.id, task.id, {
+                          title: event.target.value,
+                        })
+                      }
+                    />
+                    <Textarea
+                      mt={1.5}
+                      value={task.description ?? ""}
+                      placeholder={t("kanban.taskDescriptionPlaceholder")}
+                      size="xs"
+                      variant="subtle"
+                      rows={1}
+                      bg="transparent"
+                      color="ui.secondaryText"
+                      onChange={(event) =>
+                        updateTask(column.id, task.id, {
+                          description: event.target.value,
+                        })
+                      }
+                    />
+                    <Flex mt={2} align="center" justify="space-between" gap={1}>
+                      <Flex align="center" gap={1}>
+                        <IconButton
+                          aria-label={t("kanban.moveLeft")}
+                          size="2xs"
+                          variant="ghost"
+                          color="ui.mutedText"
+                          visibility={columnIndex === 0 ? "hidden" : "visible"}
+                          onClick={() =>
+                            moveTaskToAdjacent(columnIndex, task, -1)
+                          }
+                        >
+                          <FiChevronLeft />
+                        </IconButton>
+                        <IconButton
+                          aria-label={t("kanban.moveRight")}
+                          size="2xs"
+                          variant="ghost"
+                          color="ui.mutedText"
+                          visibility={
+                            columnIndex === board.columns.length - 1
+                              ? "hidden"
+                              : "visible"
+                          }
+                          onClick={() =>
+                            moveTaskToAdjacent(columnIndex, task, 1)
+                          }
+                        >
+                          <FiChevronRight />
+                        </IconButton>
+                      </Flex>
                       <IconButton
-                        aria-label={t("kanban.moveLeft")}
+                        aria-label={t("kanban.deleteTask")}
                         size="2xs"
                         variant="ghost"
                         color="ui.mutedText"
-                        visibility={columnIndex === 0 ? "hidden" : "visible"}
-                        onClick={() =>
-                          moveTaskToAdjacent(columnIndex, task, -1)
-                        }
+                        onClick={() => deleteTask(column.id, task.id)}
                       >
-                        <FiChevronLeft />
-                      </IconButton>
-                      <IconButton
-                        aria-label={t("kanban.moveRight")}
-                        size="2xs"
-                        variant="ghost"
-                        color="ui.mutedText"
-                        visibility={
-                          columnIndex === board.columns.length - 1
-                            ? "hidden"
-                            : "visible"
-                        }
-                        onClick={() => moveTaskToAdjacent(columnIndex, task, 1)}
-                      >
-                        <FiChevronRight />
+                        <FiTrash2 />
                       </IconButton>
                     </Flex>
-                    <IconButton
-                      aria-label={t("kanban.deleteTask")}
-                      size="2xs"
-                      variant="ghost"
-                      color="ui.mutedText"
-                      onClick={() => deleteTask(column.id, task.id)}
-                    >
-                      <FiTrash2 />
-                    </IconButton>
-                  </Flex>
-                </Box>
-              ))}
-            </Flex>
+                  </Box>
+                ))}
+              </Flex>
 
-            <AddTaskRow onAdd={(title) => addTask(column.id, title)} />
+              <AddTaskRow onAdd={(title) => addTask(column.id, title)} />
+            </Box>
+          ))}
+
+          <Box flexShrink={0} pt={1}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={board.columns.length >= MAX_KANBAN_COLUMNS}
+              onClick={addColumn}
+            >
+              <FiPlus />
+              {t("kanban.addColumn")}
+            </Button>
+            {board.columns.length >= MAX_KANBAN_COLUMNS ? (
+              <Text mt={2} color="ui.mutedText" fontSize="xs">
+                {t("kanban.columnLimit", { max: MAX_KANBAN_COLUMNS })}
+              </Text>
+            ) : null}
           </Box>
-        ))}
-
-        <Box flexShrink={0} pt={1}>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={board.columns.length >= MAX_KANBAN_COLUMNS}
-            onClick={addColumn}
-          >
-            <FiPlus />
-            {t("kanban.addColumn")}
-          </Button>
-          {board.columns.length >= MAX_KANBAN_COLUMNS ? (
-            <Text mt={2} color="ui.mutedText" fontSize="xs">
-              {t("kanban.columnLimit", { max: MAX_KANBAN_COLUMNS })}
-            </Text>
-          ) : null}
-        </Box>
-      </Flex>
+        </Flex>
+      </WideContent>
     </Box>
   )
 }

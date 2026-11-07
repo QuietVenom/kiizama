@@ -50,7 +50,9 @@ export async function ensureCookieConsent(
   await context.addCookies([...cookieConsentCookies, ...languageCookies])
   await context.addInitScript(
     ({ value }) => {
-      document.documentElement.lang = value
+      // WebKit can run init scripts before the root element exists.
+      // i18n also sets lang after application bootstrap.
+      document.documentElement?.setAttribute("lang", value)
     },
     {
       value: e2eLanguage,

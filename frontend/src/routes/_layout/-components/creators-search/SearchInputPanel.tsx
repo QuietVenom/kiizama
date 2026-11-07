@@ -59,7 +59,10 @@ export const SearchInputPanel = ({
     >
       <Box>
         <Grid
-          templateColumns={{ base: "1fr auto", md: "minmax(0, 1fr) auto" }}
+          templateColumns={{
+            base: "minmax(0, 1fr) auto",
+            md: "minmax(0, 1fr) auto",
+          }}
           alignItems="start"
           gap={3}
         >
@@ -86,7 +89,7 @@ export const SearchInputPanel = ({
             <Portal>
               <Tooltip.Positioner>
                 <Tooltip.Content
-                  maxW="320px"
+                  maxW="min(320px, calc(100vw - 1rem))"
                   rounded="2xl"
                   borderWidth="1px"
                   borderColor="ui.border"
@@ -148,7 +151,10 @@ export const SearchInputPanel = ({
         label={
           <Box w="full">
             <Grid
-              templateColumns={{ base: "1fr", md: "minmax(0, 1fr) auto" }}
+              templateColumns={{
+                base: "minmax(0, 1fr)",
+                md: "minmax(0, 1fr) auto",
+              }}
               alignItems="center"
               gap={3}
             >

@@ -27,6 +27,7 @@ import {
 } from "react-icons/fi"
 import { CopyUsernameButton } from "@/components/CreatorsSearch/CopyUsernameButton"
 import CreatorSnapshotDetailDialog from "@/components/CreatorsSearch/CreatorSnapshotDetailDialog"
+import { AdaptivePagination } from "@/components/Responsive/AdaptivePagination"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -38,13 +39,6 @@ import {
   DialogRoot,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  PaginationItems,
-  PaginationNextTrigger,
-  PaginationPageText,
-  PaginationPrevTrigger,
-  PaginationRoot,
-} from "@/components/ui/pagination"
 import {
   getCreatorDirectoryFullProfile,
   searchCreatorsDirectory,
@@ -80,6 +74,8 @@ type UpdateQueueItem = {
 }
 
 const filterCardProps = {
+  minW: 0,
+  maxW: "full",
   borderWidth: "1px",
   borderColor: "ui.border",
   bg: "ui.panel",
@@ -503,7 +499,7 @@ export function CreatorsDirectoryPreview() {
       ) : null}
 
       <Grid
-        templateColumns={{ base: "1fr", xl: "320px minmax(0, 1fr)" }}
+        templateColumns={{ base: "minmax(0, 1fr)", xl: "320px minmax(0, 1fr)" }}
         gap={6}
       >
         <Box
@@ -511,7 +507,7 @@ export function CreatorsDirectoryPreview() {
           p={{ base: 5, md: 6 }}
           data-testid="directory-filters-card"
         >
-          <HStack justify="space-between" align="center" mb={4}>
+          <HStack wrap="wrap" justify="space-between" align="center" mb={4}>
             <Box>
               <Text color="ui.mutedText" fontSize="xs" fontWeight="bold">
                 {t("directoryPreview.filters.eyebrow")}
@@ -552,7 +548,7 @@ export function CreatorsDirectoryPreview() {
           </Button>
 
           <Box mt={5}>
-            <HStack justify="space-between" align="center" mb={3}>
+            <HStack wrap="wrap" justify="space-between" align="center" mb={3}>
               <Text fontSize="sm" fontWeight="bold" color="ui.text">
                 {t("directoryPreview.filters.categories")}
               </Text>
@@ -592,7 +588,7 @@ export function CreatorsDirectoryPreview() {
           </Box>
 
           <Box mt={5}>
-            <HStack justify="space-between" align="center" mb={3}>
+            <HStack wrap="wrap" justify="space-between" align="center" mb={3}>
               <Text fontSize="sm" fontWeight="bold" color="ui.text">
                 {t("directoryPreview.filters.roles")}
               </Text>
@@ -634,7 +630,7 @@ export function CreatorsDirectoryPreview() {
           <Separator my={5} borderColor="ui.borderSoft" />
 
           <Box mt={5}>
-            <HStack justify="space-between" align="center" mb={3}>
+            <HStack wrap="wrap" justify="space-between" align="center" mb={3}>
               <Text fontSize="sm" fontWeight="bold" color="ui.text">
                 {t("directoryPreview.filters.range")}
               </Text>
@@ -699,7 +695,7 @@ export function CreatorsDirectoryPreview() {
           </Box>
 
           <Box mt={5}>
-            <HStack justify="space-between" align="center" mb={3}>
+            <HStack wrap="wrap" justify="space-between" align="center" mb={3}>
               <Text fontSize="sm" fontWeight="bold" color="ui.text">
                 {t("directoryPreview.filters.sort")}
               </Text>
@@ -745,7 +741,7 @@ export function CreatorsDirectoryPreview() {
           <Separator my={5} borderColor="ui.borderSoft" />
 
           <Box mt={5}>
-            <HStack justify="space-between" align="center" mb={2}>
+            <HStack wrap="wrap" justify="space-between" align="center" mb={2}>
               <Text fontSize="sm" fontWeight="bold" color="ui.text">
                 {t("directoryPreview.filters.searchLabel")}
               </Text>
@@ -944,7 +940,9 @@ export function CreatorsDirectoryPreview() {
                               }
                               fontSize="xs"
                               fontWeight="bold"
-                              whiteSpace="nowrap"
+                              whiteSpace="normal"
+                              flexShrink={0}
+                              maxW="50%"
                             >
                               {statusLabel}
                             </Box>
@@ -1064,30 +1062,12 @@ export function CreatorsDirectoryPreview() {
                 gap={3}
                 direction={{ base: "column", md: "row" }}
               >
-                <PaginationRoot
+                <AdaptivePagination
                   count={searchQuery.data.pagination.total}
                   page={searchQuery.data.pagination.page}
                   pageSize={searchQuery.data.pagination.page_size}
                   onPageChange={({ page: nextPage }) => setPage(nextPage)}
-                >
-                  <Flex
-                    justify="space-between"
-                    align={{ base: "flex-start", md: "center" }}
-                    gap={3}
-                    direction={{ base: "column", md: "row" }}
-                    width="full"
-                  >
-                    <HStack>
-                      <PaginationPrevTrigger />
-                      <PaginationItems />
-                      <PaginationNextTrigger />
-                    </HStack>
-                    <PaginationPageText
-                      format="compact"
-                      color="ui.secondaryText"
-                    />
-                  </Flex>
-                </PaginationRoot>
+                />
               </Flex>
             ) : null
           ) : null}

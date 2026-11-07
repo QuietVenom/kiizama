@@ -1,3 +1,5 @@
+import { useOverlaySize } from "@/components/Responsive/useOverlaySize"
+import { overlayBounds } from "@/components/Responsive/layout"
 import { Dialog as ChakraDialog, Portal } from "@chakra-ui/react"
 import * as React from "react"
 import { CloseButton } from "./close-button"
@@ -17,14 +19,44 @@ export const DialogContent = React.forwardRef<
     portalled = true,
     portalRef,
     backdrop = true,
+    css,
     ...rest
   } = props
 
+  const limitSize = useOverlaySize()
   return (
     <Portal disabled={!portalled} container={portalRef}>
       {backdrop && <ChakraDialog.Backdrop zIndex="overlay" />}
       <ChakraDialog.Positioner zIndex="modal">
-        <ChakraDialog.Content ref={ref} {...rest} asChild={false}>
+        <ChakraDialog.Content
+          ref={ref}
+          {...rest}
+          asChild={false}
+          css={{
+            ...css,
+            "&": {
+              minWidth: 0,
+              overflowWrap: "anywhere",
+              width: limitSize(
+                rest.w ?? rest.width ?? "100%",
+                overlayBounds.maxWidth,
+              ),
+              maxHeight: limitSize(
+                rest.maxH ?? rest.maxHeight ?? "100dvh",
+                overlayBounds.maxHeight,
+              ),
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+            },
+            "& > form": {
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 0,
+              overflow: "hidden",
+            },
+          }}
+        >
           {children}
         </ChakraDialog.Content>
       </ChakraDialog.Positioner>
@@ -52,9 +84,34 @@ export const DialogCloseTrigger = React.forwardRef<
 })
 
 export const DialogRoot = ChakraDialog.Root
-export const DialogFooter = ChakraDialog.Footer
-export const DialogHeader = ChakraDialog.Header
-export const DialogBody = ChakraDialog.Body
+export const DialogFooter = React.forwardRef<
+  HTMLDivElement,
+  ChakraDialog.FooterProps
+>(function DialogFooter(props, ref) {
+  return (
+    <ChakraDialog.Footer ref={ref} flexWrap="wrap" flexShrink={0} {...props} />
+  )
+})
+export const DialogHeader = React.forwardRef<
+  HTMLDivElement,
+  ChakraDialog.HeaderProps
+>(function DialogHeader(props, ref) {
+  return <ChakraDialog.Header ref={ref} flexShrink={0} pe={12} {...props} />
+})
+export const DialogBody = React.forwardRef<
+  HTMLDivElement,
+  ChakraDialog.BodyProps
+>(function DialogBody(props, ref) {
+  return (
+    <ChakraDialog.Body
+      ref={ref}
+      minH={0}
+      minW={0}
+      overflowY="auto"
+      {...props}
+    />
+  )
+})
 export const DialogBackdrop = ChakraDialog.Backdrop
 export const DialogTitle = ChakraDialog.Title
 export const DialogDescription = ChakraDialog.Description

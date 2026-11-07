@@ -21,8 +21,8 @@ import {
 } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { FiAlertCircle, FiFileText, FiSearch } from "react-icons/fi"
-
 import UsernameTagsInput from "@/components/CreatorsSearch/UsernameTagsInput"
+import { fluidColumns, formSummaryLayout } from "@/components/Responsive/layout"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Field } from "@/components/ui/field"
@@ -574,7 +574,7 @@ const CampaignStrategyBuilder = ({
       {...autofillIgnoreProps}
       onSubmit={handleSubmit(onSubmit)}
       display="grid"
-      gridTemplateColumns={{ base: "1fr", xl: "minmax(0, 1.65fr) 360px" }}
+      css={formSummaryLayout}
       gap={6}
     >
       <Flex direction="column" gap={6} minW={0}>
@@ -834,11 +834,7 @@ const CampaignStrategyBuilder = ({
             />
           </Field>
 
-          <Grid
-            mt={4}
-            templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }}
-            gap={4}
-          >
+          <Grid mt={4} templateColumns={fluidColumns("18rem")} gap={4}>
             <Field
               required
               invalid={!!errors.brand_context}
@@ -979,7 +975,7 @@ const CampaignStrategyBuilder = ({
           title={t("campaign.step3.title")}
           description={t("campaign.step3.description")}
         >
-          <Grid templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} gap={4}>
+          <Grid templateColumns={fluidColumns("18rem")} gap={4}>
             <Field
               required
               invalid={!!errors.timeframe}

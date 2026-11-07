@@ -1,5 +1,8 @@
 "use client"
 
+import { useOverlaySize } from "@/components/Responsive/useOverlaySize"
+import { overlayBounds } from "@/components/Responsive/layout"
+
 import { AbsoluteCenter, Menu as ChakraMenu, Portal } from "@chakra-ui/react"
 import * as React from "react"
 import { FiCheck, FiChevronRight } from "react-icons/fi"
@@ -11,11 +14,29 @@ interface MenuContentProps extends ChakraMenu.ContentProps {
 
 export const MenuContent = React.forwardRef<HTMLDivElement, MenuContentProps>(
   function MenuContent(props, ref) {
-    const { portalled = true, portalRef, ...rest } = props
+    const { portalled = true, portalRef, css, ...rest } = props
+    const limitSize = useOverlaySize()
     return (
       <Portal disabled={!portalled} container={portalRef}>
         <ChakraMenu.Positioner>
-          <ChakraMenu.Content ref={ref} {...rest} />
+          <ChakraMenu.Content
+            ref={ref}
+            {...rest}
+            css={{
+              ...css,
+              "&": {
+                minWidth: 0,
+                overflowWrap: "anywhere",
+                maxWidth: limitSize(
+                  rest.maxW ?? rest.maxWidth ?? "100vw",
+                  overlayBounds.maxWidth,
+                ),
+                maxHeight:
+                  "min(var(--available-height, 100dvh), calc(100dvh - 1rem))",
+                overflowY: "auto",
+              },
+            }}
+          />
         </ChakraMenu.Positioner>
       </Portal>
     )

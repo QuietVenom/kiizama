@@ -52,7 +52,12 @@ export const CurrentJobsDialog = ({
           px={{ base: 6, md: 7 }}
           py={{ base: 6, md: 7 }}
         >
-          <Flex alignItems="center" justifyContent="space-between" gap={3}>
+          <Flex
+            alignItems="center"
+            justifyContent="space-between"
+            gap={3}
+            wrap="wrap"
+          >
             <DialogTitle
               display="inline-flex"
               alignItems="center"
@@ -61,7 +66,7 @@ export const CurrentJobsDialog = ({
               fontWeight="black"
               letterSpacing="-0.02em"
               lineHeight="1"
-              whiteSpace="nowrap"
+              whiteSpace="normal"
             >
               {t("creatorsSearch:jobs.dialog.title")}
             </DialogTitle>

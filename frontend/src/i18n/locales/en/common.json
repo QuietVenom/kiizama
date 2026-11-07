@@ -13,7 +13,8 @@
     "remove": "Remove",
     "retry": "Retry",
     "save": "Save",
-    "search": "Search"
+    "search": "Search",
+    "userActions": "Actions for {{name}}"
   },
   "billingNotices": {
     "emptyDescription": "Upcoming renewals and trial reminders will appear here.",
@@ -72,7 +73,8 @@
     "password": "Password",
     "payments": "Payments",
     "settings": "Settings",
-    "signUp": "Sign Up"
+    "signUp": "Sign Up",
+    "installApp": "Install Kiizama"
   },
   "theme": {
     "darkMode": "Dark Mode",
@@ -80,5 +82,16 @@
     "switchToDarkMode": "Switch to dark mode",
     "switchToLightMode": "Switch to light mode",
     "system": "System"
+  },
+  "pagination": {
+    "navigation": "Pagination",
+    "previous": "Previous page",
+    "next": "Next page",
+    "pageOf": "{{page}} of {{total}}",
+    "rangeOf": "{{start}}–{{end}} of {{total}}"
+  },
+  "content": {
+    "table": "Table",
+    "code": "Code"
   }
 }

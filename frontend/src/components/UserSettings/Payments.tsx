@@ -247,7 +247,10 @@ const Payments = ({
 
         <Grid
           mt={6}
-          templateColumns={{ base: "1fr", md: "repeat(3, minmax(0, 1fr))" }}
+          templateColumns={{
+            base: "minmax(0, 1fr)",
+            md: "repeat(3, minmax(0, 1fr))",
+          }}
           gap={4}
         >
           {featureCards.map((item) => (

@@ -9,7 +9,7 @@ import {
 } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
-import { FiBell, FiCalendar } from "react-icons/fi"
+import { FiBell, FiCalendar, FiMenu } from "react-icons/fi"
 
 import LanguageSwitcher from "@/components/Common/LanguageSwitcher"
 import { DashboardGuideButton } from "@/components/Dashboard/DashboardGuideButton"
@@ -32,7 +32,17 @@ const formatToday = (language?: string) =>
     timeZone: "America/Mexico_City",
   })
 
-const DashboardTopbar = () => {
+const DashboardTopbar = ({
+  navigationId,
+  onOpenMenu,
+  menuOpen = false,
+  menuTriggerRef,
+}: {
+  navigationId?: string
+  onOpenMenu?: () => void
+  menuOpen?: boolean
+  menuTriggerRef?: React.RefObject<HTMLButtonElement | null>
+}) => {
   const { i18n, t } = useTranslation("common")
   const queryClient = useQueryClient()
   const { data } = useQuery({
@@ -65,19 +75,32 @@ const DashboardTopbar = () => {
     <Flex
       as="header"
       alignItems="center"
-      justifyContent="flex-end"
-      gap={4}
+      justifyContent="space-between"
+      gap={2}
       borderBottomWidth="1px"
       borderBottomColor="ui.sidebarBorder"
       bg="ui.panel"
-      ps={{ base: 16, md: 0 }}
+      ps={{ base: 3, md: 7, lg: 10 }}
       pe={{ base: 4, md: 7, lg: 10 }}
       py={3}
-      position="sticky"
-      top={0}
+      flexShrink={0}
+      minW={0}
       zIndex={5}
     >
-      <Flex alignItems="center" gap={3}>
+      <IconButton
+        ref={menuTriggerRef}
+        display={{ base: "inline-flex", md: "none" }}
+        aria-label={t("menu.open")}
+        aria-haspopup="dialog"
+        aria-expanded={menuOpen}
+        aria-controls={navigationId}
+        variant="outline"
+        rounded="xl"
+        onClick={onOpenMenu}
+      >
+        <FiMenu />
+      </IconButton>
+      <Flex alignItems="center" justify="flex-end" gap={2} flex="1" minW={0}>
         <LanguageSwitcher variant="dashboard" />
         <DashboardGuideButton />
         <NotesWorkspaceButton />
@@ -106,7 +129,7 @@ const DashboardTopbar = () => {
               ) : null}
             </Box>
           </MenuTrigger>
-          <MenuContent minW="24rem" p={2}>
+          <MenuContent w="24rem" p={2}>
             {notices.length === 0 ? (
               <Box px={3} py={4}>
                 <Text fontWeight="bold">{t("billingNotices.emptyTitle")}</Text>
@@ -134,7 +157,7 @@ const DashboardTopbar = () => {
                   <Text mt={2} fontSize="sm" color="ui.secondaryText">
                     {notice.message}
                   </Text>
-                  <Flex mt={3} gap={2}>
+                  <Flex mt={3} gap={2} wrap="wrap">
                     {notice.status === "unread" ? (
                       <Button
                         size="xs"
@@ -159,8 +182,13 @@ const DashboardTopbar = () => {
             )}
           </MenuContent>
         </MenuRoot>
-        <Flex alignItems="center" gap={3}>
-          <Box textAlign="right" display={{ base: "none", sm: "block" }}>
+        <Flex
+          alignItems="center"
+          gap={3}
+          display="none"
+          css={{ "@container shell (min-width: 54rem)": { display: "flex" } }}
+        >
+          <Box textAlign="right">
             <Text
               fontSize="xs"
               color="ui.mutedText"

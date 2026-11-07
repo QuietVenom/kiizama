@@ -13,7 +13,11 @@ import { CustomProvider } from "./components/ui/provider"
 import { normalizeAppError } from "./features/errors/http"
 import { redirectToLoginWithReturnTo } from "./features/errors/navigation"
 import "./i18n"
+import { AppInstallProvider } from "./components/Installation/AppInstallProvider"
+import { configureInstallationMetadata } from "./components/Installation/metadata"
 import { routeTree } from "./routeTree.gen"
+
+configureInstallationMetadata()
 
 OpenAPI.BASE = import.meta.env.VITE_API_URL
 OpenAPI.TOKEN = async () => {
@@ -55,7 +59,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <CustomProvider>
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <AppInstallProvider>
+          <RouterProvider router={router} />
+        </AppInstallProvider>
       </QueryClientProvider>
     </CustomProvider>
   </StrictMode>,

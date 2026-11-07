@@ -11,7 +11,8 @@ import { useTranslation } from "react-i18next"
 import { FiTarget, FiUserCheck } from "react-icons/fi"
 
 import StrategyOptionCard from "@/components/BrandIntelligence/StrategyOptionCard"
-import DashboardTopbar from "@/components/Dashboard/DashboardTopbar"
+import DashboardPageShell from "@/components/Dashboard/DashboardPageShell"
+import { formSummaryLayout } from "@/components/Responsive/layout"
 
 type StrategyType =
   | "reputation-campaign-strategy"
@@ -24,11 +25,7 @@ const CampaignStrategyTab = lazy(loadCampaignStrategyTab)
 const CreatorStrategyTab = lazy(loadCreatorStrategyTab)
 
 const StrategyTabFallback = () => (
-  <Box
-    display="grid"
-    gridTemplateColumns={{ base: "1fr", xl: "minmax(0, 1.65fr) 360px" }}
-    gap={6}
-  >
+  <Box display="grid" css={formSummaryLayout} gap={6}>
     <Flex direction="column" gap={6} minW={0}>
       <Box
         rounded="30px"
@@ -84,62 +81,54 @@ export function ReputationStrategyPage() {
   const isCreatorSelected = selectedStrategy === "reputation-creator-strategy"
 
   return (
-    <Box minH="100vh" bg="ui.page">
-      <DashboardTopbar />
-
-      <Box px={{ base: 4, md: 7, lg: 10 }} py={{ base: 7, lg: 9 }}>
-        <Box mb={{ base: 7, lg: 8 }}>
-          <Text textStyle="eyebrow">{t("page.eyebrow")}</Text>
-          <Heading
-            mt={3}
-            textStyle="pageTitle"
-            fontSize={{ base: "3xl", lg: "4xl" }}
-            fontWeight="black"
-            lineHeight="1.05"
-            maxW="18ch"
-          >
-            {t("page.title")}
-          </Heading>
-        </Box>
-
-        <SimpleGrid
-          columns={{ base: 1, xl: 2 }}
-          gap={5}
-          mb={{ base: 7, lg: 8 }}
+    <DashboardPageShell>
+      <Box mb={{ base: 7, lg: 8 }}>
+        <Text textStyle="eyebrow">{t("page.eyebrow")}</Text>
+        <Heading
+          mt={3}
+          textStyle="pageTitle"
+          fontSize={{ base: "3xl", lg: "4xl" }}
+          fontWeight="black"
+          lineHeight="1.05"
+          maxW="18ch"
         >
-          <StrategyOptionCard
-            icon={FiTarget}
-            isActive={isCampaignSelected}
-            onMouseEnter={() => void loadCampaignStrategyTab()}
-            onFocus={() => void loadCampaignStrategyTab()}
-            onClick={() => handleSelectStrategy("reputation-campaign-strategy")}
-            title={t("page.strategyOptions.campaign.title")}
-          />
-          <StrategyOptionCard
-            icon={FiUserCheck}
-            isActive={isCreatorSelected}
-            onMouseEnter={() => void loadCreatorStrategyTab()}
-            onFocus={() => void loadCreatorStrategyTab()}
-            onClick={() => handleSelectStrategy("reputation-creator-strategy")}
-            title={t("page.strategyOptions.creator.title")}
-          />
-        </SimpleGrid>
-
-        {mountedStrategies["reputation-campaign-strategy"] ? (
-          <Box display={isCampaignSelected ? "block" : "none"}>
-            <Suspense fallback={<StrategyTabFallback />}>
-              <CampaignStrategyTab />
-            </Suspense>
-          </Box>
-        ) : null}
-        {mountedStrategies["reputation-creator-strategy"] ? (
-          <Box display={isCreatorSelected ? "block" : "none"}>
-            <Suspense fallback={<StrategyTabFallback />}>
-              <CreatorStrategyTab />
-            </Suspense>
-          </Box>
-        ) : null}
+          {t("page.title")}
+        </Heading>
       </Box>
-    </Box>
+
+      <SimpleGrid columns={{ base: 1, xl: 2 }} gap={5} mb={{ base: 7, lg: 8 }}>
+        <StrategyOptionCard
+          icon={FiTarget}
+          isActive={isCampaignSelected}
+          onMouseEnter={() => void loadCampaignStrategyTab()}
+          onFocus={() => void loadCampaignStrategyTab()}
+          onClick={() => handleSelectStrategy("reputation-campaign-strategy")}
+          title={t("page.strategyOptions.campaign.title")}
+        />
+        <StrategyOptionCard
+          icon={FiUserCheck}
+          isActive={isCreatorSelected}
+          onMouseEnter={() => void loadCreatorStrategyTab()}
+          onFocus={() => void loadCreatorStrategyTab()}
+          onClick={() => handleSelectStrategy("reputation-creator-strategy")}
+          title={t("page.strategyOptions.creator.title")}
+        />
+      </SimpleGrid>
+
+      {mountedStrategies["reputation-campaign-strategy"] ? (
+        <Box display={isCampaignSelected ? "block" : "none"}>
+          <Suspense fallback={<StrategyTabFallback />}>
+            <CampaignStrategyTab />
+          </Suspense>
+        </Box>
+      ) : null}
+      {mountedStrategies["reputation-creator-strategy"] ? (
+        <Box display={isCreatorSelected ? "block" : "none"}>
+          <Suspense fallback={<StrategyTabFallback />}>
+            <CreatorStrategyTab />
+          </Suspense>
+        </Box>
+      ) : null}
+    </DashboardPageShell>
   )
 }

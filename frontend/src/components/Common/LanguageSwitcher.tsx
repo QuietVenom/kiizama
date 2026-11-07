@@ -1,5 +1,4 @@
 import { Box, Button, HStack, Text } from "@chakra-ui/react"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { FiCheck, FiChevronDown, FiGlobe } from "react-icons/fi"
 import {
@@ -38,9 +37,9 @@ const triggerStyles: Record<
     _hover: { bg: "ui.panelInverse" },
   },
   dashboard: {
-    h: 12,
-    minW: "10.9375rem",
-    px: 4,
+    h: 10,
+    minW: 0,
+    px: 2,
     rounded: "2xl",
     bg: "ui.surfaceSoft",
     color: "ui.text",
@@ -50,7 +49,8 @@ const triggerStyles: Record<
   },
   settings: {
     h: 12,
-    minW: "15rem",
+    minW: 0,
+    w: "min(100%, 15rem)",
     px: 4,
     rounded: "2xl",
     bg: "ui.surfaceSoft",
@@ -77,12 +77,8 @@ export const LanguageSwitcher = ({
     languageOptions.find((option) => option.value === activeLanguage) ??
     languageOptions[0]
 
-  const availableOptions = useMemo(
-    () =>
-      languageOptions.filter((option) =>
-        SUPPORTED_LANGUAGES.includes(option.value),
-      ),
-    [languageOptions.filter],
+  const availableOptions = languageOptions.filter((option) =>
+    SUPPORTED_LANGUAGES.includes(option.value),
   )
 
   return (
@@ -91,10 +87,12 @@ export const LanguageSwitcher = ({
         <Button
           aria-label={t("languageSwitcher.select")}
           {...triggerStyles[variant]}
+          title={activeOption.label}
+          maxW="full"
           transition="background 180ms ease, border-color 180ms ease"
         >
-          <HStack justify="space-between" w="full" gap={3}>
-            <HStack gap={3} minW={0}>
+          <HStack justify="space-between" w="full" gap={2}>
+            <HStack gap={2} minW={0}>
               <Box
                 as="span"
                 display="inline-flex"
@@ -111,9 +109,34 @@ export const LanguageSwitcher = ({
                 fontWeight="medium"
                 fontSize="sm"
                 textAlign="left"
+                display={variant === "dashboard" ? "none" : undefined}
+                css={
+                  variant === "dashboard"
+                    ? {
+                        "@container shell (min-width: 38rem)": {
+                          display: "inline",
+                        },
+                      }
+                    : undefined
+                }
               >
                 {activeOption.label}
               </Text>
+              {variant === "dashboard" ? (
+                <Text
+                  as="span"
+                  fontSize="xs"
+                  fontWeight="bold"
+                  aria-label={activeOption.label}
+                  css={{
+                    "@container shell (min-width: 38rem)": { display: "none" },
+                  }}
+                >
+                  {activeLanguage === "pt-BR"
+                    ? "PT"
+                    : activeLanguage.toUpperCase()}
+                </Text>
+              ) : null}
             </HStack>
             <Box as="span" display="inline-flex" fontSize="md">
               <FiChevronDown />
@@ -123,7 +146,7 @@ export const LanguageSwitcher = ({
       </MenuTrigger>
 
       <MenuContent
-        minW={triggerStyles[variant].minW as string}
+        minW="min(15rem, calc(100vw - 1rem))"
         rounded="2xl"
         p={2}
         bg="ui.panelInverse"
@@ -152,7 +175,7 @@ export const LanguageSwitcher = ({
                 bg: isActive ? "ui.panel" : "whiteAlpha.200",
               }}
             >
-              <HStack justify="space-between" w="full" gap={3}>
+              <HStack justify="space-between" w="full" gap={2}>
                 <Text fontWeight={isActive ? "semibold" : "medium"}>
                   {option.label}
                 </Text>

@@ -5,6 +5,7 @@ import {
   useFieldContext,
   VisuallyHidden,
 } from "@chakra-ui/react"
+import { fluidColumns } from "@/components/Responsive/layout"
 
 type MultiSelectOption = {
   description?: string
@@ -64,7 +65,7 @@ const MultiSelectOptionGroup = ({
         aria-describedby={field?.ariaDescribedby}
         aria-labelledby={field?.ids.label}
         role="group"
-        templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+        templateColumns={fluidColumns("14rem")}
         gap={3}
       >
         {options.map((option) => {

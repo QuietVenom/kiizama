@@ -367,7 +367,7 @@ describe("creators directory preview", () => {
 
     expect(await screen.findByText("Alpha Creator")).toBeVisible()
 
-    await user.click(screen.getByRole("button", { name: /page 2/i }))
+    await user.click(screen.getByRole("button", { name: "Next page" }))
 
     await waitFor(() => {
       expect(searchCreatorsDirectoryMock).toHaveBeenNthCalledWith(2, {

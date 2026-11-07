@@ -35,5 +35,57 @@
       "cancel": "Cancelar",
       "successToast": "La cuenta se eliminó correctamente."
     }
+  },
+  "installation": {
+    "title": "Kiizama en tu pantalla de inicio",
+    "description": "Abre Kiizama desde su propio icono, como una app, sin pasar por una tienda de aplicaciones.",
+    "online": "Necesitas conexión a internet. Al abrirla por primera vez, es posible que debas iniciar sesión de nuevo.",
+    "installed": "Kiizama ya está instalada o abierta como app en este dispositivo.",
+    "action": "Instalar Kiizama",
+    "prompting": "Esperando confirmación…",
+    "stepsLabel": "Pasos de instalación en {{platform}}",
+    "result": {
+      "accepted": "Solicitud enviada. Completa la confirmación del navegador si aparece.",
+      "dismissed": "Instalación cancelada. Puedes seguir usando Kiizama y añadirla más tarde desde el menú del navegador.",
+      "unavailable": "El navegador no pudo iniciar la instalación. Sigue los pasos de abajo para añadir Kiizama manualmente."
+    },
+    "ios": {
+      "step1": {
+        "title": "Abre Kiizama en Safari",
+        "description": "Visita app.kiizama.com en tu iPhone o iPad. Si abriste el enlace dentro de otra app, ábrelo primero en Safari."
+      },
+      "step2": {
+        "title": "Toca Compartir",
+        "description": "Busca el botón con un cuadrado y una flecha hacia arriba. Su ubicación depende de tu versión de Safari."
+      },
+      "step3": {
+        "title": "Añade a la pantalla de inicio",
+        "description": "Elige “Añadir a pantalla de inicio”. Mantén “Abrir como app” activado si aparece, comprueba el nombre Kiizama y confirma “Añadir”."
+      },
+      "step4": {
+        "title": "Abre tu nueva app",
+        "description": "Toca el icono de Kiizama en la pantalla de inicio para entrar directamente a tu espacio de trabajo."
+      },
+      "note": "En iOS la instalación se completa desde el menú de Safari. Si no ves la opción, revisa “Editar acciones” en Compartir."
+    },
+    "android": {
+      "step1": {
+        "title": "Abre Kiizama en Chrome",
+        "description": "Visita app.kiizama.com en tu teléfono o tablet Android. Si estás dentro de otra app, abre el enlace en Chrome."
+      },
+      "step2": {
+        "title": "Abre el menú del navegador",
+        "description": "Toca los tres puntos de Chrome. La ubicación puede variar según la versión del navegador."
+      },
+      "step3": {
+        "title": "Instala o añade a la pantalla de inicio",
+        "description": "Elige “Instalar aplicación” o “Añadir a pantalla de inicio” y confirma. El texto y las opciones dependen del navegador."
+      },
+      "step4": {
+        "title": "Abre Kiizama desde su icono",
+        "description": "Busca Kiizama en la pantalla de inicio o en tu lista de aplicaciones y ábrela para volver a tu espacio de trabajo."
+      },
+      "note": "Si Chrome ofrece instalación directa, también verás un botón arriba. Si no aparece, usa el menú del navegador; un acceso directo puede abrirse como una pestaña."
+    }
   }
 }

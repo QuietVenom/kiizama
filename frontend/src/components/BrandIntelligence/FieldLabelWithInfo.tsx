@@ -40,7 +40,7 @@ const FieldLabelWithInfo = memo(
         <Portal>
           <Tooltip.Positioner>
             <Tooltip.Content
-              maxW="320px"
+              maxW="min(320px, calc(100vw - 1rem))"
               rounded="2xl"
               borderWidth="1px"
               borderColor="ui.border"

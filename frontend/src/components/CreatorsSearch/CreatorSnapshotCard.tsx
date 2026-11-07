@@ -84,7 +84,7 @@ const CreatorSnapshotCard = ({
       borderColor={isExpired ? "ui.warning" : undefined}
       bg={isExpired ? "ui.warningSoft" : undefined}
     >
-      <Grid templateColumns="auto 1fr" gap={4} alignItems="start">
+      <Grid templateColumns="auto minmax(0, 1fr)" gap={4} alignItems="start">
         <Box
           boxSize={{ base: "16", lg: "18" }}
           flexShrink={0}

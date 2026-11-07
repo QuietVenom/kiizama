@@ -5,8 +5,10 @@ import {
   redirect,
   useLocation,
 } from "@tanstack/react-router"
+import { useId, useRef, useState } from "react"
 import { ApiError, type UserPublic, UsersService } from "@/client"
 import Sidebar from "@/components/Common/Sidebar"
+import DashboardTopbar from "@/components/Dashboard/DashboardTopbar"
 import { normalizeAppError } from "@/features/errors/http"
 import { buildLoginHrefWithReturnTo } from "@/features/errors/navigation"
 import { UserEventsBootstrap } from "@/features/user-events/UserEventsBootstrap"
@@ -17,6 +19,7 @@ const dashboardShellRoutes = [
   "/creators-search",
   "/brand-intelligence",
   "/settings",
+  "/admin",
 ] as const
 
 const usesDashboardShell = (pathname: string) =>
@@ -58,21 +61,45 @@ export const Route = createFileRoute("/_layout")({
 function Layout() {
   const { pathname } = useLocation()
   const isDashboardRoute = usesDashboardShell(pathname)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const navigationId = useId()
+  const menuTriggerRef = useRef<HTMLButtonElement>(null)
 
   return (
-    <Flex h="100vh" overflow="hidden" bg="ui.page">
+    <Flex h="100vh" css={{ height: "100dvh" }} overflow="hidden" bg="ui.page">
       <UserEventsBootstrap />
-      <Sidebar />
-      <Box flex={1} minW={0}>
-        <Flex
-          flex={1}
-          h="full"
-          direction="column"
-          p={isDashboardRoute ? 0 : 4}
-          overflowY="auto"
-          bg={isDashboardRoute ? "ui.page" : "transparent"}
-        >
-          <Outlet />
+      <Sidebar
+        navigationId={navigationId}
+        open={menuOpen}
+        onOpenChange={setMenuOpen}
+        showTrigger={false}
+        triggerRef={menuTriggerRef}
+      />
+      <Box
+        flex={1}
+        minW={0}
+        css={{ containerType: "inline-size", containerName: "shell" }}
+      >
+        <Flex h="full" minW={0} minH={0} direction="column">
+          {isDashboardRoute ? (
+            <DashboardTopbar
+              navigationId={navigationId}
+              menuOpen={menuOpen}
+              onOpenMenu={() => setMenuOpen(true)}
+              menuTriggerRef={menuTriggerRef}
+            />
+          ) : null}
+          <Box
+            as="main"
+            data-testid="app-scroll"
+            flex={1}
+            minH={0}
+            minW={0}
+            overflowY="auto"
+            bg="ui.page"
+          >
+            <Outlet />
+          </Box>
         </Flex>
       </Box>
     </Flex>

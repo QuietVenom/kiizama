@@ -1,14 +1,20 @@
 import { Box } from "@chakra-ui/react"
-import parse from "html-react-parser"
+import parse, { domToReact } from "html-react-parser"
+import { useTranslation } from "react-i18next"
+import { WideContent } from "@/components/Responsive/WideContent"
 
 type BlogPostContentProps = {
   html: string
 }
 
 const BlogPostContent = ({ html }: BlogPostContentProps) => {
+  const { t } = useTranslation("common")
   return (
     <Box
       data-testid="blog-post-content"
+      minW={0}
+      maxW="full"
+      overflowWrap="anywhere"
       color="ui.text"
       fontSize={{ base: "md", md: "lg" }}
       lineHeight="1.9"
@@ -118,7 +124,24 @@ const BlogPostContent = ({ html }: BlogPostContentProps) => {
         },
       }}
     >
-      {parse(html)}
+      {parse(html, {
+        replace: (node) => {
+          if (
+            "name" in node &&
+            (node.name === "table" || node.name === "pre")
+          ) {
+            return (
+              <WideContent
+                label={t(
+                  node.name === "table" ? "content.table" : "content.code",
+                )}
+              >
+                {domToReact([node])}
+              </WideContent>
+            )
+          }
+        },
+      })}
     </Box>
   )
 }

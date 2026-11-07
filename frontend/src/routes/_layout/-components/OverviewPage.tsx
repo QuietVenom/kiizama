@@ -3,11 +3,11 @@ import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 import { FiFileText, FiShield, FiUserCheck } from "react-icons/fi"
-
 import DashboardPageShell from "@/components/Dashboard/DashboardPageShell"
 import MetricCard from "@/components/Dashboard/MetricCard"
 import RecentReportsCard from "@/components/Dashboard/RecentReportsCard"
 import StrategicInsightCard from "@/components/Dashboard/StrategicInsightCard"
+import { fluidColumns } from "@/components/Responsive/layout"
 import {
   billingSummaryQueryOptions,
   getFeatureUsage,
@@ -54,7 +54,7 @@ export function OverviewPage() {
           justify="space-between"
           direction={{ base: "column", lg: "row" }}
         >
-          <Box>
+          <Box minW={0} maxW="full">
             <Text
               fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
               fontWeight="black"
@@ -93,11 +93,7 @@ export function OverviewPage() {
         </Flex>
 
         <Grid
-          templateColumns={{
-            base: "1fr",
-            md: "repeat(2, 1fr)",
-            xl: "repeat(3, 1fr)",
-          }}
+          templateColumns={fluidColumns("15rem")}
           gap={5}
           mb={{ base: 7, lg: 8 }}
         >
@@ -130,7 +126,7 @@ export function OverviewPage() {
           />
         </Grid>
 
-        <Grid templateColumns={{ base: "1fr", xl: "1.6fr 1fr" }} gap={6}>
+        <Grid templateColumns={fluidColumns("22rem")} gap={6}>
           <Box minW={0}>
             <RecentReportsCard />
           </Box>

@@ -1,25 +1,16 @@
-import {
-  Badge,
-  Box,
-  Container,
-  Flex,
-  Heading,
-  Table,
-  Tabs,
-} from "@chakra-ui/react"
+import { Badge, Box, Flex, Heading, Table, Tabs } from "@chakra-ui/react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { type ReactNode, useMemo } from "react"
 import { type AdminUserPublic, type UserPublic, UsersService } from "@/client"
 import AddUser from "@/components/Admin/AddUser"
 import EnqueueInstagramWorkerJobs from "@/components/Admin/EnqueueInstagramWorkerJobs"
 import { UserActionsMenu } from "@/components/Common/UserActionsMenu"
+import DashboardPageShell from "@/components/Dashboard/DashboardPageShell"
 import PendingUsers from "@/components/Pending/PendingUsers"
-import {
-  PaginationItems,
-  PaginationNextTrigger,
-  PaginationPrevTrigger,
-  PaginationRoot,
-} from "@/components/ui/pagination.tsx"
+import { AdaptivePagination } from "@/components/Responsive/AdaptivePagination"
+import { ResponsiveTabsList } from "@/components/Responsive/ResponsiveTabsList"
+import { WideContent } from "@/components/Responsive/WideContent"
+
 import { rethrowCriticalQueryError } from "@/features/errors/http"
 import useAuth from "@/hooks/useAuth"
 
@@ -67,64 +58,63 @@ function UsersTable({ onPageChange, page }: UsersTableProps) {
 
   return (
     <>
-      <Table.Root size={{ base: "sm", md: "md" }}>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader w="sm">Full name</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Email</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Role</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Access</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Plan</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {users?.map((user) => (
-            <Table.Row key={user.id} opacity={isPlaceholderData ? 0.5 : 1}>
-              <Table.Cell color={!user.full_name ? "gray" : "inherit"}>
-                {user.full_name || "N/A"}
-                {currentUser?.id === user.id && (
-                  <Badge ml="1" colorPalette="design">
-                    You
-                  </Badge>
-                )}
-              </Table.Cell>
-              <Table.Cell truncate maxW="sm">
-                {user.email}
-              </Table.Cell>
-              <Table.Cell>
-                {user.is_superuser ? "Superuser" : "User"}
-              </Table.Cell>
-              <Table.Cell textTransform="capitalize">
-                {formatAccessLabel(user)}
-              </Table.Cell>
-              <Table.Cell textTransform="capitalize">
-                {user.plan_status ?? "none"}
-              </Table.Cell>
-              <Table.Cell>{user.is_active ? "Active" : "Inactive"}</Table.Cell>
-              <Table.Cell>
-                <UserActionsMenu
-                  user={user}
-                  disabled={currentUser?.id === user.id}
-                />
-              </Table.Cell>
+      <WideContent label="Users">
+        <Table.Root size={{ base: "sm", md: "md" }}>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeader w="sm">Full name</Table.ColumnHeader>
+              <Table.ColumnHeader w="sm">Email</Table.ColumnHeader>
+              <Table.ColumnHeader w="sm">Role</Table.ColumnHeader>
+              <Table.ColumnHeader w="sm">Access</Table.ColumnHeader>
+              <Table.ColumnHeader w="sm">Plan</Table.ColumnHeader>
+              <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
+              <Table.ColumnHeader w="sm">Actions</Table.ColumnHeader>
             </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
+          </Table.Header>
+          <Table.Body>
+            {users?.map((user) => (
+              <Table.Row key={user.id} opacity={isPlaceholderData ? 0.5 : 1}>
+                <Table.Cell color={!user.full_name ? "gray" : "inherit"}>
+                  {user.full_name || "N/A"}
+                  {currentUser?.id === user.id && (
+                    <Badge ml="1" colorPalette="design">
+                      You
+                    </Badge>
+                  )}
+                </Table.Cell>
+                <Table.Cell truncate maxW="sm">
+                  {user.email}
+                </Table.Cell>
+                <Table.Cell>
+                  {user.is_superuser ? "Superuser" : "User"}
+                </Table.Cell>
+                <Table.Cell textTransform="capitalize">
+                  {formatAccessLabel(user)}
+                </Table.Cell>
+                <Table.Cell textTransform="capitalize">
+                  {user.plan_status ?? "none"}
+                </Table.Cell>
+                <Table.Cell>
+                  {user.is_active ? "Active" : "Inactive"}
+                </Table.Cell>
+                <Table.Cell>
+                  <UserActionsMenu
+                    user={user}
+                    disabled={currentUser?.id === user.id}
+                  />
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
+      </WideContent>
       <Flex justifyContent="flex-end" mt={4}>
-        <PaginationRoot
+        <AdaptivePagination
           count={count}
+          page={page}
           pageSize={PER_PAGE}
           onPageChange={({ page }) => onPageChange(page)}
-        >
-          <Flex>
-            <PaginationPrevTrigger />
-            <PaginationItems />
-            <PaginationNextTrigger />
-          </Flex>
-        </PaginationRoot>
+        />
       </Flex>
     </>
   )
@@ -178,25 +168,25 @@ export function UsersManagementPage({
   )
 
   return (
-    <Container maxW="full">
-      <Heading size="lg" pt={12}>
+    <DashboardPageShell>
+      <Heading size="lg" pt={0}>
         Users Management
       </Heading>
 
       <Tabs.Root defaultValue="users" variant="subtle" mt={6}>
-        <Tabs.List>
+        <ResponsiveTabsList>
           {tabs.map((tab) => (
             <Tabs.Trigger key={tab.value} value={tab.value}>
               {tab.title}
             </Tabs.Trigger>
           ))}
-        </Tabs.List>
+        </ResponsiveTabsList>
         {tabs.map((tab) => (
           <Tabs.Content key={tab.value} value={tab.value}>
             {tab.content}
           </Tabs.Content>
         ))}
       </Tabs.Root>
-    </Container>
+    </DashboardPageShell>
   )
 }

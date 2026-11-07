@@ -103,9 +103,12 @@ describe("edit user admin dialog", () => {
 
     // Assert
     expect(updateUser).not.toHaveBeenCalled()
-    expect(
-      screen.queryByText("Update the user details below."),
-    ).not.toBeInTheDocument()
+    // Dialog dismissal runs through an exit transition, so removal is async.
+    await waitFor(() =>
+      expect(
+        screen.queryByText("Update the user details below."),
+      ).not.toBeInTheDocument(),
+    )
   })
 
   test("edit_user_success_omits_confirm_password_and_empty_password", async () => {

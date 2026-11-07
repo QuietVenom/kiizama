@@ -1,8 +1,9 @@
 import { Box, Heading, Tabs } from "@chakra-ui/react"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
 import DashboardPageShell from "@/components/Dashboard/DashboardPageShell"
+import InstallAppSettings from "@/components/Installation/InstallAppSettings"
+import { ResponsiveTabsList } from "@/components/Responsive/ResponsiveTabsList"
 import Appearance from "@/components/UserSettings/Appearance"
 import ChangePassword from "@/components/UserSettings/ChangePassword"
 import DeleteAccount from "@/components/UserSettings/DeleteAccount"
@@ -48,6 +49,11 @@ export function UserSettingsPage({
         component: Appearance,
       },
       {
+        value: "installation",
+        title: t("navigation.installApp"),
+        component: InstallAppSettings,
+      },
+      {
         value: "danger-zone",
         title: t("navigation.dangerZone"),
         component: DeleteAccount,
@@ -79,13 +85,13 @@ export function UserSettingsPage({
           onValueChange={({ value }) => onTabChange(value)}
           variant="subtle"
         >
-          <Tabs.List>
+          <ResponsiveTabsList value={activeTab}>
             {finalTabs.map((tabItem) => (
               <Tabs.Trigger key={tabItem.value} value={tabItem.value}>
                 {tabItem.title}
               </Tabs.Trigger>
             ))}
-          </Tabs.List>
+          </ResponsiveTabsList>
           {finalTabs.map((tabItem) => {
             const Component = tabItem.component
 

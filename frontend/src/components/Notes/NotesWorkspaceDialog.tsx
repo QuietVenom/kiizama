@@ -152,14 +152,35 @@ export const NotesWorkspaceDialog = ({
           </DialogTitle>
         </DialogHeader>
 
-        <DialogBody p={0} flex="1" overflow="hidden">
-          <Flex h="full" direction={{ base: "column", md: "row" }}>
+        <DialogBody
+          p={0}
+          flex="1"
+          overflow="hidden"
+          css={{ containerType: "inline-size", containerName: "workspace" }}
+        >
+          <Flex
+            h="full"
+            minH={0}
+            direction="column"
+            css={{
+              "@container workspace (min-width: 48rem)": {
+                flexDirection: "row",
+              },
+            }}
+          >
             <Box
-              w={{ base: "full", md: "280px" }}
-              maxH={{ base: "40%", md: "full" }}
+              w="full"
+              minH={0}
+              maxH="40%"
+              css={{
+                "@container workspace (min-width: 48rem)": {
+                  width: "280px",
+                  maxHeight: "100%",
+                },
+              }}
               flexShrink={0}
-              borderRightWidth={{ base: 0, md: "1px" }}
-              borderBottomWidth={{ base: "1px", md: 0 }}
+              borderRightWidth={0}
+              borderBottomWidth="1px"
               borderColor="ui.border"
               bg="ui.panel"
               overflowY="auto"
@@ -175,7 +196,13 @@ export const NotesWorkspaceDialog = ({
               />
             </Box>
 
-            <Box flex="1" minW={0} overflowY="auto" p={{ base: 4, md: 6 }}>
+            <Box
+              flex="1"
+              minW={0}
+              minH={0}
+              overflowY="auto"
+              p={{ base: 4, md: 6 }}
+            >
               {selectedNote ? (
                 <NoteEditor note={selectedNote} onChange={handleNoteChange} />
               ) : selectedBoard ? (

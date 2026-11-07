@@ -1,5 +1,6 @@
 import { IconButton } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useTranslation } from "react-i18next"
 import { BsThreeDotsVertical } from "react-icons/bs"
 import { type AdminUserPublic, UsersService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
@@ -15,6 +16,7 @@ interface UserActionsMenuProps {
 }
 
 export const UserActionsMenu = ({ user, disabled }: UserActionsMenuProps) => {
+  const { t } = useTranslation("common")
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
   const nextAccessProfile =
@@ -44,7 +46,14 @@ export const UserActionsMenu = ({ user, disabled }: UserActionsMenuProps) => {
   return (
     <MenuRoot>
       <MenuTrigger asChild>
-        <IconButton variant="ghost" color="inherit" disabled={disabled}>
+        <IconButton
+          aria-label={t("actions.userActions", {
+            name: user.full_name || user.email,
+          })}
+          variant="ghost"
+          color="inherit"
+          disabled={disabled}
+        >
           <BsThreeDotsVertical />
         </IconButton>
       </MenuTrigger>

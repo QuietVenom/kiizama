@@ -14,11 +14,34 @@ interface ButtonLoadingProps {
 
 export interface ButtonProps extends ChakraButtonProps, ButtonLoadingProps {}
 
+const buttonHeights: Record<string, string> = {
+  "2xs": "6",
+  xs: "8",
+  sm: "9",
+  md: "10",
+  lg: "11",
+  xl: "12",
+  "2xl": "16",
+}
+
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   function Button(props, ref) {
     const { loading, disabled, loadingText, children, ...rest } = props
     return (
-      <ChakraButton disabled={loading || disabled} ref={ref} {...rest}>
+      <ChakraButton
+        disabled={loading || disabled}
+        ref={ref}
+        whiteSpace="normal"
+        maxW="full"
+        minH={
+          rest.h ??
+          buttonHeights[typeof rest.size === "string" ? rest.size : "md"] ??
+          "10"
+        }
+        h="auto"
+        py={1.5}
+        {...rest}
+      >
         {loading && !loadingText ? (
           <>
             <AbsoluteCenter display="inline-flex">
